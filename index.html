@@ -41,7 +41,7 @@
         }
 
         body {
-            background-color: #f3f4f6; /* 編輯模式底色 */
+            background-color: #f3f4f6;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -56,14 +56,13 @@
             min-height: var(--a4-height);
             background-color: #ffffff;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            border-radius: 1.5rem; /* rounded-2xl */
-            padding: 3rem; /* 內部安全出血邊界 */
+            border-radius: 1.5rem;
+            padding: 3rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             overflow: hidden;
             position: relative;
-            /* 斷頁防護 */
             page-break-after: always;
             break-inside: avoid;
         }
@@ -93,7 +92,93 @@
             content: attr(placeholder);
             color: #9ca3af;
             pointer-events: none;
-            display: block; /* For Firefox */
+            display: block;
+        }
+
+        /* ===== 手機 / 小螢幕 Responsive ===== */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 0;
+                gap: 0;
+            }
+
+            .a4-landscape {
+                width: 100%;
+                min-height: auto;
+                border-radius: 0;
+                padding: 1.25rem;
+                box-shadow: none;
+            }
+
+            /* Hero 標題縮小 */
+            .a4-landscape h1 {
+                font-size: 2.5rem !important;
+            }
+            .a4-landscape h2 {
+                font-size: 1.25rem !important;
+            }
+
+            /* 主內容 grid 改單欄 */
+            .grid-cols-12 {
+                grid-template-columns: 1fr !important;
+            }
+            .col-span-7,
+            .col-span-5,
+            .col-span-12 {
+                grid-column: span 1 / span 1 !important;
+            }
+
+            /* Skill Highlights 2 col -> 1 col */
+            .grid-cols-2 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Timeline 5 col -> 1 col vertical */
+            .grid-cols-5 {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Core Skills bar 改 wrap */
+            .flex-wrap {
+                justify-content: center;
+            }
+
+            /* 隱藏 timeline 橫線 (桌面定位用) */
+            .grid-cols-5 > .absolute {
+                display: none;
+            }
+
+            /* 取消 timeline 第 3 個 item 的 mt-12 offset */
+            .grid-cols-5 > .mt-12 {
+                margin-top: 0 !important;
+            }
+
+            /* page 2 header */
+            .a4-landscape header h2 {
+                font-size: 1.5rem !important;
+            }
+
+            /* 裝飾性大字元隱藏 */
+            .text-9xl {
+                display: none;
+            }
+
+            /* 底部浮水印微調 */
+            .absolute.bottom-6 {
+                position: static;
+                text-align: center;
+                margin-top: 1.5rem;
+            }
+        }
+
+        /* 平板中間尺寸 */
+        @media screen and (min-width: 769px) and (max-width: 1200px) {
+            .a4-landscape {
+                width: 100%;
+                max-width: 900px;
+                min-height: auto;
+                padding: 2rem;
+            }
         }
 
         /* 列印引擎強制對應 */
@@ -114,16 +199,14 @@
                 box-shadow: none;
                 border-radius: 0;
                 margin: 0;
-                padding: 12mm 15mm; /* 列印專用安全邊距 */
+                padding: 12mm 15mm;
             }
             .no-print {
                 display: none !important;
             }
-            /* 強制背景色與陰影無損輸出 */
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
-                /* 停用動畫 */
                 transition: none !important;
                 animation: none !important;
             }
