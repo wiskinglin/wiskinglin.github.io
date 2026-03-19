@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2000-2030 科技演進史報告：超薄筆電與行動手機</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-primary: #2563eb;
+            --brand-secondary: #4f46e5;
+            --bg-canvas: #f3f4f6;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-canvas);
+            margin: 0;
+            padding: 20px 0;
+            color: #1f2937;
+        }
+
+        /* 橫式 A4 單頁容器規範 (Screen) */
+        .a4-landscape {
+            width: 297mm;
+            min-height: 210mm;
+            margin: 0 auto 30mm auto;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            border-radius: 24px; /* 大圓角營造現代感 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 撐滿上下高度 */
+            padding: 16mm;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            page-break-after: always;
+            break-inside: avoid;
+        }
+
+        /* 編輯模式視覺防呆 */
+        [contenteditable="true"] {
+            outline: 3px dashed var(--brand-primary);
+            outline-offset: 4px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background-color: rgba(59, 130, 246, 0.02);
+        }
+
+        [contenteditable="true"]:focus {
+            outline-color: var(--brand-secondary);
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        /* 控制面板毛玻璃效果 */
+        .control-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* 自訂美化捲軸 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 列印引擎強制對應 (Print) */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background: none;
+                padding: 0;
+                margin: 0;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .a4-landscape {
+                width: 297mm;
+                height: 210mm; /* 強制列印高度 */
+                min-height: auto;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                border: none;
+                page-break-after: always;
+                page-break-inside: avoid;
+                padding: 12mm 16mm;
+            }
+            /* 停用所有動畫 */
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+            /* 修正表格列印 */
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+        }
+
+        /* 漸層文字與背景微調 */
+        .text-gradient {
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-mesh {
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <!-- 浮動控制面板 (列印時自動隱藏) -->
+    <div class="no-print fixed top-6 right-6 z-50 flex gap-3 p-2 rounded-2xl shadow-2xl control-panel">
+        <button id="btn-edit" onclick="toggleEdit()" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm">
+            <span>✏️</span> <span id="text-edit">編輯內容</span>
+        </button>
+        <button onclick="savePage()" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-green-600 transition-colors shadow-sm">
+            <span>⬇️</span> <span>儲存網頁</span>
+        </button>
+        <button onclick="printPage()" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/30">
+            <span>🖨️</span> <span>輸出 PDF</span>
+        </button>
+    </div>
+
+    <!-- 主要文件容器 -->
+    <div id="document-wrapper" class="document-wrapper">
+
+        <!-- ================= PAGE 1: 封面與導言 (Hero Module) ================= -->
+        <section class="a4-landscape bg-mesh">
+            <header class="flex-1 flex flex-col justify-center items-start pr-20">
+                <div class="inline-block px-4 py-1.5 mb-6 text-sm font-bold text-blue-800 bg-blue-100 rounded-full tracking-widest uppercase">
+                    Technology & Evolution Research Report
+                </div>
+                <h1 class="text-6xl font-black leading-tight mb-6 tracking-tight text-gray-900">
+                    2000 年至 2030 年：<br>
+                    <span class="text-gradient">超薄筆電與行動手機</span>的技術演進史
+                </h1>
+                <p class="text-xl text-gray-500 font-medium mb-12 border-l-4 border-blue-500 pl-4">
+                    從「便攜式工具」到「智慧與環境無縫融合」的典範轉移
+                </p>
+                <div class="grid grid-cols-2 gap-8 w-full max-w-4xl">
+                    <div class="bg-white/60 p-6 rounded-2xl shadow-xl shadow-gray-200/50 border border-white backdrop-blur-sm">
+                        <h3 class="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2"><span class="text-2xl">📱</span> 行動手機的變革</h3>
+                        <p class="text-gray-600 leading-relaxed text-sm">
+                            從功能機、智慧型手機至摺疊與 AI 驅動型態的革命性演進。設計師們將沉重的實體按鍵轉化為多點觸控，進而推向空間運算與自然語言驅動的未來。
+                        </p>
+                    </div>
+                    <div class="bg-white/60 p-6 rounded-2xl shadow-xl shadow-gray-200/50 border border-white backdrop-blur-sm">
+                        <h3 class="text-lg font-bold text-blue-700 mb-3 flex items-center gap-2"><span class="text-2xl">💻</span> 超薄筆電的拉鋸</h3>
+                        <p class="text-gray-600 leading-relaxed text-sm">
+                            在極致輕薄與效能間的三十年拉鋸戰。工程師們在微米級的公差內尋求散熱、續航與效能的平衡，透過材料科學的突破與半導體製程的微縮創造奇蹟。
+                        </p>
+                    </div>
+                </div>
+            </header>
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 01 // 導言</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 2: 2000-2007 啟蒙與探索期 (Bento Box Module) ================= -->
+        <section class="a4-landscape">
+            <header class="mb-6 flex justify-between items-end border-b-2 border-gray-100 pb-4">
+                <div>
+                    <span class="text-blue-600 font-black text-2xl tracking-tighter">01</span>
+                    <h2 class="text-3xl font-bold text-gray-800 ml-2 inline-block">啟蒙與探索期 <span class="text-gray-400 text-xl font-normal tracking-wide">/ 2000 - 2007</span></h2>
+                </div>
+                <div class="bg-gray-100 px-3 py-1 rounded-md text-xs font-bold text-gray-500">功能機黃金時代 & 早期極限測試</div>
+            </header>
+
+            <div class="flex-1 grid grid-cols-12 gap-6">
+                <!-- 行動手機區塊 -->
+                <div class="col-span-7 flex flex-col gap-4">
+                    <div class="bg-blue-50/50 p-6 rounded-2xl border border-blue-100 flex-1">
+                        <h3 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">🧱 Nokia 霸權與實體型態綻放</h3>
+                        <p class="text-gray-700 text-sm leading-relaxed mb-4">
+                            2000 年至 2007 年是功能型手機（Feature Phones）的絕對黃金時代。受限於液晶顯示與觸控精準度，實體鍵盤（T9與QWERTY）是唯一可靠途徑。Nokia 3310 以極高耐用性成為文化印記。Motorola 於 2004 年推出極致輕薄的 RAZR V3，將航空級鋁合金引入外殼，開啟手機作為「時尚配件」先河。
+                        </p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 text-sm mb-1">👁️ 視覺與影像濫觴</h4>
+                                <p class="text-gray-500 text-xs leading-relaxed">2000年 Sharp J-SH04 開啟行動影像先河。2002年 Sharp mova SH251iS 更首創裸視 3D 顯示；2007年 Samsung SCH-B710 探索雙鏡頭立體攝影。</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                <h4 class="font-bold text-gray-800 text-sm mb-1">📶 基礎通訊建置</h4>
+                                <p class="text-gray-500 text-xs leading-relaxed">2G (GSM) 與 2.5G 主導，核心商業模式為語音與 SMS。3G 於 2003 年開始商用，開啟行動上網與視訊通話啟蒙時代。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 筆記型電腦區塊 -->
+                <div class="col-span-5 flex flex-col gap-4">
+                    <div class="bg-gray-50 p-6 rounded-2xl border border-gray-200 flex-1 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gray-200 rounded-bl-full opacity-20"></div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">🪶 材料科學早期極限測試</h3>
+                        <p class="text-gray-700 text-sm leading-relaxed mb-4">
+                            2000 年代初期筆電受限於光碟機、HDD、鎳氫電池與龐大散熱模組。但部分廠商開始透過犧牲效能探索極致輕薄。
+                        </p>
+                        <ul class="space-y-4">
+                            <li class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-gray-400">
+                                <strong class="text-sm text-gray-800 block">Apple PowerBook G4 (2003)</strong>
+                                <span class="text-xs text-gray-500 block mt-1">首度大規模採用鋁合金材質取代傳統聚碳酸酯塑料，奠定未來幾十年筆電金屬質感的工業設計基礎。</span>
+                            </li>
+                            <li class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-gray-600">
+                                <strong class="text-sm text-gray-800 block">Sony VAIO X505 (2004)</strong>
+                                <span class="text-xs text-gray-500 block mt-1">採用鎳碳纖維合金，最薄處僅 9.7mm，重量 785g。代價是移除光碟機、極短鍵程與高昂售價。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 02 // 2000-2007</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 3: 2008-2015 智慧革命 (Grid Cards Module) ================= -->
+        <section class="a4-landscape">
+            <header class="mb-6 flex justify-between items-end border-b-2 border-gray-100 pb-4">
+                <div>
+                    <span class="text-indigo-600 font-black text-2xl tracking-tighter">02</span>
+                    <h2 class="text-3xl font-bold text-gray-800 ml-2 inline-block">智慧革命與 Ultrabook <span class="text-gray-400 text-xl font-normal tracking-wide">/ 2008 - 2015</span></h2>
+                </div>
+                <div class="bg-indigo-50 px-3 py-1 rounded-md text-xs font-bold text-indigo-500">多點觸控 / App 經濟 / 一體成型工藝</div>
+            </header>
+
+            <div class="flex-1 grid grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-2xl mb-4">📱</div>
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">多點觸控與 App 經濟爆發</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            2007 年 iPhone 拋棄實體鍵盤採用多點觸控。2008 年 App Store 與 Android 系統相繼推出，打破電信商壟斷。軟體首次成為驅動硬體銷售的核心動力，「萬物皆有 App」徹底改變生活方式。
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <p class="text-xs text-gray-500"><strong>關鍵技術：</strong>4G LTE 高速網路商用，帶動影音串流與隨選經濟。</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-2xl mb-4">🔒</div>
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">生物辨識與多鏡頭起步</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            2013 年 Apple 引入 Touch ID，將高階生物辨識「無感化」，奠定行動支付安全基石。2014 年 HTC One M8 推出 Duo Camera 雙鏡頭系統，利用副鏡頭捕捉景深，預告計算攝影時代。
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <p class="text-xs text-gray-500"><strong>影像突破：</strong>從千萬畫素軍備競賽跨入雙鏡頭協同運算。</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 bg-gray-800 text-white rounded-xl flex items-center justify-center text-2xl mb-4">💻</div>
+                        <h3 class="font-bold text-lg text-gray-800 mb-2">MacBook Air 與 Ultrabook</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            2008 年 MacBook Air 採用 <strong>Unibody 一體成型鋁合金工藝 (CNC)</strong>，大幅提升抗扭曲剛性並釋放電池空間。Intel 隨後主導推動 Ultrabook 規範，促使 PC 陣營展開極致工藝競賽。
+                        </p>
+                    </div>
+                    <div class="mt-4 flex flex-col gap-2">
+                        <span class="inline-block bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded"><strong>Lenovo X1 Carbon:</strong> 碳纖維強化塑料</span>
+                        <span class="inline-block bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded"><strong>Dell XPS 13:</strong> InfinityEdge 窄邊框</span>
+                        <span class="inline-block bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded"><strong>HP Spectre:</strong> 雙色調陽極氧化精品化</span>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 03 // 2008-2015</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 4: 2016-2023 型態創新 (Timeline/Horizontal Flex Module) ================= -->
+        <section class="a4-landscape">
+            <header class="mb-6 flex justify-between items-end border-b-2 border-gray-100 pb-4">
+                <div>
+                    <span class="text-purple-600 font-black text-2xl tracking-tighter">03</span>
+                    <h2 class="text-3xl font-bold text-gray-800 ml-2 inline-block">型態創新與底層架構革命 <span class="text-gray-400 text-xl font-normal tracking-wide">/ 2016 - 2023</span></h2>
+                </div>
+                <div class="bg-purple-50 px-3 py-1 rounded-md text-xs font-bold text-purple-600">全螢幕極限 / 摺疊型態 / ARM 逆襲</div>
+            </header>
+
+            <div class="flex-1 flex flex-col gap-6">
+                <!-- 上半部：手機創新 -->
+                <div class="flex gap-6 h-1/2">
+                    <div class="w-1/2 bg-white rounded-2xl p-5 border-l-4 border-purple-500 shadow-sm flex flex-col justify-center">
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">📏 全螢幕、摺疊重塑與 3D 辨識</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            手機進入全螢幕時代 (瀏海/動態島/水滴螢幕)。2017 年 iPhone X 引入 Face ID (3D結構光)，Android 發展螢幕下指紋。2019 年 Samsung 透過 UTG 柔性玻璃與極精密鉸鏈商用化 Galaxy Fold，打破「大螢幕」與「口袋便攜」的互斥定律。
+                        </p>
+                    </div>
+                    <div class="w-1/2 bg-white rounded-2xl p-5 border-l-4 border-pink-500 shadow-sm flex flex-col justify-center">
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">📸 潛望式鏡頭與計算攝影霸權</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            硬體發展出潛望式長焦鏡頭 (折射90度光線達成無損變焦)。軟體層面，Google HDR+ 與 Apple Deep Fusion 確立計算攝影地位，透過神經網絡與多幀融合，突破傳統光學物理定律。同時 Super Apps 逐漸壟斷封閉生態。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 下半部：筆電創新 -->
+                <div class="bg-gray-900 rounded-2xl p-6 text-white shadow-xl flex gap-6 items-center">
+                    <div class="w-1/3">
+                        <h3 class="text-xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">ARM 架構歷史逆襲</h3>
+                        <p class="text-xs text-gray-300 leading-relaxed mb-4">
+                            2020 年 Apple 推出的 M1 晶片 (5奈米 SoC)，整合 CPU/GPU/NPU，帶來每瓦效能巨幅躍升，改寫「效能、輕薄、續航只能三選二」的零和遊戲規則。
+                        </p>
+                        <div class="px-3 py-1.5 bg-gray-800 rounded-lg text-xs font-bold text-center border border-gray-700">Digital Nomads 游牧工作成常態</div>
+                    </div>
+                    <div class="w-2/3 grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800 p-4 rounded-xl">
+                            <h4 class="text-sm font-bold text-purple-300 mb-1">Acer Swift 7 & LG Gram</h4>
+                            <p class="text-xs text-gray-400 leading-relaxed">挑戰極度輕量化。採用密度極低的<strong>鎂鋰合金</strong>與航太級<strong>鎂合金</strong>，達成 14吋低於 900g 或是 17吋具備大電池卻極度輕薄的壯舉。</p>
+                        </div>
+                        <div class="bg-gray-800 p-4 rounded-xl">
+                            <h4 class="text-sm font-bold text-pink-300 mb-1">ASUS 雙螢幕 & HP 精品材質</h4>
+                            <p class="text-xs text-gray-400 leading-relaxed">ASUS 推出 ZenBook Pro Duo (AAS Ultra精密鉸鏈抬升副螢幕解決散熱)。HP 推出 Spectre Folio 採用頂級鉻鞣皮革無縫包裹鎂鋁合金，科技工藝化。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 04 // 2016-2023</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 5: 2024-2030 AI 賦能預測 (Futuristic Grid Module) ================= -->
+        <section class="a4-landscape bg-gradient-to-b from-white to-gray-50">
+            <header class="mb-6 flex justify-between items-end border-b-2 border-gray-100 pb-4">
+                <div>
+                    <span class="text-teal-600 font-black text-2xl tracking-tighter">04</span>
+                    <h2 class="text-3xl font-bold text-gray-800 ml-2 inline-block">AI 賦能與未來型態預測 <span class="text-gray-400 text-xl font-normal tracking-wide">/ 2024 - 2030</span></h2>
+                </div>
+                <div class="bg-teal-50 px-3 py-1 rounded-md text-xs font-bold text-teal-600">端側大模型 / 空間運算 / 固態電池 / 6G</div>
+            </header>
+
+            <div class="flex-1 grid grid-cols-2 gap-6">
+                <!-- AI PC & Agent -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg shadow-teal-100/50 border border-teal-50 flex flex-col gap-4">
+                    <h3 class="text-xl font-bold text-gray-800 border-l-4 border-teal-500 pl-3">🧠 AI PC 與自主 AI 代理 (Agents)</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed flex-1">
+                        晶片全面整合 <strong>NPU (神經網絡處理單元)</strong>，龐大算力邊緣化。設備能在本地端流暢執行生成式 AI 模型。軟體互動從「人類操作 App」轉變為「意圖驅動」，<strong>自主智慧代理 (Agentic AI)</strong> 能在後台自主理解脈絡，自動呼叫 API 完成複雜流程，GUI 將退居幕後。
+                    </p>
+                    <div class="bg-teal-50 text-teal-800 text-xs p-3 rounded-lg font-medium">
+                        代表材質：陶瓷鋁合金 (Ceraluminum) 兼顧極輕與耐刮。
+                    </div>
+                </div>
+
+                <!-- Spatial Computing -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg shadow-teal-100/50 border border-teal-50 flex flex-col gap-4">
+                    <h3 class="text-xl font-bold text-gray-800 border-l-4 border-cyan-500 pl-3">🥽 空間運算與設備邊界消融</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed flex-1">
+                        Apple Vision Pro 等設備預示「空間運算」時代。物理螢幕限制被打破，整個三維空間成為無限大的數位畫布。超薄筆電與智慧型手機可能在未來融合為口袋內的「單一邊緣運算核心」，顯示與互動交由智慧眼鏡完成。
+                    </p>
+                </div>
+
+                <!-- Rollable & Solid State -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg shadow-teal-100/50 border border-teal-50 flex flex-col gap-4">
+                    <h3 class="text-xl font-bold text-gray-800 border-l-4 border-blue-500 pl-3">🔋 捲軸螢幕與固態電池革命</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed flex-1">
+                        <strong>捲軸式 OLED (Rollable):</strong> 消除物理摺痕，透過微型馬達自適應延伸螢幕尺寸，預計 2025-2030 規模商業化。<br><br>
+                        <strong>固態電池 (Solid-State):</strong> 以固態電解質取代易燃液體，消除熱失控並翻倍能量密度，將讓終端設備實現數天續航或極致微縮。
+                    </p>
+                </div>
+
+                <!-- 6G -->
+                <div class="bg-white p-6 rounded-2xl shadow-lg shadow-teal-100/50 border border-teal-50 flex flex-col gap-4">
+                    <h3 class="text-xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3">📡 6G 網路與通感一體化</h3>
+                    <p class="text-sm text-gray-600 leading-relaxed flex-1">
+                        預計 2030 年商用。傳輸率達太赫茲級別 (Tbps)。革命性引入<strong>通感一體化 (ISAC)</strong>：基地台與終端具備雷達環境感知能力，使得物理真實世界與數位孿生達成即時同步，為全息投影與全自駕車提供基礎。
+                    </p>
+                </div>
+            </div>
+
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 05 // 2024-2030</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 6: 資料矩陣 1 - 手機技術 (Data Table Module) ================= -->
+        <section class="a4-landscape">
+            <header class="mb-6 flex justify-between items-end border-b-2 border-gray-100 pb-4">
+                <h2 class="text-2xl font-bold text-gray-800">📊 2000-2030 手機關鍵技術演進矩陣</h2>
+                <div class="bg-gray-100 px-3 py-1 rounded-md text-xs font-bold text-gray-600">五大核心技術維度典範轉移</div>
+            </header>
+
+            <div class="flex-1 overflow-hidden">
+                <table class="w-full text-left border-collapse h-full">
+                    <thead>
+                        <tr class="bg-gray-800 text-white text-sm">
+                            <th class="p-4 rounded-tl-xl w-1/5 font-bold">技術維度</th>
+                            <th class="p-4 w-1/5 font-bold">【2000-2007】<br><span class="text-gray-400 text-xs font-normal">啟蒙期</span></th>
+                            <th class="p-4 w-1/5 font-bold">【2008-2015】<br><span class="text-gray-400 text-xs font-normal">智慧革命</span></th>
+                            <th class="p-4 w-1/5 font-bold">【2016-2023】<br><span class="text-gray-400 text-xs font-normal">型態創新</span></th>
+                            <th class="p-4 rounded-tr-xl w-1/5 font-bold">【2024-2030】<br><span class="text-blue-300 text-xs font-normal">AI 賦能預測</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-gray-700 divide-y divide-gray-100">
+                        <tr class="hover:bg-blue-50/50 transition-colors">
+                            <td class="p-4 font-bold text-gray-900 bg-gray-50/50">物理型態與外觀</td>
+                            <td class="p-4">直立、滑蓋、實體鍵盤 (如 Nokia 3310、Razr)</td>
+                            <td class="p-4">3.5 吋 - 5.5 吋單一螢幕直板機 (如 iPhone 4)</td>
+                            <td class="p-4">極窄邊框全螢幕、可摺疊柔性螢幕 (Galaxy Fold)</td>
+                            <td class="p-4 font-semibold text-blue-800 bg-blue-50/30">無痕捲軸螢幕 (Rollable)、空間運算與穿戴設備融合</td>
+                        </tr>
+                        <tr class="hover:bg-blue-50/50 transition-colors">
+                            <td class="p-4 font-bold text-gray-900 bg-gray-50/50">生物辨識與安全</td>
+                            <td class="p-4">基礎 PIN 碼解鎖</td>
+                            <td class="p-4">Touch ID (電容式指紋普及化，奠定支付基礎)</td>
+                            <td class="p-4">Face ID (3D 結構光)、光學/超聲波螢幕下指紋</td>
+                            <td class="p-4 font-semibold text-blue-800 bg-blue-50/30">無感連續身分認證 (基於步態/行為/聲紋/環境)</td>
+                        </tr>
+                        <tr class="hover:bg-blue-50/50 transition-colors">
+                            <td class="p-4 font-bold text-gray-900 bg-gray-50/50">螢幕與視覺互動</td>
+                            <td class="p-4">小尺寸 LCD、低解析陽春彩屏 (九宮格操控)</td>
+                            <td class="p-4">多點觸控 (Multi-touch)、Retina 高解析面板</td>
+                            <td class="p-4">瀏海/動態島介面、120Hz 高更新率 OLED</td>
+                            <td class="p-4 font-semibold text-blue-800 bg-blue-50/30">空間運算全息投影、自適應比例 OLED 面板</td>
+                        </tr>
+                        <tr class="hover:bg-blue-50/50 transition-colors">
+                            <td class="p-4 font-bold text-gray-900 bg-gray-50/50">網路與通訊基礎</td>
+                            <td class="p-4">2G (語音/SMS) / 3G 早期啟蒙 (WAP 上網)</td>
+                            <td class="p-4">3G / 4G LTE 商用 (帶動影音串流與隨選經濟)</td>
+                            <td class="p-4">5G (高頻寬/低延遲/IoT 連結基礎)</td>
+                            <td class="p-4 font-semibold text-blue-800 bg-blue-50/30">6G (Tbps 級速率、通感一體化 ISAC)</td>
+                        </tr>
+                        <tr class="hover:bg-blue-50/50 transition-colors">
+                            <td class="p-4 font-bold text-gray-900 bg-gray-50/50">相機與影像科學</td>
+                            <td class="p-4">單鏡頭、低階百萬畫素</td>
+                            <td class="p-4">雙鏡頭起步、高畫素記錄生活</td>
+                            <td class="p-4">破億畫素、潛望長焦、神經網絡運算攝影霸權</td>
+                            <td class="p-4 font-semibold text-blue-800 bg-blue-50/30">端側 AI 即時影像生成與修復、3D 空間建模</td>
+                        </tr>
+                        <tr class="hover:bg-blue-50/50 transition-colors">
+                            <td class="p-4 font-bold text-gray-900 bg-gray-50/50 border-b-0 rounded-bl-xl">軟體生態與互動</td>
+                            <td class="p-4 border-b-0">封閉系統、輕量 Java 遊戲 (貪食蛇)</td>
+                            <td class="p-4 border-b-0">App Store 平台革命 (解決單一需求)</td>
+                            <td class="p-4 border-b-0">超級應用 (Super Apps) 壟斷</td>
+                            <td class="p-4 border-b-0 rounded-br-xl font-semibold text-blue-800 bg-blue-50/30">自主 AI 代理 (Agentic AI，意圖自動執行)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 06 // 數據矩陣：手機</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 7: 資料矩陣 2 + 結語 ================= -->
+        <section class="a4-landscape">
+            <header class="mb-4 flex justify-between items-end border-b-2 border-gray-100 pb-2">
+                <h2 class="text-2xl font-bold text-gray-800">📊 經典超薄筆電材質與工藝突破史</h2>
+            </header>
+
+            <div class="mb-6">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-800 text-xs">
+                            <th class="p-3 rounded-tl-lg font-bold">產品線 / 代表系列</th>
+                            <th class="p-3 font-bold">年份</th>
+                            <th class="p-3 font-bold">材質與工藝</th>
+                            <th class="p-3 font-bold w-1/2 rounded-tr-lg">核心技術與啟發</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-[11px] text-gray-700 divide-y divide-gray-100">
+                        <tr>
+                            <td class="p-3 font-bold">Apple MacBook Air</td>
+                            <td class="p-3">2008</td>
+                            <td class="p-3">Unibody 一體成型鋁合金</td>
+                            <td class="p-3">導入 CNC 銑床掏空實心鋁塊，強化剛性並釋放電池空間，定義 Ultrabook 規範。</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold">Lenovo ThinkPad X1</td>
+                            <td class="p-3">2012起</td>
+                            <td class="p-3">航空碳纖維 (CFRP) + 鎂底座</td>
+                            <td class="p-3">利用碳纖維極高強度重量比，通過軍規認證與輕量化完美平衡。</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold">Dell XPS 13</td>
+                            <td class="p-3">2015起</td>
+                            <td class="p-3">CNC 鋁合金 + 碳纖維掌托</td>
+                            <td class="p-3">首創 InfinityEdge 無邊框，將13吋螢幕塞入11吋機身，引領高螢幕佔比浪潮。</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold">Acer Swift 7</td>
+                            <td class="p-3">2018-19</td>
+                            <td class="p-3 text-blue-600 font-bold">鎂鋰合金 (Mag-Lithium)</td>
+                            <td class="p-3">挑戰工藝極限，14吋重量低於 900g、厚度薄於 1cm 的驚異成就。</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold">ASUS ZenBook Pro Duo</td>
+                            <td class="p-3">2019起</td>
+                            <td class="p-3">航太鋁合金 + 精密機械鉸鏈</td>
+                            <td class="p-3">AAS Ultra 精密抬升鉸鏈與雙 OLED 架構，打破單一螢幕限制並解決散熱痛點。</td>
+                        </tr>
+                        <tr>
+                            <td class="p-3 font-bold text-teal-700">次世代 AI PC</td>
+                            <td class="p-3 font-bold text-teal-700">2024-</td>
+                            <td class="p-3 font-bold text-teal-700">陶瓷鋁合金等複合材質</td>
+                            <td class="p-3 text-teal-800">結合 NPU 端側 AI 龐大算力與高能量固態電池，迎向本地協作時代。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex-1 bg-gray-800 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-center">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+                
+                <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300 mb-4 text-center">
+                    結語：跨越物理限制，迎向無形運算 (Ambient Computing)
+                </h3>
+                <p class="text-sm text-gray-300 leading-relaxed text-center max-w-4xl mx-auto space-y-2">
+                    <span class="block">回顧這三十年，是一部人類對抗物理極限的壯麗史詩。前十五年，我們見證「零組件微型化」與「一體成型工藝」，多點觸控賦予金屬與玻璃靈魂。</span>
+                    <span class="block">後十五年，當摩爾定律面臨矽基極限，創新轉向柔性面板、異質運算 (ARM/NPU)、材料極限實驗與計算攝影。</span>
+                    <span class="block text-white font-bold mt-3 text-base">展望未來，空間運算與 6G 通感一體化將消融設備邊界。GenAI 與自主代理 (Agentic AI) 將顛覆 GUI 互動。運算力將如空氣般無處不在、隱於無形，設備成為捕捉人類意圖的透明載體。</span>
+                </p>
+            </div>
+
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 07 // 數據矩陣與總結</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 8: 參考文獻 (Reference Module) ================= -->
+        <section class="a4-landscape">
+            <header class="mb-6 border-b-2 border-gray-100 pb-4">
+                <h2 class="text-2xl font-bold text-gray-800">📚 參考文獻與資料來源</h2>
+            </header>
+
+            <div class="flex-1 columns-2 gap-8 text-[10px] text-gray-500 leading-tight">
+                <ul class="list-disc pl-4 space-y-2 break-inside-avoid">
+                    <li>The Evolution of Laptops | From 25-Pound Beasts to Sleek Powerhouses - YouTube</li>
+                    <li>The Rise of the Mobile Internet: Tracing the Evolution of Portable Devices - ResearchGate</li>
+                    <li>The Evolution of Mobile Phones: A 30-Year Journey - Mazuma Mobile</li>
+                    <li>Evolution of the Mobile Phone - History and Timeline - TigerMobiles</li>
+                    <li>First phone with a 3D display launched in 2002 - PhoneArena</li>
+                    <li>The Evolution of Mobile Phone Technology: A Timeline</li>
+                    <li>Dual, triple, quad, penta camera smartphones: The history - Pocket-lint</li>
+                    <li>A brief history of mobile communications: from 1G to 6G - Rohde & Schwarz</li>
+                    <li>MacBook History: Evolution of Apple's Iconic Laptops - Rent a Mac</li>
+                    <li>History of Laptops – Evolution, Specs & Key Innovations</li>
+                    <li>How Apple reinvented the laptop - Pingdom</li>
+                    <li>Review of Sony's ultrathin X505 laptop - Gizmodo</li>
+                    <li>Sony VAIO X505 review - CNET</li>
+                    <li>The Evolution of Biometric Technology: Past, Present, and Future</li>
+                    <li>A Brief History of the Dual Camera Smartphones - XDA</li>
+                    <li>The History of the MacBook: From Innovation to Icon</li>
+                    <li>ThinkPad X1 Carbon series architecture and materials - Lenovo PSREF</li>
+                    <li>Dell's New XPS Lineup: Futuristic Design, with Built-in AI</li>
+                    <li>Review: Dell's XPS 13 is a nearly perfect ultraportable - TNW</li>
+                    <li>Next-Gen Laptop Materials: Aluminum Alloy vs. Magnesium Alloy vs. Carbon Fiber</li>
+                    <li>The Story of Spectre: How HP Reinvented Itself Through Design</li>
+                    <li>World's first phone with an under-screen fingerprint scanner - TechRadar</li>
+                    <li>A Decade in the Making: How Samsung Foldables Are Defining the Future</li>
+                    <li>Evolution of the Galaxy Z Fold & Z Flip Series - Samsung Newsroom</li>
+                    <li>P30 Pro vs Reno 10x Zoom: Computational Photography - PetaPixel</li>
+                    <li>Computational and Mobile Photography: History of the Smartphone Camera</li>
+                </ul>
+                <ul class="list-disc pl-4 space-y-2 break-inside-avoid">
+                    <li>“Beyond Physics.” How Google Pushes Phone Photography Past Its Limits</li>
+                    <li>6G - Follow the journey to the next generation networks - Ericsson</li>
+                    <li>The state of super apps: Statistics and trends - Adjust</li>
+                    <li>Acer Debuts All-New Swift 7 with Magnesium-aluminium alloys</li>
+                    <li>The lightest laptop and ultrabook in the world - UltrabookReview</li>
+                    <li>LG Gram Lineup Delivers Powerful Performance</li>
+                    <li>Zenbook Pro 14/15 Duo OLED Dual Displays Done Right - ASUS</li>
+                    <li>HP Spectre Folio: A laptop combining luxury design with cutting-edge engineering</li>
+                    <li>Tech Trends 2030: The next era of generative AI - Siemens</li>
+                    <li>Carbon fiber, magnesium, ceraluminum: Why your next laptop will feel different</li>
+                    <li>Apple Vision Pro with M5: A Sharper Vision for Spatial Computing - IDC</li>
+                    <li>6 smartphone design trends I'd love to see in the next 5 years (Rollable)</li>
+                    <li>Samsung planning to launch its first rollable smartphone next year</li>
+                    <li>Next-Generation Batteries: Solid-State Battery Roadmap 2035+ - Fraunhofer ISI</li>
+                    <li>ProLogium Marks 20th Anniversary, Unveils Solid-State Battery Results</li>
+                    <li>What Are Solid-State Batteries and When Will They Become Available?</li>
+                    <li>IMT-2030: Technical requirements for the 6G future - ITU</li>
+                    <li>Overview of 6G (IMT-2030) | Digital Regulation Platform</li>
+                    <li>Karen Webster's 2026 Trends: Smart Agents Replace Super Apps</li>
+                    <li>From super apps to autonomous agents: The future of payments in 2050</li>
+                    <li>The Transition to an Agentic AI-Driven Economy - GSDC</li>
+                </ul>
+            </div>
+
+            <footer class="mt-auto border-t border-gray-200 pt-4 flex justify-between items-center text-sm text-gray-400 font-medium">
+                <span>The Evolution of Laptops and Smartphones (2000-2030)</span>
+                <span>Page 08 // References</span>
+            </footer>
+        </section>
+
+    </div>
+
+    <!-- 互動邏輯 (Control Panel Scripts) -->
+    <script>
+        // 1. 編輯模式切換邏輯
+        let isEditing = false;
+        function toggleEdit() {
+            const wrapper = document.getElementById('document-wrapper');
+            const btnText = document.getElementById('text-edit');
+            const btnEdit = document.getElementById('btn-edit');
+            
+            isEditing = !isEditing;
+            
+            if (isEditing) {
+                // 進入編輯模式
+                wrapper.setAttribute('contenteditable', 'true');
+                wrapper.focus();
+                btnText.textContent = '💾 結束編輯';
+                btnEdit.classList.remove('text-gray-700');
+                btnEdit.classList.add('text-blue-600', 'bg-blue-50', 'border-blue-300');
+            } else {
+                // 結束編輯模式
+                wrapper.setAttribute('contenteditable', 'false');
+                btnText.textContent = '編輯內容';
+                btnEdit.classList.remove('text-blue-600', 'bg-blue-50', 'border-blue-300');
+                btnEdit.classList.add('text-gray-700');
+            }
+        }
+
+        // 2. 儲存 HTML 備份邏輯
+        function savePage() {
+            // 如果在編輯模式，先強制關閉以儲存乾淨的 DOM
+            if (isEditing) { toggleEdit(); }
+            
+            // 抓取整個 HTML 內容
+            const htmlContent = document.documentElement.outerHTML;
+            
+            // 建立 Blob 物件
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            
+            // 產生今天日期 YYYYMMDD
+            const today = new Date();
+            const dateStr = today.getFullYear() + 
+                            String(today.getMonth() + 1).padStart(2, '0') + 
+                            String(today.getDate()).padStart(2, '0');
+            
+            // 建立隱藏的下載連結並觸發點擊
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `Tech_Evolution_Report_${dateStr}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // 釋放記憶體
+            setTimeout(() => URL.revokeObjectURL(a.href), 100);
+        }
+
+        // 3. 輸出高品質 PDF 邏輯
+        function printPage() {
+            // 如果在編輯模式，先強制關閉以免印出虛線框
+            if (isEditing) { toggleEdit(); }
+            
+            // 延遲一點點確保樣式切換完成再觸發列印
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+    </script>
+</body>
+</html>

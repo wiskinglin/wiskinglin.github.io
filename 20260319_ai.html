@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球人工智慧應用擴展與代理化變革：2023-2026 深度分析報告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+                        mono: ['"Fira Code"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* 全局排版與列印核心設定 */
+        :root {
+            --a4-width: 297mm;
+            --a4-height: 209mm; /* 稍微縮減1mm避免溢出斷頁 */
+            --page-padding: 14mm;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* A4 橫式頁面容器 */
+        .a4-page {
+            width: var(--a4-width);
+            height: var(--a4-height);
+            min-height: var(--a4-height);
+            margin: 2rem auto;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            padding: var(--page-padding);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border-radius: 0.5rem;
+        }
+
+        /* 編輯模式視覺防呆 */
+        .edit-mode {
+            outline: 4px dashed #3b82f6;
+            outline-offset: 8px;
+            animation: pulse-border 2s infinite;
+            border-radius: 0.5rem;
+        }
+        @keyframes pulse-border {
+            0% { outline-color: rgba(59, 130, 246, 0.5); }
+            50% { outline-color: rgba(59, 130, 246, 1); }
+            100% { outline-color: rgba(59, 130, 246, 0.5); }
+        }
+
+        [contenteditable="true"]:hover {
+            background-color: rgba(241, 245, 249, 0.5);
+            cursor: text;
+        }
+
+        /* 玻璃擬態控制面板 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 漸層文字 */
+        .text-gradient {
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 精緻分隔線 */
+        .divider-elegant {
+            height: 2px;
+            background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(59,130,246,0.5) 50%, rgba(59,130,246,0) 100%);
+            margin: 1.5rem 0;
+        }
+
+        /* 專屬列印樣式 */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background: none;
+                margin: 0;
+                padding: 0;
+            }
+            .a4-page {
+                margin: 0;
+                box-shadow: none;
+                border-radius: 0;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* 強制背景與顏色輸出 */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+        
+        /* 隱藏原生滾動條以保持美觀 (可選) */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- 控制面板 (列印時隱藏) -->
+    <div class="no-print fixed top-6 right-6 z-50 glass-panel rounded-2xl px-4 py-3 flex gap-3">
+        <button id="btn-edit" onclick="toggleEdit()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50 border border-slate-200 transition-all shadow-sm">
+            ✏️ 編輯內容
+        </button>
+        <button onclick="saveHTML()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-slate-700 font-semibold text-sm hover:bg-slate-50 border border-slate-200 transition-all shadow-sm">
+            ⬇️ 儲存網頁
+        </button>
+        <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-800 transition-all shadow-md shadow-brand-500/30">
+            🖨️ 輸出 PDF
+        </button>
+    </div>
+
+    <!-- 主要內容編輯區塊 -->
+    <div id="document-wrapper" class="w-full flex flex-col items-center">
+
+        <!-- ================= PAGE 1: 封面與摘要 ================= -->
+        <section class="a4-page">
+            <!-- 標題區塊 (Hero) -->
+            <header class="mb-6 flex flex-col gap-4 pt-4">
+                <div class="flex gap-2 items-center">
+                    <span class="px-3 py-1 bg-brand-100 text-brand-800 rounded-full text-sm font-bold tracking-wider">RESEARCH REPORT</span>
+                    <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-sm font-semibold tracking-wider">2023 - 2026</span>
+                </div>
+                <h1 class="text-5xl font-black leading-tight text-slate-900 tracking-tight">
+                    全球人工智慧應用擴展與<span class="text-gradient">代理化變革</span><br>
+                    <span class="text-4xl text-slate-500 font-bold mt-2 block">自2023至2026年之軟硬體整合與視覺生成深度分析報告</span>
+                </h1>
+            </header>
+
+            <div class="divider-elegant"></div>
+
+            <!-- Bento Box: 摘要與數據指標 -->
+            <div class="flex-grow grid grid-cols-12 gap-6 mt-2">
+                <!-- 執行摘要 -->
+                <div class="col-span-8 bg-white border border-slate-100 rounded-2xl p-8 shadow-xl shadow-slate-200/40 flex flex-col justify-center">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-brand-500 rounded-full"></span>
+                        執行摘要與宏觀背景脈絡
+                    </h2>
+                    <p class="text-slate-600 leading-relaxed text-lg text-justify mb-4">
+                        自二零二二年年末生成式人工智慧（Generative AI）技術在全球市場引發典範轉移以來，科技產業經歷了人類歷史上最為劇烈且壓縮的創新週期。從二零二三年至二零二六年的短短四年間，人工智慧的發展軌跡已從單一的文本生成與被動式問答機制，全面演進為具備深度語境理解、多模態感知，以及具備高度自主決策與跨系統執行能力的<strong class="text-brand-600">代理式人工智慧（Agentic AI）</strong>。
+                    </p>
+                    <p class="text-slate-600 leading-relaxed text-lg text-justify">
+                        這段期間內，技術應用無邊界擴展重塑了全球運算基礎設施與企業級經濟模型。被稱為「運算經濟學」的結構性改變，迫使全球企業放棄純粹的「雲端優先」策略，轉而採取將雲端彈性、地端資料一致性與邊緣運算低延遲性相結合的戰略性混合架構。
+                    </p>
+                </div>
+
+                <!-- 關鍵數據卡片 -->
+                <div class="col-span-4 flex flex-col gap-4">
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-xl shadow-slate-900/20 flex-1 flex flex-col justify-center">
+                        <p class="text-slate-400 text-sm font-semibold mb-1 uppercase tracking-wider">全球每週活躍用戶</p>
+                        <div class="text-5xl font-black mb-2 flex items-baseline gap-1">8億<span class="text-xl text-slate-300 font-medium">人次</span></div>
+                        <p class="text-sm text-slate-300">約佔全球總人口 10%，歷史性里程碑。</p>
+                    </div>
+                    
+                    <div class="bg-brand-50 rounded-2xl p-6 border border-brand-100 flex-1 flex flex-col justify-center relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 text-brand-100/50 text-8xl font-black select-none">280x</div>
+                        <p class="text-brand-800/70 text-sm font-semibold mb-1 uppercase tracking-wider relative z-10">推論 Token 成本降幅</p>
+                        <div class="text-5xl font-black text-brand-700 mb-2 relative z-10">280倍</div>
+                        <p class="text-sm text-brand-900/80 relative z-10">2024-2026年，引爆運算經濟學變革。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <footer class="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs text-slate-400 font-mono">
+                <span>// GLOBAL AI STRATEGY REPORT</span>
+                <span>PAGE 01</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 2: 演進時間軸 ================= -->
+        <section class="a4-page">
+            <header class="mb-4">
+                <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
+                    <span class="w-3 h-8 bg-brand-500 rounded-sm"></span>
+                    時代的巨變：從被動生成邁向自主實體行動的 AI 演進
+                </h2>
+                <p class="text-slate-500 mt-2 text-lg">精確劃分為三個成熟度階段（Maturity Levels），標誌著 AI 跨越至具備狀態記憶與工具操作能力的數位勞動力。</p>
+            </header>
+
+            <!-- 橫向時間軸 (3欄網格) -->
+            <div class="flex-grow grid grid-cols-3 gap-6 mt-4">
+                
+                <!-- LEVEL 1 -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-lg shadow-slate-200/50 relative">
+                    <div class="absolute top-0 left-6 w-16 h-1 bg-slate-300 rounded-b-md"></div>
+                    <div class="flex justify-between items-end mb-4 mt-2">
+                        <h3 class="text-4xl font-black text-slate-300">2023-24</h3>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold">LEVEL 1</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-800 mb-3 leading-snug">無狀態與提示驅動的對話機器人</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4 text-justify">
+                        大語言模型與生成式AI爆發元年。依賴使用者的明確提示指令（Prompt-driven），應用不具備長期的狀態記憶能力（Stateless）。
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <li class="flex gap-2 items-start"><span class="text-brand-500">❖</span> GPT-4 發布標誌多模態能力初步實現。</li>
+                        <li class="flex gap-2 items-start"><span class="text-brand-500">❖</span> Meta 開源 LLaMA 打破封閉模型壟斷。</li>
+                        <li class="flex gap-2 items-start"><span class="text-brand-500">❖</span> 聚焦於 API Wrapper、內容摘要、基礎程式碼編寫。</li>
+                    </ul>
+                </div>
+
+                <!-- LEVEL 2 -->
+                <div class="bg-white border border-blue-200 rounded-2xl p-6 shadow-xl shadow-blue-100/50 relative scale-105 z-10 transform origin-bottom">
+                    <div class="absolute top-0 left-6 w-16 h-1 bg-blue-500 rounded-b-md"></div>
+                    <div class="flex justify-between items-end mb-4 mt-2">
+                        <h3 class="text-4xl font-black text-blue-500">2025</h3>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold">LEVEL 2</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-slate-800 mb-3 leading-snug">語境感知與垂直深化：多模態整合</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4 text-justify">
+                        競爭力轉向「語境感知」與「RAG」技術普及，具備基礎記憶與特定領域知識深度掌握。
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-700 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <li class="flex gap-2 items-start"><span class="text-blue-600">❖</span> OpenAI 估值達五千億美元，成史上最有價值私人企業。</li>
+                        <li class="flex gap-2 items-start"><span class="text-blue-600">❖</span> 程式碼代理（如 Claude Code）創造十億美元營收。</li>
+                        <li class="flex gap-2 items-start"><span class="text-blue-600">❖</span> 轉向「機器生成、人類審核」新常態，整合私有多模態數據。</li>
+                    </ul>
+                </div>
+
+                <!-- LEVEL 3 -->
+                <div class="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl shadow-slate-900/40 relative text-white">
+                    <div class="absolute top-0 left-6 w-16 h-1 bg-brand-400 rounded-b-md"></div>
+                    <div class="flex justify-between items-end mb-4 mt-2">
+                        <h3 class="text-4xl font-black text-brand-400">2026</h3>
+                        <span class="px-3 py-1 bg-brand-500/20 text-brand-300 border border-brand-500/30 rounded-lg text-xs font-bold">LEVEL 3</span>
+                    </div>
+                    <h4 class="text-xl font-bold text-white mb-3 leading-snug">狀態化、工具調用與多代理協同全面爆發</h4>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-4 text-justify">
+                        代理式人工智慧全面爆發，AI 從「數位輔助工具」進化為具備主動性的「數位同事」。
+                    </p>
+                    <ul class="space-y-2 text-sm text-slate-300 bg-slate-800/80 p-4 rounded-xl border border-slate-700">
+                        <li class="flex gap-2 items-start"><span class="text-brand-400">❖</span> 超過40%企業AI專案進入實際生產環境。</li>
+                        <li class="flex gap-2 items-start"><span class="text-brand-400">❖</span> Always-on、Stateful，自主規劃步驟並跨系統存取。</li>
+                        <li class="flex gap-2 items-start"><span class="text-brand-400">❖</span> 直接操作 OS 檔案、發信、執行 Shell 指令與API調用。</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <footer class="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs text-slate-400 font-mono">
+                <span>// MATURITY LEVELS & TIMELINE</span>
+                <span>PAGE 02</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 3: 視覺革命與 OpenClaw ================= -->
+        <section class="a4-page">
+            <div class="grid grid-cols-2 gap-8 h-full">
+                
+                <!-- 視覺革命 -->
+                <div class="flex flex-col">
+                    <header class="mb-4">
+                        <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2 mb-2">
+                            <span class="text-brand-600 text-3xl">👁️</span> 視覺革命與物理數位孿生
+                        </h2>
+                        <div class="h-1 w-24 bg-gradient-to-r from-brand-500 to-transparent rounded-full"></div>
+                    </header>
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-lg shadow-slate-200/50 flex-grow flex flex-col gap-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-3">Sora 模型的演化：精確物理模擬</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed text-justify">
+                                2026年初釋出的 <strong>Sora 2</strong> 標誌著影片生成迎來「GPT-3.5時刻」。徹底解決了「過度樂觀」的物理變形問題，具備深度物理理解（如反彈物理學、水體浮力、剛性動態）。
+                            </p>
+                            <div class="flex gap-2 mt-3">
+                                <span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-700 font-semibold">1080p/4K 輸出</span>
+                                <span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-700 font-semibold">音視訊同步生成</span>
+                                <span class="px-2 py-1 bg-slate-100 rounded text-xs text-slate-700 font-semibold">角色一致性</span>
+                            </div>
+                        </div>
+                        <div class="mt-auto">
+                            <h3 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-3">電腦視覺的深度落地應用</h3>
+                            <ul class="text-sm text-slate-600 space-y-3">
+                                <li class="bg-slate-50 p-3 rounded-lg border border-slate-100"><strong>醫療：</strong> <em>BiomedParse</em> 實現醫學影像全面性分析，揪出微小病灶。</li>
+                                <li class="bg-slate-50 p-3 rounded-lg border border-slate-100"><strong>自動駕駛：</strong> NVIDIA 發布 <em>Alpamayo-R1</em> (VLA推理模型)，將視覺感知直接轉化為車輛與機器人的實體控制指令。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OpenClaw 旋風 -->
+                <div class="flex flex-col">
+                    <header class="mb-4">
+                        <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2 mb-2">
+                            <span class="text-red-500 text-3xl">⚠️</span> 潘朵拉魔盒：OpenClaw 旋風
+                        </h2>
+                        <div class="h-1 w-24 bg-gradient-to-r from-red-500 to-transparent rounded-full"></div>
+                    </header>
+                    <div class="bg-white rounded-2xl p-6 border border-red-100 shadow-lg shadow-red-100/40 flex-grow flex flex-col gap-4 relative overflow-hidden">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-red-50 rounded-full mix-blend-multiply opacity-50"></div>
+                        
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2 mb-3">指數級增長與底層架構</h3>
+                            <p class="text-sm text-slate-600 leading-relaxed text-justify mb-2">
+                                2026年爆發的 <strong>OpenClaw</strong> 是一套 MIT 開源的自託管自主 AI 代理框架。它超越 React 成為 GitHub 最受歡迎專案，被黃仁勳譽為「軟體史上最重要的發布」。
+                            </p>
+                            <p class="text-sm text-slate-600 leading-relaxed text-justify bg-red-50/50 p-3 rounded-xl border border-red-100">
+                                內建超百種技能，直接連接底層 OS，打破 APP 藩籬。獲 Root 權限後，可自主讀寫檔案、執行 Shell、管理信件、甚至自主提交 CI/CD。等同賦予 AI「生活最高權限」。
+                            </p>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <h3 class="text-lg font-bold text-red-700 border-b border-red-100 pb-2 mb-3">失去邊界的致命資安危機</h3>
+                            <ul class="text-sm text-slate-700 space-y-2">
+                                <li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">▪</span> <strong>提示注入攻擊：</strong> 動態執行邊界模糊，極易被外部惡意指令劫持。</li>
+                                <li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">▪</span> <strong>身份與狀態竊取：</strong> 新型 Infostealer 可盜走「完整歷史互動記憶」，讓 AI 代理遠端為駭客服務。</li>
+                                <li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">▪</span> <strong>靜默失敗 (Fail Quietly)：</strong> 遇錯不報，提供虛假成功回報，帶來極大營運風險。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <footer class="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs text-slate-400 font-mono">
+                <span>// VISUAL AI & AGENTIC SECURITY</span>
+                <span>PAGE 03</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 4: 軟硬體整合與經濟學 ================= -->
+        <section class="a4-page">
+            <header class="mb-4">
+                <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
+                    <span class="w-3 h-8 bg-slate-800 rounded-sm"></span>
+                    運算架構重構與全球總體經濟板塊位移
+                </h2>
+                <p class="text-slate-500 mt-1 text-base">軟硬體深度融合與混合邊緣生態系，推動「矽基勞動力」重塑實體產業。</p>
+            </header>
+
+            <div class="flex-grow grid grid-cols-12 gap-5 mt-2">
+                
+                <!-- Apple & Google 戰略結盟 -->
+                <div class="col-span-7 bg-slate-800 text-white rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-center">
+                    <div class="absolute right-0 bottom-0 opacity-10 text-[10rem] leading-none font-black select-none pointer-events-none">A/G</div>
+                    <div class="relative z-10">
+                        <span class="px-3 py-1 bg-white/20 text-white rounded-full text-xs font-bold tracking-wider mb-4 inline-block">消費級硬體重塑</span>
+                        <h3 class="text-2xl font-bold mb-3">Apple 與 Google 的世紀戰略結盟</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed text-justify mb-4">
+                            2026年，Apple 為了推動 Apple Intelligence，將 Google Gemini 模型整合為其基礎模型核心。這創造了革命性的<strong>「混合雲計算架構 (Private Cloud Compute)」</strong>。
+                        </p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10">
+                                <h4 class="font-bold text-brand-300 text-sm mb-1">雲端：複雜邏輯與廣泛知識</h4>
+                                <p class="text-xs text-slate-300">透過端對端加密傳送至 Apple 私有雲或 Gemini 架構處理長文本與語境分析。</p>
+                            </div>
+                            <div class="bg-white/10 p-4 rounded-xl backdrop-blur-sm border border-white/10">
+                                <h4 class="font-bold text-brand-300 text-sm mb-1">地端：本地數據隱私與端側處理</h4>
+                                <p class="text-xs text-slate-300">高度敏感資料依賴先進 NPU 封閉處理。Google 解除「個人化情報」付費牆，轉型個人數位大腦。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 邊緣算力與 AI PC -->
+                <div class="col-span-5 bg-white border border-slate-200 rounded-2xl p-6 shadow-lg flex flex-col justify-center">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3 border-b border-slate-100 pb-3">算力大轉移：邊緣生態系</h3>
+                    <ul class="space-y-4">
+                        <li>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                                <h4 class="font-bold text-sm text-slate-700">AI PC 全面普及化</h4>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-relaxed pl-4">Intel 18A 製程 Core Ultra Series 3 大幅強化本地 AI 加速。2026年內建 NPU 晶片佔 PC 出貨 50% 以上。</p>
+                        </li>
+                        <li>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                                <h4 class="font-bold text-sm text-slate-700">數據中心千億戰場重構</h4>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-relaxed pl-4">NVIDIA Vera Rubin (1.6奈米) vs AMD MI500。逼近 9,750 億美元產值，推動高密度液冷與光學網路架構。</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 產業轉型 -->
+                <div class="col-span-12 bg-brand-50 border border-brand-100 rounded-2xl p-6 flex items-center gap-6 shadow-sm">
+                    <div class="flex-shrink-0 w-1/3">
+                        <h3 class="text-xl font-black text-brand-900 leading-tight">數位勞動力與<br>垂直產業 AI 原生轉型</h3>
+                    </div>
+                    <div class="flex-grow grid grid-cols-2 gap-4 text-sm text-slate-700">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <strong class="text-brand-700 block mb-1">醫療保健 (Healthcare)</strong>
+                            跳過遺留系統，躍入「AI原生」。互聯護理結合 AI 預測，預期為聯邦醫療保險每年節省 5,000 億美元開支。
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <strong class="text-brand-700 block mb-1">製造與物流 (Manufacturing)</strong>
+                            Amazon 部署百萬工業機器人與群體智能系統。BMW 廠區實現裝配完成車輛的一公里全自動駕駛導航。實體 AI 重定義供應鏈。
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <footer class="mt-4 pt-4 border-t border-slate-100 flex justify-between text-xs text-slate-400 font-mono">
+                <span>// COMPUTE ECONOMICS & MACRO SHIFTS</span>
+                <span>PAGE 04</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 5: 應用演進分析矩陣 ================= -->
+        <section class="a4-page">
+            <header class="mb-4">
+                <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2 mb-1">
+                    <span class="text-brand-600 text-3xl">📊</span> 全球 AI 應用擴展與技術演進交叉矩陣
+                </h2>
+                <p class="text-slate-500 text-sm">主題研究契合度分析：檢視四大維度於2023-2026年之成熟度演進軌跡</p>
+            </header>
+
+            <div class="flex-grow overflow-hidden rounded-xl border border-slate-200 shadow-sm mt-2 flex flex-col">
+                <table class="w-full text-left border-collapse h-full">
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                            <th class="p-3 w-1/4 font-semibold border-b-2 border-slate-900">應用領域 / 時間軸</th>
+                            <th class="p-3 w-1/4 font-semibold border-b-2 border-slate-900 border-l border-slate-700 bg-slate-700/50">2023-2024 (Level 1)<br><span class="text-[10px] text-slate-300 font-normal">生成與輔助</span></th>
+                            <th class="p-3 w-1/4 font-semibold border-b-2 border-slate-900 border-l border-slate-700 bg-blue-900/50">2025 (Level 2)<br><span class="text-[10px] text-blue-300 font-normal">感知與多模態</span></th>
+                            <th class="p-3 w-1/4 font-semibold border-b-2 border-slate-900 border-l border-slate-700 bg-brand-900">2026 (Level 3)<br><span class="text-[10px] text-brand-300 font-normal">代理與軟硬整合</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-xs text-slate-700">
+                        <!-- Row 1 -->
+                        <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-bold bg-slate-50 border-r border-slate-200">文本分析與<br>軟體工程代理</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed">ChatGPT快速普及；GPT-4引入多模態；基礎程式碼輔助生成；市場充斥簡單API包裹器。</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed bg-blue-50/30">Claude Code等程式碼代理崛起創十億營收；RAG技術廣泛應用於私有知識庫。</td>
+                            <td class="p-4 leading-relaxed font-semibold text-brand-800 bg-brand-50/50">OpenClaw爆發；具本地終端機權限；自動化跨應用操作與無人干預的CI/CD。</td>
+                        </tr>
+                        <!-- Row 2 -->
+                        <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-bold bg-slate-50 border-r border-slate-200">視覺影像與<br>具身物理智能</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed">Midjourney, DALL-E普及；Sora 1發布 (受限6秒，初步展現恆存性)。</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed bg-blue-50/30">Sora 2發布 (物理精準模擬/角色一致性)；BiomedParse實現醫療影像全面解析。</td>
+                            <td class="p-4 leading-relaxed font-semibold text-brand-800 bg-brand-50/50">NVIDIA VLA模型(Alpamayo-R1) 將視覺理解轉化為自駕與機器人的實體控制指令。</td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr class="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-bold bg-slate-50 border-r border-slate-200">消費級硬體與<br>行動端生態</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed">Siri/Google Assistant 依賴遠端雲端API，單次問答為主。</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed bg-blue-50/30">AI PC概念萌芽；Intel內建基礎NPU，設備端具輕量級推論能力。</td>
+                            <td class="p-4 leading-relaxed font-semibold text-brand-800 bg-brand-50/50">Apple/Google混合雲結盟；個人化情報本地深度處理；邊緣AI晶片達八百億美元。</td>
+                        </tr>
+                        <!-- Row 4 -->
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 font-bold bg-slate-50 border-r border-slate-200">企業應用、自動化<br>與資安治理</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed">SaaS引入AI對話框；自動化生成行銷文案與一般客服回覆。</td>
+                            <td class="p-4 border-r border-slate-200 leading-relaxed bg-blue-50/30">製造業導入3D視覺微小瑕疵檢測與預測維護；聚焦私有模型安全。</td>
+                            <td class="p-4 leading-relaxed font-semibold text-brand-800 bg-brand-50/50">代理式AI重構醫療流程；全自駕生產線；OpenClaw引發靜默失敗危機，零信任成剛需。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 結論區塊 -->
+            <div class="mt-4 bg-slate-800 text-white rounded-xl p-5 shadow-md">
+                <h4 class="font-bold text-brand-400 mb-2 text-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    主題研究契合度結論
+                </h4>
+                <p class="text-xs leading-relaxed text-slate-300 text-justify">
+                    透過系統性梳理，上述 AI 技術（從 ChatGPT 文本生成、Sora 影片物理模擬到 OpenClaw 系統控制）並非孤立事件，而是沿著極度清晰的軌跡發展——<strong class="text-white">「從單點的虛擬內容生成，逐步演化為具備跨模態感知能力，最終邁向能夠操作實體工具、執行決策並與軟硬體深度融合的自主實體行動 (Evolution from Passive Generation to Embodied Autonomy)」</strong>。此一從「資訊處理層」向「物理執行層」的延伸，完美契合並豐富了「AI相關應用主題研究」之核心框架，證實具備高度的研究正當性與前瞻價值。
+                </p>
+            </div>
+
+            <footer class="mt-4 pt-3 border-t border-slate-100 flex justify-between text-[10px] text-slate-400 font-mono">
+                <span>// ANALYTICAL MATRIX & CONCLUSION</span>
+                <span>PAGE 05</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 6: 深度研究系統指令 (Prompt) ================= -->
+        <section class="a4-page">
+            <header class="mb-4">
+                <h2 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+                    <span class="text-brand-600 font-mono text-3xl">_></span> 深度研究系統指令生成 (The Analytical Prompt)
+                </h2>
+                <p class="text-slate-500 mt-1 text-sm">專為「高階大語言模型與戰略分析師」設計的系統引導指令。</p>
+            </header>
+
+            <div class="flex-grow bg-slate-900 rounded-xl overflow-hidden shadow-2xl flex flex-col font-mono text-xs border border-slate-700">
+                <!-- 偽裝終端機頂部 -->
+                <div class="bg-slate-800 px-4 py-2 flex items-center gap-2 border-b border-slate-700">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span class="ml-2 text-slate-400 font-mono text-[10px]">prompt-generator.sh</span>
+                </div>
+                
+                <!-- Prompt 內容 -->
+                <div class="p-5 text-slate-300 overflow-y-auto leading-relaxed h-full">
+<span class="text-brand-400 font-bold">[系統層級深度研究指令]</span> 2023-2026 全球AI應用擴展、代理化典範轉移與軟硬體整合變革分析
+
+<span class="text-blue-400 font-bold">一、 核心角色與分析任務設定</span>
+你現在被設定為一位擁有頂尖學術背景與豐富實務經驗的「全球科技戰略分析師」與「AI生態系首席研究員」。你的核心任務是基於二零二三年至二零二六年間全球人工智慧的發展軌跡，撰寫一份兼具底層技術深度剖析與宏觀商業戰略視角的權威分析報告。你的論述必須邏輯嚴密，展現出對技術如何驅動經濟板塊位移的深刻洞察。
+
+<span class="text-blue-400 font-bold">二、 必須涵蓋與深度推演的核心分析維度 (Context Inputs)</span>
+請確保分析報告無縫整合以下四大核心，並挖掘第二/第三層衍生影響：
+<span class="text-yellow-300">1. AI應用能力的跨越式擴展：</span>分析從單一文本生成(Level 1)，克服瓶頸至多模態感知(Level 2)，最終邁向代理式人工智慧(Level 3)之歷程。
+<span class="text-yellow-300">2. 視覺、影像與物理交匯：</span>探討 Sora 演化至物理準確之「GPT-3.5時刻」，以及 BiomedParse 與 VLA 模型 (視覺-語言-動作) 在醫療與工業的實體落地。
+<span class="text-yellow-300">3. OpenClaw旋風與資安雙面刃：</span>剖析其如何打破軟體邊界獲取生活最高權限，及引發之身分竊取、提示注入與靜默失敗等災難風險。
+<span class="text-yellow-300">4. 軟硬體架構重新收斂：</span>分析 Apple/Google 混合雲運算策略，邊緣 AI 晶片市場動能，以及資料中心底層算力重構。
+
+<span class="text-blue-400 font-bold">三、 產出結構、格式與邏輯要求 (Output Requirements)</span>
+1. 發展時間軸與應用演進分析矩陣：強制使用Markdown表格，涵蓋四維度交叉，並論證「向物理實體全面代理化」之理論。
+2. 軟硬體整合戰略與運算經濟學分析：論述算力轉移必然性，Apple/Google合作與 AI PC 如何解決「延遲 vs 隱私」困境。
+3. 全球板塊變化的宏觀AI變革：分析數位矽基勞動力對就業結構之衝擊，與企業「AI原生混合架構」轉型。
+
+<span class="text-red-400 font-bold">四、 嚴格限制條件與專業寫作風格規範</span>
+* 人稱限制：嚴禁使用一/二稱，必須維持絕對客觀的第三人稱敘事（如：「分析顯示」）。
+* 文體要求：絕對避免簡報式條列(Bullet points)，須使用具備邏輯推演之長篇論述散文體(Narrative prose)。
+* 因果推演：提及技術能力或數據時，強制推演出背後「因果關係機制」及未來3-5年「長期產業漣漪效應」。
+                </div>
+            </div>
+
+            <footer class="mt-4 pt-3 border-t border-slate-100 flex justify-between text-[10px] text-slate-400 font-mono">
+                <span>// ADVANCED SYSTEM PROMPT CONFIGURATION</span>
+                <span>PAGE 06</span>
+            </footer>
+        </section>
+
+    </div>
+
+    <!-- 交互邏輯 Script -->
+    <script>
+        let isEditing = false;
+        
+        // 切換編輯模式
+        function toggleEdit() {
+            const wrapper = document.getElementById('document-wrapper');
+            const btn = document.getElementById('btn-edit');
+            
+            isEditing = !isEditing;
+            
+            if(isEditing) {
+                wrapper.setAttribute('contenteditable', 'true');
+                wrapper.classList.add('edit-mode');
+                btn.innerHTML = '💾 結束編輯';
+                btn.classList.replace('text-slate-700', 'text-brand-600');
+                btn.classList.replace('bg-white', 'bg-brand-50');
+            } else {
+                wrapper.setAttribute('contenteditable', 'false');
+                wrapper.classList.remove('edit-mode');
+                btn.innerHTML = '✏️ 編輯內容';
+                btn.classList.replace('text-brand-600', 'text-slate-700');
+                btn.classList.replace('bg-brand-50', 'bg-white');
+            }
+        }
+
+        // 儲存 HTML 功能
+        function saveHTML() {
+            // 確保儲存時不包含編輯狀態
+            if (isEditing) toggleEdit();
+            
+            // 複製當前 DOM
+            const htmlContent = document.documentElement.outerHTML;
+            
+            // 建立 Blob 與下載連結
+            const blob = new Blob([htmlContent], {type: "text/html;charset=utf-8"});
+            const url = URL.createObjectURL(blob);
+            
+            // 產生檔名 (Report_YYYYMMDD.html)
+            const date = new Date();
+            const dateString = date.getFullYear().toString() + 
+                               String(date.getMonth() + 1).padStart(2, '0') + 
+                               String(date.getDate()).padStart(2, '0');
+            const filename = `AI_Strategy_Report_${dateString}.html`;
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
