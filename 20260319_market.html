@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨越質變的五年與未來沙盤：美國與台灣資本市場深度研究報告 (2020-2030)</title>
+    <!-- 引入 Google Fonts: Noto Sans TC 與 Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 核心版面設定 (橫式 A4) */
+        :root {
+            --page-width: 297mm;
+            --page-height: 210mm;
+            --bleed: 15mm;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            /* 網頁模式下的背景色 */
+            color: #1f2937;
+            /* text-gray-800 */
+            margin: 0;
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        /* 頁面容器設計 */
+        .page {
+            width: var(--page-width);
+            min-height: var(--page-height);
+            background: #ffffff;
+            margin: 0 auto;
+            padding: var(--bleed) 20mm;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border-radius: 1rem;
+
+            /* 強制橫式自動延展撐開 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+
+            /* 斷頁防護 */
+            page-break-after: always;
+            break-inside: avoid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 裝飾性背景元素 */
+        .bg-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        .content-layer {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 漸層文字 */
+        .text-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 控制面板 (毛玻璃效果) */
+        #control-panel {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 0.75rem;
+            border-radius: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .ctrl-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-edit:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-edit.active {
+            background: #dbeafe;
+            color: #1e40af;
+            outline: 2px solid #3b82f6;
+        }
+
+        .btn-save {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #059669;
+        }
+
+        .btn-print {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #1e40af;
+        }
+
+        /* 編輯模式的視覺防呆 */
+        [contenteditable="true"] {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 6px;
+            background-color: rgba(59, 130, 246, 0.02);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);
+        }
+
+        /* 自訂細緻捲軸 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 列印引擎強制規範 */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .page {
+                margin: 0;
+                box-shadow: none;
+                border-radius: 0;
+                width: 297mm;
+                height: 210mm;
+                padding: 15mm 20mm;
+                page-break-after: always;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            /* 強制停用所有動畫 */
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+
+            /* 隱藏編輯框虛線 */
+            [contenteditable="true"] {
+                outline: none !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+        }
+
+        /* 表格微調 */
+        .bento-table th {
+            background-color: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .bento-table td {
+            border-bottom: 1px solid #f1f5f9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 互動控制面板 (列印時隱藏) -->
+    <div id="control-panel" class="no-print">
+        <button id="btn-edit" class="ctrl-btn btn-edit">✏️ 編輯內容</button>
+        <button id="btn-save" class="ctrl-btn btn-save">⬇️ 儲存網頁</button>
+        <button id="btn-print" class="ctrl-btn btn-print">🖨️ 輸出 PDF</button>
+    </div>
+
+    <!-- 主要內容容器 (可編輯區域) -->
+    <div id="document-wrapper" class="document-wrapper w-full flex flex-col items-center gap-8">
+
+        <!-- 第 1 頁：封面與高管摘要 -->
+        <section class="page bg-slate-50 relative overflow-hidden">
+            <div class="bg-blob bg-blue-200 w-96 h-96 -top-20 -left-20"></div>
+            <div class="bg-blob bg-indigo-100 w-96 h-96 bottom-0 right-0"></div>
+
+            <div class="content-layer flex flex-col justify-center h-full">
+                <div class="flex flex-col gap-6 w-full max-w-5xl mx-auto">
+                    <!-- 報告標題區 -->
+                    <div class="space-y-4">
+                        <div
+                            class="inline-block bg-brand-100 text-brand-900 px-4 py-1.5 rounded-full text-sm font-bold tracking-wider">
+                            RESEARCH REPORT 2020-2030
+                        </div>
+                        <h1 class="text-5xl font-black text-gray-900 leading-tight tracking-tight">
+                            跨越質變的五年與未來沙盤：<br>
+                            <span class="text-gradient">美國與台灣資本市場深度研究報告</span>
+                        </h1>
+                        <div class="h-1.5 w-24 bg-brand-600 rounded-full mt-4"></div>
+                    </div>
+
+                    <!-- 高管摘要 Bento Box -->
+                    <div
+                        class="mt-8 bg-white p-8 rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col gap-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">📑</span>
+                            <h2 class="text-2xl font-bold text-gray-800">高管摘要 (Executive Summary)</h2>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed text-justify text-lg">
+                            本報告深度剖析自 2020 年 COVID-19 疫情爆發至 2026 年初，美國與台灣資本市場在底層邏輯、資金結構與產業定價權上的根本性巨變，並據此推演 2026-2030
+                            年的全球資本市場格局。過去五年，全球市場經歷了從<span class="font-bold text-brand-600">「無限量化寬鬆」</span>到<span
+                                class="font-bold text-brand-600">「暴力升息與結構性通膨」</span>，再到<span
+                                class="font-bold text-brand-600">「生成式 AI 驅動的資本支出狂潮」</span>的三段式質變。
+                        </p>
+                        <div class="grid grid-cols-2 gap-6 mt-2">
+                            <div
+                                class="bg-slate-50 p-5 rounded-xl border border-slate-100 border-l-4 border-l-blue-500">
+                                <h3 class="text-sm font-bold text-gray-500 mb-2">美股 S&P 500 現況</h3>
+                                <p class="text-gray-700 leading-relaxed text-sm">呈現極端「巨頭化」特徵，以科技七巨頭為首的企業透過天量的 AI
+                                    基礎設施投資（2026 年預估達 <strong class="text-xl text-blue-600">6500 億美元</strong>）築起資本護城河。
+                                </p>
+                            </div>
+                            <div
+                                class="bg-slate-50 p-5 rounded-xl border border-slate-100 border-l-4 border-l-indigo-500">
+                                <h3 class="text-sm font-bold text-gray-500 mb-2">台股 0050 現況</h3>
+                                <p class="text-gray-700 leading-relaxed text-sm">
+                                    深化以台積電為核心的「單極與共生」結構，與美股巨頭形成「硬體打底、軟體收割」迴圈，外資持有台股資產創下 <strong
+                                        class="text-xl text-indigo-600">6680 億美元</strong> 歷史新高。</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 leading-relaxed mt-2 border-t pt-4">
+                            展望 2026-2030 年，核心矛盾將轉向「AI
+                            變現能力（ROI）實質檢驗」與「反壟斷結構性拆解風險」。機構投資者必須轉向聚焦於非對稱風險管理、實體基礎設施、私人信貸及具實質自由現金流覆蓋能力的標的。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 2 頁：模塊一 -->
+        <section class="page">
+            <div class="content-layer flex flex-col h-full gap-6">
+                <!-- Header -->
+                <div class="flex items-end justify-between border-b-2 border-gray-100 pb-4">
+                    <div>
+                        <span class="text-brand-600 font-bold tracking-widest text-sm uppercase">Module 01</span>
+                        <h2 class="text-3xl font-black text-gray-900 mt-1">歷史復盤與市場質變 (2020 - 2025)</h2>
+                    </div>
+                </div>
+
+                <!-- 內文兩欄式 -->
+                <div class="grid grid-cols-2 gap-8 flex-grow">
+                    <div class="space-y-5">
+                        <div class="bg-blue-50/50 p-6 rounded-2xl border border-blue-100/50 h-full">
+                            <h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                <span class="w-2 h-6 bg-brand-500 rounded-full inline-block"></span>
+                                從流動性氾濫到算力霸權
+                            </h3>
+                            <p class="text-gray-700 leading-relaxed text-sm mb-4">
+                                2020 年初，COVID-19 迫使聯準會祭出「無限量化寬鬆」，底層邏輯是<strong
+                                    class="text-gray-900">「絕對的流動性驅動」</strong>，長天期資產與 SaaS 享有極高溢價（如 Tesla 單年回報 743%）。然而
+                                2022 年成為殘酷分水嶺，為打擊通膨啟動「暴力升息」，無風險利率飆升導致估值劇烈下修，市場轉向苛求「自由現金流」。
+                            </p>
+                            <p class="text-gray-700 leading-relaxed text-sm">
+                                2023-2025 年正式邁入「生成式 AI
+                                狂潮」。這並非貨幣現象，而是建立在極度資本密集的基礎設施實體投資上。科技產業從邊際成本趨近於零的「輕資產」軟體擴張模式，轉變為<strong
+                                    class="text-blue-600">「重資產、高資本支出 (Capex)」</strong>的工業化擴張模式。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="space-y-5">
+                        <div class="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100/50 h-full">
+                            <h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                <span class="w-2 h-6 bg-indigo-500 rounded-full inline-block"></span>
+                                資金流向的轉移與極端防禦
+                            </h3>
+                            <p class="text-gray-700 leading-relaxed text-sm mb-4">
+                                資金瘋狂湧入 S&P 500 少數超大型科技巨頭，市場廣度降至冰點。由 42 家 AI 相關企業組成的核心群體，貢獻了指數 <strong
+                                    class="text-indigo-600">65%-75%</strong> 的盈利與資本支出增長。
+                            </p>
+                            <p class="text-gray-700 leading-relaxed text-sm">
+                                面對高利率，傳統 60/40 股債組合失效，機構資金轉向私人信貸 (Private Credit)、基礎設施股與大宗商品。外匯市場中，傳統避險貨幣瑞士法郎升值，展現出「追逐
+                                AI 紅利」與「防範系統崩盤避險」並存的焦慮特徵。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 比較表格 Bento -->
+                <div class="bg-white rounded-2xl shadow-lg shadow-gray-200/40 border border-gray-200 overflow-hidden">
+                    <div class="bg-slate-800 text-white p-4">
+                        <h4 class="font-bold text-lg text-center tracking-wide">2020-2021 疫情狂潮 vs. 2023-2025 AI 狂潮 關鍵差異
+                        </h4>
+                    </div>
+                    <table class="w-full text-left border-collapse bento-table text-sm">
+                        <thead>
+                            <tr>
+                                <th class="p-4 w-1/4 text-gray-600 font-bold">分析維度</th>
+                                <th class="p-4 w-3/8 text-blue-700 font-bold bg-blue-50/50">2020-2021 疫情狂潮 (流動性驅動)</th>
+                                <th class="p-4 w-3/8 text-indigo-700 font-bold bg-indigo-50/50">2023-2025 AI 狂潮
+                                    (基本面與算力驅動)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-700">
+                            <tr>
+                                <td class="p-4 font-semibold text-gray-800">宏觀資金環境</td>
+                                <td class="p-4 bg-blue-50/30">零利率 (ZIRP)、無限 QE、大規模財政補貼、散戶湧入。</td>
+                                <td class="p-4 bg-indigo-50/30">高利率 (Higher for Longer)、量化緊縮 (QT)、機構主導。</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-semibold text-gray-800">企業基本面焦點</td>
+                                <td class="p-4 bg-blue-50/30">營收成長掛帥，忽視獲利；SaaS 享極高估值溢價。</td>
+                                <td class="p-4 bg-indigo-50/30">資本支出極度擴張，依賴強大自由現金流支撐硬體。</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-semibold text-gray-800">護城河邏輯</td>
+                                <td class="p-4 bg-blue-50/30">網絡效應、軟體分發邊際成本趨近於零的輕資產。</td>
+                                <td class="p-4 bg-indigo-50/30">資本壁壘、算力壟斷、專有數據、能源與液冷整合能力。</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4 font-semibold text-gray-800">風險定價心理</td>
+                                <td class="p-4 bg-blue-50/30">極度容忍高本夢比，流動性掩蓋企業體質脆弱。</td>
+                                <td class="p-4 bg-indigo-50/30">高度關注 ROI 與變現時程，對無盈餘純 AI 概念極嚴苛。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 3 頁：模塊二 -->
+        <section class="page">
+            <div class="content-layer flex flex-col h-full gap-6">
+                <!-- Header -->
+                <div class="flex items-end justify-between border-b-2 border-gray-100 pb-4">
+                    <div>
+                        <span class="text-brand-600 font-bold tracking-widest text-sm uppercase">Module 02</span>
+                        <h2 class="text-3xl font-black text-gray-900 mt-1">核心標的深度解析 (美股 S&P 500 vs. 台股 0050)</h2>
+                    </div>
+                </div>
+
+                <!-- Bento 網格設計 -->
+                <div class="flex-grow grid grid-cols-12 gap-6 mt-2">
+
+                    <!-- 左側：S&P 500 -->
+                    <div class="col-span-6 flex flex-col gap-6">
+                        <div
+                            class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 flex-grow">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-2xl font-black text-gray-800 tracking-tight">美股 S&P 500</h3>
+                                <span
+                                    class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-bold border border-gray-200">巨頭化特徵</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-brand-600 mb-2">AI 基礎設施的護城河效應</h4>
+                            <p class="text-gray-700 leading-relaxed text-sm mb-4">
+                                以 Magnificent 7 為首的科技巨頭佔據 S&P 500 超過 <strong class="text-gray-900">30%</strong>
+                                權重。四大雲端服務商 (Hyperscalers) 與背後依賴的半導體核心 (Nvidia, TSMC, ASML, AMD) 總市值暴增至 18 兆美元。
+                            </p>
+                            <div class="bg-brand-50 rounded-xl p-4 border border-brand-100">
+                                <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                    <strong class="text-brand-700 block mb-1">重資產化的財務考驗：</strong>
+                                    2026 年四大巨頭資本支出預估超過 <strong class="text-xl text-brand-600">6500
+                                        億美元</strong>。只有微軟能單靠營運現金流完全覆蓋，Alphabet、Amazon 與 Meta 極可能需依賴發債。市場高度關注
+                                    ROI，若高資本支出成永久負擔，估值將遭無情下修。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右側：台股 0050 -->
+                    <div class="col-span-6 flex flex-col gap-6">
+                        <div
+                            class="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 flex-grow">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-2xl font-black text-gray-800 tracking-tight">台股 0050</h3>
+                                <span
+                                    class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-bold border border-indigo-200">單極與共生</span>
+                            </div>
+                            <h4 class="text-lg font-bold text-indigo-600 mb-2">半導體供應鏈的定價權</h4>
+                            <p class="text-gray-700 leading-relaxed text-sm mb-4">
+                                展現全球罕見極端單極化，台積電權重高達 <strong class="text-gray-900 text-xl">61.71%</strong>。0050
+                                實質演變成「全球先進半導體與 AI 伺服器硬體 ETF」。美股負責軟體與大模型，台股提供物理基礎，形成完美共生。
+                            </p>
+                            <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+                                <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                    <strong class="text-indigo-700 block mb-1">外資定價權的雙面刃：</strong>
+                                    美資持有創紀錄的 <strong class="text-xl text-indigo-600">6680 億美元</strong> 台股，華爾街巨頭持有台積電約
+                                    35%。一旦 AI 投資熱潮冷卻，台股可能淪為「全球提款機」遭無差別拋售。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 底部全寬：聯動與背離 -->
+                    <div
+                        class="col-span-12 bg-gray-900 text-white rounded-2xl shadow-lg p-6 flex items-center justify-between">
+                        <div class="w-1/3">
+                            <h3 class="text-xl font-bold text-brand-400 mb-2">結構性聯動，週期性背離</h3>
+                            <p class="text-gray-300 text-sm">五年間 S&P 500 與 0050 展現的深層連動因子</p>
+                        </div>
+                        <div class="w-px h-16 bg-gray-700 mx-4"></div>
+                        <div class="w-1/3 px-4">
+                            <span class="block text-xs text-gray-400 mb-1">結構性聯動 (共振繁榮)</span>
+                            <p class="text-sm text-gray-200 leading-relaxed">2024-2025 AI 主升段，美股因終端技術突破走高，台股受惠實質訂單大漲
+                                71.89%。</p>
+                        </div>
+                        <div class="w-px h-16 bg-gray-700 mx-4"></div>
+                        <div class="w-1/3 px-4">
+                            <span class="block text-xs text-gray-400 mb-1">週期性背離 (地緣與產業鏈差異)</span>
+                            <p class="text-sm text-gray-200 leading-relaxed">美股巨頭因「變現進度不佳」遭拋售時，台股「賣鏟子」的硬體供應商因訂單已鎖定而逆勢抗跌。
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 4 頁：模塊三 -->
+        <section class="page">
+            <div class="content-layer flex flex-col h-full gap-6">
+                <!-- Header -->
+                <div class="flex items-end justify-between border-b-2 border-gray-100 pb-4">
+                    <div>
+                        <span class="text-brand-600 font-bold tracking-widest text-sm uppercase">Module 03</span>
+                        <h2 class="text-3xl font-black text-gray-900 mt-1">全球資本市場的「質變」 (Paradigm Shift)</h2>
+                    </div>
+                </div>
+
+                <!-- 橫向三卡片網格 -->
+                <div class="grid grid-cols-3 gap-6 flex-grow mt-4">
+
+                    <!-- Card 1 -->
+                    <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 flex flex-col">
+                        <div class="h-2 w-full bg-blue-500 rounded-t-2xl"></div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <div class="text-4xl mb-4">🌍</div>
+                            <h3 class="text-lg font-black text-gray-800 mb-3">地緣政治與供應鏈重組</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">China Plus
+                                    One</span>
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">逆全球化</span>
+                            </div>
+                            <p class="text-gray-600 text-sm leading-relaxed flex-grow">
+                                地緣風險從「尾部風險」變為「核心定價因子」。2026年美台簽署 <strong class="text-gray-900">5000億美元</strong>
+                                半導體協議，推動在地化。供應鏈分散降低了系統性斷鏈風險，但極大推升了海外建廠的營運成本，結構性壓抑企業長期毛利率與 ROIC。中國加速推進大基金三期，全球科技標準走向脫鉤。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 flex flex-col">
+                        <div class="h-2 w-full bg-indigo-500 rounded-t-2xl"></div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <div class="text-4xl mb-4">📈</div>
+                            <h3 class="text-lg font-black text-gray-800 mb-3">無風險利率重定錨</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">Higher
+                                    for Longer</span>
+                                <span
+                                    class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold">估值容忍度分化</span>
+                            </div>
+                            <p class="text-gray-600 text-sm leading-relaxed flex-grow">
+                                10年期美債殖利率長期錨定高位，挑戰傳統 DCF 估值模型。市場徹底唾棄「市夢率」，極度苛求當下強勁且真實的<strong
+                                    class="text-gray-900">自由現金流</strong>。AI 巨頭憑藉核心業務（如 Office 365,
+                                AWS）驚人現金流充當高利率避震器，若核心業務放緩，高估值體系將面臨連環下殺。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div
+                        class="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 flex flex-col bg-gradient-to-br from-white to-orange-50/30">
+                        <div class="h-2 w-full bg-orange-500 rounded-t-2xl"></div>
+                        <div class="p-6 flex flex-col flex-grow">
+                            <div class="text-4xl mb-4">⚡</div>
+                            <h3 class="text-lg font-black text-gray-800 mb-3">能源與基建的實體瓶頸</h3>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">AI
+                                    電力飢渴</span>
+                                <span
+                                    class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">核能復興</span>
+                            </div>
+                            <p class="text-gray-600 text-sm leading-relaxed flex-grow">
+                                全球 AI 數據中心電力需求預計在 2030 年飆升至 <strong class="text-orange-600 text-lg">327
+                                    GW</strong>。「公用事業」瞬間轉為強勢成長股。微軟等越過電網直接與核電簽訂 PPA。最大實體黑天鵝在於：若電網升級與發電建設嚴重延遲，將卡死 AI
+                                物理擴張，觸發科技板塊估值崩塌。
+                            </p>
+                            <div class="mt-3 bg-orange-100 text-orange-800 text-xs p-2 rounded text-center font-bold">
+                                「得電力者得算力，得算力者得天下」
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 5 頁：模塊四 (展望 1) -->
+        <section class="page">
+            <div class="content-layer flex flex-col h-full gap-6">
+                <!-- Header -->
+                <div class="flex items-end justify-between border-b-2 border-gray-100 pb-4">
+                    <div>
+                        <span class="text-brand-600 font-bold tracking-widest text-sm uppercase">Module 04 - Part
+                            I</span>
+                        <h2 class="text-3xl font-black text-gray-900 mt-1">2026-2030 未來展望與沙盤推演</h2>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-8 flex-grow mt-2">
+                    <!-- 左側：巨頭終局之戰 -->
+                    <div class="col-span-7 flex flex-col gap-5">
+                        <h3 class="text-xl font-bold text-gray-800 border-l-4 border-brand-500 pl-3">科技巨頭的終局之戰</h3>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                            <h4 class="font-bold text-brand-700 mb-2 flex items-center gap-2">
+                                <span
+                                    class="bg-brand-100 text-brand-700 rounded-full w-6 h-6 flex items-center justify-center text-sm">1</span>
+                                AI 變現能力 (ROI) 終極檢驗
+                            </h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                2026 年是從「建置期」向「變現期」的拐點。企業導入 AI 平均需 28 個月回收成本。若殺手級應用未能普及，巨頭高達 1.3 兆美元的資本支出將面臨減損，恐引發
+                                <strong class="text-red-500">「元宇宙時刻」</strong>大崩盤。
+                            </p>
+                        </div>
+
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                            <h4 class="font-bold text-brand-700 mb-2 flex items-center gap-2">
+                                <span
+                                    class="bg-brand-100 text-brand-700 rounded-full w-6 h-6 flex items-center justify-center text-sm">2</span>
+                                反壟斷監管的達摩克利斯之劍
+                            </h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                美國 DOJ 與 FTC 訴訟進入破壞性裁決期。Google面臨剝離 AdX 甚至拆解 Chrome 壓力，若遭強制分拆，將徹底瓦解生態系協同效應與數據閉環，引發長期重估。
+                            </p>
+                        </div>
+
+                        <div
+                            class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 bg-gradient-to-r from-slate-50 to-white">
+                            <h4 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                <span
+                                    class="bg-gray-200 text-gray-700 rounded-full w-6 h-6 flex items-center justify-center text-sm">3</span>
+                                下一代霸權的三大賽道
+                            </h4>
+                            <ul class="text-sm text-gray-600 space-y-2">
+                                <li><strong class="text-gray-900">邊緣 AI (Edge AI)：</strong> 算力下放終端，解決延遲與隱私。</li>
+                                <li><strong class="text-gray-900">具身智能 (Embodied AI)：</strong> AI 大模型與精密機器人融合，釋放實體製造生產力。
+                                </li>
+                                <li><strong class="text-gray-900">量子計算 (Quantum)：</strong> 有望在2030年前展現實質商業可行性，構成降維打擊。
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 右側：台灣轉型挑戰 -->
+                    <div class="col-span-5 flex flex-col gap-5">
+                        <h3 class="text-xl font-bold text-gray-800 border-l-4 border-indigo-500 pl-3">台灣資本市場轉型挑戰</h3>
+                        <div
+                            class="bg-indigo-900 text-white rounded-2xl p-6 h-full flex flex-col shadow-xl shadow-indigo-900/30">
+                            <p class="text-indigo-200 text-sm mb-6 leading-relaxed">
+                                面對雙重巨變，台股 0050 高度依賴半導體的「單極化」既是堅實盾牌，也曝露於單一週期脆弱性。必須超越代工，尋找二次曲線。
+                            </p>
+
+                            <div class="space-y-4 flex-grow">
+                                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm border border-white/20">
+                                    <h4 class="font-bold text-indigo-100 mb-2">台積電全球佈局重塑估值</h4>
+                                    <p class="text-xs text-indigo-200 leading-relaxed">
+                                        海外廠折舊與高成本將顯現於盈餘。地理分散獲安全性溢價，但毛利率稀釋壓抑本益比擴張。產業鏈需向高利潤的先進封裝 (CoWoS, SoIC) 與矽智財 (IP)
+                                        深化。
+                                    </p>
+                                </div>
+                                <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm border border-white/20">
+                                    <h4 class="font-bold text-indigo-100 mb-2">超越硬體代工的新引擎</h4>
+                                    <p class="text-xs text-indigo-200 leading-relaxed">
+                                        聚焦生技醫療、IoT、綠能、自動駕駛與軟體應用。具備新能源專利 (儲能、微電網) 與 AI
+                                        賦能軟體的本土企業，有望突破市值天花板，成為下個十年「第二增長曲線」。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 6 頁：模塊四 (展望 2) 與 參考文獻 -->
+        <section class="page">
+            <div class="content-layer flex flex-col h-full gap-6">
+                <!-- Header -->
+                <div class="flex items-end justify-between border-b-2 border-gray-100 pb-4">
+                    <div>
+                        <span class="text-brand-600 font-bold tracking-widest text-sm uppercase">Strategic Action</span>
+                        <h2 class="text-3xl font-black text-gray-900 mt-1">機構投資者大類資產配置與避險策略</h2>
+                    </div>
+                </div>
+
+                <!-- 投資策略 2x2 網格 -->
+                <div class="grid grid-cols-2 gap-5 mt-2">
+                    <div class="border border-gray-200 rounded-xl p-5 hover:border-brand-300 transition-colors">
+                        <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                            <span class="text-xl">⚖️</span> 槓鈴策略與精準主動選股
+                        </h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            被動指數的「多樣化幻覺」破滅。一端戰略超配具現金流覆蓋能力的 AI 基礎設施巨頭與台灣半導體；另一端佈局具安全邊際的日本股市及擁有人口與供應鏈紅利的印度市場。
+                        </p>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-xl p-5 hover:border-brand-300 transition-colors">
+                        <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                            <span class="text-xl">🏭</span> 擁抱實體資產與基礎設施
+                        </h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            深刻認知「能源即算力」。結構性增配公用事業、核能概念股與高壓電網。透過私募股權 (PE) 佈局數據中心專屬儲能與液冷技術，對沖高通膨與建置成本上升。
+                        </p>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-xl p-5 hover:border-brand-300 transition-colors">
+                        <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                            <span class="text-xl">🤝</span> 重倉私人信貸 (Private Credit)
+                        </h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            長天期美債失去完美避險功能。戰術低配長債，轉向短天期高質量投資級債。因巨頭基建融資需求大，私人信貸提供流動性溢價且違約率低，為增厚收益核心引擎。
+                        </p>
+                    </div>
+
+                    <div
+                        class="border border-gray-200 rounded-xl p-5 hover:border-brand-300 transition-colors bg-red-50/30">
+                        <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                            <span class="text-xl">🛡️</span> 非對稱極端尾部對沖機制
+                        </h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">
+                            防範反壟斷黑天鵝與 AI「元宇宙時刻」估值崩盤。利用長期選擇權 (LEAPS) 進行下行保護，戰術性增持實體黃金 (Gold) 與瑞士法郎 (CHF)，作為對抗流動性危機的最後防線。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 參考文獻區塊 (微縮排版) -->
+                <div class="mt-auto border-t border-gray-200 pt-4 flex-grow-0">
+                    <h3 class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">主要引用來源 (References
+                        excerpt)</h3>
+                    <div class="columns-2 gap-8 text-[10px] text-gray-500 leading-tight space-y-2">
+                        <p class="break-inside-avoid">Investors Lose Patience as Magnificent 7 Ramp Up AI Spending
+                            (Marketwise, 2026)</p>
+                        <p class="break-inside-avoid">TSMC, AI drive US investor holdings in Taiwan to record $668b
+                            (Tech in Asia, 2026)</p>
+                        <p class="break-inside-avoid">The 2026 AI Inflection Point (BNY Mellon, 2026)</p>
+                        <p class="break-inside-avoid">U.S.–Taiwan Seal $500B Semiconductor Pact (CommonWealth, 2026)</p>
+                        <p class="break-inside-avoid">AI's Power Requirements Under Exponential Growth (RAND
+                            Corporation, 2026)</p>
+                        <p class="break-inside-avoid">2026 Investment Outlook (BlackRock Investment Institute, 2026)</p>
+                        <p class="break-inside-avoid">Smothering Heights (JP Morgan Asset Management, 2026)</p>
+                        <p class="break-inside-avoid">Embodied AI Market to Reach $23.06 Billion by 2030 (GlobeNewswire,
+                            2026)</p>
+                        <p class="break-inside-avoid">Utilities: The Unexpected AI Infrastructure Trade (Finviz, 2026)
+                        </p>
+                        <p class="break-inside-avoid">2026 Antitrust Year in Preview: Big Tech (Wilson Sonsini, 2026)
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSave = document.getElementById('btn-save');
+            const btnPrint = document.getElementById('btn-print');
+            const docWrapper = document.getElementById('document-wrapper');
+
+            let isEditing = false;
+
+            // ✏️ 編輯模式切換
+            btnEdit.addEventListener('click', () => {
+                isEditing = !isEditing;
+                if (isEditing) {
+                    docWrapper.setAttribute('contenteditable', 'true');
+                    btnEdit.innerHTML = '💾 結束編輯';
+                    btnEdit.classList.add('active');
+                } else {
+                    docWrapper.setAttribute('contenteditable', 'false');
+                    btnEdit.innerHTML = '✏️ 編輯內容';
+                    btnEdit.classList.remove('active');
+                }
+            });
+
+            // 🖨️ 呼叫列印 (輸出 PDF)
+            btnPrint.addEventListener('click', () => {
+                // 確保列印前退出編輯模式，以免印出虛線框
+                if (isEditing) {
+                    btnEdit.click();
+                }
+                window.print();
+            });
+
+            // ⬇️ 儲存為單一 HTML 檔案
+            btnSave.addEventListener('click', () => {
+                // 暫時移除 contenteditable 屬性以獲得乾淨的 HTML
+                const currentEditState = docWrapper.getAttribute('contenteditable');
+                docWrapper.removeAttribute('contenteditable');
+
+                // 獲取當前完整 DOM
+                const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+                // 恢復原狀態
+                if (currentEditState) {
+                    docWrapper.setAttribute('contenteditable', currentEditState);
+                }
+
+                // 產生 YYYYMMDD 日期後綴
+                const date = new Date();
+                const dateString = date.getFullYear() +
+                    String(date.getMonth() + 1).padStart(2, '0') +
+                    String(date.getDate()).padStart(2, '0');
+
+                // 建立下載連結
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Report_AI_Capital_Market_${dateString}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        });
+    </script>
+</body>
+
+</html>
