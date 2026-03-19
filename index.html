@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="en"><head>
+<html lang="zh-TW">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King Lin - Think Smart, Looks Amazing</title>
+    <title>King Lin - Tech & Business Insights</title>
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&amp;family=Noto+Sans+TC:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+    <!-- 引入 Google 字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -15,18 +16,16 @@
                     fontFamily: {
                         sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
                     },
-                    colors: {
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            900: '#1e3a8a',
-                        }
+                    animation: {
+                        'float-up': 'floatUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
                     },
-                    boxShadow: {
-                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
-                        'float': '0 25px 50px -12px rgba(0, 0, 0, 0.08)',
+                    keyframes: {
+                        floatUp: {
+                            '0%': { transform: 'translateY(40px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
                     }
                 }
             }
@@ -34,361 +33,201 @@
     </script>
 
     <style>
-        /* 核心排版與列印規範 (Critical Rules) */
-        :root {
-            --a4-width: 297mm;
-            --a4-height: 210mm;
-        }
-
         body {
-            background-color: #f3f4f6;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 0;
-            gap: 2rem;
-            margin: 0;
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
-        /* 橫式 A4 滿版容器 */
-        .a4-landscape {
-            width: var(--a4-width);
-            min-height: var(--a4-height);
-            background-color: #ffffff;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            border-radius: 1.5rem;
-            padding: 3rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
-            position: relative;
-            page-break-after: always;
-            break-inside: avoid;
+        /* 自訂捲軸樣式 (暗黑科技風) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
 
-        /* 控制面板毛玻璃效果 */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+        /* 漸層文字效果 */
+        .text-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        /* 編輯模式的視覺防呆 */
-        .document-wrapper[contenteditable="true"] {
-            outline: 4px dashed #3b82f6;
-            outline-offset: 8px;
-            animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            border-radius: 1.5rem;
+        /* 卡片懸浮微互動效果 (致敬 Apple Bento) */
+        .bento-card {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
         }
-
-        @keyframes pulse-border {
-            0%, 100% { outline-color: rgba(59, 130, 246, 0.4); }
-            50% { outline-color: rgba(59, 130, 246, 1); }
+        .bento-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border-color: rgba(255,255,255,0.3);
+            z-index: 10;
         }
-
-        [contenteditable="true"]:empty:before {
-            content: attr(placeholder);
-            color: #9ca3af;
-            pointer-events: none;
-            display: block;
-        }
-
-        /* ===== 手機 / 小螢幕 Responsive ===== */
-        @media screen and (max-width: 768px) {
-            body {
-                padding: 0;
-                gap: 0;
-            }
-
-            .a4-landscape {
-                width: 100%;
-                min-height: auto;
-                border-radius: 0;
-                padding: 1.25rem;
-                box-shadow: none;
-            }
-
-            /* Hero 標題縮小 */
-            .a4-landscape h1 {
-                font-size: 2.5rem !important;
-            }
-            .a4-landscape h2 {
-                font-size: 1.25rem !important;
-            }
-
-            /* 主內容 grid 改單欄 */
-            .grid-cols-12 {
-                grid-template-columns: 1fr !important;
-            }
-            .col-span-7,
-            .col-span-5,
-            .col-span-12 {
-                grid-column: span 1 / span 1 !important;
-            }
-
-            /* Skill Highlights 2 col -> 1 col */
-            .grid-cols-2 {
-                grid-template-columns: 1fr !important;
-            }
-
-            /* Timeline 5 col -> 1 col vertical */
-            .grid-cols-5 {
-                grid-template-columns: 1fr !important;
-            }
-
-            /* Core Skills bar 改 wrap */
-            .flex-wrap {
-                justify-content: center;
-            }
-
-            /* 隱藏 timeline 橫線 (桌面定位用) */
-            .grid-cols-5 > .absolute {
-                display: none;
-            }
-
-            /* 取消 timeline 第 3 個 item 的 mt-12 offset */
-            .grid-cols-5 > .mt-12 {
-                margin-top: 0 !important;
-            }
-
-            /* page 2 header */
-            .a4-landscape header h2 {
-                font-size: 1.5rem !important;
-            }
-
-            /* 裝飾性大字元隱藏 */
-            .text-9xl {
-                display: none;
-            }
-
-            /* 底部浮水印微調 */
-            .absolute.bottom-6 {
-                position: static;
-                text-align: center;
-                margin-top: 1.5rem;
-            }
-        }
-
-        /* 平板中間尺寸 */
-        @media screen and (min-width: 769px) and (max-width: 1200px) {
-            .a4-landscape {
-                width: 100%;
-                max-width: 900px;
-                min-height: auto;
-                padding: 2rem;
-            }
-        }
-
-        /* 列印引擎強制對應 */
-        @media print {
-            @page {
-                size: A4 landscape;
-                margin: 0;
-            }
-            body {
-                background-color: transparent;
-                padding: 0;
-                gap: 0;
-            }
-            .a4-landscape {
-                width: 100vw;
-                height: 100vh;
-                min-height: 100vh;
-                box-shadow: none;
-                border-radius: 0;
-                margin: 0;
-                padding: 12mm 15mm;
-            }
-            .no-print {
-                display: none !important;
-            }
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                transition: none !important;
-                animation: none !important;
-            }
-        }
-
-        /* 自訂捲軸隱藏但保持功能 */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        
+        /* 隱藏原生連結底線 */
+        a {
+            text-decoration: none;
         }
     </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, Noto Sans TC, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.-bottom-8{bottom:-2rem}.-right-32{right:-8rem}.-right-8{right:-2rem}.-top-32{top:-8rem}.bottom-6{bottom:1.5rem}.left-8{left:2rem}.right-8{right:2rem}.top-6{top:1.5rem}.top-\[3\.5rem\]{top:3.5rem}.z-0{z-index:0}.z-10{z-index:10}.z-50{z-index:50}.col-span-12{grid-column:span 12 / span 12}.col-span-5{grid-column:span 5 / span 5}.col-span-7{grid-column:span 7 / span 7}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mr-4{margin-right:1rem}.mt-12{margin-top:3rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.flex{display:flex}.grid{display:grid}.h-1{height:0.25rem}.h-1\.5{height:0.375rem}.h-2{height:0.5rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-96{height:24rem}.h-full{height:100%}.w-2{width:0.5rem}.w-24{width:6rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-96{width:24rem}.w-full{width:100%}.flex-grow{flex-grow:1}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-x-8{column-gap:2rem}.gap-y-6{row-gap:1.5rem}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-dashed{border-style:dashed}.border-blue-100{--tw-border-opacity:1;border-color:rgb(219 234 254 / var(--tw-border-opacity, 1))}.border-brand-600\/50{border-color:rgb(37 99 235 / 0.5)}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246 / var(--tw-border-opacity, 1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254 / var(--tw-border-opacity, 1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-brand-100{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.bg-brand-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-brand-500{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.bg-brand-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-brand-900{--tw-bg-opacity:1;background-color:rgb(30 58 138 / var(--tw-bg-opacity, 1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-400{--tw-bg-opacity:1;background-color:rgb(156 163 175 / var(--tw-bg-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-4{padding-left:1rem;padding-right:1rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.pb-3{padding-bottom:0.75rem}.text-right{text-align:right}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-7xl{font-size:4.5rem;line-height:1}.text-9xl{font-size:8rem;line-height:1}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-normal{font-weight:400}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wide{letter-spacing:0.025em}.tracking-widest{letter-spacing:0.1em}.text-brand-100{--tw-text-opacity:1;color:rgb(219 234 254 / var(--tw-text-opacity, 1))}.text-brand-50{--tw-text-opacity:1;color:rgb(239 246 255 / var(--tw-text-opacity, 1))}.text-brand-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-brand-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-brand-900{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.opacity-20{opacity:0.2}.opacity-60{opacity:0.6}.shadow-float{--tw-shadow:0 25px 50px -12px rgba(0, 0, 0, 0.08);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-soft{--tw-shadow:0 20px 40px -15px rgba(0, 0, 0, 0.05);--tw-shadow-colored:0 20px 40px -15px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.blur-3xl{--tw-blur:blur(64px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-shadow{transition-property:box-shadow;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.selection\:bg-brand-100 *::selection{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.selection\:text-brand-900 *::selection{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.selection\:bg-brand-100::selection{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.selection\:text-brand-900::selection{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.hover\:shadow-soft:hover{--tw-shadow:0 20px 40px -15px rgba(0, 0, 0, 0.05);--tw-shadow-colored:0 20px 40px -15px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.group:hover .group-hover\:bg-brand-500{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.group:hover .group-hover\:bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}</style></head>
-<body class="text-gray-800 antialiased selection:bg-brand-100 selection:text-brand-900">
+</head>
+<body class="antialiased selection:bg-blue-500 selection:text-white">
 
-    <div class="document-wrapper transition-all duration-300" id="document-wrapper" contenteditable="false">
+    <!-- 頂部毛玻璃導覽列 (Immersive Style) -->
+    <nav class="fixed top-0 w-full px-6 py-4 bg-black/70 backdrop-blur-xl border-b border-white/10 z-50 flex justify-between items-center transition-all">
+        <div class="font-black text-xl tracking-tighter">KingLin.</div>
+        <div class="hidden md:flex gap-8 text-sm font-medium text-gray-400">
+            <a href="#showcase" class="hover:text-white transition-colors">Insights (深度分析)</a>
+            <a href="#about" class="hover:text-white transition-colors">About Me (關於我)</a>
+        </div>
+        <button class="bg-white text-black px-5 py-2 rounded-full text-sm font-bold hover:bg-gray-200 transition-colors shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+            Contact
+        </button>
+    </nav>
 
-        <section class="a4-landscape relative">
-            <div class="absolute -top-32 -right-32 w-96 h-96 bg-brand-50 rounded-full blur-3xl opacity-60 z-0"></div>
+    <!-- 沉浸式首屏 Hero Section -->
+    <header class="h-screen flex flex-col justify-center items-center relative text-center px-4 overflow-hidden">
+        <!-- 核心背景光暈 (動態呼吸燈效果) -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] h-[70vw] md:w-[40vw] md:h-[40vw] bg-blue-900/30 rounded-full blur-[100px] -z-10 animate-pulse-slow"></div>
+        <div class="absolute top-1/3 left-1/3 w-[30vw] h-[30vw] bg-purple-900/20 rounded-full blur-[80px] -z-10"></div>
+        
+        <h1 class="text-5xl md:text-8xl font-black tracking-tight text-gradient mb-6 animate-float-up opacity-0" style="animation-delay: 0.1s;">
+            Think Smart.<br>Look Amazing.
+        </h1>
+        <p class="text-lg md:text-2xl text-gray-400 font-medium max-w-2xl animate-float-up opacity-0 leading-relaxed" style="animation-delay: 0.3s;">
+            透視科技與商業的底層邏輯。<br>從 NPI 視角拆解 <span class="text-gray-200">3C 產品</span>、<span class="text-gray-200">電動車佈局</span>與<span class="text-gray-200"> AI 狂潮</span>。
+        </p>
+        
+        <!-- 向下滾動提示 -->
+        <a href="#showcase" class="absolute bottom-12 animate-bounce-slow text-gray-500 hover:text-white transition-colors cursor-pointer p-4">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+        </a>
+    </header>
 
-            <header class="relative z-10 flex flex-col gap-2 mb-6">
-                <div class="flex items-center gap-4">
-                    <h1 class="text-7xl font-black text-gray-900 tracking-tight leading-none">King Lin</h1>
-                    <span class="px-4 py-1.5 mt-2 text-sm font-bold text-brand-600 bg-brand-100 rounded-full tracking-widest uppercase">NPI / DQA / Manager</span>
-                </div>
-                <h2 class="text-3xl font-bold text-gray-500 tracking-wide">Think Smart, Look Amazing!</h2>
-            </header>
+    <!-- 便當盒展覽館 Bento Grid Showcase -->
+    <main id="showcase" class="max-w-[1200px] mx-auto px-6 py-24 relative z-10">
+        <div class="flex items-center justify-between mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-white">Featured Insights.</h2>
+            <div class="h-[1px] bg-gradient-to-r from-white/20 to-transparent flex-grow ml-8"></div>
+        </div>
+        
+        <!-- 4欄網格系統 (Bento Grid) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 auto-rows-[300px] gap-6">
 
-            <main class="relative z-10 flex-grow grid grid-cols-12 gap-6 h-full">
+            <!-- Card 1: 3C 產品線分析 (佔據 2x2 最大版面，視覺焦點) -->
+            <a href="#" class="bento-card col-span-1 md:col-span-2 md:row-span-2 bg-gradient-to-br from-zinc-900 to-black border border-white/10 rounded-[2rem] p-10 flex flex-col justify-between relative overflow-hidden group">
+                <!-- 背景圖層 -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10"></div>
+                <!-- 佔位背景圖片 (使用高質感鍵盤/科技意象) -->
+                <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1537498425277-c283d32ef9db?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity mix-blend-luminosity duration-500 group-hover:scale-105"></div>
                 
-                <div class="col-span-7 flex flex-col gap-6">
-                    <div class="bg-white p-8 rounded-2xl shadow-soft border border-gray-100 flex-grow flex flex-col justify-center">
-                        <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-3">
-                            <span class="w-8 h-8 rounded-lg bg-brand-100 text-brand-600 flex items-center justify-center">💡</span>
-                            Skill Highlights
-                        </h3>
-                        <div class="grid grid-cols-2 gap-x-8 gap-y-6">
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900 mb-1">Team Leadership</h4>
-                                <p class="text-gray-600 leading-relaxed text-sm">Enhance the Strength, Supporting for the Weakness.</p>
-                            </div>
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900 mb-1">Quality Assurance</h4>
-                                <p class="text-gray-600 leading-relaxed text-sm">Marketing Makes the Products Sell, Quality Keeps Order Comes.</p>
-                            </div>
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900 mb-1">NPI Management</h4>
-                                <p class="text-gray-600 leading-relaxed text-sm">It's an Art to Manage Quality, Cost, Schedule, Resource and Risk.</p>
-                            </div>
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900 mb-1">Business Development</h4>
-                                <p class="text-gray-600 leading-relaxed text-sm">Development is to benefit others and provide value to build up trust.</p>
-                            </div>
+                <div class="relative z-20 mt-auto">
+                    <span class="text-xs font-bold tracking-widest text-blue-400 uppercase mb-3 block">Hardware Evolution</span>
+                    <h3 class="text-3xl md:text-4xl font-black text-white leading-tight mb-4">跨越世代的極致工藝：<br>輕薄本與手機演進史</h3>
+                    <p class="text-gray-300 font-medium text-sm md:text-base max-w-md">從 Acer Swift 7 的極限散熱挑戰、Lenovo X1 的商務護城河，到 Nokia 實體鍵盤至 iPhone FaceID 與摺疊轉軸的技術躍進。</p>
+                </div>
+                
+                <!-- 右上角 Icon -->
+                <div class="absolute top-8 right-8 z-20 flex justify-end">
+                    <div class="w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center text-white group-hover:bg-white group-hover:text-black transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Card 2: 汽車產業 (佔據 2x1 橫向版面) -->
+            <a href="#" class="bento-card col-span-1 md:col-span-2 bg-zinc-900 border border-white/10 rounded-[2rem] p-8 flex flex-col justify-center relative overflow-hidden group">
+                <!-- 綠色氛圍光 -->
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors"></div>
+                
+                <div class="relative z-10 w-full md:w-3/4">
+                    <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase mb-2 block">Automotive Industry</span>
+                    <h3 class="text-2xl md:text-3xl font-bold text-white mb-3">動力時代的十字路口</h3>
+                    <p class="text-sm text-gray-400 leading-relaxed">純油底蘊、油電過渡與純電 (EV) 狂潮。<br>傳統車廠與造車新勢力的戰略角力與供應鏈變革。</p>
+                </div>
+                <div class="absolute right-8 bottom-8 text-5xl md:text-7xl opacity-50 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500 grayscale group-hover:grayscale-0">
+                    🏎️
+                </div>
+            </a>
+
+            <!-- Card 3: 股市與宏觀經濟 (佔據 1x1 方塊) -->
+            <a href="#" class="bento-card col-span-1 bg-zinc-900 border border-white/10 rounded-[2rem] p-8 flex flex-col justify-between group relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-rose-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10">
+                    <span class="text-xs font-bold tracking-widest text-rose-400 uppercase mb-2 block">Market Watch</span>
+                    <h3 class="text-xl font-bold text-white mb-2">資本市場脈動</h3>
+                    <p class="text-sm text-gray-400">從科技巨頭財報看未來景氣走向與投資邏輯。</p>
+                </div>
+                <div class="relative z-10 text-right text-4xl mt-auto opacity-70 group-hover:opacity-100 group-hover:-translate-y-2 transition-all">📈</div>
+            </a>
+
+            <!-- Card 4: AI 狂潮 (佔據 1x1 方塊) -->
+            <a href="#" class="bento-card col-span-1 bg-gradient-to-br from-indigo-950 to-purple-950 border border-purple-500/20 rounded-[2rem] p-8 flex flex-col justify-between relative overflow-hidden group">
+                <!-- 點狀背景裝飾 -->
+                <div class="absolute inset-0 bg-white/5 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] opacity-10 group-hover:opacity-20 transition-opacity"></div>
+                
+                <div class="relative z-10">
+                    <span class="text-xs font-bold tracking-widest text-purple-300 uppercase mb-2 block">AI Revolution</span>
+                    <h3 class="text-xl font-bold text-white mb-2">OpenClaw & LLM</h3>
+                    <p class="text-sm text-purple-200/70">生成式 AI 如何重塑生產力工具與軟硬體整合。</p>
+                </div>
+                <div class="relative z-10 text-right text-4xl mt-auto opacity-70 group-hover:opacity-100 group-hover:rotate-12 transition-all">🧠</div>
+            </a>
+
+            <!-- Card 5: Zingala 商業分析 (佔據 2x1 橫向版面，無縫連接你的實作報告) -->
+            <!-- 這裡預設將連結指向你原本上傳的 Zingala.html -->
+            <a href="Zingala.html" class="bento-card col-span-1 md:col-span-2 bg-[#0F172A] border border-[#D97706]/40 rounded-[2rem] p-8 flex flex-col md:flex-row items-start md:items-center justify-between group overflow-hidden relative">
+                <!-- 中租品牌的橘色光暈 -->
+                <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-[#D97706]/20 rounded-full blur-3xl group-hover:bg-[#D97706]/30 transition-colors"></div>
+                
+                <div class="relative z-10 w-full md:w-3/4 mb-4 md:mb-0">
+                    <span class="px-2 py-1 bg-[#D97706]/20 text-[#FBBF24] rounded text-[10px] font-bold uppercase tracking-wider mb-3 inline-block border border-[#D97706]/30">Business Case Study</span>
+                    <h3 class="text-2xl font-black text-white mb-2">Zingala 銀角零卡商業模式解析</h3>
+                    <p class="text-sm text-gray-400">透視中租控股數位轉型核心，從「待完成任務 (JTBD)」到大東協市場的破壞式創新。</p>
+                </div>
+                
+                <div class="relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full border-2 border-[#D97706] flex items-center justify-center text-[#FBBF24] text-2xl bg-[#0F172A] shadow-[0_0_15px_rgba(217,119,6,0.3)] group-hover:scale-110 group-hover:bg-[#D97706] group-hover:text-white transition-all">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 6l5 10H7l5-10z"/></svg>
+                </div>
+            </a>
+
+            <!-- Card 6: Your Resume Link (佔據 2x1 橫向版面，連接回你的個人履歷) -->
+            <a href="resume.html" id="about" class="bento-card col-span-1 md:col-span-2 bg-zinc-900 border border-white/10 rounded-[2rem] p-8 flex flex-col justify-center relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-transparent z-0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10 flex items-center gap-6">
+                    <!-- 預留大頭貼位置 -->
+                    <div class="w-20 h-20 rounded-full bg-gray-800 border-2 border-gray-600 flex items-center justify-center text-3xl shrink-0 overflow-hidden">
+                        <!-- 可以替換成你的真實照片 <img src="your-photo.jpg" class="w-full h-full object-cover"> -->
+                        👨‍💻
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold tracking-widest text-blue-400 uppercase mb-1 block">About the Author</span>
+                        <h3 class="text-2xl font-bold text-white mb-1">King Lin</h3>
+                        <p class="text-sm text-gray-400 mb-3">Sr. NPI Product Manager & DQA Expert</p>
+                        <div class="text-sm font-bold text-white/80 group-hover:text-white flex items-center gap-1">
+                            查看完整經歷與核心技能 
+                            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         </div>
                     </div>
                 </div>
+            </a>
 
-                <div class="col-span-5 flex flex-col gap-6">
-                    <div class="bg-brand-900 text-white p-8 rounded-2xl shadow-float flex-grow flex flex-col justify-center relative overflow-hidden">
-                        <div class="absolute -bottom-8 -right-8 text-brand-600 opacity-20 text-9xl font-black">#</div>
-                        
-                        <h3 class="text-xl font-bold text-brand-100 mb-5 border-b border-brand-600/50 pb-3">Key Achievements</h3>
-                        <ul class="space-y-4">
-                            <li class="flex items-start justify-between">
-                                <span class="text-brand-50">NPI Project Management</span>
-                                <span class="font-bold text-right">20+ Projects<br><span class="text-xs font-normal text-brand-100">10+ Products Launched</span></span>
-                            </li>
-                            <li class="flex items-start justify-between">
-                                <span class="text-brand-50">Medical Business Dev.</span>
-                                <span class="font-bold text-right">15% Revenue Share<br><span class="text-xs font-normal text-brand-100">3 Launched / 4 in Pipeline</span></span>
-                            </li>
-                            <li class="flex items-start justify-between">
-                                <span class="text-brand-50">DQA Team Building</span>
-                                <span class="font-bold text-right">10K+ Test Cases<br><span class="text-xs font-normal text-brand-100">1K+ Defects Tracked</span></span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+        </div>
+    </main>
+    
+    <!-- 頁尾 -->
+    <footer class="border-t border-white/10 py-12 text-center text-gray-600 text-sm mt-12 relative z-10 bg-black">
+        <p>© 2026 King Lin. Think Smart, Look Amazing.</p>
+        <p class="mt-2 text-gray-700">Built with Tailwind CSS & AI</p>
+    </footer>
 
-                <div class="col-span-12 bg-gray-50 p-6 rounded-2xl border border-gray-100 flex items-center justify-between">
-                    <span class="text-sm font-bold text-gray-500 uppercase tracking-widest mr-4">Core Skills</span>
-                    <div class="flex flex-wrap gap-3">
-                        <span class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-semibold shadow-sm border border-gray-200">NPI Management</span>
-                        <span class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-semibold shadow-sm border border-gray-200">Business Development</span>
-                        <span class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-semibold shadow-sm border border-gray-200">Design Quality Assurance</span>
-                        <span class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-semibold shadow-sm border border-gray-200">Team Leadership</span>
-                        <span class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-semibold shadow-sm border border-gray-200">Staff Development</span>
-                        <span class="px-4 py-2 bg-white text-gray-700 rounded-full text-sm font-semibold shadow-sm border border-gray-200">Technical Communication</span>
-                    </div>
-                </div>
-            </main>
-        </section>
-
-        <section class="a4-landscape relative bg-white">
-            <header class="mb-8">
-                <h2 class="text-4xl font-black text-gray-900">Professional Journey</h2>
-                <div class="w-24 h-1.5 bg-brand-500 rounded-full mt-4"></div>
-            </header>
-
-            <main class="flex-grow flex items-center w-full">
-                <div class="grid grid-cols-5 gap-4 w-full h-full relative">
-                    <div class="absolute top-[3.5rem] left-8 right-8 h-1 bg-gray-100 rounded-full z-0"></div>
-
-                    <div class="relative z-10 flex flex-col group">
-                        <div class="flex flex-col items-center mb-6">
-                            <span class="text-xl font-black text-brand-600 mb-3 bg-white px-2">2008</span>
-                            <div class="w-6 h-6 rounded-full bg-brand-100 border-4 border-white shadow-md flex items-center justify-center group-hover:bg-brand-500 transition-colors">
-                                <div class="w-2 h-2 rounded-full bg-brand-600 group-hover:bg-white"></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-5 rounded-2xl flex-grow border border-gray-100 hover:shadow-soft transition-shadow">
-                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">SHARP</div>
-                            <h4 class="font-bold text-gray-900 leading-tight mb-3">Software DQA<br>Engineer</h4>
-                            <p class="text-sm text-gray-600">Feature phones testing. Executed 100K+ tests in 10 projects, reported 300+ defects.</p>
-                        </div>
-                    </div>
-
-                    <div class="relative z-10 flex flex-col group">
-                        <div class="flex flex-col items-center mb-6">
-                            <span class="text-xl font-black text-brand-600 mb-3 bg-white px-2">2009</span>
-                            <div class="w-6 h-6 rounded-full bg-brand-100 border-4 border-white shadow-md flex items-center justify-center group-hover:bg-brand-500 transition-colors">
-                                <div class="w-2 h-2 rounded-full bg-brand-600 group-hover:bg-white"></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-5 rounded-2xl flex-grow border border-gray-100 hover:shadow-soft transition-shadow">
-                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">INTEL</div>
-                            <h4 class="font-bold text-gray-900 leading-tight mb-3">Marketing<br>Intern</h4>
-                            <p class="text-sm text-gray-600">Campus/Exhibition Event Execution. Grew Facebook page from 2K to 15K.</p>
-                        </div>
-                    </div>
-
-                    <div class="relative z-10 flex flex-col group mt-12"> <div class="flex flex-col items-center mb-6">
-                            <span class="text-xl font-black text-gray-400 mb-3 bg-white px-2">2011</span>
-                            <div class="w-6 h-6 rounded-full bg-gray-100 border-4 border-white shadow-md flex items-center justify-center">
-                                <div class="w-2 h-2 rounded-full bg-gray-400"></div>
-                            </div>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl flex-grow border border-dashed border-gray-200">
-                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">LIFE EXPERIENCE</div>
-                            <h4 class="font-bold text-gray-700 leading-tight mb-3">Travel in<br>Australia</h4>
-                            <p class="text-sm text-gray-500">Working at Australia's largest family-owned glasshouse fresh produce business.</p>
-                        </div>
-                    </div>
-
-                    <div class="relative z-10 flex flex-col group">
-                        <div class="flex flex-col items-center mb-6">
-                            <span class="text-xl font-black text-brand-600 mb-3 bg-white px-2">2013</span>
-                            <div class="w-6 h-6 rounded-full bg-brand-100 border-4 border-white shadow-md flex items-center justify-center group-hover:bg-brand-500 transition-colors">
-                                <div class="w-2 h-2 rounded-full bg-brand-600 group-hover:bg-white"></div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 p-5 rounded-2xl flex-grow border border-gray-100 hover:shadow-soft transition-shadow">
-                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">WIWYNN</div>
-                            <h4 class="font-bold text-gray-900 leading-tight mb-3">OCP Validation<br>Lead</h4>
-                            <p class="text-sm text-gray-600">Partnered with ITRI for OCP server validation. MS 1st gen OCP server solution.</p>
-                        </div>
-                    </div>
-
-                    <div class="relative z-10 flex flex-col group">
-                        <div class="flex flex-col items-center mb-6">
-                            <span class="text-xl font-black text-brand-600 mb-3 bg-white px-2">2014+</span>
-                            <div class="w-6 h-6 rounded-full bg-brand-500 border-4 border-white shadow-md flex items-center justify-center animate-pulse">
-                                <div class="w-2 h-2 rounded-full bg-white"></div>
-                            </div>
-                        </div>
-                        <div class="bg-blue-50 p-5 rounded-2xl flex-grow border border-blue-100 shadow-soft">
-                            <div class="text-xs font-bold text-brand-500 uppercase tracking-wide mb-1">PROMATE SOLUTION</div>
-                            <h4 class="font-bold text-brand-900 leading-tight mb-2">Sr. NPI Product Mgr<br><span class="text-sm font-normal text-brand-700">&amp; Sr. DQA Manager</span></h4>
-                            <p class="text-sm text-gray-700">Medical customized embedded NPI. Established SW DQA Dept, automated testing frameworks.</p>
-                        </div>
-                    </div>
-
-                </div>
-            </main>
-            
-            <div class="absolute bottom-6 right-8 text-sm font-bold text-gray-300 uppercase tracking-widest pointer-events-none">
-                Experience Timeline
-            </div>
-        </section>
-
-    </div>
-
-</body></html>
+</body>
+</html>
