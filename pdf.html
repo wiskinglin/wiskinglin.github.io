@@ -108,11 +108,11 @@
 
         <div class="flex items-center gap-4">
             <div id="file-info" class="hidden text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
-                <i class="fa-regular fa-file-pdf mr-2"></i><span id="filename-display">filename.pdf</span>
+                <i class="fa-regular fa-file-pdf mr-2"></i><span id="filename-display">已載入檔案</span>
             </div>
             <button onclick="document.getElementById('file-upload').click()"
                 class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors">
-                <i class="fa-solid fa-folder-open mr-2"></i>開啟新檔
+                <i class="fa-solid fa-plus mr-2"></i>新增/合併檔案
             </button>
             <button id="export-btn" onclick="exportPdf()" disabled
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow-md shadow-blue-200 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center gap-2">
@@ -132,13 +132,13 @@
             ondragover="event.preventDefault(); this.classList.add('border-blue-500', 'bg-blue-50');"
             ondragleave="this.classList.remove('border-blue-500', 'bg-blue-50');" ondrop="handleDrop(event)">
             <input type="file" id="file-upload" class="hidden" accept="application/pdf"
-                onchange="handleFileSelect(event)">
+                onchange="handleFileSelect(event)" multiple>
             <div
                 class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                 <i class="fa-solid fa-cloud-arrow-up text-3xl"></i>
             </div>
             <h3 class="text-xl font-semibold text-slate-800 mb-2">點擊或拖曳上傳 PDF</h3>
-            <p class="text-slate-500 text-sm mb-6">支援簽名、標記與頁面重組 (100% 本地運算)</p>
+            <p class="text-slate-500 text-sm mb-6">支援多檔案合併、簽名、標記與頁面重組 (100% 本地運算)</p>
         </div>
 
         <!-- Loader -->
@@ -152,7 +152,7 @@
             <div
                 class="bg-blue-50 border-b border-blue-100 px-6 py-2 text-xs text-blue-800 flex justify-between items-center">
                 <span><i class="fa-solid fa-circle-info mr-2"></i>拖曳排序，點擊 <i class="fa-solid fa-pen-to-square mx-1"></i>
-                    進行簽名或標記。</span>
+                    進行簽名或標記。可隨時點擊右上角繼續加入新檔案。</span>
                 <span id="page-count-badge" class="font-bold bg-blue-200 px-2 py-0.5 rounded text-blue-900">0 頁</span>
             </div>
             <div id="pages-grid"
@@ -196,6 +196,12 @@
                         class="w-6 h-6 rounded-full bg-blue-600 border-2 border-white shadow-sm hover:scale-110 transition-transform ring-2 ring-transparent focus:ring-slate-300"></button>
                     <button onclick="setColor('#000000')"
                         class="w-6 h-6 rounded-full bg-black border-2 border-white shadow-sm hover:scale-110 transition-transform ring-2 ring-transparent focus:ring-slate-300"></button>
+                    <!-- 新增淺灰色 -->
+                    <button onclick="setColor('#94a3b8')"
+                        class="w-6 h-6 rounded-full bg-slate-400 border-2 border-white shadow-sm hover:scale-110 transition-transform ring-2 ring-transparent focus:ring-slate-300" title="淺灰色"></button>
+                    <!-- 新增白色 -->
+                    <button onclick="setColor('#ffffff')"
+                        class="w-6 h-6 rounded-full bg-white border-2 border-slate-200 shadow-sm hover:scale-110 transition-transform ring-2 ring-transparent focus:ring-slate-300" title="白色"></button>
                 </div>
 
                 <button onclick="clearAnnotations()" class="text-xs text-red-500 hover:text-red-700 font-medium ml-2">
@@ -226,8 +232,9 @@
     <!-- Logic -->
     <script>
         // --- Core State ---
-        let originalPdfBytes = null;
-        let pagesState = []; // { id, originalIndex, rotation, annotationData: string (base64 png) }
+        let sourcePdfs = {}; // 儲存多個檔案的 ArrayBuffer: { fileId: ArrayBuffer }
+        let pagesState = []; // { id, fileId, originalIndex, rotation, annotationData }
+        let isSortableInitialized = false;
 
         // --- UI Elements ---
         const uploadZone = document.getElementById('upload-zone');
@@ -254,39 +261,62 @@
 
         // --- Init & File Handling ---
 
-        function handleDrop(e) {
+        async function handleDrop(e) {
             e.preventDefault();
             uploadZone.classList.remove('border-blue-500', 'bg-blue-50');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type === 'application/pdf') processFile(file);
-            else alert('請上傳 PDF 檔案');
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+            if (files.length > 0) {
+                await processMultipleFiles(files);
+            } else {
+                alert('請上傳 PDF 檔案');
+            }
         }
 
-        function handleFileSelect(e) {
-            const file = e.target.files[0];
-            if (file) processFile(file);
+        async function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                await processMultipleFiles(files);
+            }
+            e.target.value = ''; // 清除 input 狀態以便重複選取相同檔案
+        }
+
+        async function processMultipleFiles(files) {
+            uploadZone.classList.add('hidden');
+            loader.classList.remove('hidden');
+            editorWorkspace.classList.remove('hidden');
+            fileInfo.classList.remove('hidden');
+
+            for (const file of files) {
+                await processFile(file);
+            }
+
+            loader.classList.add('hidden');
+            exportBtn.disabled = false;
+            updatePageCount();
+            updatePageNumbers();
+            
+            const totalFiles = Object.keys(sourcePdfs).length;
+            filenameDisplay.textContent = totalFiles > 1 ? `已合併 ${totalFiles} 個檔案` : files[0].name;
+
+            if (!isSortableInitialized) {
+                initSortable();
+                isSortableInitialized = true;
+            }
         }
 
         async function processFile(file) {
-            uploadZone.classList.add('hidden');
-            loader.classList.remove('hidden');
-            fileInfo.classList.remove('hidden');
-            filenameDisplay.textContent = file.name;
-
             try {
                 const arrayBuffer = await file.arrayBuffer();
-                originalPdfBytes = arrayBuffer.slice(0); // Clone for export safety
+                const fileId = `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+                sourcePdfs[fileId] = arrayBuffer.slice(0);
 
                 const loadingTask = pdfjsLib.getDocument(arrayBuffer.slice(0));
                 const pdf = await loadingTask.promise;
                 const numPages = pdf.numPages;
 
-                pagesState = [];
-                grid.innerHTML = '';
-
                 for (let i = 1; i <= numPages; i++) {
                     const page = await pdf.getPage(i);
-                    const viewport = page.getViewport({ scale: 0.4 }); // Thumbnail scale
+                    const viewport = page.getViewport({ scale: 0.4 });
 
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
@@ -296,28 +326,21 @@
                     await page.render({ canvasContext: context, viewport: viewport }).promise;
 
                     const imgUrl = canvas.toDataURL();
-                    const pageId = `page-${Date.now()}-${i}`;
+                    const pageId = `page-${Date.now()}-${fileId}-${i}`;
 
                     pagesState.push({
                         id: pageId,
+                        fileId: fileId,
                         originalIndex: i - 1,
                         rotation: 0,
-                        annotationData: null // Store drawing layer
+                        annotationData: null
                     });
 
-                    createPageCard(imgUrl, i, pageId);
+                    createPageCard(imgUrl, pagesState.length, pageId);
                 }
-
-                loader.classList.add('hidden');
-                editorWorkspace.classList.remove('hidden');
-                exportBtn.disabled = false;
-                updatePageCount();
-                initSortable();
-
             } catch (err) {
                 console.error(err);
-                alert('解析 PDF 失敗: ' + err.message);
-                resetUI();
+                alert(`解析 PDF 失敗 (${file.name}): ` + err.message);
             }
         }
 
@@ -334,7 +357,7 @@
                     <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 pointer-events-none"></div>
                     
                     <!-- Page Number -->
-                    <div class="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm z-10">
+                    <div class="page-number-badge absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded backdrop-blur-sm z-10">
                         P${displayIndex}
                     </div>
 
@@ -372,8 +395,8 @@
             // Show Modal
             modal.classList.remove('hidden');
 
-            // Init PDF.js to render HIGH RES page for editing
-            const loadingTask = pdfjsLib.getDocument(originalPdfBytes.slice(0));
+            // Init PDF.js to render HIGH RES page for editing from the correct source file
+            const loadingTask = pdfjsLib.getDocument(sourcePdfs[pageState.fileId].slice(0));
             const pdf = await loadingTask.promise;
             const page = await pdf.getPage(pageState.originalIndex + 1);
 
@@ -409,8 +432,6 @@
         function closeModal(save) {
             if (save && activePageId) {
                 const pageState = pagesState.find(p => p.id === activePageId);
-                // Save the drawing layer as PNG Data URL
-                // Check if canvas is empty? (Hard to detect cheaply, saving transparent PNG is fine)
                 pageState.annotationData = drawCanvas.toDataURL('image/png');
 
                 // Show badge
@@ -459,7 +480,7 @@
             drawCanvas.dispatchEvent(mouseEvent);
         }, { passive: false });
         drawCanvas.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // prevent scrolling
+            e.preventDefault();
             const touch = e.touches[0];
             const mouseEvent = new MouseEvent('mousemove', {
                 clientX: touch.clientX, clientY: touch.clientY
@@ -492,7 +513,6 @@
             }
 
             if (currentTool === 'rect') {
-                // Save current state for previewing the rect
                 tempSnapshot = currentCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
             } else {
                 currentCtx.beginPath();
@@ -511,7 +531,6 @@
                 currentCtx.lineTo(pos.x, pos.y);
                 currentCtx.stroke();
             } else if (currentTool === 'rect') {
-                // Clear and Restore to remove previous rect frame
                 currentCtx.putImageData(tempSnapshot, 0, 0);
 
                 const width = pos.x - startX;
@@ -519,7 +538,7 @@
 
                 currentCtx.lineWidth = 3;
                 currentCtx.strokeStyle = currentColor;
-                currentCtx.fillStyle = hexToRgba(currentColor, 0.1); // Transparent fill
+                currentCtx.fillStyle = hexToRgba(currentColor, 0.1); 
 
                 currentCtx.beginPath();
                 currentCtx.rect(startX, startY, width, height);
@@ -537,7 +556,7 @@
         function handleTextTool(x, y) {
             const text = prompt('請輸入文字內容:', '');
             if (text) {
-                currentCtx.font = "bold 24px 'Inter', sans-serif"; // Simple web font
+                currentCtx.font = "bold 24px 'Inter', sans-serif";
                 currentCtx.fillStyle = currentColor;
                 currentCtx.textBaseline = 'top';
                 currentCtx.fillText(text, x, y);
@@ -560,6 +579,7 @@
                 onEnd: function (evt) {
                     const movedItem = pagesState.splice(evt.oldIndex, 1)[0];
                     pagesState.splice(evt.newIndex, 0, movedItem);
+                    updatePageNumbers();
                 }
             });
         }
@@ -576,11 +596,22 @@
             document.querySelector(`div[data-id="${pageId}"]`).remove();
             pagesState = pagesState.filter(p => p.id !== pageId);
             updatePageCount();
-            if (pagesState.length === 0) exportBtn.disabled = true;
+            updatePageNumbers();
+            if (pagesState.length === 0) {
+                resetUI();
+            }
         }
 
         function updatePageCount() {
             pageCountBadge.textContent = `${pagesState.length} 頁`;
+        }
+
+        function updatePageNumbers() {
+            const cards = document.querySelectorAll('.pdf-page-card');
+            cards.forEach((card, index) => {
+                const badge = card.querySelector('.page-number-badge');
+                if (badge) badge.textContent = `P${index + 1}`;
+            });
         }
 
         function resetUI() {
@@ -590,7 +621,9 @@
             fileInfo.classList.add('hidden');
             exportBtn.disabled = true;
             pagesState = [];
-            originalPdfBytes = null;
+            sourcePdfs = {};
+            grid.innerHTML = '';
+            filenameDisplay.textContent = '已載入檔案';
         }
 
         // --- Export Logic ---
@@ -604,42 +637,43 @@
 
             try {
                 const { PDFDocument, degrees } = PDFLib;
-                const srcDoc = await PDFDocument.load(originalPdfBytes);
                 const newDoc = await PDFDocument.create();
+                const loadedSrcDocs = {}; // 快取已載入的原始 PDFDocument
 
-                const indicesToCopy = pagesState.map(p => p.originalIndex);
-                const copiedPages = await newDoc.copyPages(srcDoc, indicesToCopy);
-
-                // Loop through pages, apply rotation AND embed annotations
                 for (let i = 0; i < pagesState.length; i++) {
                     const pageState = pagesState[i];
-                    const page = copiedPages[i];
 
-                    // 1. Rotation
-                    const currentRotationObj = page.getRotation();
+                    // 若尚未載入該原始檔案，則進行載入
+                    if (!loadedSrcDocs[pageState.fileId]) {
+                        loadedSrcDocs[pageState.fileId] = await PDFDocument.load(sourcePdfs[pageState.fileId]);
+                    }
+                    
+                    const srcDoc = loadedSrcDocs[pageState.fileId];
+                    
+                    // 從對應的原始檔案中拷貝指定頁面
+                    const [copiedPage] = await newDoc.copyPages(srcDoc, [pageState.originalIndex]);
+
+                    // 1. 處理旋轉
+                    const currentRotationObj = copiedPage.getRotation();
                     const existingRotation = (currentRotationObj && currentRotationObj.angle) ? currentRotationObj.angle : 0;
-                    page.setRotation(degrees(existingRotation + pageState.rotation));
+                    copiedPage.setRotation(degrees(existingRotation + pageState.rotation));
 
-                    // 2. Annotation Embedding
+                    // 2. 處理畫筆標記嵌入
                     if (pageState.annotationData) {
                         const pngImage = await newDoc.embedPng(pageState.annotationData);
-
-                        // We draw the annotation layer over the entire page.
-                        // Since we edited on an unrotated canvas matching the page size,
-                        // we just draw it 1:1 onto the page.
-                        page.drawImage(pngImage, {
+                        copiedPage.drawImage(pngImage, {
                             x: 0,
                             y: 0,
-                            width: page.getWidth(),
-                            height: page.getHeight(),
+                            width: copiedPage.getWidth(),
+                            height: copiedPage.getHeight(),
                         });
                     }
 
-                    newDoc.addPage(page);
+                    newDoc.addPage(copiedPage);
                 }
 
                 const pdfBytes = await newDoc.save();
-                downloadBlob(pdfBytes, `edited_${filenameDisplay.textContent}`);
+                downloadBlob(pdfBytes, `merged_document.pdf`);
 
             } catch (err) {
                 console.error(err);
