@@ -33,10 +33,22 @@
         .reader-content li { margin-bottom: 0.8em; position: relative; padding-left: 1.5em; }
         .reader-content li::before { content: "•"; position: absolute; left: 0; font-weight: bold; }
         
-        /* 隱藏 Google 翻譯頂部橫幅 */
-        .goog-te-banner-frame { display: none !important; }
-        body { top: 0 !important; }
-        #google_translate_element select { padding: 4px; border-radius: 4px; border: 1px solid currentColor; background: transparent; color: inherit; outline: none; }
+        /* 隱藏 Google 翻譯頂部橫幅與預設樣式 */
+        .skiptranslate.goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+        .goog-tooltip { display: none !important; }
+        .goog-tooltip:hover { display: none !important; }
+        .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+        
+        /* 深度美化 Google 翻譯選單 */
+        .goog-te-gadget { color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center; overflow: hidden; }
+        .goog-te-gadget img, .goog-te-gadget a { display: none !important; }
+        .goog-te-gadget span { font-size: 0 !important; color: transparent !important; display: none !important; }
+        .goog-te-combo { margin: 0 !important; padding: 4px 8px !important; font-size: 13px !important; font-family: inherit !important; color: inherit !important; background-color: transparent !important; border: 1px solid currentColor !important; border-radius: 6px !important; outline: none !important; cursor: pointer !important; opacity: 0.7; transition: all 0.2s ease !important; max-width: 110px; }
+        .goog-te-combo:hover { opacity: 1; background-color: rgba(128, 128, 128, 0.1) !important; }
+        .theme-dark .goog-te-combo option { background-color: #2d2d2d; color: #ccc; }
+        .theme-light .goog-te-combo option { background-color: #fff; color: #333; }
+        .theme-sepia .goog-te-combo option { background-color: #eaddc5; color: #5b4636; }
         
         /* 自訂滾動條 */
         ::-webkit-scrollbar { width: 8px; }
@@ -58,7 +70,7 @@
         
         <div class="flex items-center space-x-2 sm:space-x-4">
             <!-- 翻譯小工具 -->
-            <div id="google_translate_element" class="hidden md:block"></div>
+            <div id="google_translate_element" class="hidden md:flex items-center"></div>
             
             <!-- 字體大小調整 -->
             <div class="flex items-center border rounded-lg overflow-hidden border-current opacity-70">
