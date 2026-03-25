@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#41 Dyslexia-Friendly Typography — 閱讀障礙友善字體 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-color: #fzfbf7;
+  --text-main: #2b2b2b;
+  --primary: #2563eb;
+  --a11y-panel: #ffffff;
+  --border: #e2e8f0;
+  
+  /* Standard typography */
+  --font-body: 'Crimson Pro', 'Noto Sans TC', serif;
+  --l-height: 1.7;
+  --l-spacing: normal;
+  --w-spacing: normal;
+}
+
+body{
+  font-family:var(--font-body);
+  background-color:#f9f9f9;color:var(--text-main);
+  line-height:var(--l-height);
+  letter-spacing:var(--l-spacing);
+  word-spacing:var(--w-spacing);
+  padding-bottom:120px;
+  transition:all 0.3s ease;
+}
+
+/* Dyslexia Mode Overrides */
+body.dyslexia-mode{
+  /* Web-safe approximate dyslexia font (bottom heavy) */
+  --font-body: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', 'Noto Sans TC', sans-serif;
+  --l-height: 2; /* Increased line height */
+  --l-spacing: 0.1em; /* Increased letter tracking */
+  --w-spacing: 0.25em; /* Increased word tracking */
+  background-color:#ffffcc; /* Soft yellow contrast to reduce glare */
+  color:#000000;
+}
+
+.layout{
+  max-width:800px;margin:120px auto 40px;padding:0 24px;
+}
+.cat{
+  display:inline-block;padding:4px 12px;border-radius:20px;
+  background:rgba(37,99,235,0.1);color:var(--primary);
+  font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.article-title{
+  font-size:clamp(2rem,6vw,3.5rem);font-weight:700;margin-bottom:24px;line-height:1.2;
+}
+
+/* Accessibility Toolbar (Fixed Top) */
+.a11y-toolbar{
+  position:fixed;top:0;left:0;right:0;
+  background:var(--a11y-panel);border-bottom:1px solid var(--border);
+  padding:16px 24px;display:flex;justify-content:space-between;align-items:center;
+  z-index:9000;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);
+  font-family:'Noto Sans TC',sans-serif;
+}
+.a11y-title{font-size:.9rem;font-weight:700;color:#64748b;display:flex;align-items:center;gap:8px}
+.a11y-controls{display:flex;gap:16px;align-items:center;}
+
+/* Toggle Switch */
+.toggle-switch{
+  position:relative;display:inline-block;width:50px;height:28px;
+}
+.toggle-switch input{opacity:0;width:0;height:0}
+.slider{
+  position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;
+  background-color:#cbd5e1;transition:.3s;border-radius:34px;
+}
+.slider:before{
+  position:absolute;content:"";height:20px;width:20px;left:4px;bottom:4px;
+  background-color:#fff;transition:.3s;border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.2)
+}
+input:checked + .slider{background-color:var(--primary)}
+input:checked + .slider:before{transform:translateX(22px)}
+
+.toggle-label{font-size:.9rem;font-weight:600;color:#1e293b;cursor:pointer;display:flex;align-items:center;gap:8px}
+
+/* Content Typography */
+.content h2{font-size:1.8rem;font-weight:700;margin:40px 0 20px;}
+.content p{font-size:1.2rem;margin-bottom:24px;text-align:justify}
+.content blockquote{
+  border-left:4px solid var(--primary);padding-left:20px;
+  font-size:1.4rem;font-style:italic;color:#475569;margin:40px 0;
+  background:rgba(37,99,235,0.05);padding:24px;border-radius:0 8px 8px 0;
+}
+
+/* Info Alert for Design System */
+.info-alert{
+  background:rgba(255,165,0,0.1);border-left:4px solid #f59e0b;
+  padding:20px;margin:40px 0;border-radius:4px;
+}
+.info-alert h4{font-size:1rem;color:#b45309;margin-bottom:8px;font-family:'Noto Sans TC',sans-serif;font-weight:700}
+.info-alert p{font-size:1rem;color:#78350f;margin-bottom:0}
+
+@media(max-width:600px){
+  .a11y-toolbar{flex-direction:column;align-items:flex-start;gap:12px}
+  .layout{margin-top:140px;}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid var(--border);
+  display:flex;justify-content:center;align-items:center;gap:30px;
+  padding:16px 24px;z-index:9000;font-family:'Noto Sans TC',sans-serif;
+}
+.bottom-nav a{text-decoration:none;color:#64748b;font-size:.85rem;font-weight:700;text-transform:uppercase}
+.bottom-nav a:hover{color:var(--primary)}
+</style>
+</head>
+<body>
+
+<div class="a11y-toolbar">
+  <div class="a11y-title"><span>👁️</span> Accessibility Options (無障礙設定)</div>
+  <div class="a11y-controls">
+    <label class="toggle-label" for="dyslexiaToggle">
+      Dyslexia Friendly Font
+      <div class="toggle-switch">
+        <input type="checkbox" id="dyslexiaToggle">
+        <span class="slider"></span>
+      </div>
+    </label>
+  </div>
+</div>
+
+<main class="layout">
+  <div class="cat">♿ 無障礙、包容性與道德設計</div>
+  <h1 class="article-title">#41 Dyslexia-Friendly Typography (閱讀障礙友善字體)</h1>
+  
+  <article class="content">
+    <p>設計不再只為「標準使用者」服務。根據國際閱讀障礙協會統計，全球約有 15-20% 的人口具有某些程度的閱讀困難（Dyslexia）。這使得 p, q, b, d 等字元在他們的眼中容易翻轉、重疊或難以辨識。</p>
+    
+    <div class="info-alert">
+      <h4>💡 試試看頂部的「Dyslexia Friendly Font」開關！</h4>
+      <p>開啟後，系統會自動切換為具有「底部配重（Bottom-heavy）」特性的無襯線字體，加寬字母間距（Tracking）、文字間距（Word-spacing）以及行高，並將背景調整為柔和對比色以降低視覺眩光（Glare）。</p>
+    </div>
+
+    <h2>The Principles of Inclusive Typography (包容性排版原則)</h2>
+    <p>現代大型新聞媒體平台與數位教育系統，開始在網站右上角標配無障礙工具列。不再強制所有人使用同一套精美的襯線字體（Serif Fonts）。真正的包容性設計，是給予使用者<strong>「選擇的權力」</strong>。</p>
+    
+    <blockquote>
+      "Accessibility is not a feature; it's a fundamental baseline for human-centered design in the digital age."
+    </blockquote>
+
+    <p>此趨勢強烈影響了歐美的新聞網站與線上圖書館。在英國與歐盟，政府相關的公家網站甚至被法律強制要求必須達到 WCAG 2.1 (Web Content Accessibility Guidelines) 的 AAA 最高標準。這反映了社會包容性的進步，也展現了品牌對少數群體的重視與道德責任感。</p>
+  </article>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="40.html">← PREV</a>
+  <a href="index.html">INDEX</a>
+  <a href="42.html">NEXT →</a>
+</nav>
+
+<script>
+const toggle = document.getElementById('dyslexiaToggle');
+const body = document.body;
+
+toggle.addEventListener('change', () => {
+  if(toggle.checked) {
+    body.classList.add('dyslexia-mode');
+  } else {
+    body.classList.remove('dyslexia-mode');
+  }
+});
+</script>
+</body>
+</html>

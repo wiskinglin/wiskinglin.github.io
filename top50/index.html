@@ -12,6 +12,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap"
         rel="stylesheet">
+    <!-- 加入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
             --bg: #050505;
@@ -172,12 +174,20 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             margin-bottom: 1rem;
             transition: opacity 0.4s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cat-header svg {
+            width: 14px;
+            height: 14px;
         }
 
         /* ── Trend Item (Kinetic Typography) ── */
         .trend-item {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             margin-bottom: 1.2rem;
             cursor: none;
             opacity: 0.3;
@@ -204,6 +214,22 @@
             display: flex;
             flex-direction: column;
             gap: 0.15rem;
+            flex-grow: 1;
+        }
+
+        .trend-arrow {
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+        }
+
+        .trend-arrow svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
         }
 
         .trend-title {
@@ -227,7 +253,7 @@
         /* ── Hover Kinetic Effect ── */
         .trend-item:hover {
             opacity: 1;
-            transform: scale(1.05) translateX(20px);
+            transform: scale(1.03) translateX(15px);
         }
 
         .trend-item:hover .trend-num {
@@ -241,6 +267,11 @@
 
         .trend-item:hover .trend-zh {
             color: rgba(255, 255, 255, 0.5);
+        }
+
+        .trend-item:hover .trend-arrow {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         /* ── Right: Detail Panel ── */
@@ -427,7 +458,7 @@
         <!-- Right detail panel -->
         <div class="detail-panel" id="detail-panel">
             <div class="detail-category" id="d-cat">HOVER TO EXPLORE</div>
-            <div class="detail-icon" id="d-icon">✦</div>
+            <div class="detail-icon" id="d-icon"><i data-lucide="telescope" style="width: 48px; height: 48px; stroke-width: 1.5;"></i></div>
             <div class="detail-title" id="d-title">50 DESIGN STYLES</div>
             <div class="detail-zh-title" id="d-zh">50 種設計風格互動範例</div>
             <div class="detail-desc" id="d-desc">捲動並懸停項目，探索 2025-2026 全球 50 大 UX/UI 設計趨勢。每個項目皆可點擊進入互動範例頁面。</div>
@@ -449,11 +480,11 @@
         // 1. Data: 50 UX/UI Design Styles
         // ==========================================
         const categories = {
-            1: { name: '極簡與結構化設計', color: '#6366f1', icon: '🏗️', type: 'grid' },
-            2: { name: '3D、空間與沉浸式設計', color: '#06b6d4', icon: '🌐', type: 'particles' },
-            3: { name: '復古、懷舊與文化符號轉譯', color: '#f59e0b', icon: '🎨', type: 'waves' },
-            4: { name: 'AI 生成、動態與微互動體驗', color: '#10b981', icon: '🤖', type: 'shapes' },
-            5: { name: '特殊材質、反叛與情感化設計', color: '#ef4444', icon: '⚡', type: 'matrix' }
+            1: { name: '極簡與結構化設計', color: '#6366f1', icon: 'layout-grid', type: 'grid' },
+            2: { name: '3D、空間與沉浸式設計', color: '#06b6d4', icon: 'box', type: 'particles' },
+            3: { name: '復古、懷舊與文化符號轉譯', color: '#f59e0b', icon: 'archive', type: 'waves' },
+            4: { name: 'AI 生成、動態與微互動體驗', color: '#10b981', icon: 'sparkles', type: 'shapes' },
+            5: { name: '特殊材質、反叛與情感化設計', color: '#ef4444', icon: 'zap', type: 'matrix' }
         };
 
         const styles = [
@@ -537,7 +568,7 @@
                 const header = document.createElement('div');
                 header.className = 'cat-header';
                 header.style.color = cat.color;
-                header.innerHTML = `${cat.icon} ${cat.name}`;
+                header.innerHTML = `<i data-lucide="${cat.icon}"></i> ${cat.name}`;
                 listContainer.appendChild(header);
             }
 
@@ -550,6 +581,9 @@
                     <div class="trend-title">${s.en}</div>
                     <div class="trend-zh">${s.zh}</div>
                 </div>
+                <div class="trend-arrow">
+                    <i data-lucide="arrow-right"></i>
+                </div>
             `;
 
             el.addEventListener('mouseenter', () => {
@@ -559,7 +593,8 @@
                 // Update detail panel
                 dCat.innerText = `[ ${cat.name} ]`;
                 dCat.style.color = cat.color;
-                dIcon.innerText = cat.icon;
+                dIcon.innerHTML = `<i data-lucide="${cat.icon}" style="width: 48px; height: 48px; stroke-width: 1.5;"></i>`;
+                lucide.createIcons({ root: dIcon });
                 dTitle.innerText = s.en;
                 dZh.innerText = s.zh;
                 dDesc.innerText = `第 ${s.id} 種設計風格 — 點擊進入完整互動範例頁面，體驗 ${s.en} 的視覺美學與互動特性。`;
@@ -587,6 +622,9 @@
 
             listContainer.appendChild(el);
         });
+
+        // Initialize Lucide icons for static elements
+        lucide.createIcons();
 
         // Custom cursor follow
         document.addEventListener('mousemove', (e) => {

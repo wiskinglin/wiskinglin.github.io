@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#23 Showa Nostalgia — 昭和復古風 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Using Shippori Mincho for that classic Japanese print feel -->
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --paper-bg: #f4ecd8;
+  --ink-black: #2b2623;
+  --faded-red: #b83b3b;
+  --faded-blue: #38598b;
+  --pattern-color: rgba(43, 38, 35, 0.05);
+}
+body{
+  font-family:'Shippori Mincho', serif;
+  background-color:var(--paper-bg);
+  color:var(--ink-black);line-height:1.8;
+  padding-bottom:120px;
+  /* Complex paper texture: noise + sepia gradient */
+  background-image: 
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E"),
+    radial-gradient(circle at center, #fcf8f0 0%, #ecdcb8 100%);
+}
+
+.vintage-border-wrapper{
+  max-width:1100px;margin:40px auto;
+  border:4px solid var(--ink-black);padding:6px;
+  background:transparent;
+}
+.inner-border{
+  border:2px solid var(--ink-black);padding:40px;
+  position:relative;
+  /* Retro Japanese geometric pattern bordering the edges */
+  background-image:
+    linear-gradient(45deg, var(--pattern-color) 25%, transparent 25%, transparent 75%, var(--pattern-color) 75%, var(--pattern-color)),
+    linear-gradient(45deg, var(--pattern-color) 25%, transparent 25%, transparent 75%, var(--pattern-color) 75%, var(--pattern-color));
+  background-size:20px 20px;background-position:0 0, 10px 10px;
+}
+/* Mask out the pattern in the center */
+.pattern-mask{
+  position:absolute;inset:20px;
+  background:var(--paper-bg);z-index:1;
+  border:1px dashed var(--ink-black);
+}
+
+.content{
+  position:relative;z-index:2;
+}
+
+/* Style Info Vertical Layout */
+.style-header{
+  display:flex;justify-content:space-between;
+  border-bottom:3px double var(--ink-black);
+  padding-bottom:30px;margin-bottom:40px;
+}
+.header-left{
+  flex:1;padding-right:40px;
+}
+.cat{
+  display:inline-block;padding:4px 12px;background:var(--faded-red);color:var(--paper-bg);
+  font-size:.8rem;font-weight:700;margin-bottom:16px;border-radius:2px;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.2)
+}
+.style-header h1{
+  font-size:clamp(1.8rem,4vw,3rem);font-weight:800;color:var(--faded-red);
+  margin-bottom:12px;letter-spacing:0.05em;
+}
+.style-header .sub{
+  font-size:1.4rem;font-weight:700;margin-bottom:24px;
+}
+.header-right{
+  /* The iconic vertical Japanese typography piece */
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size:2.5rem;font-weight:800;letter-spacing:0.2em;
+  color:var(--faded-blue);border-left:3px solid var(--ink-black);
+  padding-left:24px;text-align:justify;
+}
+
+.info-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:40px;
+}
+.info-col{
+  border:1px solid rgba(0,0,0,0.1);padding:24px;
+  background:rgba(255,255,255,0.4);
+}
+.info-col.full{grid-column:1/-1}
+.info-col h4{font-size:.9rem;color:var(--faded-red);margin-bottom:8px;font-weight:700;border-bottom:1px dashed var(--ink-black);padding-bottom:8px;}
+.info-col p{font-size:1rem;color:var(--ink-black);line-height:2}
+
+/* Demo: Izakaya Menu Section */
+.menu-section{margin-top:60px;}
+.menu-title-container{
+  text-align:center;margin-bottom:40px;position:relative;
+}
+.menu-title{
+  display:inline-block;font-size:2rem;font-weight:800;color:var(--paper-bg);background:var(--ink-black);
+  padding:8px 32px;border-radius:40px;
+}
+
+.menu-items{
+  display:grid;grid-template-columns:repeat(3, 1fr);gap:40px;
+}
+.menu-item{text-align:center}
+/* Custom illustration placeholder */
+.item-illus{
+  width:100px;height:100px;margin:0 auto 16px;
+  border-radius:50%;border:2px solid var(--ink-black);
+  display:flex;justify-content:center;align-items:center;
+  font-size:3rem;background:var(--paper-bg);
+  box-shadow:-4px 4px 0 var(--faded-blue);
+  transition:transform 0.3s;
+}
+.menu-item:hover .item-illus{transform:rotate(-10deg) scale(1.1);box-shadow:-6px 6px 0 var(--faded-red)}
+.item-name{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.item-price{font-size:1.1rem;color:var(--faded-red);font-weight:800}
+
+/* Vintage Stamps */
+.stamp{
+  position:absolute;width:80px;height:80px;border:3px solid var(--faded-red);
+  color:var(--faded-red);border-radius:50%;display:flex;justify-content:center;align-items:center;
+  font-weight:800;font-size:1.2rem;transform:rotate(-20deg);
+  opacity:0.8;pointer-events:none;
+}
+.s1{right:20px;top:200px;}
+.s2{left:30px;bottom:300px;transform:rotate(15deg);color:var(--faded-blue);border-color:var(--faded-blue)}
+
+@media(max-width:768px){
+  .style-header{flex-direction:column}
+  .header-right{writing-mode:horizontal-tb;border-left:none;border-top:3px solid var(--ink-black);padding-left:0;padding-top:20px;text-align:center}
+  .info-grid{grid-template-columns:1fr}
+  .menu-items{grid-template-columns:1fr}
+  .inner-border{padding:20px}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--ink-black);border-top:2px solid var(--faded-red);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:9000;
+}
+.bottom-nav a{text-decoration:none;color:var(--paper-bg);font-size:1rem;font-weight:600;padding:8px 20px;}
+.bottom-nav a:hover{color:var(--faded-red)}
+</style>
+</head>
+<body>
+
+<div class="vintage-border-wrapper">
+  <div class="inner-border">
+    <div class="pattern-mask"></div>
+    
+    <div class="content">
+      <div class="stamp s1">名物</div>
+      <div class="stamp s2">嚴選</div>
+      
+      <header class="style-header">
+        <div class="header-left">
+          <div class="cat">🎨 復古、懷舊與文化符號轉譯</div>
+          <h1>#23 — Showa Nostalgia</h1>
+          <p class="sub">昭和復古風</p>
+          <div class="info-grid">
+            <div class="info-col full">
+              <h4>📖 風格定義與視覺特徵</h4>
+              <p>受日本昭和時代的招牌、海報與雜誌排版啟發。運用泛黃的紙張紋理、褪色的褐與暗紅色調、手繪風格的邊框裝飾，以及日式粗襯線字體（明朝體），營造出溫暖且懷舊的情感共鳴。垂直排版（縱書）與蓋章元素是經典特徵。</p>
+            </div>
+            <div class="info-col">
+              <h4>🏢 適用產業</h4>
+              <p>餐飲業（居酒屋、喫茶店）、在地文創品牌、懷舊體驗</p>
+            </div>
+            <div class="info-col">
+              <h4>🌍 流行地區</h4>
+              <p>日本、台灣</p>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          懷舊浪漫・古町風情
+        </div>
+      </header>
+
+      <main class="menu-section">
+        <div class="menu-title-container">
+          <div class="menu-title">本日推薦品</div>
+        </div>
+        
+        <div class="menu-items">
+          <div class="menu-item">
+            <div class="item-illus">🍢</div>
+            <div class="item-name">炭火串燒盛合</div>
+            <div class="item-price">¥850</div>
+          </div>
+          <div class="menu-item">
+            <div class="item-illus">🍺</div>
+            <div class="item-name">生啤酒（大）</div>
+            <div class="item-price">¥600</div>
+          </div>
+          <div class="menu-item">
+            <div class="item-illus">🍜</div>
+            <div class="item-name">古早味中華拉麵</div>
+            <div class="item-price">¥980</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="22.html">← PREV</a>
+  <a href="index.html">🏠 HOME</a>
+  <a href="24.html">NEXT →</a>
+</nav>
+
+</body>
+</html>

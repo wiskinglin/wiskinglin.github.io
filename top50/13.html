@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#13 WebXR Immersive 3D — 沉浸式 3D 介面 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f172a;--surface:#1e293b;--text:#f8fafc;--text-muted:#94a3b8;
+  --accent:#38bdf8;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;
+  padding-bottom:120px;
+  background-image:radial-gradient(ellipse at bottom, #1e293b 0%, #0f172a 100%);
+  min-height:100vh;
+}
+
+/* Header */
+.style-info{
+  max-width:1200px;margin:40px auto;
+  padding:40px;text-align:center;
+}
+.style-info .cat{
+  display:inline-block;padding:6px 16px;border-radius:20px;
+  background:rgba(56,189,248,0.1);color:var(--accent);border:1px solid rgba(56,189,248,0.2);
+  font-size:.7rem;font-weight:600;letter-spacing:.05em;margin-bottom:20px;
+}
+.style-info h1{font-size:clamp(1.5rem,4vw,2.5rem);font-weight:700;margin-bottom:8px}
+.style-info .sub{font-size:1rem;color:var(--text-muted);margin-bottom:48px}
+.info-table{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  text-align:left;
+}
+.info-cell{
+  background:rgba(255,255,255,0.03);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.05);padding:24px;border-radius:16px;
+}
+.info-cell.full{grid-column:1/-1}
+.info-cell h4{font-size:.7rem;color:var(--accent);text-transform:uppercase;margin-bottom:8px;font-weight:700;letter-spacing:.1em;}
+.info-cell p{font-size:.85rem;color:var(--text-muted);line-height:1.8}
+
+/* Digital Showroom CSS 3D */
+.showroom-container{
+  width:100%;height:500px;
+  perspective:1000px; /* Field of view */
+  display:flex;justify-content:center;align-items:center;
+  overflow:hidden;position:relative;
+  /* subtle vignette */
+  box-shadow:inset 0 0 100px rgba(0,0,0,0.8);
+}
+.showroom-scene{
+  width:100%;height:100%;
+  transform-style:preserve-3d;
+  /* starting angle */
+  transform:translateZ(-1500px) rotateX(-5deg);
+  transition:transform 0.5s ease-out;
+}
+/* The rotating ring holding paintings/screens */
+.gallery-ring{
+  width:100%;height:100%;
+  position:absolute;top:0;left:0;
+  transform-style:preserve-3d;
+  animation:spin-ring 60s infinite linear;
+}
+
+@keyframes spin-ring{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
+
+/* Screens spaced in a circle */
+.screen{
+  position:absolute;top:50%;left:50%;
+  width:400px;height:250px;
+  margin-top:-125px;margin-left:-200px;
+  background:linear-gradient(145deg, #1e293b, #0f172a);
+  border:2px solid rgba(56,189,248,0.3);
+  box-shadow:0 0 40px rgba(56,189,248,0.1), inset 0 0 20px rgba(0,0,0,0.8);
+  border-radius:12px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  backface-visibility:hidden;
+  transition:all 0.3s ease;
+  cursor:pointer;
+}
+.screen:hover{
+  border-color:var(--accent);
+  box-shadow:0 0 60px rgba(56,189,248,0.4), inset 0 0 20px rgba(0,0,0,0.8);
+  /* slightly pop out */
+  filter:brightness(1.5);
+}
+.screen .content-tag{
+  font-size:.65rem;color:var(--accent);text-transform:uppercase;letter-spacing:.2em;
+  margin-bottom:12px;
+}
+.screen .content-title{
+  font-size:1.5rem;font-weight:700;letter-spacing:.02em;margin-bottom:16px;text-align:center;
+}
+.screen .mock-btn{
+  padding:8px 24px;border:1px solid rgba(255,255,255,0.2);border-radius:20px;
+  font-size:.75rem;transition:background .2s;
+}
+.screen:hover .mock-btn{background:rgba(255,255,255,0.1)}
+
+/* Postioning 6 screens in a circle */
+.screen:nth-child(1){transform:rotateY(0deg) translateZ(800px)}
+.screen:nth-child(2){transform:rotateY(60deg) translateZ(800px)}
+.screen:nth-child(3){transform:rotateY(120deg) translateZ(800px)}
+.screen:nth-child(4){transform:rotateY(180deg) translateZ(800px)}
+.screen:nth-child(5){transform:rotateY(240deg) translateZ(800px)}
+.screen:nth-child(6){transform:rotateY(300deg) translateZ(800px)}
+
+/* Navigation Hints */
+.controls{
+  display:flex;justify-content:center;gap:16px;margin-top:24px;
+}
+.ctrl-hint{
+  font-size:.7rem;color:var(--text-muted);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(0,0,0,0.3);padding:8px 16px;border-radius:20px;
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+@media(max-width:768px){
+  .info-table{grid-template-columns:1fr}
+  .showroom-container{height:400px;perspective:600px}
+  .screen{width:280px;height:180px;margin-left:-140px;margin-top:-90px;}
+  .screen:nth-child(1){transform:rotateY(0deg) translateZ(400px)}
+  .screen:nth-child(2){transform:rotateY(60deg) translateZ(400px)}
+  .screen:nth-child(3){transform:rotateY(120deg) translateZ(400px)}
+  .screen:nth-child(4){transform:rotateY(180deg) translateZ(400px)}
+  .screen:nth-child(5){transform:rotateY(240deg) translateZ(400px)}
+  .screen:nth-child(6){transform:rotateY(300deg) translateZ(400px)}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(15,23,42,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,0.08);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+}
+.bottom-nav a{text-decoration:none;color:var(--text-muted);font-size:.85rem;font-weight:400;padding:8px 20px;border-radius:10px;transition:color .3s,background .3s}
+.bottom-nav a:hover{color:var(--text);background:rgba(255,255,255,0.1)}
+</style>
+</head>
+<body>
+
+<header class="style-info">
+  <div class="cat">🌐 3D、空間與沉浸式設計</div>
+  <h1>#13 — WebXR Immersive 3D</h1>
+  <p class="sub">WebXR 沉浸式 3D 介面</p>
+  <div class="info-table">
+    <div class="info-cell full">
+      <h4>📖 風格定義與視覺特徵</h4>
+      <p>透過 WebGL 與 CSS 3D 技術，在網頁內直接渲染出可全角旋轉、自由縮放並具備物理互動的高精細立體場景，使用者無需下載應用程式即可進入沉浸空間，彷彿步入真實展廳。</p>
+    </div>
+    <div class="info-cell">
+      <h4>🏢 適用產業與場景</h4>
+      <p>房地產線上虛擬導覽、高端汽車客製化系統、數位展廳</p>
+    </div>
+    <div class="info-cell">
+      <h4>🌍 主要流行地區</h4>
+      <p>全球</p>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Interactive CSS 3D Environment -->
+  <div class="showroom-container" id="container">
+    <div class="showroom-scene" id="scene">
+      <div class="gallery-ring" id="ring">
+        <div class="screen">
+          <div class="content-tag">Exhibit 01</div>
+          <div class="content-title">PORSCHE 911</div>
+          <div class="mock-btn">Enter VR</div>
+        </div>
+        <div class="screen">
+          <div class="content-tag">Exhibit 02</div>
+          <div class="content-title">LUXURY VILLA</div>
+          <div class="mock-btn">Take Tour</div>
+        </div>
+        <div class="screen">
+          <div class="content-tag">Exhibit 03</div>
+          <div class="content-title">ART BASEL</div>
+          <div class="mock-btn">View Gallery</div>
+        </div>
+        <div class="screen">
+          <div class="content-tag">Exhibit 04</div>
+          <div class="content-title">ROLEX CLUB</div>
+          <div class="mock-btn">Discover</div>
+        </div>
+        <div class="screen">
+          <div class="content-tag">Exhibit 05</div>
+          <div class="content-title">TOKYO META</div>
+          <div class="mock-btn">Explore City</div>
+        </div>
+        <div class="screen">
+          <div class="content-tag">Exhibit 06</div>
+          <div class="content-title">SPACE X BASE</div>
+          <div class="mock-btn">Launch</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="ctrl-hint">🖱️ 拖曳場景以環顧四周</span>
+    <span class="ctrl-hint">📜 滾動滑鼠滾輪以縮放前進</span>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="12.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="14.html">下一頁 →</a>
+</nav>
+
+<script>
+// Immersive Navigation Logic using raw DOM events
+const container = document.getElementById('container');
+const scene = document.getElementById('scene');
+const ring = document.getElementById('ring');
+
+let isDragging = false;
+let startX = 0, startY = 0;
+// ring rotation
+let currentRotationY = 0;
+let ringRotationY = 0;
+// camera position
+let currentCameraZ = -1500;
+if(window.innerWidth < 768) currentCameraZ = -800;
+let currentCameraRotX = -5;
+
+// Stop auto-spin on interaction
+function stopAutoSpin() {
+  const compStyle = window.getComputedStyle(ring);
+  // Extract rotation matrix and convert to degrees...
+  // simpler: just remove animation and lock position
+  if(ring.style.animation){
+    ring.style.animation = 'none';
+    ring.style.transform = `rotateY(${currentRotationY}deg)`;
+  }
+}
+
+container.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  startX = e.clientX;
+  startY = e.clientY;
+  stopAutoSpin();
+  container.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  container.style.cursor = 'default';
+});
+
+window.addEventListener('mousemove', (e) => {
+  if(!isDragging) return;
+  const deltaX = e.clientX - startX;
+  const deltaY = e.clientY - startY;
+  
+  // rotate ring based on X drag
+  ringRotationY += deltaX * 0.2;
+  ring.style.transform = `rotateY(${ringRotationY}deg)`;
+  
+  // tilt camera based on Y drag
+  currentCameraRotX -= deltaY * 0.1;
+  // clamp tilt
+  currentCameraRotX = Math.max(-30, Math.min(20, currentCameraRotX));
+  scene.style.transform = `translateZ(${currentCameraZ}px) rotateX(${currentCameraRotX}deg)`;
+  
+  startX = e.clientX;
+  startY = e.clientY;
+});
+
+// Zoom with wheel
+container.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  stopAutoSpin();
+  // zoom in out
+  currentCameraZ += e.deltaY * -1.5;
+  // clamp boundaries
+  const maxZoomIn = -400; // closer
+  const maxZoomOut = window.innerWidth < 768 ? -1000 : -2500; // further
+  currentCameraZ = Math.max(maxZoomOut, Math.min(maxZoomIn, currentCameraZ));
+  scene.style.transform = `translateZ(${currentCameraZ}px) rotateX(${currentCameraRotX}deg)`;
+}, {passive: false});
+
+</script>
+</body>
+</html>

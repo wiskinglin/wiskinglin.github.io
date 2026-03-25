@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#42 Dark Patterns Eradication — 消除暗黑模式 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-color: #f1f5f9;
+  --text-main: #334155;
+  --primary: #3b82f6;
+  --danger: #ef4444;
+  --border: #e2e8f0;
+}
+body{
+  font-family:'Inter','Noto Sans TC',sans-serif;
+  background-color:var(--bg-color);color:var(--text-main);
+  line-height:1.6;padding-bottom:120px;
+}
+
+header{text-align:center;padding:60px 24px 40px;}
+.cat{
+  display:inline-block;padding:6px 16px;border-radius:20px;
+  background:#fff;border:1px solid var(--border);color:#22c55e;
+  font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;
+}
+h1{font-weight:700;font-size:clamp(2rem,5vw,2.8rem);color:#0f172a;margin-bottom:12px;letter-spacing:-1px}
+.desc{max-width:700px;margin:0 auto;color:#64748b;font-size:1.05rem}
+
+.split-container{
+  max-width:1100px;margin:20px auto;padding:0 24px;
+  display:grid;grid-template-columns:1fr 1fr;gap:40px;
+}
+
+/* Modal UI wrappers */
+.modal-frame{
+  background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  padding:40px;position:relative;display:flex;flex-direction:column;
+}
+.modal-title{font-size:1.4rem;font-weight:700;color:#0f172a;margin-bottom:12px}
+.modal-desc{font-size:1rem;color:#64748b;margin-bottom:32px;line-height:1.6}
+
+/* ---- Dark Pattern (BAD) ---- */
+.bad-ui{border:2px solid #f87171;background:#fef2f2;}
+.bad-ui .label-tag{
+  position:absolute;top:-14px;left:24px;background:#ef4444;color:#fff;
+  padding:4px 12px;border-radius:4px;font-size:0.8rem;font-weight:700;text-transform:uppercase;
+}
+.bad-ui .btn-primary{
+  background:#3b82f6;color:#fff;border:none;padding:16px;border-radius:8px;
+  font-width:700;font-size:1.1rem;cursor:pointer;margin-bottom:12px;
+}
+.bad-ui .btn-secondary{
+  background:transparent;border:none;color:#cbd5e1; /* extremely low contrast, hard to see */
+  font-size:0.75rem;cursor:pointer;text-decoration:underline;text-align:center;
+}
+.bad-ui .checkbox-group{margin-bottom:24px;font-size:0.85rem;color:#64748b;display:flex;align-items:flex-start;gap:8px}
+
+/* ---- Ethical UI (GOOD) ---- */
+.good-ui{border:2px solid #22c55e;background:#f0fdf4;}
+.good-ui .label-tag{
+  position:absolute;top:-14px;left:24px;background:#10b981;color:#fff;
+  padding:4px 12px;border-radius:4px;font-size:0.8rem;font-weight:700;text-transform:uppercase;
+}
+.good-ui .btn-group{
+  display:flex;gap:16px;margin-top:auto;
+}
+.good-ui .btn-cancel{
+  flex:1;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;
+  padding:16px;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;text-align:center;
+}
+.good-ui .btn-keep{
+  flex:1;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;
+  padding:16px;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;text-align:center;
+}
+
+@media(max-width:900px){
+  .split-container{grid-template-columns:1fr;gap:60px;}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;border-top:1px solid var(--border);
+  display:flex;justify-content:center;align-items:center;gap:30px;
+  padding:16px 24px;z-index:9000;
+}
+.bottom-nav a{text-decoration:none;color:#64748b;font-weight:700;font-size:.85rem;text-transform:uppercase;}
+.bottom-nav a:hover{color:var(--primary)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="cat">⚖️ 無障礙、包容性與道德設計</div>
+  <h1>#42 Dark Patterns Eradication</h1>
+  <p class="desc">隨著歐盟法規（GDPR）與加州（CCPA）的趨嚴，以及年輕世代對品牌的道德要求提高。UI 設計開始強烈反思並全面消除「誘騙點擊 (Roach Motel)」、「隱蔽訂閱取消」、「雙重否定問句」等暗黑模式。強調「<b>退訂跟訂閱一樣容易</b>」的透明設計是現代企業建立長久信任的唯一途徑。</p>
+</header>
+
+<main class="split-container">
+  
+  <!-- Bad UX: Dark Pattern -->
+  <div class="modal-frame bad-ui">
+    <div class="label-tag">❌ Dark Pattern (舊習慣)</div>
+    <div class="modal-title">Are you sure you don't not want to leave?</div>
+    <div class="modal-desc">By clicking "Cancel Cancellation", you agree to opt-out of not receiving our daily newsletters and your subscription will continue.</div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" checked id="confuseCb">
+      <label for="confuseCb">I <b>DO NOT</b> disagree to opt-out of future promotional charges.</label>
+    </div>
+
+    <!-- The actual action button is disguised -->
+    <button class="btn-primary" onclick="alert('Subscription renewed! (Wait, what?)')">Cancel Cancellation</button>
+    <button class="btn-secondary" onclick="alert('Finally canceled.')">I genuinely want to delete my account forever and lose all data.</button>
+  </div>
+
+  <!-- Good UX: Ethical UI -->
+  <div class="modal-frame good-ui">
+    <div class="label-tag">✅ Ethical UI (新趨勢)</div>
+    <div class="modal-title">Cancel Subscription</div>
+    <div class="modal-desc">This action will immediately stop auto-renewing your Premium Plan. You'll still have access until the end of your billing cycle on March 25, 2026.</div>
+    
+    <div class="btn-group">
+      <!-- Equal visual weighting or clear semantic coloring -->
+      <button class="btn-cancel" onclick="alert('Subscription effectively canceled.')">Cancel Subscription</button>
+      <button class="btn-keep" onclick="alert('Subscription kept.')">Keep Subscription</button>
+    </div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="41.html">← PREV</a>
+  <a href="index.html">RETURN HOME</a>
+  <a href="43.html">NEXT →</a>
+</nav>
+
+</body>
+</html>

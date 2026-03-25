@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#28 Local Culture & Heritage — 在地文化符號轉譯 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --taiwan-red: #C83C23;  /* 廟宇紅 */
+  --taiwan-blue: #1C305C; /* 藍染靛 */
+  --taiwan-gold: #D4A353; /* 神明金 */
+  --taiwan-jade: #4E7C65; /* 青磁綠 */
+  --paper: #FAECE1;       /* 宣紙白 */
+}
+body{
+  font-family:'Noto Sans TC',sans-serif;
+  background-color:var(--paper);color:var(--taiwan-blue);
+  line-height:1.8;padding-bottom:100px;
+  overflow-x:hidden;
+}
+
+/* 鐵窗花 Iron Window Grille Pattern Background */
+.grille-bg{
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  /* SVG Geometric window pattern */
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0 L60 30 L30 60 L0 30 Z M30 10 L50 30 L30 50 L10 30 Z' fill='none' stroke='%23C83C23' stroke-width='1.5' stroke-opacity='0.15'/%3E%3C/svg%3E");
+  z-index:-1;pointer-events:none;
+}
+
+.layout-grid{
+  max-width:1200px;margin:60px auto;padding:0 40px;
+  display:grid;grid-template-columns:300px 1fr;gap:60px;
+}
+
+/* Sidebar Info Panel */
+.style-info{
+  background:#fff;border:2px solid var(--taiwan-blue);
+  padding:32px;box-shadow:8px 8px 0 var(--taiwan-red);
+  position:relative;align-self:start;
+}
+.style-info::before{
+  content:'';position:absolute;top:-10px;left:-10px;width:30px;height:30px;
+  border-top:4px solid var(--taiwan-gold);border-left:4px solid var(--taiwan-gold);
+}
+.cat{
+  display:inline-block;padding:4px 12px;background:var(--taiwan-gold);color:#fff;
+  font-size:.7rem;font-weight:700;letter-spacing:1px;margin-bottom:16px;
+}
+
+.style-info h1{
+  font-family:'Noto Serif TC', serif;font-weight:900;font-size:2.2rem;
+  color:var(--taiwan-red);margin-bottom:8px;line-height:1.2;
+}
+.sub{font-size:1rem;color:var(--taiwan-blue);font-weight:600;margin-bottom:32px;}
+
+.info-item{margin-bottom:24px;border-top:1px dashed rgba(28,48,92,0.3);padding-top:16px;}
+.info-item h4{font-size:.8rem;color:var(--taiwan-gold);margin-bottom:8px;font-weight:700;text-transform:uppercase}
+.info-item p{font-size:.9rem;line-height:1.7;color:#555;}
+
+/* Main Contemporary Content */
+.content-area{display:flex;flex-direction:column;gap:40px}
+
+/* Large Geometric Banner */
+.hero-banner{
+  aspect-ratio:2/1;background:var(--taiwan-blue);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;padding:60px;
+  color:#fff;box-shadow:0 20px 40px rgba(28,48,92,0.1);
+}
+.hero-banner::after{
+  /* Abstract traditional roof/mountain shape */
+  content:'';position:absolute;bottom:0;right:0;width:50%;height:100%;
+  background:var(--taiwan-red);clip-path:polygon(100% 0, 100% 100%, 0 100%);
+  z-index:1;
+}
+.hero-banner::before{
+  /* Circle / Sun */
+  content:'';position:absolute;top:20px;right:40%;width:150px;height:150px;
+  background:var(--taiwan-gold);border-radius:50%;z-index:2;mix-blend-mode:screen;
+}
+.hero-text{position:relative;z-index:10;max-width:400px;}
+.hero-text h2{font-family:'Noto Serif TC', serif;font-size:2.5rem;font-weight:900;margin-bottom:16px;line-height:1.2}
+.hero-text p{font-weight:300;opacity:0.9;}
+
+/* Product Grid */
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.card{
+  background:#fff;padding:40px;border-top:8px solid var(--taiwan-jade);
+  box-shadow:0 10px 30px rgba(0,0,0,0.05);transition:transform 0.4s;
+  text-align:center;
+}
+.card:nth-child(2){border-color:var(--taiwan-gold)}
+.card:hover{transform:translateY(-10px);box-shadow:0 20px 40px rgba(0,0,0,0.1)}
+
+.card-icon{
+  width:80px;height:80px;margin:0 auto 24px;border-radius:50%;
+  border:2px solid var(--taiwan-blue);display:flex;justify-content:center;align-items:center;
+  font-family:'Noto Serif TC', serif;font-size:2rem;font-weight:900;color:var(--taiwan-red);
+}
+.card h3{font-family:'Noto Serif TC', serif;font-size:1.4rem;margin-bottom:12px;}
+.card p{font-size:.9rem;color:#666;}
+
+@media(max-width:900px){
+  .layout-grid{grid-template-columns:1fr;gap:40px}
+  .product-grid{grid-template-columns:1fr}
+  .hero-banner{aspect-ratio:auto;min-height:300px;padding:30px}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);
+  border-top:1px solid rgba(28,48,92,0.1);
+  display:flex;justify-content:center;align-items:center;gap:30px;
+  padding:16px 24px;z-index:9000;
+}
+.bottom-nav a{
+  text-decoration:none;color:var(--taiwan-red);font-weight:700;font-size:1rem;
+  letter-spacing:1px;transition:color 0.3s;
+}
+.bottom-nav a:hover{color:var(--taiwan-blue)}
+</style>
+</head>
+<body>
+
+<div class="grille-bg"></div>
+
+<main class="layout-grid">
+  <aside class="style-info">
+    <div class="cat">🏮 復古、懷舊與文化符號</div>
+    <h1>#28 在地文化符號轉譯</h1>
+    <p class="sub">Local Culture & Heritage</p>
+    
+    <div class="info-item">
+      <h4>📖 風格定義與視覺特徵</h4>
+      <p>將地方傳統視覺符號（如台灣的廟宇建築色彩、鐵窗花圖騰、傳統糕餅模具、宮廟剪黏）進行幾何簡化與現代化的高級排版設計。不只是一味的陳舊懷舊，而是賦予傳統文化符號國際化、年輕化與當代的視覺語彙。</p>
+    </div>
+    <div class="info-item">
+      <h4>🏢 適用產業與場景</h4>
+      <p>地方創生專案、政府文化展覽、在地農特產與文創茶葉品牌電商、觀光導覽</p>
+    </div>
+    <div class="info-item">
+      <h4>🌍 主要流行地區</h4>
+      <p>台灣、亞洲（日韓亦有其在地化轉譯）</p>
+    </div>
+  </aside>
+
+  <div class="content-area">
+    <div class="hero-banner">
+      <div class="hero-text">
+        <h2>百年風華，<br>當代重塑。</h2>
+        <p>將記憶裡巷弄的鐵窗花、廟埕前的丹泉紅，轉化為俐落幾何，向世界傳遞我們專屬的美學脈絡。</p>
+      </div>
+    </div>
+    
+    <div class="product-grid">
+      <div class="card">
+        <div class="card-icon">茶</div>
+        <h3>阿里山高山烏龍</h3>
+        <p>經由當代茶師嚴格監製，琥珀色的茶湯裡蘊含著島嶼群山的原始氣息。包裝結合在地編織圖騰。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">餅</div>
+        <h3>古法綠豆椪</h3>
+        <p>傳承三代的模具，重新微調糖度配方。現代極簡包裝與復古紅印相互輝映，送禮自用皆宜。</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="27.html">← 上一頁</a>
+  <a href="index.html">🏠 首頁</a>
+  <a href="29.html">下一頁 →</a>
+</nav>
+
+</body>
+</html>

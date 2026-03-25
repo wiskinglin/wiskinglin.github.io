@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#29 Scrapbooking — 手帳與剪貼簿風格 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Noto Sans TC',sans-serif;
+  color:#4a4a4a;
+  /* Grid notebook background */
+  background-color:#faf8f5;
+  background-image:
+    linear-gradient(90deg, transparent 19px, #e2e2e2 20px),
+    linear-gradient(transparent 19px, #e2e2e2 20px);
+  background-size:20px 20px;
+  overflow-x:hidden;
+  padding-bottom:120px;
+}
+
+/* Scrapbook Canvas */
+.canvas{
+  max-width:1100px;margin:20px auto;
+  position:relative;
+  min-height:900px;
+}
+
+/* Washi Tape Mixin */
+.washi-tape{
+  position:absolute;z-index:10;
+  width:120px;height:35px;
+  background:rgba(255,182,193,0.5); /* semi-transparent pink tape */
+  box-shadow:0 1px 3px rgba(0,0,0,0.1);
+  transform:rotate(-5deg);
+  /* torn edges effect */
+  border-left:2px dashed rgba(255,255,255,0.4);
+  border-right:2px dashed rgba(255,255,255,0.4);
+}
+.washi-blue{background:rgba(173,216,230,0.6);transform:rotate(8deg);}
+.washi-pattern{background:repeating-linear-gradient(45deg, rgba(238,232,170,0.6), rgba(238,232,170,0.6) 10px, transparent 10px, transparent 20px);transform:rotate(-12deg);}
+
+/* Torn Paper Main Info Box */
+.style-info{
+  background:#fff;width:600px;
+  padding:40px;position:absolute;top:50px;left:50px;
+  box-shadow:2px 5px 15px rgba(0,0,0,0.08);
+  /* Torn edge via clip-path polygon approximation */
+  clip-path:polygon(0% 0%, 100% 2%, 98% 100%, 3% 98%);
+  transform:rotate(-2deg);
+  z-index:5;
+}
+.cat{
+  display:inline-block;padding:4px 12px;background:#ffd700;color:#000;
+  font-family:'Caveat',cursive;font-size:1.5rem;font-weight:700;
+  transform:rotate(-3deg);margin-bottom:8px;
+}
+.style-info h1{
+  font-size:2.5rem;font-weight:700;margin-bottom:12px;
+}
+.sub{font-family:'Caveat',cursive;font-size:2.2rem;color:#ff6b6b;font-weight:700;margin-bottom:24px;line-height:1}
+
+.info-text h4{font-family:'Caveat',cursive;font-size:1.8rem;color:#4a4a4a;margin-bottom:4px;margin-top:20px;}
+.info-text p{font-size:.95rem;line-height:1.8;}
+
+/* Polaroid Photos */
+.polaroid{
+  background:#fff;padding:15px 15px 50px 15px;
+  box-shadow:0 10px 20px rgba(0,0,0,0.15);
+  position:absolute;z-index:6;
+  width:280px;text-align:center;
+}
+.polaroid-img{
+  background:#eaeaea;width:100%;aspect-ratio:1;
+  display:flex;justify-content:center;align-items:center;
+  font-family:'Caveat',cursive;font-size:2rem;color:#aaa;
+}
+.polaroid p{
+  font-family:'Caveat',cursive;font-size:1.8rem;
+  margin-top:15px;color:#333;transform:rotate(-2deg);
+}
+.p1{top:100px;right:60px;transform:rotate(6deg);}
+.p2{top:450px;right:150px;transform:rotate(-5deg);}
+
+/* Sticky Note */
+.sticky-note{
+  background:#fff68f;width:250px;padding:25px;
+  box-shadow:5px 5px 15px rgba(0,0,0,0.1);
+  position:absolute;top:550px;left:80px;
+  transform:rotate(4deg);font-family:'Caveat',cursive;z-index:7;
+  font-size:1.8rem;line-height:1.4;color:#000;
+}
+/* Hand-drawn scribble / arrow */
+.scribble{
+  position:absolute;font-family:'Caveat',cursive;font-size:3rem;
+  color:#ff6b6b;font-weight:700;z-index:8;
+}
+.arr1{top:400px;left:580px;transform:rotate(45deg);}
+.scrib-txt{top:320px;left:650px;color:#1e90ff}
+
+@media(max-width:1000px){
+  .canvas{min-height:1200px}
+  .style-info{position:static;width:95%;margin:20px auto;transform:rotate(0)}
+  .polaroid{position:static;margin:40px auto;transform:rotate(randint(-5,5)deg)}
+  .sticky-note{position:static;margin:40px auto}
+  .scribble{display:none} /* hide complex positioning on mobile */
+  .washi-tape{display:none} /* simplify */
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:url("https://www.transparenttextures.com/patterns/cork-board.png"), #d2b48c; /* Fake corkboard */
+  box-shadow:0 -5px 15px rgba(0,0,0,0.2);
+  display:flex;justify-content:center;align-items:center;gap:30px;
+  padding:16px 24px;z-index:9000;
+}
+.bottom-nav a{
+  background:#fff;padding:4px 16px;box-shadow:2px 2px 5px rgba(0,0,0,0.2);
+  text-decoration:none;color:#333;font-family:'Caveat',cursive;font-size:1.5rem;font-weight:700;
+  transform:rotate(-2deg);transition:transform 0.2s;
+}
+.bottom-nav a:last-child{transform:rotate(3deg)}
+.bottom-nav a:hover{transform:scale(1.1) rotate(0deg);color:#ff6b6b}
+</style>
+</head>
+<body>
+
+<main class="canvas">
+  
+  <div class="washi-tape" style="top:30px;left:40px"></div>
+  <div class="washi-tape washi-blue" style="top:120px;right:40px"></div>
+  <div class="washi-tape washi-pattern" style="top:520px;left:180px;transform:rotate(85deg)"></div>
+  <div class="washi-tape" style="top:430px;right:250px"></div>
+
+  <div class="style-info">
+    <div class="cat">DIY Time!</div>
+    <h1>#29 Scrapbooking</h1>
+    <p class="sub">手帳與剪貼簿風格 ♡</p>
+    
+    <div class="info-text">
+      <h4>What is it? ✏️</h4>
+      <p>模擬實體手帳拼貼的隨性與溫度。設計中常出現不規則的撕紙邊緣、半透明的紙膠帶（Washi Tape）裝飾、拍立得相片堆疊、迴紋針與手寫塗鴉字體，打破數位介面的僵硬與精準對齊的規則，賦予網頁強烈的手工感與故事性。</p>
+      
+      <h4>Where to use? 📌</h4>
+      <p>手作藝品電商、個人旅遊部落格、文具品牌首頁、生活紀錄平台。</p>
+
+      <h4>Popular in... 🌍</h4>
+      <p>日本、韓國、文青社群</p>
+    </div>
+  </div>
+
+  <div class="polaroid p1">
+    <div class="polaroid-img">Img_001.jpg</div>
+    <p>Kyoto Trip '25!</p>
+  </div>
+
+  <div class="scribble arr1">↘</div>
+  <div class="scribble scrib-txt">Look here!</div>
+
+  <div class="polaroid p2">
+    <div class="polaroid-img" style="background:#ffd1dc">Flower.png</div>
+    <p>Spring🌸</p>
+  </div>
+
+  <div class="sticky-note">
+    Don't forget to buy more tape for the new project! ✂️<br><br>
+    - Pink<br>
+    - Grid pattern<br>
+    - Stamps
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <a href="28.html">← Go Back</a>
+  <a href="index.html">My Diary</a>
+  <a href="30.html">Next Page →</a>
+</nav>
+
+</body>
+</html>

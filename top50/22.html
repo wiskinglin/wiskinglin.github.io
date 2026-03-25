@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#22 PC-98 & Pixel Art — PC-98 與像素藝術 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+/* PC-98 16-color palette (approximate) */
+:root{
+  --c-black: #000;
+  --c-white: #fff;
+  --c-red: #f00;
+  --c-green: #0f0;
+  --c-blue: #00f;
+  --c-cyan: #0ff;
+  --c-magenta: #f0f;
+  --c-yellow: #ff0;
+  --c-darkgray: #555;
+  --c-lightgray: #aaa;
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  /* The essential pixel font */
+  font-family:'DotGothic16', monospace;
+  background:var(--c-black);color:var(--c-white);
+  overflow-x:hidden;
+  /* CRT Scanlines */
+  background-image: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06));
+  background-size: 100% 4px, 6px 100%;
+  padding-bottom:120px;
+}
+/* Screen flicker overlay */
+body::after{
+  content:'';position:fixed;inset:0;background:rgba(255,255,255,0.02);
+  pointer-events:none;z-index:9999;
+  animation:flicker 0.15s infinite;
+}
+@keyframes flicker{0%{opacity:0.2}100%{opacity:0.8}}
+
+/* Glitch color split */
+.chromatic{position:relative}
+.chromatic::before, .chromatic::after{
+  content:attr(data-text);position:absolute;top:0;left:0;
+  opacity:0.8;pointer-events:none;
+}
+.chromatic::before{left:2px;color:var(--c-red);z-index:-1;}
+.chromatic::after{left:-2px;color:var(--c-cyan);z-index:-2;}
+
+/* UI Container mimicking a retro OS Window */
+.os-window{
+  max-width:1000px;margin:40px auto;
+  border:4px solid var(--c-white);background:var(--c-black);
+  position:relative;
+  /* Dither background pattern */
+  background-image: radial-gradient(var(--c-darkgray) 1px, transparent 0);
+  background-size: 4px 4px;
+}
+
+/* Window Header Bars */
+.window-bar{
+  background:var(--c-blue);color:var(--c-white);
+  padding:4px 8px;font-size:1.2rem;display:flex;justify-content:space-between;
+  border-bottom:4px solid var(--c-white);
+}
+
+/* Inner content area (removes dither) */
+.window-content{background:var(--c-black);padding:24px;border:4px solid var(--c-white);margin:12px;}
+
+/* Header / Style Info */
+.style-info{
+  border:2px dashed var(--c-lightgray);padding:20px;margin-bottom:40px;
+}
+.cat{
+  display:inline-block;padding:4px 12px;background:var(--c-magenta);color:var(--c-black);
+  font-weight:700;margin-bottom:16px;text-transform:uppercase;
+}
+.style-info h1{font-size:clamp(1.5rem,5vw,2.5rem);margin-bottom:12px;text-transform:uppercase}
+.style-info .sub{color:var(--c-yellow);font-size:1.2rem;margin-bottom:24px;}
+.info-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.info-col{border:2px solid var(--c-darkgray);padding:12px;}
+.info-col.full{grid-column:1/-1}
+.info-col h4{color:var(--c-cyan);margin-bottom:8px;}
+.info-col p{font-size:1rem;line-height:1.6;color:var(--c-lightgray)}
+
+/* Demo Content: Visual Novel / Indie Game Menu */
+.demo-split{display:grid;grid-template-columns:300px 1fr;gap:24px;}
+.menu-list{list-style:none;border-right:2px dashed var(--c-lightgray);padding-right:24px;}
+.menu-list li{
+  padding:12px 0;font-size:1.5rem;cursor:pointer;
+  transition:all 0.1s;display:flex;align-items:center;
+}
+/* Blinking cursor for active item */
+.menu-list li::before{
+  content:'>';margin-right:8px;opacity:0;color:var(--c-yellow);
+}
+.menu-list li:hover::before, .menu-list li.active::before{
+  opacity:1;animation:blink 1s infinite steps(2,start);
+}
+.menu-list li:hover, .menu-list li.active{color:var(--c-yellow)}
+
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+/* Graphic view */
+.graphic-view{
+  border:4px solid var(--c-cyan);height:300px;
+  position:relative;overflow:hidden;
+  display:flex;justify-content:center;align-items:center;
+  background:var(--c-darkgray);
+}
+/* Pixel-art simulation: simple geometric scene */
+.pixel-moon{
+  width:100px;height:100px;border-radius:50%;background:var(--c-yellow);
+  position:absolute;top:20px;right:40px;
+  image-rendering:pixelated; /* Sharp edges */
+  box-shadow:-10px -10px 0 var(--c-red) inset; /* dither shadow effect */
+}
+.pixel-city{
+  position:absolute;bottom:0;width:100%;height:100px;
+  background:url('data:image/svg+xml;utf8,<svg width="40" height="40" xmlns="http://www.w3.org/2000/svg"><path d="M0,40 L0,20 L10,20 L10,10 L20,10 L20,30 L30,30 L30,15 L40,15 L40,40 Z" fill="%230f0"/></svg>') repeat-x bottom;
+}
+.dialog-box{
+  position:absolute;bottom:10px;left:10px;right:10px;
+  border:4px solid var(--c-white);background:var(--c-blue);
+  padding:12px;font-size:1.2rem;
+}
+
+@media(max-width:768px){
+  .info-row{grid-template-columns:1fr}
+  .demo-split{grid-template-columns:1fr}
+  .menu-list{border-right:none;border-bottom:2px dashed var(--c-lightgray);padding-bottom:24px;}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--c-black);border-top:4px solid var(--c-white);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:9000;
+}
+.bottom-nav a{text-decoration:none;color:var(--c-white);font-size:1.2rem;padding:4px 16px;border:2px solid transparent;}
+.bottom-nav a:hover{background:var(--c-white);color:var(--c-black)}
+</style>
+</head>
+<body>
+
+<div class="os-window">
+  <div class="window-bar">
+    <span>SYSTEM.EXE</span>
+    <span>[X]</span>
+  </div>
+  
+  <div class="window-content">
+    <header class="style-info">
+      <div class="cat">🎨 復古、懷舊與文化符號轉譯</div>
+      <h1 class="chromatic" data-text="#22 - PC-98 & Pixel Art">#22 - PC-98 & Pixel Art</h1>
+      <p class="sub">PC-98 與像素藝術</p>
+      <div class="info-row">
+        <div class="info-col full">
+          <h4 class="chromatic" data-text="📖 風格定義與視覺特徵">📖 風格定義與視覺特徵</h4>
+          <p>致敬 80 與 90 年代日本微電腦（如 PC-98）的美學。採用受限的 16 色色盤、明顯的像素化邊緣、點陣字體，並透過 CSS 濾鏡刻意加上 CRT 螢幕的水平掃描線與 RGB 色彩分離效果（Chromatic Aberration）。所有陰影與漸層皆以古老的「抖動（Dithering）」圖樣替代。</p>
+        </div>
+        <div class="info-col">
+          <h4>🏢 適用產業與場景</h4>
+          <p>獨立遊戲預告頁、復古科技硬體品牌、Web3 社群</p>
+        </div>
+        <div class="info-col">
+          <h4>🌍 主要流行地區</h4>
+          <p>日本、全球</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="demo-split">
+      <ul class="menu-list">
+        <li class="active">NEW_GAME</li>
+        <li>CONTINUE</li>
+        <li>OPTIONS</li>
+        <li>EXIT_SYS</li>
+      </ul>
+      
+      <div class="graphic-view">
+        <div class="pixel-moon"></div>
+        <div class="pixel-city"></div>
+        <div class="dialog-box" id="typewriter"></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="21.html">← PREV</a>
+  <a href="index.html">🏠 HOME</a>
+  <a href="23.html">NEXT →</a>
+</nav>
+
+<script>
+// Typewriter effect for dialog
+const text = "Welcome to Sector 7. \nThe neon lights hide the truth...";
+const target = document.getElementById('typewriter');
+let i = 0;
+
+function typeWriter() {
+  if (i < text.length) {
+    target.innerHTML += text.charAt(i) === '\n' ? '<br>' : text.charAt(i);
+    i++;
+    // Add typewriter sound implicitly by delay
+    setTimeout(typeWriter, 50);
+  } else {
+    // Add blinking cursor at end
+    target.innerHTML += '<span style="animation:blink 1s infinite steps(2,start)">_</span>';
+  }
+}
+setTimeout(typeWriter, 1000);
+</script>
+</body>
+</html>
