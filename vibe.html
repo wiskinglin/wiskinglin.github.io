@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 WEB TRENDS : THE TOP 50</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+            --accent: #ff3366;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+            /* 我們將使用自訂滾動 */
+            cursor: none;
+            /* 隱藏預設游標，使用自訂磁性游標 */
+        }
+
+        /* 背景 Canvas 畫布 */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            opacity: 0.6;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 雜訊圖層，增加電影感 */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* 介面容器 */
+        .ui-container {
+            position: relative;
+            z-index: 5;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* 左側巨型列表區 */
+        .list-container {
+            width: 60%;
+            height: 100vh;
+            overflow-y: scroll;
+            padding: 20vh 0 50vh 5vw;
+            /* 隱藏原生捲軸 */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .list-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 列表項目排版 (Kinetic Typography) */
+        .trend-item {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 2rem;
+            cursor: none;
+            opacity: 0.3;
+            transform-origin: left center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .trend-num {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-right: 2rem;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+            transition: all 0.4s ease;
+        }
+
+        .trend-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 4vw;
+            /* 巨型字體 */
+            font-weight: 700;
+            text-transform: uppercase;
+            line-height: 1.1;
+            white-space: nowrap;
+            transition: all 0.4s ease;
+        }
+
+        /* Hover 觸發時的爆發力變化 */
+        .trend-item:hover {
+            opacity: 1;
+            transform: scale(1.05) translateX(20px);
+        }
+
+        .trend-item:hover .trend-num {
+            color: var(--accent);
+            -webkit-text-stroke: 0px;
+        }
+
+        .trend-item:hover .trend-title {
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* 右側詳細資訊面板 (隨 Hover 改變) */
+        .detail-panel {
+            width: 40%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 5vw;
+            pointer-events: none;
+        }
+
+        .detail-category {
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .detail-desc {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            color: #a1a1aa;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            transition-delay: 0.1s;
+            max-w: 80%;
+        }
+
+        .detail-tech {
+            margin-top: 2rem;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.7rem;
+            color: #52525b;
+            opacity: 0;
+            transition: all 0.5s ease;
+            transition-delay: 0.2s;
+        }
+
+        /* 面板顯示動畫 */
+        .detail-panel.active .detail-category,
+        .detail-panel.active .detail-desc,
+        .detail-panel.active .detail-tech {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 自訂游標 */
+        .custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .custom-cursor.hovering {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 1);
+            border-color: transparent;
+        }
+
+        /* 頂部 LOGO */
+        .header {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+            font-family: 'Syncopate', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            mix-blend-mode: difference;
+        }
+
+        @media (max-width: 768px) {
+            .list-container {
+                width: 100%;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .trend-title {
+                font-size: 8vw;
+                white-space: normal;
+            }
+
+            .detail-panel {
+                display: none;
+                /* 手機版專注於列表與背景特效 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 電影感雜訊 -->
+    <div class="noise-overlay"></div>
+
+    <!-- 自訂磁性游標 -->
+    <div class="custom-cursor" id="cursor"></div>
+
+    <!-- 動態粒子背景畫布 -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="header">
+        VISION_2026 // TOP 50
+    </div>
+
+    <div class="ui-container">
+        <!-- 左側滾動清單 -->
+        <div class="list-container" id="list-container">
+            <!-- JS 動態生成 50 個項目 -->
+        </div>
+
+        <!-- 右側動態資訊 -->
+        <div class="detail-panel" id="detail-panel">
+            <div class="detail-category" id="d-cat">HOVER TO EXPLORE</div>
+            <div class="detail-desc" id="d-desc">Scroll down and hover over the matrix to reveal the Top 50 web
+                technologies and design aesthetics defining the year 2026.</div>
+            <div class="detail-tech" id="d-tech">SYSTEM IDLE</div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 資料庫：生成 2026 年最具前瞻性的 50 大趨勢
+        // 分為五大類：AI (生成式), XR (空間運算), UX (互動), VIS (視覺), SYS (底層架構)
+        // ==========================================
+        const categories = {
+            'AI': { color: '#ff3366', type: 'particles' },
+            'XR': { color: '#00ffcc', type: 'grid' },
+            'UX': { color: '#ffcc00', type: 'waves' },
+            'VIS': { color: '#cc33ff', type: 'shapes' },
+            'SYS': { color: '#3366ff', type: 'matrix' }
+        };
+
+        const rawData = [
+            // AI (10)
+            ["Generative UI", "AI", "介面不再由前端刻板撰寫，而是 LLM 根據用戶意圖在 100 毫秒內即時生成的元件結構。", "React Server Components, LLM Stream"],
+            ["Zero-Prompt Search", "AI", "放棄搜尋框。系統透過眼動追蹤與語境預測，在你打字前就呈現你需要的資訊。", "Predictive AI, WebGaze"],
+            ["On-Device LLMs", "AI", "將百億參數模型壓縮至 WebAssembly，在瀏覽器本地端運行，實現絕對隱私與零延遲互動。", "WebGPU, WebAssembly"],
+            ["Auto-A11y Healing", "AI", "網頁載入時，AI 自動檢測並即時修復對比度、朗讀標籤等無障礙缺陷。", "DOM Mutator AI"],
+            ["Voice-Clone Translation", "AI", "網頁影片即時將講者聲音克隆，並翻譯成你的母語，嘴型同步運算。", "Web Audio API, Lipsync AI"],
+            ["Dynamic Copywriting", "AI", "文案根據使用者的年齡、情緒與當下情境（如天氣），即時重寫成最能打動對方的語氣。", "Contextual LLM"],
+            ["Digital Twin Agents", "AI", "網站由你的專屬數位分身代為瀏覽與篩選資訊，你只需查看摘要。", "Agentic Web"],
+            ["Realtime A/B Evolution", "AI", "不再需要人工設定 A/B Test。網頁自我進化，每小時淘汰轉換率最低的微交互設計。", "Reinforcement Learning"],
+            ["Semantic DOM", "AI", "HTML 標籤完全進化為語意向量，讓 AI 爬蟲能 100% 精準理解網站幾何與邏輯。", "Vector Embeddings"],
+            ["Generative Micro-textures", "AI", "網頁背景紋理不再是靜態圖片，而是由端側 AI 根據當日心情無限生成的動態噪點。", "WebGPU Shaders"],
+
+            // XR (10)
+            ["Spatial Web", "XR", "完美支援 Vision Pro，網頁元素打破螢幕邊界，懸浮於真實使用者的房間空間中。", "WebXR, RealityKit"],
+            ["Gaussian Splatting", "XR", "取代傳統 3D 建模，使用神經輻射場 (NeRF) 技術在網頁中呈現極度逼真的實體商品。", "WebGL 2.0, GS Render"],
+            ["Holographic DOM", "XR", "網頁具備 Z 軸深度資料，配合裸眼 3D 螢幕，實現無需穿戴裝置的立體網頁。", "CSS 3D Transform v2"],
+            ["Spatial Audio UI", "XR", "按鈕的點擊聲與提示音會根據元素在螢幕上的幾何位置，產生具備方向性的全景聲。", "Web Audio Spatializer"],
+            ["Hand-tracking Gestures", "XR", "揮手翻頁、捏合縮放。透過視訊鏡頭實現無接觸的隔空網頁導覽。", "MediaPipe, HandPose API"],
+            ["2.5D Parallax Immersion", "XR", "利用設備陀螺儀，讓 2D 網頁產生如立體書一般的錯視深度效果。", "Device Orientation API"],
+            ["Multiplayer Metaverse", "XR", "每個網頁都是一個多人大廳，你能看到其他同時在線瀏覽者的 3D 游標與實體化身。", "WebSockets, WebRTC"],
+            ["Physics-based Materials", "XR", "網頁中的布料會飄動、玻璃會折射真實環境光，打破傳統平面的死板材質。", "Cannon.js, Three.js"],
+            ["AR Try-on Native", "XR", "無須下載 App，瀏覽器原生支援將衣物或傢俱透過 AR 準確投射至現實場景。", "WebAR API"],
+            ["Volumetric Video", "XR", "網頁內嵌體積影片，使用者可以在播放過程中 360 度旋轉視角觀看人物。", "Volumetric Player"],
+
+            // UX (10)
+            ["Neuromorphic Haptics", "UX", "深度聯動設備震動馬達，在滑動、點擊、拖曳時提供不同材質的物理反饋震感。", "Vibration API Advanced"],
+            ["Infinite Canvas", "UX", "消滅多頁面跳轉。整個網站是一個無邊界的畫布，透過平移和縮放探索所有內容。", "Canvas API, GSAP"],
+            ["Micro-friction Design", "UX", "在關鍵決策點（如購買）刻意加入優雅的阻尼動畫，防止誤觸並提升儀式感。", "Spring Physics"],
+            ["Chronological UI", "UX", "介面不僅分深淺色，還會隨著用戶生理時鐘與當地光線，動態調節字體粗細與對比度。", "Ambient Light API"],
+            ["Zero-click Navigation", "UX", "視線停留超過 0.5 秒即自動展開選單或預載內容，實現「所看即所得」。", "Eye Tracking API"],
+            ["Seamless Handoff", "UX", "手機瀏覽到一半的網頁，靠近筆電時，畫面會像液體般飛越螢幕無縫接續。", "Web Bluetooth, Sync"],
+            ["Emotion-Aware Forms", "UX", "表單會根據你打字的速度與力度，判斷你是否受挫，並適時給予幽默的提示或簡化欄位。", "Behavioral Analytics"],
+            ["Conversational DOM", "UX", "傳統選單消失。你對網頁說「給我看最便宜的黑色外套」，介面立刻重組成專屬結果。", "Speech Recognition API"],
+            ["Biometric Web3 Auth", "UX", "密碼完全死亡。依靠 FaceID 與區塊鏈通行證，實現全網域一瞥即登入。", "Passkeys, WebAuthn"],
+            ["Fluid Bento Layouts", "UX", "便當盒排版不再死板，區塊會根據用戶的注視點，像細胞般動態擠壓、放大。", "CSS Grid Animation"],
+
+            // VIS (10)
+            ["Neo-Glassmorphism", "VIS", "超越傳統毛玻璃，加入光線折射、色散與厚度模擬，打造如頂級水晶般的介面質感。", "CSS Backdrop-filter, WebGL"],
+            ["True Black OLED", "VIS", "以 #000000 為絕對基底，搭配高頻霓虹發光體，極致省電且具備賽博龐克美學。", "CSS Variables, OLED targeting"],
+            ["Variable Typography 3.0", "VIS", "字體不僅隨螢幕縮放，還會根據網頁播放的音樂節奏或影片氛圍，即時改變字重與字體寬度。", "Variable Fonts, Audio Context"],
+            ["Frameless UI", "VIS", "徹底移除卡片邊框與分隔線。完全依靠極致的排版留白與微弱的光暈來界定層級。", "Advanced CSS Layout"],
+            ["Vibrating Colors", "VIS", "使用會引起視網膜輕微錯覺的高飽和度對比色，創造出極具侵略性的前衛藝術風格。", "OKLCH Colors"],
+            ["Ray-traced Cursors", "VIS", "游標成為環境光源。當游標移動時，會即時照亮 3D 按鈕的邊緣並產生動態陰影。", "Custom WebGL Shaders"],
+            ["Biomorphic Shapes", "VIS", "捨棄完美的幾何圓角，容器呈現如阿米巴原蟲般緩慢蠕動的有機生命形態。", "SVG Morphing"],
+            ["Kinetic Scrolling", "VIS", "滾動網頁時，文字會根據滾動速度產生物理拉伸、傾斜與殘影效果。", "Lenis Scroll, Skew Transform"],
+            ["Monochromatic Brutalism", "VIS", "單一色調結合巨大且粗獷的字體排版，用最原始的視覺暴力傳遞最純粹的資訊。", "Typography Heavy"],
+            ["Dynamic Grain", "VIS", "在畫面覆蓋一層細微的動態底片顆粒，讓過於完美的數位介面增加真實的物理溫度。", "CSS Noise Filter"],
+
+            // SYS (10)
+            ["WebGPU Standard", "SYS", "釋放 GPU 百分之百的算力，讓網頁能流暢運行 3A 級遊戲畫質與複雜的 AI 平行運算。", "WebGPU API"],
+            ["Zero-JS Hydration", "SYS", "首屏載入完全沒有 JavaScript，僅在用戶滑鼠移到特定元件時才瞬間喚醒該功能。", "Qwik, Astro Resumability"],
+            ["Edge Rendering 2.0", "SYS", "網頁在距離用戶最近的 CDN 節點即時渲染，打破物理距離限制，達到真正的零延遲。", "Edge Workers"],
+            ["Wasm Ecosystem", "SYS", "C++ 或 Rust 編寫的重度軟體（如影片剪輯）無損編譯至網頁，效能媲美原生 App。", "WebAssembly"],
+            ["Serverless DB Direct", "SYS", "前端透過安全協議直接連線分散式資料庫，徹底消滅傳統後端 API 中介層。", "Edge Databases"],
+            ["Post-Quantum Security", "SYS", "因應量子電腦威脅，網頁通訊全面升級至抗量子密碼學演算法。", "PQC Protocols"],
+            ["Local-First Sync", "SYS", "資料永遠先寫入本地 IndexedDB，保證離線可用，網路恢復時再以 CRDT 演算法同步。", "CRDT, Local-First"],
+            ["Green Web Protocols", "SYS", "當設備電量低或處於高碳排電網時，網頁自動降級動畫並切換至極簡純文字模式。", "Battery Status API"],
+            ["Streaming HTML", "SYS", "伺服器像水流一樣逐字節傳輸 HTML，瀏覽器邊收邊畫，首字節時間 (TTFB) 趨近於零。", "React Server Components"],
+            ["Micro-frontend Matrix", "SYS", "超大型網站被切割成獨立微前端，不同團隊可用不同框架開發，最終在瀏覽器完美縫合。", "Module Federation"]
+        ];
+
+        // 混洗陣列以增加隨機感 (Fisher-Yates)
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        const trends = shuffle([...rawData]).map((item, index) => ({
+            id: index + 1,
+            title: item[0],
+            category: item[1],
+            desc: item[2],
+            tech: item[3]
+        }));
+
+        // ==========================================
+        // 2. DOM 生成與互動邏輯
+        // ==========================================
+        const listContainer = document.getElementById('list-container');
+        const detailPanel = document.getElementById('detail-panel');
+        const dCat = document.getElementById('d-cat');
+        const dDesc = document.getElementById('d-desc');
+        const dTech = document.getElementById('d-tech');
+        const cursor = document.getElementById('cursor');
+
+        // 生成列表
+        trends.forEach(trend => {
+            const el = document.createElement('div');
+            el.className = 'trend-item';
+            el.innerHTML = `
+                <div class="trend-num">${String(trend.id).padStart(2, '0')}</div>
+                <div class="trend-title">${trend.title}</div>
+            `;
+
+            // Hover 事件：改變右側資訊與背景引擎狀態
+            el.addEventListener('mouseenter', () => {
+                // 更新文字
+                dCat.innerText = `[ ${trend.category} ]`;
+                dCat.style.color = categories[trend.category].color;
+                dDesc.innerText = trend.desc;
+                dTech.innerText = `TECH_STACK // ${trend.tech}`;
+                detailPanel.classList.add('active');
+
+                // 游標放大
+                cursor.classList.add('hovering');
+
+                // 改變背景引擎屬性
+                document.documentElement.style.setProperty('--accent', categories[trend.category].color);
+                engineState.targetMode = categories[trend.category].type;
+                engineState.color = categories[trend.category].color;
+                engineState.intensity = 1.0; // 觸發爆發效果
+            });
+
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hovering');
+            });
+
+            listContainer.appendChild(el);
+        });
+
+        // 自訂游標跟隨
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // ==========================================
+        // 3. 高階 Canvas 生成式粒子引擎 (The Visual Core)
+        // 能夠根據 Hover 到的趨勢類型，平滑變換物理型態
+        // ==========================================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // 引擎狀態管理
+        const engineState = {
+            mode: 'particles', // 當前模式
+            targetMode: 'particles', // 目標模式 (用於平滑過渡)
+            color: '#ffffff',
+            intensity: 0, // 爆發強度 (Hover時會變高，然後衰減)
+            time: 0
+        };
+
+        // 粒子系統
+        const particleCount = 200;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    baseX: Math.random() * width,
+                    baseY: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: Math.random() * 2 + 1,
+                    angle: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Hex 轉 RGB 以支援透明度
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 255, g: 255, b: 255 };
+        }
+
+        // 渲染迴圈
+        function render() {
+            // 清除畫布，帶有拖尾效果 (Motion Blur)
+            ctx.fillStyle = `rgba(5, 5, 5, ${0.1 + (1 - engineState.intensity) * 0.1})`;
+            ctx.fillRect(0, 0, width, height);
+
+            engineState.time += 0.01;
+
+            // 衰減爆發強度
+            if (engineState.intensity > 0) {
+                engineState.intensity -= 0.02;
+                if (engineState.intensity < 0) engineState.intensity = 0;
+            }
+
+            const rgb = hexToRgb(engineState.color);
+            ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`;
+
+            // 根據模式演算粒子行為
+            const mode = engineState.targetMode;
+
+            particles.forEach((p, i) => {
+                // 基礎物理移動
+                p.x += p.vx * (1 + engineState.intensity * 3);
+                p.y += p.vy * (1 + engineState.intensity * 3);
+
+                // 邊界反彈
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                // 模式 1: Particles (AI) - 隨機漂浮星雲
+                if (mode === 'particles') {
+                    p.x += Math.sin(engineState.time + i) * 0.5;
+                    p.y += Math.cos(engineState.time + i) * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * (1 + engineState.intensity), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 模式 2: Grid (XR) - 空間網格對齊
+                else if (mode === 'grid') {
+                    const gridSize = 50;
+                    const targetX = Math.round(p.baseX / gridSize) * gridSize + (Math.sin(engineState.time * 2 + p.y) * 20 * engineState.intensity);
+                    const targetY = Math.round(p.baseY / gridSize) * gridSize;
+
+                    p.x += (targetX - p.x) * 0.05;
+                    p.y += (targetY - p.y) * 0.05;
+
+                    ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+
+                    // 畫連線
+                    if (i % 5 === 0) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p.x, height);
+                        ctx.stroke();
+                    }
+                }
+
+                // 模式 3: Waves (UX) - 物理波動感
+                else if (mode === 'waves') {
+                    p.x = p.baseX;
+                    const wave = Math.sin(p.x * 0.01 + engineState.time * 3) * 100;
+                    const wave2 = Math.cos(p.x * 0.005 - engineState.time * 2) * 50;
+                    const targetY = height / 2 + wave + wave2;
+
+                    p.y += (targetY - p.y) * 0.1;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 模式 4: Shapes (VIS) - 幾何變形
+                else if (mode === 'shapes') {
+                    p.angle += 0.02 * (1 + engineState.intensity);
+                    const size = p.size * 5 * (1 + engineState.intensity * 2);
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.angle);
+                    if (i % 3 === 0) {
+                        ctx.strokeRect(-size / 2, -size / 2, size, size); // 方形
+                    } else if (i % 3 === 1) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, -size);
+                        ctx.lineTo(size, size);
+                        ctx.lineTo(-size, size);
+                        ctx.closePath();
+                        ctx.stroke(); // 三角形
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+                        ctx.stroke(); // 圓形
+                    }
+                    ctx.restore();
+                }
+
+                // 模式 5: Matrix (SYS) - 垂直資料流
+                else if (mode === 'matrix') {
+                    p.x = p.baseX;
+                    p.y += (5 + Math.random() * 5) * (1 + engineState.intensity * 2);
+                    if (p.y > height) {
+                        p.y = 0;
+                        p.baseX = Math.random() * width;
+                    }
+
+                    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${Math.random()})`;
+                    ctx.font = "14px monospace";
+                    ctx.fillText(Math.random() > 0.5 ? "1" : "0", p.x, p.y);
+                }
+            });
+
+            // 如果是粒子模式，加上連線效果 (Plexus effect)
+            if (mode === 'particles') {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = dx * dx + dy * dy;
+
+                        if (dist < 10000) {
+                            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${0.2 * (1 - dist / 10000)})`;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+
+</html>

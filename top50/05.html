@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#05 SEO-Driven Structured UI — SEO 導向結構化介面 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fff;--surface:#f8fafc;--border:#e2e8f0;
+  --primary:#2563eb;--primary-light:#eff6ff;
+  --text:#0f172a;--text-muted:#475569;--text-light:#94a3b8;
+  --green:#16a34a;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.8;padding-bottom:80px}
+
+/* Style Info */
+.style-info{max-width:800px;margin:0 auto;padding:48px 24px 32px;border-bottom:1px solid var(--border)}
+.style-info .cat{font-size:.72rem;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px}
+.style-info h1{font-size:clamp(1.6rem,3.5vw,2.2rem);font-weight:800;margin-bottom:4px;letter-spacing:-.02em}
+.style-info .sub{font-size:1rem;color:var(--text-muted);margin-bottom:24px}
+.style-info .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.style-info .meta-item{padding:12px 16px;background:var(--surface);border-radius:8px;border:1px solid var(--border)}
+.style-info .meta-label{font-size:.65rem;font-weight:600;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.style-info .meta-item p{font-size:.82rem;color:var(--text-muted)}
+
+/* Demo — Blog Page */
+.demo{max-width:800px;margin:0 auto;padding:32px 24px}
+
+/* Breadcrumb */
+.breadcrumb{
+  display:flex;align-items:center;gap:8px;
+  font-size:.78rem;color:var(--text-light);margin-bottom:24px;
+  flex-wrap:wrap;
+}
+.breadcrumb a{color:var(--primary);text-decoration:none}
+.breadcrumb a:hover{text-decoration:underline}
+.breadcrumb .sep{color:var(--text-light)}
+
+/* Article */
+.article h1{font-size:clamp(1.5rem,3vw,2rem);font-weight:800;margin-bottom:12px;line-height:1.3;letter-spacing:-.02em}
+.article .article-meta{
+  display:flex;gap:16px;font-size:.8rem;color:var(--text-light);
+  margin-bottom:24px;flex-wrap:wrap;
+}
+.article h2{font-size:1.3rem;font-weight:700;margin:32px 0 12px;border-left:3px solid var(--primary);padding-left:12px}
+.article h3{font-size:1.05rem;font-weight:600;margin:24px 0 8px}
+.article p{font-size:.92rem;color:var(--text-muted);margin-bottom:16px}
+.article ul,.article ol{margin:0 0 16px 20px;font-size:.92rem;color:var(--text-muted)}
+.article li{margin-bottom:6px}
+
+/* Core Web Vitals card */
+.vitals{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:20px;margin:24px 0;
+}
+.vitals h3{font-size:.88rem;font-weight:700;margin-bottom:12px;border:none;padding:0}
+.vitals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.vital{text-align:center;padding:12px;border-radius:8px;background:var(--bg)}
+.vital .val{font-size:1.4rem;font-weight:800;margin-bottom:2px}
+.vital .val.good{color:var(--green)}
+.vital .label{font-size:.7rem;color:var(--text-light);font-weight:500}
+
+/* FAQ Schema */
+.faq{margin:32px 0}
+.faq h2{border-left:3px solid var(--primary);padding-left:12px;margin-bottom:16px}
+.faq-item{
+  border:1px solid var(--border);border-radius:8px;margin-bottom:8px;
+  overflow:hidden;transition:border-color .3s;
+}
+.faq-item:hover{border-color:var(--primary)}
+.faq-q{
+  padding:14px 16px;font-size:.9rem;font-weight:600;
+  cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;background:var(--surface);
+  transition:background .2s;user-select:none;
+}
+.faq-q:hover{background:var(--primary-light)}
+.faq-q .arrow{transition:transform .3s;font-size:.8rem}
+.faq-item.open .faq-q .arrow{transform:rotate(180deg)}
+.faq-a{
+  padding:0 16px;max-height:0;overflow:hidden;
+  transition:max-height .4s ease,padding .4s;
+  font-size:.88rem;color:var(--text-muted);line-height:1.8;
+}
+.faq-item.open .faq-a{max-height:300px;padding:0 16px 16px}
+
+/* Schema block */
+.schema-block{
+  background:#0f172a;color:#e2e8f0;border-radius:8px;
+  padding:16px;margin:24px 0;font-size:.75rem;
+  font-family:'Courier New',monospace;overflow-x:auto;
+  line-height:1.6;
+}
+
+/* Speed indicator */
+.speed{
+  display:flex;align-items:center;gap:12px;
+  padding:16px 20px;background:var(--primary-light);
+  border-radius:8px;margin:24px 0;
+}
+.speed .icon{font-size:1.5rem}
+.speed .text{font-size:.85rem;color:var(--primary);font-weight:500}
+.speed .ms{font-size:1.2rem;font-weight:800;color:var(--primary);margin-left:auto}
+
+@media(max-width:768px){
+  .style-info{padding:32px 16px 24px}
+  .demo{padding:24px 16px}
+  .vitals-grid{grid-template-columns:1fr}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(255,255,255,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+}
+.bottom-nav a{text-decoration:none;color:var(--text-muted);font-size:.85rem;font-weight:500;padding:8px 20px;border-radius:10px;transition:color .3s,background .3s}
+.bottom-nav a:hover{color:var(--text);background:rgba(0,0,0,.05)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.style-info{animation:fadeUp .5s ease}
+.demo{animation:fadeUp .5s ease .15s both}
+</style>
+</head>
+<body>
+
+<header class="style-info">
+  <div class="cat">🏗️ 極簡與結構化設計</div>
+  <h1>#05 — SEO-Driven Structured UI</h1>
+  <p class="sub">SEO 導向結構化介面</p>
+  <div class="meta-grid">
+    <div class="meta-item"><div class="meta-label">📖 風格定義</div><p>視覺服務於搜尋引擎邏輯。專注於極致的 H1-H3 標籤語意邏輯與核心網頁指標（Core Web Vitals）的優化。佈局極簡以換取毫秒級的頁面速度，內容結構有利於豐富摘要（Rich Snippets）的生成。</p></div>
+    <div class="meta-item"><div class="meta-label">🏢 適用場景</div><p>專業內容農場、企業官方部落格、中小企業官網</p></div>
+    <div class="meta-item"><div class="meta-label">🌍 流行地區</div><p>日本、台灣</p></div>
+    <div class="meta-item"><div class="meta-label">📂 分類</div><p>極簡與結構化設計（Minimalism &amp; Structured Design）</p></div>
+  </div>
+</header>
+
+<main class="demo">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="#">首頁</a><span class="sep">›</span>
+    <a href="#">技術部落格</a><span class="sep">›</span>
+    <span>SEO 優化完整指南</span>
+  </nav>
+
+  <article class="article">
+    <h1>2026 年 SEO 優化完整指南：從 Core Web Vitals 到結構化資料</h1>
+    <div class="article-meta">
+      <span>📅 2026-03-15</span>
+      <span>✏️ 技術團隊</span>
+      <span>⏱️ 閱讀時間 8 分鐘</span>
+    </div>
+
+    <div class="speed">
+      <span class="icon">⚡</span>
+      <span class="text">Page Load Time</span>
+      <span class="ms" id="loadTime">—</span>
+    </div>
+
+    <p>在 2026 年的數位行銷環境中，SEO 已從單純的關鍵字堆砌演進至使用者體驗與技術架構的深層整合。本指南將系統化地探討如何透過結構化介面設計，同時滿足搜尋引擎爬蟲與真實使用者的需求。</p>
+
+    <h2>Core Web Vitals 實戰指標</h2>
+    <p>Google 的核心網頁指標是衡量網站效能的三大關鍵數據:</p>
+    <div class="vitals">
+      <h3>📊 本頁效能指標</h3>
+      <div class="vitals-grid">
+        <div class="vital"><div class="val good" id="lcp">—</div><div class="label">LCP (Largest Contentful Paint)</div></div>
+        <div class="vital"><div class="val good" id="fid">—</div><div class="label">FID (First Input Delay)</div></div>
+        <div class="vital"><div class="val good" id="cls">—</div><div class="label">CLS (Cumulative Layout Shift)</div></div>
+      </div>
+    </div>
+
+    <h2>語意化 HTML 結構的重要性</h2>
+    <p>正確的語意標籤不僅讓搜尋引擎理解內容層級，更確保了螢幕閱讀器的無障礙存取。以下是關鍵原則：</p>
+    <ul>
+      <li>每頁僅使用一個 <code>&lt;h1&gt;</code> 標籤</li>
+      <li>H2-H3 標籤應反映內容的邏輯層級</li>
+      <li>使用 <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;nav&gt;</code> 語意標籤</li>
+      <li>圖片必須包含描述性 <code>alt</code> 屬性</li>
+    </ul>
+
+    <h2>結構化資料與 Rich Snippets</h2>
+    <h3>JSON-LD Schema 範例</h3>
+    <div class="schema-block">
+&lt;script type="application/ld+json"&gt;
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "2026 年 SEO 優化完整指南",
+  "author": { "@type": "Organization", "name": "Tech Team" },
+  "datePublished": "2026-03-15",
+  "description": "從 Core Web Vitals 到結構化資料的完整 SEO 策略"
+}
+&lt;/script&gt;
+    </div>
+
+    <div class="faq">
+      <h2>常見問題 FAQ</h2>
+      <div class="faq-item">
+        <div class="faq-q">什麼是 Core Web Vitals？<span class="arrow">▼</span></div>
+        <div class="faq-a">Core Web Vitals 是 Google 用來衡量網頁使用者體驗的三項核心指標，包括 LCP（最大內容繪製）、FID（首次輸入延遲）和 CLS（累積版面布局偏移）。這些指標直接影響網站在搜尋結果中的排名。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">結構化資料如何影響 SEO？<span class="arrow">▼</span></div>
+        <div class="faq-a">結構化資料幫助搜尋引擎精確理解頁面內容的語意，從而生成豐富摘要（Rich Snippets），如 FAQ 下拉、評分星級、產品價格等，大幅提升搜尋結果的點擊率（CTR）。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">極簡佈局如何幫助頁面速度？<span class="arrow">▼</span></div>
+        <div class="faq-a">極簡佈局通過減少 DOM 節點數量、降低 CSS 複雜度、避免不必要的 JavaScript 載入，從而大幅縮短頁面渲染時間，直接改善 LCP 和 FID 指標。</div>
+      </div>
+    </div>
+  </article>
+</main>
+
+<nav class="bottom-nav">
+  <a href="04.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="06.html">下一頁 →</a>
+</nav>
+
+<script>
+// FAQ toggle
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    q.parentElement.classList.toggle('open');
+  });
+});
+
+// Simulate metrics
+setTimeout(() => {
+  document.getElementById('lcp').textContent = '1.2s';
+  document.getElementById('fid').textContent = '18ms';
+  document.getElementById('cls').textContent = '0.03';
+  document.getElementById('loadTime').textContent = '0.8s';
+}, 600);
+</script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#09 High Contrast Typography — 高對比排版風格 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;900&family=Noto+Sans+TC:wght@100;300;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050505;--text:#f5f5f5;--text-muted:#888;
+  --accent:#ff3d00;--accent2:#00e5ff;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;
+  padding-bottom:80px;overflow-x:hidden;
+}
+
+/* Style Info — using extreme typographic contrast */
+.style-info{
+  max-width:1100px;margin:0 auto;
+  padding:80px 40px 64px;
+}
+.style-info .num{
+  font-size:clamp(6rem,15vw,12rem);font-weight:900;
+  line-height:.85;letter-spacing:-.06em;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:8px;
+}
+.style-info h1{
+  font-size:clamp(2rem,5vw,4rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:.02em;
+  margin-bottom:4px;line-height:1;
+}
+.style-info .sub{
+  font-size:clamp(.9rem,2vw,1.2rem);font-weight:100;
+  color:var(--text-muted);letter-spacing:.1em;
+  margin-bottom:48px;
+}
+.info-blocks{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+}
+.info-block{
+  padding:24px 0;border-top:1px solid rgba(255,255,255,.1);
+}
+.info-block.full{grid-column:1/-1}
+.info-block .label{
+  font-size:.6rem;font-weight:900;text-transform:uppercase;
+  letter-spacing:.15em;color:var(--accent);margin-bottom:8px;
+}
+.info-block p{
+  font-size:.85rem;font-weight:300;color:var(--text-muted);
+  line-height:1.9;max-width:560px;
+}
+
+/* Demo — Design Studio Manifesto */
+.manifesto{max-width:1200px;margin:0 auto;padding:0 40px}
+
+/* Giant statement sections */
+.statement{
+  padding:80px 0;border-bottom:1px solid rgba(255,255,255,.06);
+  position:relative;
+}
+.statement .big-text{
+  font-size:clamp(3rem,10vw,9rem);font-weight:900;
+  line-height:.9;letter-spacing:-.04em;
+  text-transform:uppercase;
+}
+.statement .thin-text{
+  font-size:clamp(1rem,3vw,2rem);font-weight:100;
+  color:var(--text-muted);margin-top:16px;
+  letter-spacing:.05em;line-height:1.5;
+}
+.statement .accent{color:var(--accent)}
+.statement .accent2{color:var(--accent2)}
+.statement .outline{
+  -webkit-text-stroke:1.5px var(--text);
+  -webkit-text-fill-color:transparent;
+}
+
+/* Flip animation on hover */
+.flip-word{
+  display:inline-block;transition:transform .6s cubic-bezier(.4,0,.2,1);
+  transform-origin:center bottom;
+}
+.flip-word:hover{
+  transform:rotateX(360deg);
+}
+
+/* Counter section */
+.counter-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border-top:1px solid rgba(255,255,255,.06);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.counter-item{
+  padding:48px 24px;text-align:center;
+  border-right:1px solid rgba(255,255,255,.06);
+}
+.counter-item:last-child{border-right:none}
+.counter-item .num{
+  font-size:clamp(2.5rem,6vw,5rem);font-weight:900;
+  letter-spacing:-.03em;
+}
+.counter-item .label{
+  font-size:.65rem;font-weight:300;text-transform:uppercase;
+  letter-spacing:.15em;color:var(--text-muted);margin-top:8px;
+}
+
+/* Marquee */
+.marquee{
+  overflow:hidden;padding:24px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.marquee-inner{
+  display:flex;gap:48px;white-space:nowrap;
+  animation:scroll 20s linear infinite;
+}
+@keyframes scroll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.marquee-inner span{
+  font-size:clamp(1.2rem,3vw,2rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:.08em;
+}
+.marquee-inner .dot{color:var(--accent);font-size:.8em}
+
+/* Service list */
+.services{padding:64px 0}
+.services h3{
+  font-size:.6rem;font-weight:900;text-transform:uppercase;
+  letter-spacing:.2em;color:var(--accent);margin-bottom:32px;
+}
+.service-item{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:20px 0;border-bottom:1px solid rgba(255,255,255,.06);
+  cursor:pointer;transition:padding-left .3s;
+}
+.service-item:hover{padding-left:16px}
+.service-item .name{
+  font-size:clamp(1.2rem,3vw,2.2rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:.02em;
+}
+.service-item .idx{
+  font-size:.7rem;font-weight:100;color:var(--text-muted);
+  letter-spacing:.1em;
+}
+
+/* CTA */
+.cta-section{
+  text-align:center;padding:80px 0 48px;
+}
+.cta-section .big{
+  font-size:clamp(2rem,6vw,5rem);font-weight:900;
+  text-transform:uppercase;letter-spacing:-.02em;
+  margin-bottom:24px;line-height:1;
+}
+.cta-btn{
+  display:inline-block;padding:16px 48px;border:2px solid var(--text);
+  background:none;color:var(--text);font-family:inherit;
+  font-size:.8rem;font-weight:900;text-transform:uppercase;
+  letter-spacing:.15em;cursor:pointer;
+  transition:all .3s;text-decoration:none;
+}
+.cta-btn:hover{
+  background:var(--text);color:var(--bg);
+  letter-spacing:.25em;
+}
+
+@media(max-width:768px){
+  .style-info{padding:60px 20px 48px}
+  .info-blocks{grid-template-columns:1fr}
+  .manifesto{padding:0 20px}
+  .counter-row{grid-template-columns:1fr}
+  .counter-item{border-right:none;border-bottom:1px solid rgba(255,255,255,.06)}
+  .counter-item:last-child{border-bottom:none}
+  .statement{padding:48px 0}
+  .service-item .name{font-size:1.2rem}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(5,5,5,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,.08);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+}
+.bottom-nav a{text-decoration:none;color:var(--text-muted);font-size:.85rem;font-weight:400;padding:8px 20px;border-radius:8px;transition:color .3s,background .3s}
+.bottom-nav a:hover{color:var(--text);background:rgba(255,255,255,.06)}
+</style>
+</head>
+<body>
+
+<header class="style-info">
+  <div class="num">09</div>
+  <h1>High Contrast Typography</h1>
+  <p class="sub">高 對 比 排 版 風 格</p>
+  <div class="info-blocks">
+    <div class="info-block full">
+      <div class="label">📖 風格定義與視覺特徵</div>
+      <p>使用極具視覺衝擊力的巨大字體作為版面主體，大幅減少對攝影圖像的依賴。排版強調粗細與大小的極端對比，不僅吸引目光，更完美符合 WCAG 的高對比無障礙閱讀標準。</p>
+    </div>
+    <div class="info-block">
+      <div class="label">🏢 適用產業與場景</div>
+      <p>短期行銷活動頁面、設計工作室作品集、品牌宣傳宣言</p>
+    </div>
+    <div class="info-block">
+      <div class="label">🌍 主要流行地區</div>
+      <p>美國、全球</p>
+    </div>
+    <div class="info-block full">
+      <div class="label">📂 所屬分類</div>
+      <p>極簡與結構化設計（Minimalism & Structured Design）</p>
+    </div>
+  </div>
+</header>
+
+<main class="manifesto">
+  <!-- Statement 1 -->
+  <section class="statement">
+    <div class="big-text">
+      WE <span class="accent flip-word">DESIGN</span><br>
+      <span class="outline">THE FUTURE</span>
+    </div>
+    <div class="thin-text">
+      我們不追隨趨勢。我們定義下一個時代的視覺語言。
+    </div>
+  </section>
+
+  <!-- Statement 2 -->
+  <section class="statement">
+    <div class="big-text">
+      <span class="outline">BOLD</span> IS<br>
+      <span class="accent2 flip-word">BEAUTIFUL</span>
+    </div>
+    <div class="thin-text">
+      極端的粗細對比，是文字在無聲中最有力的吶喊。
+    </div>
+  </section>
+
+  <!-- Counter row -->
+  <div class="counter-row">
+    <div class="counter-item">
+      <div class="num" data-target="247">0</div>
+      <div class="label">Projects Delivered</div>
+    </div>
+    <div class="counter-item">
+      <div class="num" data-target="18">0</div>
+      <div class="label">Design Awards</div>
+    </div>
+    <div class="counter-item">
+      <div class="num" data-target="12">0</div>
+      <div class="label">Years of Craft</div>
+    </div>
+  </div>
+
+  <!-- Marquee -->
+  <div class="marquee">
+    <div class="marquee-inner">
+      <span>TYPE IS POWER</span><span class="dot">●</span>
+      <span>CONTRAST IS KING</span><span class="dot">●</span>
+      <span>LESS IMAGE MORE IMPACT</span><span class="dot">●</span>
+      <span>WCAG AAA COMPLIANT</span><span class="dot">●</span>
+      <span>TYPE IS POWER</span><span class="dot">●</span>
+      <span>CONTRAST IS KING</span><span class="dot">●</span>
+      <span>LESS IMAGE MORE IMPACT</span><span class="dot">●</span>
+      <span>WCAG AAA COMPLIANT</span><span class="dot">●</span>
+    </div>
+  </div>
+
+  <!-- Services -->
+  <section class="services">
+    <h3>What We Do</h3>
+    <div class="service-item"><span class="name">Brand Identity</span><span class="idx">01</span></div>
+    <div class="service-item"><span class="name">Digital Experience</span><span class="idx">02</span></div>
+    <div class="service-item"><span class="name">Motion Design</span><span class="idx">03</span></div>
+    <div class="service-item"><span class="name">Type Engineering</span><span class="idx">04</span></div>
+    <div class="service-item"><span class="name">Art Direction</span><span class="idx">05</span></div>
+  </section>
+
+  <!-- Statement 3 -->
+  <section class="statement">
+    <div class="big-text">
+      EVERY<br>
+      <span class="accent flip-word">PIXEL</span><br>
+      <span class="outline">MATTERS</span>
+    </div>
+    <div class="thin-text">
+      每一個像素都承載著意圖。我們拒絕偶然，擁抱精確。
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="big">LET'S <span class="accent">TALK</span></div>
+    <a class="cta-btn" href="javascript:void(0)">START A PROJECT →</a>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <a href="08.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="10.html">下一頁 →</a>
+</nav>
+
+<script>
+// Animated counters
+const counterObs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.querySelectorAll('[data-target]').forEach(el=>{
+        const target=parseInt(el.dataset.target);
+        const dur=1400;const start=performance.now();
+        function update(now){
+          const p=Math.min((now-start)/dur,1);
+          const eased=1-Math.pow(1-p,3);
+          el.textContent=Math.floor(eased*target);
+          if(p<1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+      });
+      counterObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('.counter-row').forEach(el=>counterObs.observe(el));
+
+// Scroll-triggered fade for statements
+const fadeObs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+    }
+  });
+},{threshold:0.15});
+
+document.querySelectorAll('.statement,.services,.cta-section,.counter-row').forEach(el=>{
+  el.style.opacity='0';
+  el.style.transform='translateY(30px)';
+  el.style.transition='opacity .8s ease,transform .8s ease';
+  fadeObs.observe(el);
+});
+
+// Service item hover — reveal index colour
+document.querySelectorAll('.service-item').forEach(item=>{
+  item.addEventListener('mouseenter',()=>{
+    item.querySelector('.idx').style.color='var(--accent)';
+    item.querySelector('.idx').style.transition='color .3s';
+  });
+  item.addEventListener('mouseleave',()=>{
+    item.querySelector('.idx').style.color='var(--text-muted)';
+  });
+});
+</script>
+</body>
+</html>
