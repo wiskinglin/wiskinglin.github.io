@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-2027 台灣汽車市場日系品牌戰略剖析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables & Global Settings */
+        :root {
+            --brand-primary: #0f172a; /* Slate 900 */
+            --brand-accent: #2563eb;  /* Blue 600 */
+            --brand-light: #f8fafc;   /* Slate 50 */
+            --text-main: #334155;     /* Slate 700 */
+            --text-muted: #64748b;    /* Slate 500 */
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #cbd5e1; /* Background for screen preview */
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        /* Control Panel (Screen Only) */
+        .control-panel {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .btn.active { background: var(--brand-accent); color: white; border-color: var(--brand-accent); }
+
+        /* Document Wrapper for Centering in Screen Mode */
+        .document-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 5rem 1rem 3rem 1rem;
+        }
+
+        /* ----------------------------------------------------
+           Page Container (Core Modular Architecture)
+           ---------------------------------------------------- */
+        .page-container {
+            background: white;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            padding: 20mm 15mm;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+            /* Subtitle/accent bar at top of every page */
+            border-top: 8px solid var(--brand-accent);
+        }
+
+        /* Screen Preview Sizes */
+        body.portrait-mode .page-container {
+            width: 210mm;
+            min-height: 297mm;
+        }
+
+        body.landscape-mode .page-container {
+            width: 297mm;
+            min-height: 210mm;
+            font-size: 1.05rem; /* Base font size bump for presentation feel */
+        }
+
+        /* ----------------------------------------------------
+           Adaptive Layout Classes (Handled via CSS for Print/Screen sync)
+           ---------------------------------------------------- */
+        .grid-adaptive { display: grid; gap: 1.5rem; }
+        .grid-adaptive-cards { display: grid; gap: 1.5rem; }
+        
+        body.portrait-mode .grid-adaptive { grid-template-columns: 1fr; }
+        body.portrait-mode .grid-adaptive-cards { grid-template-columns: repeat(2, 1fr); }
+        
+        body.landscape-mode .grid-adaptive { grid-template-columns: repeat(2, 1fr); }
+        body.landscape-mode .grid-adaptive-cards { grid-template-columns: repeat(3, 1fr); }
+        
+        /* Typography Scale for Landscape */
+        body.landscape-mode h1 { font-size: 2.5rem; line-height: 1.2; }
+        body.landscape-mode h2 { font-size: 1.75rem; margin-bottom: 1.5rem; }
+        body.landscape-mode .leading-relaxed { line-height: 1.8; }
+
+        /* Visual styling for content blocks */
+        .card {
+            background: var(--brand-light);
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #cbd5e1; padding: 0.75rem; text-align: left; }
+        th { background: #f1f5f9; font-weight: 700; color: var(--brand-primary); }
+
+        /* ----------------------------------------------------
+           CRITICAL PRINT RULES (The Magic Engine)
+           ---------------------------------------------------- */
+        @media print {
+            body { 
+                background: white; 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .document-wrapper { padding: 0; gap: 0; display: block; }
+            .no-print { display: none !important; }
+
+            .page-container {
+                width: 100% !important;
+                min-height: auto !important; /* Remove fixed height */
+                height: auto !important;     /* Natural flow */
+                padding: 15mm !important;    /* Printer margin */
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                /* Only Page breaks allowed here */
+                page-break-after: always;
+                break-after: page;
+                /* Add a subtle top border for print output instead of shadow */
+                border-top: 6px solid var(--brand-accent) !important;
+            }
+
+            /* Prevent elements from being cut in half (Orphans/Widows) */
+            .card, h1, h2, h3, h4, p, li, table, tr, .prevent-break {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            /* Heading logic: Keep headings with their following content */
+            h1, h2, h3 { 
+                page-break-after: avoid; 
+                break-after: avoid; 
+            }
+
+            /* Dynamic @page sizing via body class */
+            body.portrait-mode { @page { size: A4 portrait; margin: 0; } }
+            body.landscape-mode { @page { size: A4 landscape; margin: 0; } }
+        }
+
+        /* 編輯模式的視覺提示 */
+        .document-wrapper[contenteditable="true"] {
+            outline: 3px dashed var(--brand-accent);
+            outline-offset: 15px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .document-wrapper[contenteditable="true"]:focus {
+            outline: 3px solid var(--brand-accent);
+        }
+    </style>
+</head>
+<body class="portrait-mode">
+
+    <div class="control-panel no-print">
+        <button id="btn-portrait" class="btn active" onclick="setMode('portrait')">
+            <span>📄</span> 直式版型
+        </button>
+        <button id="btn-landscape" class="btn" onclick="setMode('landscape')">
+            <span>📺</span> 橫式版型
+        </button>
+        
+        <button id="btn-edit" class="btn text-blue-600 border-blue-200 hover:bg-blue-50" onclick="toggleEditMode()">
+            <span>✏️</span> 編輯內容
+        </button>
+
+        <button class="btn !bg-slate-900 !text-white !border-slate-900 hover:!bg-slate-800" onclick="window.print()">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <div class="document-wrapper">
+
+        <section class="page-container flex flex-col justify-center">
+            <div class="mb-8">
+                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold tracking-wider mb-4">INDUSTRY REPORT</span>
+                <h1 class="text-3xl md:text-4xl font-black text-slate-900 leading-tight mb-4">
+                    2026至2027年台灣汽車市場<br>日系品牌產品線佈局與定價戰略深度剖析報告
+                </h1>
+                <div class="h-1 w-20 bg-blue-600 rounded mb-6"></div>
+            </div>
+
+            <h2 class="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
+                高階執行摘要 (Executive Summary)
+            </h2>
+            
+            <div class="grid-adaptive">
+                <div class="text-slate-600 leading-relaxed text-justify">
+                    <p class="mb-4">
+                        展望2026年至2027年，台灣汽車市場正處於法規重塑、動力轉型與供應鏈重組的歷史性轉折點。隨著整體經濟環境的復甦以及美國對台關稅政策的明朗化，2026年全台汽車總市場規模預估將回升至<strong>44萬輛</strong>的高標水準。
+                    </p>
+                    <p class="mb-4">
+                        在此宏觀背景下，日系汽車製造商（Toyota/Lexus、Honda、Nissan、Mazda、Suzuki）在台灣的戰略佈局正面臨前所未有的機遇與挑戰。本報告深度剖析五大日系品牌，在面對台灣「車廠耗能總量管理（CAFE）」日趨嚴苛、「國產車零件自製率」新制全面實施，以及「汰舊換新貨物稅減徵」政策展延等多重外部變數下的應對路徑。
+                    </p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="card border-l-4 border-l-blue-600">
+                        <h4 class="font-bold text-slate-800 mb-1">典範轉移一：動力重構</h4>
+                        <p class="text-sm text-slate-600">油電極大化與純電防守點。深化HEV與e-POWER系統普及率作為銷量與利潤基石，並針對BEV與PHEV採取精準打擊的光環車型導入模式。</p>
+                    </div>
+                    <div class="card border-l-4 border-l-emerald-500">
+                        <h4 class="font-bold text-slate-800 mb-1">典範轉移二：板塊擴張與定價重錨</h4>
+                        <p class="text-sm text-slate-600">受制於35%國產自製率規範，依賴中國零件品牌優勢削弱，創造出銷量真空。日系品牌挾在地供應鏈優勢，以「配備升級維持定錨」擴張市佔。</p>
+                    </div>
+                    <div class="card border-l-4 border-l-purple-500">
+                        <h4 class="font-bold text-slate-800 mb-1">典範轉移三：雙軌資源錯位分配</h4>
+                        <p class="text-sm text-slate-600">國產防守、進口攻擊。利用國產產線穩定大眾車款產能與利潤；運用日圓匯率優勢，擴大進口個性化與新能源車款，抗衡歐韓品牌。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-2">日系品牌主力車型與戰略動能總覽</h2>
+            <p class="text-slate-600 mb-4">為了清晰勾勒各車廠的戰略藍圖，下表橫向對比各大日系車廠在2026至2027年間，針對台灣市場的國產與進口重點新車預測、預估價格帶以及新能源動力主軸的差異化佈局。</p>
+            
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+                <table class="text-sm md:text-base w-full">
+                    <thead>
+                        <tr>
+                            <th class="w-1/6">品牌陣營</th>
+                            <th class="w-1/3">國產/進口重點新車預測 (2026-2027)</th>
+                            <th class="w-1/6">預估價格帶</th>
+                            <th class="w-1/3">新能源動力主軸與市場定位分析</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        <tr class="bg-white hover:bg-slate-50">
+                            <td class="font-bold text-slate-800">Toyota / Lexus</td>
+                            <td>
+                                <ul class="list-disc pl-4 space-y-1">
+                                    <li>(進口) RAV4 第六代大改款</li>
+                                    <li>(進口) Lexus ES 大改款</li>
+                                    <li>(進口) Crown Sport 左駕版</li>
+                                    <li>(國產) Corolla 60週年特仕車</li>
+                                </ul>
+                            </td>
+                            <td class="text-slate-600">110萬-140萬<br>200萬-300萬+<br>150萬-180萬<br>75萬-100萬</td>
+                            <td class="text-slate-600">全領域能源覆蓋：RAV4主打PHEV與NA雙線；Lexus ES導入500e純電；持續鞏固統治級市佔率。</td>
+                        </tr>
+                        <tr class="bg-slate-50 hover:bg-slate-100">
+                            <td class="font-bold text-slate-800">Honda</td>
+                            <td>
+                                <ul class="list-disc pl-4 space-y-1">
+                                    <li>(國產) CR-V (年式配備優化)</li>
+                                    <li>(進口) ZR-V e:HEV</li>
+                                    <li>(進口) Prelude e:HEV 跑車</li>
+                                </ul>
+                            </td>
+                            <td class="text-slate-600">105萬-128萬<br>130萬-150萬<br>160萬-180萬</td>
+                            <td class="text-slate-600">e:HEV 雙動能極大化：ZR-V填補中階高質感跨界空白，Prelude重塑品牌運動化駕馭樂趣光環。</td>
+                        </tr>
+                        <tr class="bg-white hover:bg-slate-50">
+                            <td class="font-bold text-slate-800">Nissan</td>
+                            <td>
+                                <ul class="list-disc pl-4 space-y-1">
+                                    <li>(國產) X-Trail 大改預備/特仕</li>
+                                    <li>(國產) Kicks / Sentra Sakura</li>
+                                    <li>(進口) Ariya 純電休旅擴張</li>
+                                </ul>
+                            </td>
+                            <td class="text-slate-600">105萬-125萬<br>74.9萬-90萬<br>160萬-190萬</td>
+                            <td class="text-slate-600">e-POWER與BEV雙箭頭：次世代X-Trail有望導入進化版e-POWER甚至PHEV；Ariya主攻純電SUV。</td>
+                        </tr>
+                        <tr class="bg-slate-50 hover:bg-slate-100">
+                            <td class="font-bold text-slate-800">Mazda</td>
+                            <td>
+                                <ul class="list-disc pl-4 space-y-1">
+                                    <li>(進口) CX-5 第四代大改款</li>
+                                    <li>(進口) CX系列高階休旅微調</li>
+                                </ul>
+                            </td>
+                            <td class="text-slate-600">110萬-140萬<br>130萬-180萬</td>
+                            <td class="text-slate-600">初期以2.5L MHEV為主，2027年升級Skyactiv-Z深度油電系統，主打精緻化座艙與跨級距打擊。</td>
+                        </tr>
+                        <tr class="bg-white hover:bg-slate-50">
+                            <td class="font-bold text-slate-800">Suzuki</td>
+                            <td>
+                                <ul class="list-disc pl-4 space-y-1">
+                                    <li>(進口) e-VITARA 純電休旅</li>
+                                    <li>(進口) Swift / S-Cross MHEV</li>
+                                </ul>
+                            </td>
+                            <td class="text-slate-600">115萬-123萬<br>73萬-100萬</td>
+                            <td class="text-slate-600">首款純電e-VITARA以破壞性定價切入，輔以傳統輕油電車系維持都會小車與輕越野霸主地位。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">總體經濟與政策法規環境深度剖析 (一)</h2>
+                <p class="text-slate-600">在探討各別車廠的微觀產品策略之前，必須先界定影響2026至2027年台灣汽車市場結構的宏觀變數。</p>
+            </div>
+
+            <div class="grid-adaptive">
+                <div class="card flex flex-col h-full">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="bg-blue-100 text-blue-800 p-2 rounded">🍃</span>
+                        <h3 class="text-xl font-bold text-slate-800">CAFE 規範與新能源轉型路徑的務實妥協</h3>
+                    </div>
+                    <div class="text-slate-600 text-sm leading-relaxed flex-grow">
+                        <p class="mb-3">台灣的「車廠耗能總量管理（CAFE）」標準逐年攀升。對於日系品牌而言，直接跨入全純電（BEV）陣營並非其全球戰略的核心，亦不完全符合台灣現階段充電基礎設施的分佈現狀與多數消費者的用車習慣。</p>
+                        <p class="mb-3">核心邏輯為「<strong>以HEV與e-POWER創造銷量與獲利基盤、以PHEV與BEV賺取CAFE積分並拉升品牌形象</strong>」。透過油電混合系統的大規模下放，日系品牌得以在法規與製造成本間取得最佳平衡，避免流失傳統燃油車的保守客群。</p>
+                    </div>
+                </div>
+
+                <div class="card flex flex-col h-full">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="bg-orange-100 text-orange-800 p-2 rounded">⚙️</span>
+                        <h3 class="text-xl font-bold text-slate-800">自製率政策的市場重分配效應與定價真空</h3>
+                    </div>
+                    <div class="text-slate-600 text-sm leading-relaxed flex-grow">
+                        <p class="mb-3">2024年下半年，經濟部產發署針對部分依賴大陸零組件等車款，祭出嚴格的「國產車自製率規範」，並於2026年8月起全面強制要求達到<strong>35%的自製率門檻</strong>。</p>
+                        <p class="mb-3">過去以新興品牌為主透過高度依賴中國供應鏈席捲市場。然而新政策大幅墊高這類品牌的成本，創造了定價真空。深耕在地供應鏈的日系國產車廠得以透過「配備升級維持價格定錨」穩固市佔，在2026年實現利潤率的修復。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">總體經濟與政策法規環境深度剖析 (二)</h2>
+            </div>
+
+            <div class="grid-adaptive">
+                <div class="card flex flex-col h-full col-span-1">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="bg-red-100 text-red-800 p-2 rounded">💰</span>
+                        <h3 class="text-xl font-bold text-slate-800">汰舊換新補助展延與排氣量稅制的連鎖反應</h3>
+                    </div>
+                    <div class="text-slate-600 leading-relaxed flex-grow">
+                        <p class="mb-3">另一項左右市場板塊的關鍵政策，是政府將「汽機車汰舊換新減徵貨物稅」每輛最高減徵5萬元的補助政策，進一步修法展延至<strong>2030年底</strong>。這項政策實則為入門級距與傳統大排氣量自然進氣（NA）引擎車型提供了強大的續命動能。</p>
+                        <p class="mb-3">由於這5萬元的價差在總價低於百萬的車款中佔比極高，它成為預算型買家換購的絕對關鍵，使得如 Toyota RAV4 2.0 NA 版本等未具備高階油電系統的傳統動力車型，依然能在2026年的市場中保有極高的市佔率。</p>
+                        <div class="bg-slate-100 p-3 rounded mt-4 border-l-4 border-slate-400">
+                            <h4 class="font-bold text-slate-700 text-sm">稅賦級距挑戰</h4>
+                            <p class="text-sm">台灣獨特的牌照稅與燃料稅分級制度持續影響持有成本計算。當引擎排氣量跨越2.0升進入下一個級距時，每年將增加近5,000元的稅金。這將在2026年對特定日系品牌（如捨棄2.0升引擎的Mazda大改款CX-5）的定價與行銷策略產生劇烈挑戰。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <div class="flex justify-between items-end border-b pb-4 mb-6">
+                <div>
+                    <span class="text-sm font-bold text-red-600 tracking-widest uppercase">Brand Strategy</span>
+                    <h2 class="text-3xl font-black text-slate-900 mt-1">和泰汽車 (Toyota / Lexus)</h2>
+                    <p class="text-slate-500 mt-1">規模霸主的降維打擊與全域防守</p>
+                </div>
+            </div>
+
+            <div class="text-slate-600 mb-6 leading-relaxed">
+                和泰汽車預估2026年集團三品牌將挑戰合計16.5萬台的銷量，市佔率上看37.5%。其產品線佈局展現出難以撼動的規模經濟壁壘與極致的市場細分能力。
+            </div>
+
+            <div class="grid-adaptive-cards">
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 border-b pb-2">第六代 RAV4：雙軌動力</h3>
+                    <p class="text-sm text-slate-600 mb-3">預計最快於2026年下半年引進。採取「高階展現科技、入門鞏固銷量」策略。首波導入2.5升HEV與PHEV（具備CCS1快充，純電續航破百公里）。同時保留2.0 NA引擎作為防守中價位市場的絕對護城河。</p>
+                </div>
+                
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 border-b pb-2">Crown Sport 與 Lexus ES 500e</h3>
+                    <p class="text-sm text-slate-600 mb-3">高階進攻：Crown Sport 有望推出左駕版，以150-180萬定價吸引年輕新貴。豪華品牌Lexus則發表大改款ES，首度提供 ES 500e 純電動力，預估售價200-300萬，堆疊科技高度並跨越CAFE門檻。</p>
+                </div>
+
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 border-b pb-2">在地化定價與AI驅動</h3>
+                    <p class="text-sm text-slate-600 mb-3">透過「價值防守型定價」，如推出 Corolla 60週年特仕車，加值不加價。競爭維度延伸至「智慧移動生態圈」，以 yoxi、iRent 與「去趣」APP 構築數位生態系壁壘。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <div class="flex justify-between items-end border-b pb-4 mb-6">
+                <div>
+                    <span class="text-sm font-bold text-red-600 tracking-widest uppercase">Brand Strategy</span>
+                    <h2 class="text-3xl font-black text-slate-900 mt-1">台灣本田 (Honda)</h2>
+                    <p class="text-slate-500 mt-1">e:HEV 雙動能極大化與駕馭信仰重塑</p>
+                </div>
+            </div>
+
+            <div class="text-slate-600 mb-6 leading-relaxed">
+                2026至2027年戰略核心為「e:HEV動力架構的降維打擊」。在CAFE法規限制下，Honda並未急於將純電車導入，而是重押具備高度駕馭樂趣的 e:HEV 系統。
+            </div>
+
+            <div class="grid-adaptive">
+                <div class="card bg-slate-50 border-t-4 border-t-slate-800">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">ZR-V e:HEV：高質感跨界休旅</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        精準填補HR-V與CR-V之間的縫隙。ZR-V承襲CIVIC e:HEV優異底盤，主打「雖為SUV，卻能如同房車般駕馭」。預估定價130萬-150萬，專門吸收追求精緻操控與流線跑旅外型的品味型買家。形成「日本進口精品」與「國產實用空間」的雙箭頭防線。
+                    </p>
+                </div>
+
+                <div class="card bg-slate-50 border-t-4 border-t-red-600">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">Prelude：駕馭信仰重塑</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        次世代混合動力專屬跑車Prelude登台，是提升品牌溢價能力的關鍵。底盤源自CIVIC Type R，搭載e:HEV並配備Honda S+ Shift。不肩負衝量任務，而是將形象從「空間魔術師」拉升至「科技領先與性能並重」，防守歐系強勢品牌的年輕客群。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <div class="flex justify-between items-end border-b pb-4 mb-6">
+                <div>
+                    <span class="text-sm font-bold text-red-600 tracking-widest uppercase">Brand Strategy</span>
+                    <h2 class="text-3xl font-black text-slate-900 mt-1">裕隆日產 (Nissan)</h2>
+                    <p class="text-slate-500 mt-1">能源轉型陣線與國產防禦戰略</p>
+                </div>
+            </div>
+
+            <div class="text-slate-600 mb-6 leading-relaxed">
+                面臨動力轉型與鞏固市佔挑戰，佈局緊密圍繞「Ariya純電體系深化」、「次世代X-Trail技術演進」，及「國產大眾車型特仕化」。
+            </div>
+
+            <div class="grid-adaptive-cards">
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 border-b pb-2">Ariya 純電旗艦</h3>
+                    <p class="text-sm text-slate-600 mb-3">定價160萬-190萬。搭載高階電池與ProPILOT系統，營造日式精緻豪華座艙。確立中高階電動車旗艦地位，迎戰Tesla與韓系雙雄。</p>
+                </div>
+                
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 border-b pb-2">次世代 X-Trail (e-POWER/PHEV)</h3>
+                    <p class="text-sm text-slate-600 mb-3">外觀回歸一體式頭燈，導入數位化座艙。預期導入第三代 e-POWER，油耗進步15%。市場傳聞不排除推出 PHEV 車型，與 RAV4 PHEV 正面抗衡。</p>
+                </div>
+
+                <div class="card">
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 border-b pb-2">國產車系防禦戰</h3>
+                    <p class="text-sm text-slate-600 mb-3">針對 Kicks/Sentra 推出 Sakura特仕版 (74.9萬起)。受惠於自製率政策削弱陸系對手，Nissan在不漲價前提下，將主被動安全與數位螢幕列為標配，彰顯C/P值鎖住首購族。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <div class="flex justify-between items-end border-b pb-4 mb-6">
+                <div>
+                    <span class="text-sm font-bold text-red-600 tracking-widest uppercase">Brand Strategy</span>
+                    <h2 class="text-3xl font-black text-slate-900 mt-1">台灣馬自達 (Mazda)</h2>
+                    <p class="text-slate-500 mt-1">科技越級與精品化定價的稅制逆風局</p>
+                </div>
+            </div>
+
+            <div class="text-slate-600 mb-6 leading-relaxed">
+                全車系皆為日本進口身分。戰略主軸為「產品世代大換血」與「Mazda Premium品牌高階化定價哲學」的終極考驗。
+            </div>
+
+            <div class="grid-adaptive">
+                <div class="card border-l-4 border-l-slate-400">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">CX-5 大改款：尺碼躍升與動力隱憂</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-3">
+                        第四代大改款預計2026年下半年抵台。車身大幅放大，解決後座空間痛點。然而，初期將不再提供台灣最受歡迎的2.0 NA引擎，改以2.5升 MHEV 為主。跨越排氣量級距將增加稅金負擔，削弱預算型買家意願。
+                    </p>
+                    <p class="text-slate-600 text-sm leading-relaxed font-bold">
+                        解決方案：原廠預告2027年追加全新「Skyactiv-Z」引擎結合深度油電系統，突破CAFE並重塑環保形象。
+                    </p>
+                </div>
+
+                <div class="card border-l-4 border-l-slate-800">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">科技越級與精品化定價</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        為彌補稅制劣勢，採取「科技越級」策略。大改款CX-5標配10.25吋儀錶，中高階植入15.6吋中央螢幕並內建Google車載系統。Mazda徹底脫離平價底價廝殺，瞄準歐系入門豪華品牌越級進攻。透過高階配備下放，轉移消費者對持有成本的計較，維持高單價與利潤率。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container">
+            <div class="flex justify-between items-end border-b pb-4 mb-6">
+                <div>
+                    <span class="text-sm font-bold text-red-600 tracking-widest uppercase">Brand Strategy</span>
+                    <h2 class="text-3xl font-black text-slate-900 mt-1">TAIWAN SUZUKI (金鈴汽車)</h2>
+                    <p class="text-slate-500 mt-1">純電破壞者與輕油電藍海防守</p>
+                </div>
+            </div>
+
+            <div class="text-slate-600 mb-6 leading-relaxed">
+                向來穩居「都會小車與輕越野霸主」地位。2026年迎來品牌重大變革——正式跨入純電動車（BEV）時代。
+            </div>
+
+            <div class="grid-adaptive-cards">
+                <div class="card col-span-1 lg:col-span-2">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">e-VITARA：純電普及化的價格破壞者</h3>
+                    <div class="text-slate-600 text-sm leading-relaxed space-y-2">
+                        <p>首款全球戰略純電SUV，搭載LFP電池。2WD版本純電續航達516km；ALLGRIP-e四驅版本具備專屬Trail模式。</p>
+                        <p><strong>侵略性定價：</strong>2WD僅115萬元起，四驅123萬元。透過成本可控的LFP與緊湊型eAxle電驅軸壓低售價。</p>
+                        <p><strong>戰略錨點：</strong>不盲求高階豪華，瞄準頂規燃油跨界休旅的潛在買家。以高C/P值與全面標配的ADAS系統，構築對抗韓系入門與MG電動車的防線。</p>
+                    </div>
+                </div>
+
+                <div class="card col-span-1">
+                    <h3 class="text-xl font-bold text-slate-800 mb-3">輕油電陣列藍海防守</h3>
+                    <div class="text-slate-600 text-sm leading-relaxed">
+                        <p>持續仰賴 Swift、Ignis、S-Cross 等車系的 MHEV 系統。憑藉優異油耗、輕盈操控與低稅金優勢，在百萬內市場難逢敵手。</p>
+                        <p class="mt-2">趁對手受制於自製率失去彈性，以純進口身分穩穩收割年輕與都會通勤族。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="page-container flex flex-col">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b pb-2">戰略總結：雙軌策略的深層意涵</h2>
+            
+            <div class="grid-adaptive flex-grow mb-6">
+                <div class="card bg-blue-50">
+                    <h3 class="text-lg font-bold text-blue-900 mb-2">🛡️ 維持國產產線的防禦底氣</h3>
+                    <ul class="list-disc pl-5 text-sm text-slate-700 space-y-2">
+                        <li><strong>在地法規套利：</strong>完整供應商網路輕易跨越35%自製率門檻，接收對手流失訂單。</li>
+                        <li><strong>客製化彈性：</strong>高頻率行銷包裝（如特仕車）迅速響應市場。</li>
+                        <li><strong>利潤蓄水池：</strong>攤提後的模具與採購規模創造穩定現金流，投入AI轉型與保修升級。</li>
+                    </ul>
+                </div>
+                
+                <div class="card bg-indigo-50">
+                    <h3 class="text-lg font-bold text-indigo-900 mb-2">⚔️ 擴大進口陣容的攻擊矛頭</h3>
+                    <ul class="list-disc pl-5 text-sm text-slate-700 space-y-2">
+                        <li><strong>規避規模不經濟：</strong>攫取日圓匯率紅利，利基車款直接進口維持合理售價與MIJ光環。</li>
+                        <li><strong>技術試金石：</strong>快速引進最先進BEV/PHEV技術（如ES 500e, e-VITARA）測試市場水溫，無需承擔產線改造風險。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 text-white p-6 rounded-lg prevent-break mt-auto">
+                <h3 class="text-xl font-bold mb-3 text-blue-300">結論與展望 (2026-2027)</h3>
+                <p class="text-sm leading-relaxed text-slate-300">
+                    日系品牌在台灣市場展現出極具韌性的戰略調整能力。透過「傳統油電全面收割」與「純電/插電戰略佈局」交會，將節能訴求昇華為感性賣點。在定價上，面對自製率新規帶來的真空期，日系車廠拒絕削價競爭，選擇「價值防守與科技進攻」，大幅提升產品隱性C/P值。<br><br>
+                    未來兩年，能精準調配國產產線彈性守住大眾市場，並靈活運用進口配額引進新能源科技拉升品牌光環的日系車廠，必將成為法規、技術與供應鏈雙重洗牌下的最終贏家。
+                </p>
+            </div>
+        </section>
+
+        <section class="page-container text-sm text-slate-500">
+            <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">引用的著作</h2>
+            <div class="grid-adaptive landscape-grid-2">
+                <ol class="list-decimal pl-5 space-y-2">
+                    <li>和泰舉行2026新春記者會，旗下三品牌市占率近4成、創近16年最佳。 Yahoo 汽機車 (檢索日期: 3月 13, 2026)</li>
+                    <li>SUZUKI 首款全球戰略純電SUV e VITARA 正式在台上市。 Taiwan Suzuki (檢索日期: 3月 13, 2026)</li>
+                    <li>和泰公布2026 年新車計劃：Corolla 60 週年特仕車第二季、Lexus ES。 自由時報汽車頻道 (檢索日期: 3月 13, 2026)</li>
+                    <li>經濟部拍板國產車自製率比例，8月啟動3年後需達35%且溯及既往。 地球黃金線 (檢索日期: 3月 13, 2026)</li>
+                    <li>「國產車自製率」8月上路！2026年後至少要35％。 8891新車 (檢索日期: 3月 13, 2026)</li>
+                    <li>大排量時代｜Toyota Crown Sport 全新Hilux 插電RAV4 有望今年上市。 KingAutos (檢索日期: 3月 13, 2026)</li>
+                    <li>Honda 2026台北車展DREAM MORE 驅動夢想PRELUDE、ZR-V e:HEV首度登台亮相。 Honda Taiwan (檢索日期: 3月 13, 2026)</li>
+                    <li>現行款CX-5倒數計時！傳2026年3月停產，大改款4月接力生產。 8891新車 (檢索日期: 3月 13, 2026)</li>
+                    <li>台灣RAV4 第六代不能沒有2.0 汽油動力一數據秀關鍵原因。 Yahoo 汽機車 (檢索日期: 3月 13, 2026)</li>
+                    <li>ARIYA | 新能源電動車熱銷中。 NISSAN (檢索日期: 3月 13, 2026)</li>
+                </ol>
+                <ol class="list-decimal pl-5 space-y-2" start="11">
+                    <li>新世代Nissan X-Trail亮點曝光？傳最快2026下半年發表。 8891新車 (檢索日期: 3月 13, 2026)</li>
+                    <li>NISSAN KICKS & SENTRA SAKURA 春日誠意盛放本月最低限時優惠價59.9萬元起。 Yahoo 汽機車 (檢索日期: 3月 13, 2026)</li>
+                    <li>大改款Mazda CX-5空間放大、油電進駐！最快2026年登場。 8891新車 (檢索日期: 3月 13, 2026)</li>
+                    <li>舊車換新車補助到什麼時候？新制延長至2026/1/7止。 8891汽車 (檢索日期: 3月 13, 2026)</li>
+                    <li>延長汽機車汰舊換新減徵退還貨物稅，並加碼新購小型汽機車也能退稅。 財政部全球資訊網 (檢索日期: 3月 13, 2026)</li>
+                    <li>馬自達Mazda 大改款CX-5 台灣上市時間曝光！等級、規格、價錢一次看！ JUKSY 街星 (檢索日期: 3月 13, 2026)</li>
+                    <li>新世代Toyota RAV4挾3車型現身 新世代油電與TSS 4.0全面植入。 Yahoo 汽機車 (檢索日期: 3月 13, 2026)</li>
+                    <li>台灣6代RAV4價格規配流出？Toyota提供4個標準、1個Adventure與1個GR Sport。 地球黃金線 (檢索日期: 3月 13, 2026)</li>
+                    <li>美規Lexus ES大改款純電與油電並行！入門價格分別為155萬與161萬起。 地球黃金線 (檢索日期: 3月 13, 2026)</li>
+                    <li>Nissan 大改款X-Trail 換搭新造型更顯動感！導入第三代e-Power 油耗更出色。 Yahoo 汽機車 (檢索日期: 3月 13, 2026)</li>
+                    <li>經銷端消息曝光！Mazda 大改款CX-5 下半年抵台動力資訊同步揭曉。 自由時報汽車頻道 (檢索日期: 3月 13, 2026)</li>
+                    <li>Mazda終於公布大改款CX-5登場時間，首波將搭載2.5升輕油電動力？ 地球黃金線 (檢索日期: 3月 13, 2026)</li>
+                </ol>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        function setMode(mode) {
+            const body = document.body;
+            const btnPortrait = document.getElementById('btn-portrait');
+            const btnLandscape = document.getElementById('btn-landscape');
+
+            if (mode === 'portrait') {
+                body.classList.remove('landscape-mode');
+                body.classList.add('portrait-mode');
+                btnPortrait.classList.add('active');
+                btnLandscape.classList.remove('active');
+            } else {
+                body.classList.remove('portrait-mode');
+                body.classList.add('landscape-mode');
+                btnLandscape.classList.add('active');
+                btnPortrait.classList.remove('active');
+            }
+            
+            // Note: The @media print size is driven by these body classes in the CSS.
+        }
+
+        // 切換編輯模式的函數
+        let isEditing = false;
+        function toggleEditMode() {
+            isEditing = !isEditing;
+            const wrapper = document.querySelector('.document-wrapper');
+            const btnEdit = document.getElementById('btn-edit');
+
+            if (isEditing) {
+                // 開啟編輯
+                wrapper.setAttribute('contenteditable', 'true');
+                wrapper.focus();
+                
+                // 改變按鈕外觀為「完成」狀態
+                btnEdit.classList.add('!bg-blue-600', '!text-white', '!border-blue-600');
+                btnEdit.classList.remove('text-blue-600', 'border-blue-200', 'hover:bg-blue-50');
+                btnEdit.innerHTML = '<span>💾</span> 結束編輯';
+            } else {
+                // 關閉編輯
+                wrapper.setAttribute('contenteditable', 'false');
+                
+                // 恢復按鈕原本外觀
+                btnEdit.classList.remove('!bg-blue-600', '!text-white', '!border-blue-600');
+                btnEdit.classList.add('text-blue-600', 'border-blue-200', 'hover:bg-blue-50');
+                btnEdit.innerHTML = '<span>✏️</span> 編輯內容';
+            }
+        }
+    </script>
+</body>
+</html>
