@@ -36,7 +36,7 @@ description: 自動生成 Top 50 UX/UI 設計風格的 HTML 範例資料夾
 
 4. 建立輸出資料夾
    ```powershell
-   New-Item -ItemType Directory -Path "top50-demos" -Force
+   New-Item -ItemType Directory -Path "top50" -Force
    ```
 
 5. 生成 `top50-demos/index.html`（總覽導航頁面）
