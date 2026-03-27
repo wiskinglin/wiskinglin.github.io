@@ -1,6 +1,6 @@
 ---
 project: KLIO
-version: 2.3.0
+version: 2.4.0
 last_updated: 2026-03-27
 status: active
 branch: dev/layout-reorganize
@@ -18,6 +18,7 @@ branch: dev/layout-reorganize
 
 | 版本 | 日期 | 更新摘要 |
 |:---|:---|:---|
+| v2.4.0 | 2026-03-27 | 更新報告統計數字 (22 篇)；確認 `web-modular-report` 工作流測試成功與報告清理。 |
 | v2.3.0 | 2026-03-27 | 導入 OpenClaw 的 `Memory` (團隊記憶庫) 與 `Sessions` (會話交接) 機制。 |
 | v2.2.0 | 2026-03-27 | 文件更名為 `ARCHITECTURE.md`，對齊開源專案命名慣例。 |
 | v2.1.0 | 2026-03-27 | `_docs/` 目錄重組：建立 `roadmap/`, `meetings/`, `references/` 子目錄。 |
@@ -33,16 +34,12 @@ KLIO (wiskinglin.github.io/)
 ├── README.md                           # 📄 專案說明
 ├── theme-switcher-demo.html            # 主題切換器 Demo
 │
-├── 📝 reports/                         # Pillar 1: 報告類 (9 篇 Active)
-│   ├── 20260319_ai.html
-│   ├── 20260319_automobile.html
-│   ├── 20260319_market.html
-│   ├── 20260319_mobile_pc.html
-│   ├── 20260320_StarbucksGame.html
-│   ├── 20260326_2026.html
-│   ├── 20260326_WebUX.html
-│   ├── 20260326_human_folly.html
-│   └── gem-20260327-mobile-form-factor.html
+├── 📝 reports/                         # Pillar 1: 報告類 (22 篇 Active)
+│   ├── 20260319_*.html                 # 早期報告 (AI、電動車、市場等)
+│   ├── 20260320_*.html                 # 商業賽局報告 (星巴克等)
+│   ├── 20260326_*.html                 # UX/趨勢報告 (WebUX、人類愚行錄等)
+│   ├── 20260327_*.html                 # 各式分析報告 (A-team、信用卡攻略等)
+│   └── gem-*.html                      # 由 web-modular-report 全自動生成之模組化報告 (共 9 篇)
 │
 ├── 🔧 tools/                           # Pillar 2: 工具類
 │   ├── ebook.html                      # 沉浸式電子書閱讀器
@@ -135,7 +132,7 @@ KLIO (wiskinglin.github.io/)
 
 | # | 支柱 | 目錄 | 現有檔案數 | 成熟度 |
 |:---|:---|:---|:---|:---|
-| 1 | 深度報告 (Reports) | `reports/` | 9 篇 | ⭐⭐⭐⭐ 成熟運作 |
+| 1 | 深度報告 (Reports) | `reports/` | 22 篇 | ⭐⭐⭐⭐⭐ 自動化生成與成熟運作 |
 | 2 | Web 工具 (Tools) | `tools/` | 2 個 | ⭐⭐⭐ 功能完整 |
 | 3 | 知識圖書館 (Library) | `library/` | 2 頁 | ⭐⭐ 初始框架 |
 | 4 | 模板編輯器 (Editor) | `editor/` | 2 頁 + 模板包 | ⭐⭐ 初始框架 |
