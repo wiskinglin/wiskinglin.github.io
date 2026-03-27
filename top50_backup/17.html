@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#17 Adaptive Dark Mode — 適應性暗黑體驗 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  /* Base variables (will be overridden by theme classes on body) */
+  --bg-app:#ffffff;
+  --bg-sidebar:#f3f4f6;
+  --bg-content:#ffffff;
+  --text-main:#111827;
+  --text-dim:#6b7280;
+  --border-c:#e5e7eb;
+  --accent-base:#3b82f6;
+  --shadow-env: 0 4px 12px rgba(0,0,0,0.05);
+
+  /* Syntax Highlighting */
+  --syn-key:#9333ea;
+  --syn-str:#16a34a;
+  --syn-num:#ea580c;
+  --syn-fun:#2563eb;
+  --syn-com:#9ca3af;
+}
+
+/* Theme: Evening (Warm, Low eye-strain) */
+body.theme-evening{
+  --bg-app:#fcf7f2;
+  --bg-sidebar:#f3eee8;
+  --bg-content:#fcf7f2;
+  --text-main:#4a3f35;
+  --text-dim:#8c7d70;
+  --border-c:#e6dcd3;
+  --accent-base:#d97706;
+  --shadow-env: 0 6px 16px rgba(120,80,40,0.08);
+
+  --syn-key:#9d5b25;
+  --syn-str:#5b7742;
+  --syn-num:#b45309;
+  --syn-fun:#854d0e;
+  --syn-com:#a89f91;
+}
+
+/* Theme: Midnight (OLED Deep Dark) */
+body.theme-midnight{
+  --bg-app:#000000;
+  --bg-sidebar:#0a0a0a;
+  --bg-content:#000000;
+  --text-main:#f3f4f6;
+  --text-dim:#9ca3af;
+  --border-c:#1f2937;
+  --accent-base:#60a5fa;
+  --shadow-env: 0 0 0 rgba(0,0,0,0); /* Flattened for OLED */
+
+  --syn-key:#c084fc;
+  --syn-str:#4ade80;
+  --syn-num:#fb923c;
+  --syn-fun:#60a5fa;
+  --syn-com:#6b7280;
+}
+
+body{
+  font-family:'Inter','Noto Sans TC',sans-serif;
+  background:var(--bg-app);color:var(--text-main);line-height:1.6;
+  padding-bottom:100px;
+  transition:background-color 0.8s ease, color 0.8s ease;
+}
+
+/* Header & Info */
+.style-info{
+  max-width:1200px;margin:20px auto;
+  padding:40px;text-align:center;
+  border-bottom:1px solid var(--border-c);
+  transition:border-color 0.8s ease;
+}
+.style-info .cat{
+  display:inline-block;padding:6px 16px;border-radius:20px;
+  background:transparent;color:var(--accent-base);border:1px solid var(--accent-base);
+  font-size:.7rem;font-weight:600;letter-spacing:.05em;margin-bottom:20px;
+  transition:color 0.8s, border-color 0.8s;
+}
+.style-info h1{font-size:clamp(1.5rem,4vw,2.5rem);font-weight:600;margin-bottom:12px;}
+.style-info .sub{font-size:1rem;color:var(--text-dim);margin-bottom:48px;transition:color 0.8s}
+.info-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:left;
+}
+.info-cell{
+  background:var(--bg-sidebar);padding:24px;border-radius:12px;
+  border:1px solid var(--border-c);transition:background 0.8s, border-color 0.8s;
+}
+.info-cell.full{grid-column:1/-1}
+.info-cell h4{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;margin-bottom:8px;font-weight:600;letter-spacing:.1em;}
+.info-cell p{font-size:.85rem;color:var(--text-dim);line-height:1.8}
+
+/* Theme Switcher UI */
+.theme-controls{
+  display:flex;justify-content:center;gap:12px;margin:40px 0;
+}
+.theme-btn{
+  background:var(--bg-sidebar);border:1px solid var(--border-c);color:var(--text-main);
+  padding:12px 24px;border-radius:30px;font-size:.85rem;font-weight:500;
+  cursor:pointer;display:flex;align-items:center;gap:8px;
+  transition:all 0.3s ease;
+}
+.theme-btn:hover{border-color:var(--accent-base)}
+.theme-btn.active{background:var(--accent-base);color:#fff;border-color:var(--accent-base)}
+
+/* IDE Demo Layout */
+.ide-container{
+  max-width:1200px;margin:0 auto;
+  border:1px solid var(--border-c);border-radius:12px;
+  display:grid;grid-template-columns:250px 1fr;
+  overflow:hidden;box-shadow:var(--shadow-env);
+  transition:border-color 0.8s, box-shadow 0.8s;
+  height:500px;
+}
+.ide-sidebar{
+  background:var(--bg-sidebar);border-right:1px solid var(--border-c);
+  padding:20px;transition:background 0.8s, border-color 0.8s;
+}
+.file-tree{list-style:none;font-size:.85rem;}
+.file-tree li{margin-bottom:8px;display:flex;align-items:center;gap:8px;color:var(--text-dim);cursor:pointer;transition:color 0.8s}
+.file-tree li.active{color:var(--accent-base);font-weight:600}
+
+.ide-content{
+  background:var(--bg-content);padding:24px 32px;
+  overflow-y:auto;transition:background 0.8s;
+}
+.file-tab{
+  font-family:'JetBrains Mono', monospace;font-size:.85rem;color:var(--text-main);
+  margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border-c);
+  transition:color 0.8s, border-color 0.8s;
+}
+
+/* Syntax Block */
+pre{
+  font-family:'JetBrains Mono', monospace;font-size:.85rem;line-height:1.8;
+  color:var(--text-main);transition:color 0.8s;
+}
+.kw{color:var(--syn-key);transition:color 0.8s}
+.str{color:var(--syn-str);transition:color 0.8s}
+.num{color:var(--syn-num);transition:color 0.8s}
+.fn{color:var(--syn-fun);transition:color 0.8s}
+.com{color:var(--syn-com);transition:color 0.8s}
+
+@media(max-width:768px){
+  .ide-container{grid-template-columns:1fr;height:auto;}
+  .ide-sidebar{display:none}
+  .info-row{grid-template-columns:1fr}
+  .style-info{padding:20px}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--bg-sidebar);
+  border-top:1px solid var(--border-c);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+  transition:background 0.8s, border-color 0.8s;
+}
+.bottom-nav a{text-decoration:none;color:var(--text-dim);font-size:.85rem;padding:8px 20px;border-radius:8px;transition:color 0.5s}
+.bottom-nav a:hover{color:var(--accent-base)}
+</style>
+</head>
+<body class="theme-midnight"> <!-- defaults to midnight -->
+
+<header class="style-info">
+  <div class="cat">🌐 3D、空間與沉浸式設計</div>
+  <h1>#17 — Adaptive Dark Mode</h1>
+  <p class="sub">適應性暗黑體驗</p>
+  <div class="info-row">
+    <div class="info-cell full">
+      <h4>📖 風格定義與視覺特徵</h4>
+      <p>遠超越單純的背景變黑，適應性暗黑體驗會針對使用者的低光源環境或系統時間，重新調配全局對比度、陰影擴散半徑甚至程式碼語法高亮的飽和度，在節省設備電能的同時，極大化降低視覺疲勞。</p>
+    </div>
+    <div class="info-cell">
+      <h4>🏢 適用產業與場景</h4>
+      <p>專業開發者整合工具、影音串流平台、閱讀軟體</p>
+    </div>
+    <div class="info-cell">
+      <h4>🌍 主要流行地區</h4>
+      <p>全球</p>
+    </div>
+  </div>
+</header>
+
+<div class="theme-controls">
+  <button class="theme-btn" data-theme="theme-light">☀️ Sunlight Day</button>
+  <button class="theme-btn" data-theme="theme-evening">🌇 Warm Evening</button>
+  <button class="theme-btn active" data-theme="theme-midnight">🌙 OLED Midnight</button>
+</div>
+
+<main class="ide-container">
+  <aside class="ide-sidebar">
+    <ul class="file-tree">
+      <li>📁 src</li>
+      <li>&nbsp; 📁 components</li>
+      <li class="active">&nbsp; &nbsp; 📄 AdaptiveTheme.ts</li>
+      <li>&nbsp; 📁 utils</li>
+      <li>&nbsp; &nbsp; 📄 parser.js</li>
+      <li>📄 package.json</li>
+      <li>📄 README.md</li>
+    </ul>
+  </aside>
+  <div class="ide-content">
+    <div class="file-tab">AdaptiveTheme.ts</div>
+    <pre><code><span class="com">/**
+ * Adaptive Contrast Engine v2.0
+ * Automatically adjusts color scales based on ambient light
+ */</span>
+
+<span class="kw">import</span> { LightSensor } <span class="kw">from</span> <span class="str">'@native-api/ambient-light'</span>;
+
+<span class="kw">export class</span> <span class="fn">ThemeController</span> {
+  <span class="kw">private</span> currentLux: <span class="kw">number</span> = <span class="num">0</span>;
+
+  <span class="kw">constructor</span>() {
+    <span class="kw">this</span>.<span class="fn">initSensor</span>();
+  }
+
+  <span class="kw">private async</span> <span class="fn">initSensor</span>() {
+    <span class="kw">const</span> sensor = <span class="kw">new</span> <span class="fn">LightSensor</span>({ frequency: <span class="num">10</span> });
+    
+    sensor.addEventListener(<span class="str">'reading'</span>, () => {
+      <span class="kw">this</span>.currentLux = sensor.illuminance;
+      <span class="kw">this</span>.<span class="fn">adjustContrastColors</span>(<span class="kw">this</span>.currentLux);
+    });
+
+    sensor.<span class="fn">start</span>();
+  }
+
+  <span class="kw">private</span> <span class="fn">adjustContrastColors</span>(lux: <span class="kw">number</span>) {
+    <span class="kw">if</span> (lux &lt; <span class="num">10</span>) {
+      <span class="com">// Extreme low light: Deep black, soft contrasts</span>
+      document.body.className = <span class="str">'theme-midnight'</span>;
+    } <span class="kw">else if</span> (lux &lt; <span class="num">200</span>) {
+      <span class="com">// Subdued lighting: Warm sepia to reduce blue light</span>
+      document.body.className = <span class="str">'theme-evening'</span>;
+    } <span class="kw">else</span> {
+      <span class="com">// Bright environment: High contrast white for legibility</span>
+      document.body.className = <span class="str">'theme-light'</span>;
+    }
+  }
+}</code></pre>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="16.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="18.html">下一頁 →</a>
+</nav>
+
+<script>
+// Logic to switch themes manually for preview purposes
+const buttons = document.querySelectorAll('.theme-btn');
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // remove active class from all
+    buttons.forEach(b => b.classList.remove('active'));
+    // add active to clicked
+    btn.classList.add('active');
+    
+    // apply theme to body
+    const theme = btn.getAttribute('data-theme');
+    document.body.className = '';
+    if(theme !== 'theme-light') {
+      document.body.classList.add(theme);
+    }
+  });
+});
+</script>
+</body>
+</html>

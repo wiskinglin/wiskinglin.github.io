@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Editor — 智能模板編輯器</title>
+    <meta name="description" content="Canva-style 智能模板編輯器，支援 AI 內容填入、浮動工具列、模板切換與本地儲存導出。">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --editor-bg: #e2e8f0;
+            --panel-bg: rgba(15,15,23,0.92);
+            --panel-border: rgba(255,255,255,0.08);
+            --accent: #a78bfa;
+            --accent-hover: #8b5cf6;
+            --text: #fafafa;
+            --text-muted: #a1a1aa;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+            background: var(--editor-bg);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Template Canvas ===== */
+        #template-canvas {
+            padding: 40px;
+            min-height: 100vh;
+        }
+        #template-canvas.editing [data-slot] {
+            outline: 2px dashed rgba(139,92,246,0.4);
+            outline-offset: 3px;
+            border-radius: 4px;
+            transition: outline-color 0.2s;
+        }
+        #template-canvas.editing [data-slot]:hover {
+            outline-color: var(--accent);
+            background-color: rgba(139,92,246,0.04);
+        }
+        #template-canvas.editing [data-slot]:focus {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            box-shadow: 0 0 0 6px rgba(139,92,246,0.1);
+        }
+
+        /* ===== Floating Toolbar ===== */
+        #floating-toolbar {
+            position: fixed;
+            display: none;
+            z-index: 9999;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 6px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            gap: 2px;
+            animation: toolbar-in 0.15s ease-out;
+        }
+        #floating-toolbar.visible { display: flex; }
+
+        @keyframes toolbar-in {
+            from { opacity: 0; transform: translateY(6px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .tb-btn {
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .tb-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text);
+        }
+        .tb-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+        .tb-sep {
+            width: 1px;
+            height: 20px;
+            background: var(--panel-border);
+            margin: 7px 4px;
+        }
+
+        /* Color picker */
+        .color-pick-wrap { position: relative; }
+        .color-pick-wrap input[type="color"] {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            opacity: 0;
+        }
+
+        /* ===== Side Panel ===== */
+        #side-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--panel-border);
+            z-index: 9000;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+        }
+        #side-panel.open { transform: translateX(0); }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-header h2 {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .panel-close {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255,255,255,0.06);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+        .panel-close:hover { background: rgba(255,255,255,0.15); }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .panel-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--panel-border);
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: inherit;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .panel-btn:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .panel-btn .icon {
+            font-size: 1.2rem;
+            width: 32px;
+            text-align: center;
+        }
+        .panel-btn .label { flex: 1; }
+        .panel-btn .shortcut {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .panel-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            padding: 12px 4px 4px;
+        }
+
+        /* Panel toggle button */
+        #panel-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 8999;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            border: 1px solid var(--panel-border);
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #panel-toggle:hover {
+            transform: scale(1.06);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+        }
+
+        /* Status bar */
+        #status-bar {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 8000;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: 999px;
+            padding: 8px 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: opacity 0.3s;
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        .status-dot.dirty { background: #f59e0b; }
+
+        /* ===== AI Fill Modal ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(6px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.visible { display: flex; }
+
+        .modal {
+            background: #18181b;
+            border: 1px solid var(--panel-border);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 680px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+            animation: modal-in 0.25s ease-out;
+        }
+        @keyframes modal-in {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .modal-body { padding: 24px; }
+
+        .modal-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .modal-tab {
+            padding: 8px 16px;
+            border: 1px solid var(--panel-border);
+            border-radius: 999px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .modal-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            min-height: 200px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text);
+            font-size: 0.9rem;
+            font-family: 'Inter', monospace;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        .modal-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        .modal-textarea::placeholder { color: var(--text-muted); }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--panel-border);
+            background: transparent;
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .modal-btn:hover { background: rgba(255,255,255,0.06); }
+        .modal-btn.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .modal-btn.primary:hover { background: var(--accent-hover); }
+
+        /* Slot match preview */
+        .slot-preview {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .slot-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            border: 1px solid var(--panel-border);
+        }
+        .slot-name {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--accent);
+            background: rgba(167,139,250,0.15);
+            padding: 3px 10px;
+            border-radius: 6px;
+            min-width: 80px;
+            text-align: center;
+        }
+        .slot-value {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Template switch modal */
+        .tpl-switch-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .tpl-switch-card {
+            padding: 16px;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .tpl-switch-card:hover {
+            border-color: var(--accent);
+            background: rgba(167,139,250,0.08);
+        }
+        .tpl-switch-card .tpl-icon { font-size: 1.5rem; margin-bottom: 6px; }
+        .tpl-switch-card .tpl-name { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+        .tpl-switch-card .tpl-en { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #22c55e;
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0;
+            z-index: 99999;
+            pointer-events: none;
+            transition: all 0.3s;
+            box-shadow: 0 8px 24px rgba(34,197,94,0.3);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.error { background: #ef4444; box-shadow: 0 8px 24px rgba(239,68,68,0.3); }
+
+        /* Print */
+        @media print {
+            #side-panel, #panel-toggle, #floating-toolbar, #status-bar, .modal-overlay, .toast { display: none !important; }
+            body { background: #fff; }
+            #template-canvas { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Panel Toggle -->
+    <button id="panel-toggle" title="開啟工具面板">☰</button>
+
+    <!-- Side Panel -->
+    <div id="side-panel">
+        <div class="panel-header">
+            <h2>⚙ 工具面板</h2>
+            <button class="panel-close" id="panel-close-btn">✕</button>
+        </div>
+        <div class="panel-body">
+            <div class="panel-section-title">檔案操作</div>
+            <button class="panel-btn" id="btn-open">
+                <span class="icon">📂</span>
+                <span class="label">開啟檔案</span>
+                <span class="shortcut">Ctrl+O</span>
+            </button>
+            <button class="panel-btn" id="btn-save">
+                <span class="icon">💾</span>
+                <span class="label">儲存</span>
+                <span class="shortcut">Ctrl+S</span>
+            </button>
+
+            <div class="panel-section-title">匯出</div>
+            <button class="panel-btn" id="btn-export-pdf">
+                <span class="icon">📥</span>
+                <span class="label">輸出 PDF</span>
+            </button>
+            <button class="panel-btn" id="btn-export-html">
+                <span class="icon">📄</span>
+                <span class="label">導出 HTML</span>
+            </button>
+
+            <div class="panel-section-title">編輯</div>
+            <button class="panel-btn" id="btn-ai-fill">
+                <span class="icon">🤖</span>
+                <span class="label">AI 內容填入</span>
+            </button>
+            <button class="panel-btn" id="btn-switch-tpl">
+                <span class="icon">🔄</span>
+                <span class="label">切換模板</span>
+            </button>
+
+            <div class="panel-section-title">模式</div>
+            <button class="panel-btn" id="btn-edit-toggle">
+                <span class="icon">✏️</span>
+                <span class="label">切換編輯模式</span>
+            </button>
+            <button class="panel-btn" id="btn-back-gallery" onclick="window.location.href='index.html'">
+                <span class="icon">←</span>
+                <span class="label">返回模板庫</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Toolbar -->
+    <div id="floating-toolbar">
+        <button class="tb-btn" data-cmd="bold" title="粗體"><b>B</b></button>
+        <button class="tb-btn" data-cmd="italic" title="斜體"><i>I</i></button>
+        <button class="tb-btn" data-cmd="underline" title="底線"><u>U</u></button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" data-block="H1" title="標題 1">H1</button>
+        <button class="tb-btn" data-block="H2" title="標題 2">H2</button>
+        <button class="tb-btn" data-block="H3" title="標題 3">H3</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" data-cmd="insertUnorderedList" title="清單">☰</button>
+        <button class="tb-btn" data-block="BLOCKQUOTE" title="引用">❝</button>
+        <div class="tb-sep"></div>
+        <div class="color-pick-wrap">
+            <button class="tb-btn" id="color-btn" title="文字色彩">🎨</button>
+            <input type="color" id="color-picker" value="#a78bfa">
+        </div>
+    </div>
+
+    <!-- Template Canvas -->
+    <div id="template-canvas"></div>
+
+    <!-- Status Bar -->
+    <div id="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">就緒</span>
+        <span>·</span>
+        <span id="status-tpl">載入中...</span>
+    </div>
+
+    <!-- AI Fill Modal -->
+    <div class="modal-overlay" id="ai-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>🤖 AI 內容填入</h2>
+                <button class="panel-close" id="ai-modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-source="paste">📋 貼上文字</button>
+                    <button class="modal-tab" data-source="file">📁 從檔案載入</button>
+                    <button class="modal-tab" data-source="html">🌐 貼入 HTML</button>
+                </div>
+                <textarea class="modal-textarea" id="ai-input" placeholder="在此貼上 Markdown、純文字或 HTML 報告內容...&#10;&#10;系統會自動解析結構並匹配至模板的可編輯區塊。&#10;&#10;支援格式：&#10;# H1 → title&#10;## H2 → body sections&#10;- 清單 → key-points&#10;> 引言 → epigraph / pullquote"></textarea>
+                <div class="slot-preview" id="slot-preview"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" id="ai-preview-btn">👁 預覽匹配</button>
+                <button class="modal-btn primary" id="ai-fill-btn">✨ 一鍵填入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Switch Modal -->
+    <div class="modal-overlay" id="switch-modal">
+        <div class="modal" style="max-width:520px">
+            <div class="modal-header">
+                <h2>🔄 切換模板</h2>
+                <button class="panel-close" id="switch-modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:12px;">已編輯的內容將自動遷移至新模板對應的 Slot。</p>
+                <div class="tpl-switch-grid" id="switch-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ===== State =====
+        let currentTemplateId = new URLSearchParams(window.location.search).get('template') || 'pitch-deck';
+        let isEditing = true;
+        let isDirty = false;
+        let fileHandle = null;
+        let autoSaveTimer = null;
+        let manifest = null;
+
+        const canvas = document.getElementById('template-canvas');
+        const toolbar = document.getElementById('floating-toolbar');
+        const sidePanel = document.getElementById('side-panel');
+        const statusDot = document.getElementById('status-dot');
+        const statusText = document.getElementById('status-text');
+        const statusTpl = document.getElementById('status-tpl');
+
+        // ===== Utility =====
+        function toast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            setTimeout(() => el.classList.add('show'), 10);
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function markDirty() {
+            isDirty = true;
+            statusDot.className = 'status-dot dirty';
+            statusText.textContent = '未儲存';
+        }
+
+        function markClean() {
+            isDirty = false;
+            statusDot.className = 'status-dot';
+            statusText.textContent = '已儲存';
+        }
+
+        // ===== Load Manifest =====
+        async function loadManifest() {
+            const res = await fetch('templates/_manifest.json');
+            const data = await res.json();
+            manifest = data.templates;
+        }
+
+        // ===== Load Template =====
+        async function loadTemplate(id) {
+            try {
+                const res = await fetch(`templates/${id}.html`);
+                if (!res.ok) throw new Error(`Template ${id} not found`);
+                const html = await res.text();
+                canvas.innerHTML = html;
+                currentTemplateId = id;
+
+                // Update URL
+                const url = new URL(window.location);
+                url.searchParams.set('template', id);
+                window.history.replaceState({}, '', url);
+
+                // Find template info
+                const info = manifest?.find(t => t.id === id);
+                statusTpl.textContent = info ? `${info.name} (${info.nameEn})` : id;
+                document.title = `${info?.name || id} — Template Editor`;
+
+                if (isEditing) canvas.classList.add('editing');
+
+                // Listen for edits
+                canvas.querySelectorAll('[data-slot]').forEach(slot => {
+                    slot.addEventListener('input', markDirty);
+                });
+
+                toast(`已載入: ${info?.name || id}`);
+            } catch(err) {
+                canvas.innerHTML = `<div style="padding:100px;text-align:center;color:#666"><h2>⚠️ 模板載入失敗</h2><p>${err.message}</p><p><a href="index.html" style="color:#a78bfa">返回模板庫</a></p></div>`;
+            }
+        }
+
+        // ===== Floating Toolbar =====
+        function positionToolbar() {
+            const sel = window.getSelection();
+            if (!sel.rangeCount || sel.isCollapsed) {
+                toolbar.classList.remove('visible');
+                return;
+            }
+
+            // Check if selection is inside canvas
+            const anchor = sel.anchorNode;
+            if (!canvas.contains(anchor)) {
+                toolbar.classList.remove('visible');
+                return;
+            }
+
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            if (rect.width === 0) { toolbar.classList.remove('visible'); return; }
+
+            toolbar.classList.add('visible');
+            const tbRect = toolbar.getBoundingClientRect();
+            let left = rect.left + (rect.width / 2) - (tbRect.width / 2);
+            let top = rect.top - tbRect.height - 10;
+
+            // Keep in viewport
+            if (left < 8) left = 8;
+            if (left + tbRect.width > window.innerWidth - 8) left = window.innerWidth - tbRect.width - 8;
+            if (top < 8) top = rect.bottom + 10;
+
+            toolbar.style.left = left + 'px';
+            toolbar.style.top = top + 'px';
+        }
+
+        document.addEventListener('selectionchange', () => {
+            if (isEditing) requestAnimationFrame(positionToolbar);
+        });
+
+        // Toolbar commands
+        toolbar.addEventListener('click', e => {
+            const btn = e.target.closest('.tb-btn');
+            if (!btn) return;
+
+            const cmd = btn.dataset.cmd;
+            const block = btn.dataset.block;
+
+            if (cmd) {
+                document.execCommand(cmd, false, null);
+            } else if (block) {
+                document.execCommand('formatBlock', false, `<${block}>`);
+            } else if (btn.id === 'color-btn') {
+                document.getElementById('color-picker').click();
+            }
+            markDirty();
+        });
+
+        document.getElementById('color-picker').addEventListener('input', e => {
+            document.execCommand('foreColor', false, e.target.value);
+            markDirty();
+        });
+
+        // ===== Side Panel =====
+        document.getElementById('panel-toggle').addEventListener('click', () => {
+            sidePanel.classList.toggle('open');
+        });
+        document.getElementById('panel-close-btn').addEventListener('click', () => {
+            sidePanel.classList.remove('open');
+        });
+
+        // ===== Edit Toggle =====
+        document.getElementById('btn-edit-toggle').addEventListener('click', () => {
+            isEditing = !isEditing;
+            if (isEditing) {
+                canvas.classList.add('editing');
+                canvas.querySelectorAll('[data-slot]').forEach(s => s.setAttribute('contenteditable', 'true'));
+                toast('編輯模式已開啟');
+            } else {
+                canvas.classList.remove('editing');
+                canvas.querySelectorAll('[data-slot]').forEach(s => s.setAttribute('contenteditable', 'false'));
+                toolbar.classList.remove('visible');
+                toast('編輯模式已關閉');
+            }
+        });
+
+        // ===== File System Access API =====
+        async function openFile() {
+            try {
+                if ('showOpenFilePicker' in window) {
+                    const [handle] = await window.showOpenFilePicker({
+                        types: [{ description: 'HTML Files', accept: { 'text/html': ['.html'] } }]
+                    });
+                    const file = await handle.getFile();
+                    const text = await file.text();
+                    canvas.innerHTML = text;
+                    fileHandle = handle;
+                    toast('檔案已開啟');
+                    markClean();
+                } else {
+                    // Fallback: file input
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.html,.htm';
+                    input.onchange = async () => {
+                        const file = input.files[0];
+                        if (file) {
+                            const text = await file.text();
+                            canvas.innerHTML = text;
+                            toast('檔案已開啟');
+                            markClean();
+                        }
+                    };
+                    input.click();
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') toast('開啟失敗: ' + err.message, true);
+            }
+        }
+
+        async function saveFile() {
+            try {
+                const htmlContent = canvas.innerHTML;
+                const fullHtml = `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Exported Document</title></head><body>${htmlContent}</body></html>`;
+
+                if ('showSaveFilePicker' in window) {
+                    if (!fileHandle) {
+                        const date = new Date();
+                        const dateStr = date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0');
+                        fileHandle = await window.showSaveFilePicker({
+                            suggestedName: `Report_${dateStr}.html`,
+                            types: [{ description: 'HTML Files', accept: { 'text/html': ['.html'] } }]
+                        });
+                    }
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(fullHtml);
+                    await writable.close();
+                    toast('💾 已儲存');
+                    markClean();
+                } else {
+                    // Fallback: download
+                    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+                    const date = new Date();
+                    const dateStr = date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0');
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `Report_${dateStr}.html`;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    toast('💾 已下載');
+                    markClean();
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') toast('儲存失敗: ' + err.message, true);
+            }
+        }
+
+        document.getElementById('btn-open').addEventListener('click', openFile);
+        document.getElementById('btn-save').addEventListener('click', saveFile);
+
+        // ===== Export PDF =====
+        document.getElementById('btn-export-pdf').addEventListener('click', () => {
+            if (isEditing) {
+                canvas.classList.remove('editing');
+                canvas.querySelectorAll('[data-slot]').forEach(s => s.removeAttribute('contenteditable'));
+            }
+            sidePanel.classList.remove('open');
+            setTimeout(() => window.print(), 200);
+            setTimeout(() => {
+                if (isEditing) {
+                    canvas.classList.add('editing');
+                    canvas.querySelectorAll('[data-slot]').forEach(s => s.setAttribute('contenteditable', 'true'));
+                }
+            }, 1000);
+        });
+
+        // ===== Export HTML =====
+        document.getElementById('btn-export-html').addEventListener('click', () => {
+            const clone = canvas.cloneNode(true);
+            clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+            clone.classList.remove('editing');
+
+            const fullHtml = `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exported Report</title>
+</head>
+<body>
+${clone.innerHTML}
+</body>
+</html>`;
+
+            const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+            const date = new Date();
+            const dateStr = date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0');
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Report_${dateStr}.html`;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            toast('📄 HTML 已導出');
+        });
+
+        // ===== AI Fill =====
+        const aiModal = document.getElementById('ai-modal');
+        const aiInput = document.getElementById('ai-input');
+        const slotPreview = document.getElementById('slot-preview');
+
+        document.getElementById('btn-ai-fill').addEventListener('click', () => {
+            aiModal.classList.add('visible');
+            sidePanel.classList.remove('open');
+            aiInput.value = '';
+            slotPreview.innerHTML = '';
+        });
+        document.getElementById('ai-modal-close').addEventListener('click', () => {
+            aiModal.classList.remove('visible');
+        });
+
+        // Tab switching
+        aiModal.querySelectorAll('.modal-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                aiModal.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const source = tab.dataset.source;
+                if (source === 'file') {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.md,.txt,.html,.htm';
+                    input.onchange = async () => {
+                        const file = input.files[0];
+                        if (file) {
+                            aiInput.value = await file.text();
+                            toast('檔案內容已載入');
+                        }
+                    };
+                    input.click();
+                } else if (source === 'html') {
+                    aiInput.placeholder = '在此貼入 HTML 原始碼...\n\n系統會提取文字內容並匹配至模板。';
+                } else {
+                    aiInput.placeholder = '在此貼上 Markdown、純文字或 HTML 報告內容...\n\n系統會自動解析結構並匹配至模板的可編輯區塊。';
+                }
+            });
+        });
+
+        function parseContent(text) {
+            const result = {};
+            const activeTab = aiModal.querySelector('.modal-tab.active')?.dataset.source;
+
+            if (activeTab === 'html') {
+                // Parse HTML content
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+
+                // Extract title
+                const h1 = doc.querySelector('h1');
+                if (h1) result.title = h1.textContent.trim();
+
+                // Extract subtitle - first paragraph after h1 or meta description
+                const firstP = doc.querySelector('p');
+                if (firstP) result.subtitle = firstP.textContent.trim().slice(0, 150);
+
+                // Extract body sections
+                const h2s = doc.querySelectorAll('h2');
+                const sections = [];
+                h2s.forEach((h2, i) => {
+                    let content = `<h2>${h2.textContent}</h2>`;
+                    let next = h2.nextElementSibling;
+                    while (next && next.tagName !== 'H2') {
+                        content += next.outerHTML;
+                        next = next.nextElementSibling;
+                    }
+                    sections.push(content);
+                });
+
+                if (sections.length > 0) result['body-section-1'] = sections[0] || '';
+                if (sections.length > 1) result['body-section-2'] = sections[1] || '';
+                if (sections.length > 2) result['body-section-3'] = sections.slice(2).join('');
+
+                // Fallback for other slots
+                const allText = doc.body?.textContent || '';
+                if (!result.title) result.title = allText.slice(0, 60);
+                if (!result.subtitle) result.subtitle = allText.slice(60, 200);
+                result.body = allText;
+                result['main-body'] = allText.slice(0, 1500);
+
+                // Extract tags
+                const tags = doc.querySelectorAll('.pill, .tag, [class*="tag"], [class*="label"]');
+                if (tags.length > 0) result.tagline = Array.from(tags).map(t => t.textContent.trim()).join(' · ');
+
+                return result;
+            }
+
+            // Markdown / plaintext parsing
+            const lines = text.split('\n');
+            let currentSection = '';
+            let sectionIndex = 0;
+            const bodyParts = [];
+            let abstract = '';
+
+            lines.forEach((line, i) => {
+                const trimmed = line.trim();
+
+                // Skip YAML frontmatter
+                if (i === 0 && trimmed === '---') {
+                    const endIdx = lines.indexOf('---', 1);
+                    if (endIdx > 0) return; // Skip frontmatter
+                }
+
+                // H1 → title
+                if (trimmed.startsWith('# ') && !result.title) {
+                    result.title = trimmed.replace(/^#\s+/, '');
+                    return;
+                }
+
+                // H2 → body sections
+                if (trimmed.startsWith('## ')) {
+                    if (currentSection) bodyParts.push(currentSection);
+                    currentSection = `<h2>${trimmed.replace(/^##\s+/, '')}</h2>`;
+                    sectionIndex++;
+                    return;
+                }
+
+                // H3
+                if (trimmed.startsWith('### ')) {
+                    currentSection += `<h3>${trimmed.replace(/^###\s+/, '')}</h3>`;
+                    return;
+                }
+
+                // Lists
+                if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                    currentSection += `<li>${trimmed.replace(/^[-*]\s+/, '')}</li>`;
+                    return;
+                }
+
+                // Blockquote
+                if (trimmed.startsWith('> ')) {
+                    result.epigraph = result.epigraph || '';
+                    result.epigraph += trimmed.replace(/^>\s+/, '') + ' ';
+                    result.pullquote = result.epigraph;
+                    return;
+                }
+
+                // Regular paragraph
+                if (trimmed) {
+                    if (!result.subtitle && result.title && sectionIndex === 0) {
+                        result.subtitle = trimmed;
+                        abstract += trimmed + ' ';
+                    } else {
+                        currentSection += `<p>${trimmed}</p>`;
+                    }
+                }
+            });
+
+            if (currentSection) bodyParts.push(currentSection);
+
+            // Map to slots
+            if (bodyParts.length > 0) result['body-section-1'] = bodyParts[0];
+            if (bodyParts.length > 1) result['body-section-2'] = bodyParts[1];
+            if (bodyParts.length > 2) result['body-section-3'] = bodyParts.slice(2).join('');
+            if (bodyParts.length > 0) result.body = bodyParts.join('');
+            result['main-body'] = result.body || '';
+            result.abstract = abstract || result.subtitle || '';
+            result['key-points'] = bodyParts[bodyParts.length - 1] || '';
+            result.conclusion = bodyParts[bodyParts.length - 1] || '';
+
+            return result;
+        }
+
+        // Preview
+        document.getElementById('ai-preview-btn').addEventListener('click', () => {
+            const text = aiInput.value.trim();
+            if (!text) { toast('請先輸入或貼上內容', true); return; }
+
+            const parsed = parseContent(text);
+            const slots = canvas.querySelectorAll('[data-slot]');
+
+            slotPreview.innerHTML = '<div style="font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:8px">🔍 Slot 匹配預覽</div>';
+
+            slots.forEach(slot => {
+                const name = slot.dataset.slot;
+                const value = parsed[name] || '(無匹配內容)';
+                const item = document.createElement('div');
+                item.className = 'slot-item';
+                item.innerHTML = `
+                    <span class="slot-name">${name}</span>
+                    <span class="slot-value">${typeof value === 'string' ? value.replace(/<[^>]+>/g, '').slice(0, 80) : value}</span>
+                `;
+                slotPreview.appendChild(item);
+            });
+        });
+
+        // Fill
+        document.getElementById('ai-fill-btn').addEventListener('click', () => {
+            const text = aiInput.value.trim();
+            if (!text) { toast('請先輸入或貼上內容', true); return; }
+
+            const parsed = parseContent(text);
+            const slots = canvas.querySelectorAll('[data-slot]');
+            let filled = 0;
+
+            slots.forEach(slot => {
+                const name = slot.dataset.slot;
+                if (parsed[name]) {
+                    slot.innerHTML = parsed[name];
+                    filled++;
+                }
+            });
+
+            aiModal.classList.remove('visible');
+            markDirty();
+            toast(`✨ 已填入 ${filled} 個區塊`);
+        });
+
+        // ===== Template Switch =====
+        const switchModal = document.getElementById('switch-modal');
+
+        document.getElementById('btn-switch-tpl').addEventListener('click', async () => {
+            if (!manifest) await loadManifest();
+            const grid = document.getElementById('switch-grid');
+            const icons = { 'pitch-deck': '📊', 'research-report': '📝', 'data-dashboard': '📈', 'one-pager': '📋', 'narrative': '📖' };
+
+            grid.innerHTML = '';
+            manifest.forEach(t => {
+                if (t.id === currentTemplateId) return;
+                const card = document.createElement('div');
+                card.className = 'tpl-switch-card';
+                card.innerHTML = `<div class="tpl-icon">${icons[t.id] || '📄'}</div><div class="tpl-name">${t.name}</div><div class="tpl-en">${t.nameEn}</div>`;
+                card.onclick = () => switchTemplate(t.id);
+                grid.appendChild(card);
+            });
+
+            switchModal.classList.add('visible');
+            sidePanel.classList.remove('open');
+        });
+        document.getElementById('switch-modal-close').addEventListener('click', () => {
+            switchModal.classList.remove('visible');
+        });
+
+        async function switchTemplate(newId) {
+            // Serialize current slot content
+            const savedContent = {};
+            canvas.querySelectorAll('[data-slot]').forEach(slot => {
+                savedContent[slot.dataset.slot] = slot.innerHTML;
+            });
+
+            // Load new template
+            await loadTemplate(newId);
+
+            // Restore content
+            let restored = 0;
+            canvas.querySelectorAll('[data-slot]').forEach(slot => {
+                const name = slot.dataset.slot;
+                if (savedContent[name]) {
+                    slot.innerHTML = savedContent[name];
+                    restored++;
+                }
+            });
+
+            switchModal.classList.remove('visible');
+            markDirty();
+            toast(`🔄 已切換模板，回填 ${restored} 個區塊`);
+        }
+
+        // ===== Auto-save (IndexedDB) =====
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('template-editor', 1);
+                req.onupgradeneeded = () => {
+                    req.result.createObjectStore('drafts', { keyPath: 'id' });
+                };
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function saveDraft() {
+            try {
+                const db = await openDB();
+                const tx = db.transaction('drafts', 'readwrite');
+                tx.objectStore('drafts').put({
+                    id: 'current',
+                    templateId: currentTemplateId,
+                    content: canvas.innerHTML,
+                    timestamp: Date.now()
+                });
+                statusText.textContent = '草稿已暫存';
+            } catch (err) {
+                console.warn('IndexedDB save failed:', err);
+            }
+        }
+
+        async function loadDraft() {
+            try {
+                const db = await openDB();
+                const tx = db.transaction('drafts', 'readonly');
+                const req = tx.objectStore('drafts').get('current');
+                return new Promise(resolve => {
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => resolve(null);
+                });
+            } catch { return null; }
+        }
+
+        // Auto-save every 30s
+        setInterval(() => {
+            if (isDirty) saveDraft();
+        }, 30000);
+
+        // beforeunload
+        window.addEventListener('beforeunload', e => {
+            if (isDirty) {
+                saveDraft();
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // ===== Keyboard Shortcuts =====
+        document.addEventListener('keydown', e => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 's') { e.preventDefault(); saveFile(); }
+                if (e.key === 'o') { e.preventDefault(); openFile(); }
+            }
+        });
+
+        // ===== Init =====
+        (async () => {
+            await loadManifest();
+
+            // Check for draft recovery
+            const draft = await loadDraft();
+            if (draft && draft.templateId === currentTemplateId && (Date.now() - draft.timestamp) < 86400000) {
+                // Draft exists and is less than 24h old
+                await loadTemplate(currentTemplateId);
+                // Offer recovery
+                if (confirm('偵測到上次未儲存的草稿，是否恢復？')) {
+                    canvas.innerHTML = draft.content;
+                    toast('📝 草稿已恢復');
+                }
+            } else {
+                await loadTemplate(currentTemplateId);
+            }
+
+            canvas.classList.add('editing');
+        })();
+
+    })();
+    </script>
+</body>
+</html>

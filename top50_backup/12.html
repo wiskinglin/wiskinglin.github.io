@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#12 Spatial Design / Spatial UX — 空間設計 / 空間體驗 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=Noto+Sans+TC:wght@300;400;500;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#111111;--surface:#1c1c1c;--text:#fff;--text-muted:#888;
+  --accent:#00ffcc;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;
+  padding-bottom:100px;
+  /* subtle radial glow globally */
+  background:radial-gradient(circle at top, #1a2220 0%, #111111 100%);
+  min-height:100vh;
+}
+
+/* Style Info Header */
+.style-info{
+  max-width:1100px;margin:40px auto;
+  padding:40px;text-align:center;
+}
+.style-info .cat{
+  display:inline-block;padding:4px 12px;border-radius:20px;
+  background:rgba(0,255,204,0.1);color:var(--accent);
+  font-size:.7rem;font-weight:600;letter-spacing:.05em;margin-bottom:16px;
+}
+.style-info h1{
+  font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;
+  margin-bottom:8px;line-height:1.2;
+}
+.style-info .sub{
+  font-size:1rem;color:var(--text-muted);margin-bottom:48px;
+}
+.info-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;text-align:left;
+}
+.info-col{
+  background:var(--surface);padding:24px;border-radius:12px;
+  border:1px solid rgba(255,255,255,0.05);
+}
+.info-col.full{grid-column:1/-1}
+.info-col .label{
+  font-size:.65rem;font-weight:800;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;
+}
+.info-col p{font-size:.85rem;color:var(--text-muted);line-height:1.8}
+
+/* Demo - 3D Tilt Hardware Card */
+.demo{
+  perspective:1500px; /* crucial for 3D */
+  max-width:1100px;margin:0 auto;padding:40px 20px;
+  display:flex;justify-content:center;
+}
+
+/* Container defining the tiltable area */
+.tilt-card-wrapper{
+  width:100%;max-width:800px;aspect-ratio:3/2;
+  position:relative;
+  /* allow children to live in 3D */
+  transform-style:preserve-3d;
+  transition:transform 0.1s;
+}
+
+/* The physical card background */
+.card-bg{
+  position:absolute;inset:0;
+  border-radius:24px;
+  background:linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 100%);
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  transform:translateZ(-50px);
+  overflow:hidden;
+}
+
+/* Background grid for spatial sense */
+.card-bg::after{
+  content:'';position:absolute;inset:-50%;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size:20px 20px;
+  border-radius:50%;
+  filter:blur(1px);
+}
+
+/* Light reflection overlay that moves with mouse */
+.card-glare{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,0.15) 0%, transparent 60%);
+  border-radius:24px;
+  opacity:0;transition:opacity 0.3s;
+  pointer-events:none;
+}
+.tilt-card-wrapper:hover .card-glare{opacity:1}
+
+/* Moving elements inside the card, separated by Z-axis */
+.card-content{
+  position:absolute;inset:0;padding:40px;
+  pointer-events:none; /* Let mouse hit the wrapper */
+  transform-style:preserve-3d;
+  display:flex;flex-direction:column;
+}
+
+/* Z-Depth 1: Background Typography */
+.layer-1{
+  position:absolute;bottom:20px;right:-20px;
+  font-size:12vw;font-weight:800;color:rgba(255,255,255,0.02);
+  line-height:0.8;transform:translateZ(-20px);
+}
+
+/* Z-Depth 2: Main text blocks */
+.layer-2{
+  transform:translateZ(40px);
+  max-width:50%;
+}
+.badge{
+  display:inline-block;padding:4px 12px;background:rgba(255,255,255,0.1);
+  font-size:.7rem;font-weight:600;letter-spacing:.1em;border-radius:12px;
+  margin-bottom:20px;
+}
+.title{font-size:clamp(2rem,4vw,3.5rem);font-weight:800;line-height:1.1;margin-bottom:12px;}
+.desc{font-size:.9rem;color:rgba(255,255,255,0.6);margin-bottom:32px;}
+
+/* Z-Depth 3: Product Mockup floating right */
+.layer-3{
+  position:absolute;top:10%;right:5%;width:45%;aspect-ratio:1;
+  transform:translateZ(80px);
+}
+.mock-headset{
+  width:100%;height:100%;
+  border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, #444, #111);
+  box-shadow:-20px 20px 40px rgba(0,0,0,0.8), inset 4px 4px 10px rgba(255,255,255,0.2);
+  position:relative;
+  animation:float-obj 6s ease-in-out infinite;
+}
+.mock-lens{
+  position:absolute;top:25%;left:15%;width:70%;height:50%;
+  border-radius:30px;
+  background:linear-gradient(to right, #001111, #003333, #001111);
+  border:2px solid #555;
+  box-shadow:inset 0 0 20px var(--accent);
+}
+@keyframes float-obj{
+  0%,100%{transform:translateY(0) rotateX(0deg)}
+  50%{transform:translateY(-15px) rotateX(5deg)}
+}
+
+/* Z-Depth 4: Interactive CTA (floating high) */
+.layer-4{
+  transform:translateZ(100px);
+  pointer-events:auto; /* allow click */
+  align-self:flex-start;
+}
+.btn-cta{
+  background:var(--accent);color:#000;border:none;
+  padding:16px 32px;border-radius:30px;font-size:.9rem;font-weight:800;
+  cursor:pointer;text-transform:uppercase;letter-spacing:.1em;
+  box-shadow:0 10px 20px rgba(0,255,204,0.3);
+  transition:all .3s ease;
+}
+.btn-cta:hover{
+  background:#fff;
+  transform:scale(1.05);
+  box-shadow:0 15px 30px rgba(255,255,255,0.4);
+}
+
+@media(max-width:768px){
+  .info-row{grid-template-columns:1fr}
+  .style-info{padding:20px}
+  .layer-2{max-width:100%}
+  .layer-3{opacity:0.2;z-index:-1;transform:translateZ(-10px);right:0;top:-10%}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(17,17,17,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,0.05);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+}
+.bottom-nav a{text-decoration:none;color:var(--text-muted);font-size:.85rem;padding:8px 20px;border-radius:8px;transition:color .3s,background .3s}
+.bottom-nav a:hover{color:var(--text);background:rgba(255,255,255,0.1)}
+</style>
+</head>
+<body>
+
+<header class="style-info">
+  <div class="cat">🌐 3D、空間與沉浸式設計</div>
+  <h1>#12 — Spatial Design</h1>
+  <p class="sub">空間設計 / 空間體驗</p>
+  <div class="info-row">
+    <div class="info-col full">
+      <div class="label">📖 風格定義與視覺特徵</div>
+      <p>介面不再是平面的畫布，而是融入 Z 軸深度的物理環境。按鈕、卡片與內容區塊會隨著使用者的游標移動、視線轉移或行動設備傾斜，產生自然的透視變化與微妙的立體位移。</p>
+    </div>
+    <div class="info-col">
+      <div class="label">🏢 適用產業與場景</div>
+      <p>AR/VR 原生應用、前瞻科技硬體產品展示頁</p>
+    </div>
+    <div class="info-col">
+      <div class="label">🌍 主要流行地區</div>
+      <p>全球</p>
+    </div>
+  </div>
+</header>
+
+<main class="demo">
+  <div class="tilt-card-wrapper" id="tiltCard">
+    <div class="card-bg"></div>
+    <div class="card-glare" id="glare"></div>
+    
+    <!-- Using a single content container that maps directly to the tilt calculation to avoid disjointed transforms on children directly tracking mouse -->
+    <div class="card-content">
+      <div class="layer-1">SPATIAL<br>COMPUTING</div>
+      
+      <div class="layer-2">
+        <div class="badge">AURA VISION PRO</div>
+        <div class="title">Look beyond<br>the screen</div>
+        <div class="desc">A revolutionary new canvas that blends digital content with your physical space. Navigation is as simple as using your eyes and hands. Experience depth, scale, and immersion like never before.</div>
+      </div>
+      
+      <div class="layer-3">
+        <!-- Abstract Headset -->
+        <div class="mock-headset">
+          <div class="mock-lens"></div>
+        </div>
+      </div>
+
+      <div class="layer-4">
+        <button class="btn-cta">Pre-order Now</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="11.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="13.html">下一頁 →</a>
+</nav>
+
+<script>
+// 3D Tilt Logic
+const card = document.getElementById('tiltCard');
+const glare = document.getElementById('glare');
+
+// Throttle function for performance
+function throttle(func, limit) {
+  let inThrottle;
+  return function() {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      requestAnimationFrame(() => inThrottle = false);
+    }
+  }
+}
+
+card.addEventListener('mousemove', throttle(function(e) {
+  const rect = card.getBoundingClientRect();
+  const x = e.clientX - rect.left; // x position within the element
+  const y = e.clientY - rect.top;  // y position within the element
+  
+  const midX = rect.width / 2;
+  const midY = rect.height / 2;
+  
+  // Calculate rotation (-15 to +15 max) based on mouse position
+  const rotateY = ((x - midX) / midX) * 15; 
+  const rotateX = -((y - midY) / midY) * 15;
+  
+  card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  
+  // Glare effect mapping
+  glare.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.2) 0%, transparent 60%)`;
+}, 16));
+
+card.addEventListener('mouseleave', function() {
+  card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+  card.style.transition = `transform 0.5s ease`;
+  setTimeout(() => card.style.transition = `transform 0.1s`, 500);
+});
+</script>
+</body>
+</html>

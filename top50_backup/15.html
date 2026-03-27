@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#15 Layered Depth Design — 深度圖層疊加設計 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#030014;--text:#fff;--accent:#ff3366;
+}
+body{
+  font-family:'Syncopate','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);
+  overflow-x:hidden;
+}
+/* We use a custom smooth scroll setup if needed, but native is fine */
+
+/* Parallax Container */
+.parallax-wrapper{
+  height:100vh;
+  overflow-x:hidden;
+  overflow-y:auto;
+  perspective:10px; /* Critical for native CSS parallax */
+}
+
+/* Base style for layers */
+.parallax-layer{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  display:flex;justify-content:center;align-items:center;
+}
+
+/* Background Layer (Moves slowest) */
+.layer-bg{
+  transform:translateZ(-20px) scale(3);
+  background:radial-gradient(circle at center, #1b0a3a 0%, #030014 100%);
+  z-index: 1;
+}
+/* Stars overlay */
+.layer-bg::after{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(1px 1px at 20px 30px, #fff, rgba(0,0,0,0)), radial-gradient(1px 1px at 40px 70px, rgba(255,255,255,0.8), rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #ff3366, rgba(0,0,0,0));
+  background-size:200px 200px;
+  animation:twinkle 10s linear infinite;
+}
+@keyframes twinkle{0%{opacity:0.8}50%{opacity:0.4}100%{opacity:0.8}}
+
+/* Midground Mountains (Moves medium speed) */
+.layer-mid{
+  transform:translateZ(-10px) scale(2);
+  z-index: 2;
+  align-items:flex-end;
+}
+.mountain-1{
+  width:120vw;height:50vh;
+  background:linear-gradient(to bottom, #2d0b54, #0f0224);
+  clip-path:polygon(0% 100%, 20% 30%, 40% 60%, 65% 10%, 85% 50%, 100% 20%, 100% 100%);
+  position:absolute;bottom:-10vh;
+}
+.mountain-2{
+  width:150vw;height:40vh;
+  background:linear-gradient(to bottom, #ff3366, #4a0d2d);
+  clip-path:polygon(0% 100%, 10% 40%, 30% 80%, 55% 20%, 75% 60%, 100% 10%, 100% 100%);
+  position:absolute;bottom:-5vh;opacity:0.5;
+  mix-blend-mode:screen;
+}
+
+/* Typography Layer (Moves slightly slower than foreground) */
+.layer-text{
+  transform:translateZ(-5px) scale(1.5);
+  z-index: 3;
+}
+.hero-title{
+  font-size:clamp(4rem, 12vw, 15rem);
+  font-weight:700;
+  text-transform:uppercase;letter-spacing:-0.05em;
+  color:transparent;
+  -webkit-text-stroke:2px rgba(255,255,255,0.8);
+  display:flex;flex-direction:column;align-items:center;line-height:0.8;
+}
+.hero-title .fill{
+  -webkit-text-stroke:0px;color:#fff;
+  text-shadow:0 0 40px var(--accent);
+}
+
+/* Foreground Structures (Moves fast) */
+.layer-fg{
+  transform:translateZ(0) scale(1);
+  z-index: 4;
+  align-items:flex-end;
+}
+/* Cyberpunk ruin silhouettes */
+.ruin-1{
+  width:30vw;height:60vh;
+  background:linear-gradient(to top, #000, #110321);
+  position:absolute;left:-5vw;bottom:-5vh;
+  clip-path:polygon(0% 100%, 100% 100%, 90% 40%, 60% 35%, 55% 10%, 45% 10%, 40% 50%, 20% 45%, 15% 70%, 0% 65%);
+}
+.ruin-2{
+  width:40vw;height:45vh;
+  background:linear-gradient(to top, #000, #220511);
+  position:absolute;right:-10vw;bottom:-5vh;
+  clip-path:polygon(0% 100%, 100% 100%, 100% 20%, 80% 30%, 75% 0%, 60% 0%, 65% 40%, 40% 35%, 35% 60%, 10% 55%);
+}
+
+/* Scroll Indicator */
+.scroll-hint{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  z-index:5;text-align:center;font-size:0.7rem;letter-spacing:0.2em;
+  animation:bounce 2s infinite;color:rgba(255,255,255,0.5);
+}
+@keyframes bounce{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,10px)}}
+
+/* Content Section (Below Fold) */
+.content-section{
+  position:relative;
+  z-index:5;
+  background:#030014;
+  padding:120px 20px;
+  min-height:100vh;
+}
+
+/* Style Info Overlay */
+.style-info{
+  max-width:900px;margin:0 auto 120px;
+  text-align:center;
+}
+.style-info .cat{
+  display:inline-block;padding:4px 12px;border-radius:20px;
+  background:rgba(255,51,102,0.1);color:var(--accent);border:1px solid rgba(255,51,102,0.3);
+  font-size:.7rem;font-weight:700;letter-spacing:.05em;margin-bottom:20px;
+}
+.style-info h1{font-size:clamp(1.5rem,4vw,2.5rem);font-weight:700;margin-bottom:12px;}
+.style-info .sub{font-size:1rem;color:#888;margin-bottom:48px;font-family:'Noto Sans TC',sans-serif;}
+.info-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;text-align:left;
+  font-family:'Noto Sans TC',sans-serif;
+}
+.info-col{
+  background:rgba(255,255,255,0.03);padding:24px;border-radius:12px;
+  border:1px solid rgba(255,255,255,0.05);
+}
+.info-col.full{grid-column:1/-1}
+.info-col h4{font-size:.7rem;color:var(--accent);text-transform:uppercase;margin-bottom:8px;font-weight:700;letter-spacing:.1em;}
+.info-col p{font-size:.85rem;color:#aaa;line-height:1.8}
+
+/* Movie Trailor Section */
+.movie-details{
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;
+  align-items:center;
+}
+.synopsis{font-family:'Noto Sans TC',sans-serif;}
+.syn-title{font-size:2rem;color:var(--accent);margin-bottom:24px;text-transform:uppercase;}
+.syn-text{font-size:1.1rem;color:#ccc;line-height:1.8;margin-bottom:32px;}
+.cast-list{list-style:none;color:#888;font-size:0.9rem;}
+.cast-list li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;justify-content:space-between}
+
+.poster-mock{
+  aspect-ratio:2/3;background:linear-gradient(135deg, #2d0b54, #000);
+  border:1px solid rgba(255,51,102,0.3);box-shadow:0 0 40px rgba(255,51,102,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:4rem;font-weight:700;text-transform:uppercase;
+  -webkit-text-stroke:1px rgba(255,255,255,0.2);color:transparent;
+  transform:rotateY(-15deg) rotateX(5deg);
+  transition:all 0.4s;
+}
+.poster-mock:hover{transform:rotateY(0deg) rotateX(0deg);box-shadow:0 0 60px rgba(255,51,102,0.4)}
+
+@media(max-width:768px){
+  .info-row{grid-template-columns:1fr}
+  .movie-details{grid-template-columns:1fr}
+  .poster-mock{max-width:300px;margin:0 auto}
+  .hero-title{font-size:4rem}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(3,0,20,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid rgba(255,255,255,0.05);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+}
+.bottom-nav a{text-decoration:none;color:#aaa;font-size:.85rem;padding:8px 20px;border-radius:8px;transition:color .3s,background .3s;font-family:'Noto Sans TC',sans-serif;}
+.bottom-nav a:hover{color:#fff;background:rgba(255,255,255,0.1)}
+</style>
+</head>
+<body>
+
+<div class="parallax-wrapper">
+  
+  <!-- Hero Parallax Section -->
+  <div class="parallax-layer layer-bg"></div>
+  
+  <div class="parallax-layer layer-mid">
+    <div class="mountain-2"></div>
+    <div class="mountain-1"></div>
+  </div>
+  
+  <div class="parallax-layer layer-text">
+    <div class="hero-title">
+      <span>NEON</span>
+      <span class="fill">ECHOES</span>
+    </div>
+  </div>
+  
+  <div class="parallax-layer layer-fg">
+    <div class="ruin-1"></div>
+    <div class="ruin-2"></div>
+    <div class="scroll-hint">SCROLL DOWN ↓</div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="content-section">
+    <header class="style-info">
+      <div class="cat">🌐 3D、空間與沉浸式設計</div>
+      <h1>#15 — Layered Depth Design</h1>
+      <p class="sub">深度圖層疊加設計</p>
+      <div class="info-row">
+        <div class="info-col full">
+          <h4>📖 風格定義與視覺特徵</h4>
+          <p>運用不同速率的視差滾動（Parallax Scrolling）演算法，將網頁的視覺前景、動態中景與靜態背景徹底分離，隨著使用者向下滾動，創造出強烈的三維深度空間錯覺與電影般的動態張力。</p>
+        </div>
+        <div class="info-col">
+          <h4>🏢 適用產業與場景</h4>
+          <p>影視作品宣傳網站、3A 級遊戲官網、沉浸式品牌故事頁</p>
+        </div>
+        <div class="info-col">
+          <h4>🌍 主要流行地區</h4>
+          <p>全球</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="movie-details">
+      <div class="synopsis">
+        <div class="syn-title">The Fall of Sector 4</div>
+        <div class="syn-text">In the year 2142, the neon-drenched ruins of Sector 4 hide a secret that could alter the course of humanity. Scavengers navigate the layered depths of the undercity, where every shadow holds a story and every light tells a lie.</div>
+        <ul class="cast-list">
+          <li><span>Director</span><span>Akira Ren</span></li>
+          <li><span>VFX Studio</span><span>CyberMatrix Inc.</span></li>
+          <li><span>Release</span><span>Q4 2026</span></li>
+        </ul>
+      </div>
+      <div class="poster-mock">NO SIGNAL</div>
+    </div>
+  </div>
+  
+</div>
+
+<nav class="bottom-nav">
+  <a href="14.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="16.html">下一頁 →</a>
+</nav>
+
+</body>
+</html>

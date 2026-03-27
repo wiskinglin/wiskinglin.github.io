@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 50 UX/UI 設計風格互動範例集 — 2025-2026 全球設計趨勢圖鑑</title>
+    <meta name="description"
+        content="探索 2025-2026 年全球 50 大主流 UX/UI 設計風格，每種風格皆附帶互動範例與完整定義說明。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <!-- 加入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+            --accent: #6366f1;
+            --cat1: #6366f1;
+            --cat2: #06b6d4;
+            --cat3: #f59e0b;
+            --cat4: #10b981;
+            --cat5: #ef4444;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', 'Noto Sans TC', sans-serif;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        /* ── Background Canvas ── */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            opacity: 0.6;
+            transition: opacity 0.5s ease;
+        }
+
+        /* ── Noise Overlay ── */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* ── Custom Cursor ── */
+        .custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .custom-cursor.hovering {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 1);
+            border-color: transparent;
+        }
+
+        /* ── Fixed Header ── */
+        .header {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            z-index: 100;
+            font-family: 'Syncopate', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            mix-blend-mode: difference;
+        }
+
+        .header a {
+            color: var(--text);
+            text-decoration: none;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+
+        .header a:hover {
+            opacity: 1;
+        }
+
+        /* ── Back Link ── */
+        .back-link {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 100;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            mix-blend-mode: difference;
+        }
+
+        .back-link a {
+            color: var(--text);
+            text-decoration: none;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+        }
+
+        .back-link a:hover {
+            opacity: 1;
+        }
+
+        /* ── UI Container ── */
+        .ui-container {
+            position: relative;
+            z-index: 5;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* ── Left: Scrolling List ── */
+        .list-container {
+            width: 60%;
+            height: 100vh;
+            overflow-y: scroll;
+            padding: 16vh 0 50vh 5vw;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .list-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ── Category Header in List ── */
+        .cat-header {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            padding: 2rem 0 0.8rem 0;
+            opacity: 0.3;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 1rem;
+            transition: opacity 0.4s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cat-header svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* ── Trend Item (Kinetic Typography) ── */
+        .trend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            cursor: none;
+            opacity: 0.3;
+            transform-origin: left center;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .trend-num {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-right: 1.5rem;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.4);
+            transition: all 0.4s ease;
+            flex-shrink: 0;
+            min-width: 2.5rem;
+        }
+
+        .trend-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+            flex-grow: 1;
+        }
+
+        .trend-arrow {
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+        }
+
+        .trend-arrow svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+        }
+
+        .trend-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 2.8vw;
+            font-weight: 700;
+            text-transform: uppercase;
+            line-height: 1.1;
+            white-space: nowrap;
+            transition: all 0.4s ease;
+        }
+
+        .trend-zh {
+            font-family: 'Noto Sans TC', 'Space Grotesk', sans-serif;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.25);
+            transition: all 0.4s ease;
+            font-weight: 300;
+        }
+
+        /* ── Hover Kinetic Effect ── */
+        .trend-item:hover {
+            opacity: 1;
+            transform: scale(1.03) translateX(15px);
+        }
+
+        .trend-item:hover .trend-num {
+            -webkit-text-stroke: 0px;
+        }
+
+        .trend-item:hover .trend-title {
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .trend-item:hover .trend-zh {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .trend-item:hover .trend-arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* ── Right: Detail Panel ── */
+        .detail-panel {
+            width: 40%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 5vw;
+            pointer-events: none;
+        }
+
+        .detail-category {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .detail-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            transition-delay: 0.05s;
+        }
+
+        .detail-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            transition-delay: 0.1s;
+        }
+
+        .detail-zh-title {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 1rem;
+            color: #a1a1aa;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            transition-delay: 0.15s;
+        }
+
+        .detail-desc {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #a1a1aa;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            transition-delay: 0.2s;
+            max-width: 80%;
+        }
+
+        .detail-action {
+            margin-top: 2rem;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.7rem;
+            color: #52525b;
+            opacity: 0;
+            transition: all 0.5s ease;
+            transition-delay: 0.25s;
+            letter-spacing: 0.15em;
+        }
+
+        /* ── Detail panel active ── */
+        .detail-panel.active .detail-category,
+        .detail-panel.active .detail-icon,
+        .detail-panel.active .detail-title,
+        .detail-panel.active .detail-zh-title,
+        .detail-panel.active .detail-desc,
+        .detail-panel.active .detail-action {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Legend Bar (bottom) ── */
+        .legend-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            gap: 24px;
+            mix-blend-mode: difference;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.4;
+            transition: opacity 0.3s;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .legend-item:hover {
+            opacity: 1;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ── Mobile Responsive ── */
+        @media (max-width: 768px) {
+            .list-container {
+                width: 100%;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .trend-title {
+                font-size: 6vw;
+                white-space: normal;
+            }
+
+            .detail-panel {
+                display: none;
+            }
+
+            .legend-bar {
+                display: none;
+            }
+
+            .header {
+                font-size: 0.7rem;
+            }
+
+            .back-link {
+                top: 2rem;
+                right: 1rem;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Film Grain Noise -->
+    <div class="noise-overlay"></div>
+
+    <!-- Custom Magnetic Cursor -->
+    <div class="custom-cursor" id="cursor"></div>
+
+    <!-- Particle Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="header">
+        <a href="../index.html">VISION_2026</a> // TOP 50 STYLES
+    </div>
+
+    <div class="back-link">
+        <a href="../index.html">← Home</a>
+    </div>
+
+    <div class="ui-container">
+        <!-- Left scrolling list -->
+        <div class="list-container" id="list-container">
+            <!-- JS will generate items -->
+        </div>
+
+        <!-- Right detail panel -->
+        <div class="detail-panel" id="detail-panel">
+            <div class="detail-category" id="d-cat">HOVER TO EXPLORE</div>
+            <div class="detail-icon" id="d-icon"><i data-lucide="telescope" style="width: 48px; height: 48px; stroke-width: 1.5;"></i></div>
+            <div class="detail-title" id="d-title">50 DESIGN STYLES</div>
+            <div class="detail-zh-title" id="d-zh">50 種設計風格互動範例</div>
+            <div class="detail-desc" id="d-desc">捲動並懸停項目，探索 2025-2026 全球 50 大 UX/UI 設計趨勢。每個項目皆可點擊進入互動範例頁面。</div>
+            <div class="detail-action" id="d-action">CLICK TO ENTER DEMO →</div>
+        </div>
+    </div>
+
+    <!-- Bottom Legend -->
+    <div class="legend-bar">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--cat1)"></span>極簡與結構</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--cat2)"></span>3D 與沉浸</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--cat3)"></span>復古與文化</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--cat4)"></span>AI 與動態</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--cat5)"></span>材質與反叛</div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. Data: 50 UX/UI Design Styles
+        // ==========================================
+        const categories = {
+            1: { name: '極簡與結構化設計', color: '#6366f1', icon: 'layout-grid', type: 'grid' },
+            2: { name: '3D、空間與沉浸式設計', color: '#06b6d4', icon: 'box', type: 'particles' },
+            3: { name: '復古、懷舊與文化符號轉譯', color: '#f59e0b', icon: 'archive', type: 'waves' },
+            4: { name: 'AI 生成、動態與微互動體驗', color: '#10b981', icon: 'sparkles', type: 'shapes' },
+            5: { name: '特殊材質、反叛與情感化設計', color: '#ef4444', icon: 'zap', type: 'matrix' }
+        };
+
+        const styles = [
+            { id: "01", en: "Bento Grid / Bento Box", zh: "便當盒網格設計", cat: 1 },
+            { id: "02", en: "Swiss Style / International Typographic Style", zh: "瑞士國際主義風格", cat: 1 },
+            { id: "03", en: "Editorial Style", zh: "雜誌編排風格", cat: 1 },
+            { id: "04", en: "Flat Design 2.0", zh: "扁平化設計 2.0", cat: 1 },
+            { id: "05", en: "SEO-Driven Structured UI", zh: "SEO 導向結構化介面", cat: 1 },
+            { id: "06", en: "Minimalist + Whitespace", zh: "極簡留白美學", cat: 1 },
+            { id: "07", en: "Zero-Waste / Sustainable Design", zh: "零廢棄 / 永續環保設計", cat: 1 },
+            { id: "08", en: "Content-First Layout", zh: "內容優先佈局", cat: 1 },
+            { id: "09", en: "High Contrast Typography", zh: "高對比排版風格", cat: 1 },
+            { id: "10", en: "Data-Dense Clean UI", zh: "高資訊密度潔淨介面", cat: 1 },
+
+            { id: "11", en: "Liquid Glass / Glassmorphism", zh: "液態玻璃 / 進階玻璃擬物", cat: 2 },
+            { id: "12", en: "Spatial Design / Spatial UX", zh: "空間設計 / 空間體驗", cat: 2 },
+            { id: "13", en: "WebXR Immersive 3D", zh: "WebXR 沉浸式 3D 介面", cat: 2 },
+            { id: "14", en: "Precision 3D Product Previews", zh: "高精度 3D 產品預覽", cat: 2 },
+            { id: "15", en: "Layered Depth Design", zh: "深度圖層疊加設計", cat: 2 },
+            { id: "16", en: "Holographic UI", zh: "全息投影科技介面", cat: 2 },
+            { id: "17", en: "Adaptive Dark Mode", zh: "適應性暗黑體驗", cat: 2 },
+            { id: "18", en: "Interactive Cursors", zh: "互動式游標設計", cat: 2 },
+            { id: "19", en: "AR Try-on Interfaces", zh: "AR 實境試穿/試用介面", cat: 2 },
+            { id: "20", en: "Parallax Scrollytelling", zh: "視差滾動敘事", cat: 2 },
+
+            { id: "21", en: "Y2K Neo-Retro", zh: "千禧年新復古風", cat: 3 },
+            { id: "22", en: "PC-98 Pixel Art Revival", zh: "PC-98 像素藝術復興", cat: 3 },
+            { id: "23", en: "Showa Nostalgia", zh: "昭和懷舊風", cat: 3 },
+            { id: "24", en: "Museumcore", zh: "博物館策展美學", cat: 3 },
+            { id: "25", en: "Retrofuture Femme", zh: "復古未來女性主義", cat: 3 },
+            { id: "26", en: "Dial-up Design / Web 1.0", zh: "撥接時代 / Web 1.0 風格", cat: 3 },
+            { id: "27", en: "80s Excess", zh: "80 年代極繁主義", cat: 3 },
+            { id: "28", en: "Local Culture Integration", zh: "在地文化符號轉譯", cat: 3 },
+            { id: "29", en: "Scrapbooking / Mixed Media", zh: "數位剪貼簿 / 混合媒材", cat: 3 },
+            { id: "30", en: "Hand-drawn & Organic", zh: "手繪與有機類比風", cat: 3 },
+
+            { id: "31", en: "Generative UI", zh: "生成式動態介面", cat: 4 },
+            { id: "32", en: "Kinetic Typography", zh: "動態字體排印", cat: 4 },
+            { id: "33", en: "Agentic Web Experiences", zh: "代理式網頁體驗", cat: 4 },
+            { id: "34", en: "Machine Experience (MX)", zh: "機器體驗設計層", cat: 4 },
+            { id: "35", en: "TL;DR Experience", zh: "AI 摘要式體驗", cat: 4 },
+            { id: "36", en: "Micro-interactions as Etiquette", zh: "微互動體驗禮儀", cat: 4 },
+            { id: "37", en: "Multimodal Interfaces", zh: "多模態互動介面", cat: 4 },
+            { id: "38", en: "Zero-UI / Invisible UI", zh: "零介面 / 隱形互動", cat: 4 },
+            { id: "39", en: "AI-Driven Dynamic Theming", zh: "AI 驅動動態主題", cat: 4 },
+            { id: "40", en: "Gamified Experiences", zh: "遊戲化互動體驗", cat: 4 },
+
+            { id: "41", en: "Neo-Brutalism", zh: "新粗野主義", cat: 5 },
+            { id: "42", en: "Anti-Design 2.0", zh: "反設計 2.0", cat: 5 },
+            { id: "43", en: "Tactile Maximalism", zh: "觸覺極繁主義", cat: 5 },
+            { id: "44", en: "Organic Shapes & Anti-Grid", zh: "有機形狀與反網格佈局", cat: 5 },
+            { id: "45", en: "Dopamine Colors", zh: "多巴胺色彩美學", cat: 5 },
+            { id: "46", en: "Exaggerated Hierarchy", zh: "誇張的視覺層級", cat: 5 },
+            { id: "47", en: "Chaotic Overlapping", zh: "混亂重疊佈局", cat: 5 },
+            { id: "48", en: "Emotionally Aware Modes", zh: "情緒感知模式", cat: 5 },
+            { id: "49", en: "Emojis & Informality", zh: "繪文字與非正式微拷貝", cat: 5 },
+            { id: "50", en: "Experimental Navigation", zh: "實驗性導航體驗", cat: 5 },
+        ];
+
+        // ==========================================
+        // 2. DOM Generation
+        // ==========================================
+        const listContainer = document.getElementById('list-container');
+        const detailPanel = document.getElementById('detail-panel');
+        const dCat = document.getElementById('d-cat');
+        const dIcon = document.getElementById('d-icon');
+        const dTitle = document.getElementById('d-title');
+        const dZh = document.getElementById('d-zh');
+        const dDesc = document.getElementById('d-desc');
+        const dAction = document.getElementById('d-action');
+        const cursor = document.getElementById('cursor');
+
+        let currentCat = 0;
+
+        styles.forEach((s) => {
+            const cat = categories[s.cat];
+
+            // Insert category header when category changes
+            if (s.cat !== currentCat) {
+                currentCat = s.cat;
+                const header = document.createElement('div');
+                header.className = 'cat-header';
+                header.style.color = cat.color;
+                header.innerHTML = `<i data-lucide="${cat.icon}"></i> ${cat.name}`;
+                listContainer.appendChild(header);
+            }
+
+            const el = document.createElement('a');
+            el.className = 'trend-item';
+            el.href = `${s.id}.html`;
+            el.innerHTML = `
+                <div class="trend-num">${s.id}</div>
+                <div class="trend-title-group">
+                    <div class="trend-title">${s.en}</div>
+                    <div class="trend-zh">${s.zh}</div>
+                </div>
+                <div class="trend-arrow">
+                    <i data-lucide="arrow-right"></i>
+                </div>
+            `;
+
+            el.addEventListener('mouseenter', () => {
+                // Update accent color
+                document.documentElement.style.setProperty('--accent', cat.color);
+
+                // Update detail panel
+                dCat.innerText = `[ ${cat.name} ]`;
+                dCat.style.color = cat.color;
+                dIcon.innerHTML = `<i data-lucide="${cat.icon}" style="width: 48px; height: 48px; stroke-width: 1.5;"></i>`;
+                lucide.createIcons({ root: dIcon });
+                dTitle.innerText = s.en;
+                dZh.innerText = s.zh;
+                dDesc.innerText = `第 ${s.id} 種設計風格 — 點擊進入完整互動範例頁面，體驗 ${s.en} 的視覺美學與互動特性。`;
+                dAction.innerText = `CLICK TO ENTER → ${s.id}.html`;
+                detailPanel.classList.add('active');
+
+                // Update number color
+                el.querySelector('.trend-num').style.color = cat.color;
+                el.querySelector('.trend-num').style.webkitTextStroke = '0px';
+
+                // Cursor grow
+                cursor.classList.add('hovering');
+
+                // Update canvas engine
+                engineState.targetMode = cat.type;
+                engineState.color = cat.color;
+                engineState.intensity = 1.0;
+            });
+
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hovering');
+                el.querySelector('.trend-num').style.color = 'transparent';
+                el.querySelector('.trend-num').style.webkitTextStroke = '1px rgba(255,255,255,0.4)';
+            });
+
+            listContainer.appendChild(el);
+        });
+
+        // Initialize Lucide icons for static elements
+        lucide.createIcons();
+
+        // Custom cursor follow
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        // ==========================================
+        // 3. Canvas Particle Engine (from vibe.html)
+        // ==========================================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        const engineState = {
+            mode: 'particles',
+            targetMode: 'particles',
+            color: '#6366f1',
+            intensity: 0,
+            time: 0
+        };
+
+        const particleCount = 180;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    baseX: Math.random() * width,
+                    baseY: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: Math.random() * 2 + 1,
+                    angle: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 255, g: 255, b: 255 };
+        }
+
+        function render() {
+            ctx.fillStyle = `rgba(5, 5, 5, ${0.1 + (1 - engineState.intensity) * 0.1})`;
+            ctx.fillRect(0, 0, width, height);
+
+            engineState.time += 0.01;
+
+            if (engineState.intensity > 0) {
+                engineState.intensity -= 0.02;
+                if (engineState.intensity < 0) engineState.intensity = 0;
+            }
+
+            const rgb = hexToRgb(engineState.color);
+            ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
+            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`;
+
+            const mode = engineState.targetMode;
+
+            particles.forEach((p, i) => {
+                p.x += p.vx * (1 + engineState.intensity * 3);
+                p.y += p.vy * (1 + engineState.intensity * 3);
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                if (mode === 'particles') {
+                    p.x += Math.sin(engineState.time + i) * 0.5;
+                    p.y += Math.cos(engineState.time + i) * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * (1 + engineState.intensity), 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (mode === 'grid') {
+                    const gridSize = 50;
+                    const targetX = Math.round(p.baseX / gridSize) * gridSize + (Math.sin(engineState.time * 2 + p.y) * 20 * engineState.intensity);
+                    const targetY = Math.round(p.baseY / gridSize) * gridSize;
+                    p.x += (targetX - p.x) * 0.05;
+                    p.y += (targetY - p.y) * 0.05;
+                    ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+                    if (i % 5 === 0) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p.x, height);
+                        ctx.stroke();
+                    }
+                } else if (mode === 'waves') {
+                    p.x = p.baseX;
+                    const wave = Math.sin(p.x * 0.01 + engineState.time * 3) * 100;
+                    const wave2 = Math.cos(p.x * 0.005 - engineState.time * 2) * 50;
+                    const targetY = height / 2 + wave + wave2;
+                    p.y += (targetY - p.y) * 0.1;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (mode === 'shapes') {
+                    p.angle += 0.02 * (1 + engineState.intensity);
+                    const size = p.size * 5 * (1 + engineState.intensity * 2);
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.angle);
+                    if (i % 3 === 0) {
+                        ctx.strokeRect(-size / 2, -size / 2, size, size);
+                    } else if (i % 3 === 1) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, -size);
+                        ctx.lineTo(size, size);
+                        ctx.lineTo(-size, size);
+                        ctx.closePath();
+                        ctx.stroke();
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                } else if (mode === 'matrix') {
+                    p.x = p.baseX;
+                    p.y += (5 + Math.random() * 5) * (1 + engineState.intensity * 2);
+                    if (p.y > height) {
+                        p.y = 0;
+                        p.baseX = Math.random() * width;
+                    }
+                    ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${Math.random()})`;
+                    ctx.font = "14px monospace";
+                    ctx.fillText(Math.random() > 0.5 ? "1" : "0", p.x, p.y);
+                }
+            });
+
+            // Plexus connection lines for particles mode
+            if (mode === 'particles') {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = dx * dx + dy * dy;
+                        if (dist < 10000) {
+                            ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${0.2 * (1 - dist / 10000)})`;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+
+</html>

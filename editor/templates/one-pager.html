@@ -1,0 +1,211 @@
+<!-- Template: One-Pager (單頁摘要) -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+  
+  .tpl-onepager {
+    --accent: #f59e0b;
+    --accent-dark: #d97706;
+    --bg: #fffbeb;
+    --surface: #ffffff;
+    --border: #fde68a;
+    --text: #1c1917;
+    --text-muted: #78716c;
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+
+  .tpl-onepager .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.08);
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  .tpl-onepager .sidebar {
+    background: linear-gradient(180deg, #1c1917 0%, #292524 100%);
+    color: #fafaf9;
+    padding: 40px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .tpl-onepager .sidebar .logo-area {
+    text-align: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .tpl-onepager .sidebar .logo-area .icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+  }
+  .tpl-onepager .sidebar h2 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .tpl-onepager .sidebar p, .tpl-onepager .sidebar li {
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #a8a29e;
+  }
+  .tpl-onepager .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .tpl-onepager .sidebar li {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .tpl-onepager .sidebar li::before {
+    content: '→ ';
+    color: var(--accent);
+  }
+
+  /* Main Content */
+  .tpl-onepager .main {
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .tpl-onepager .main h1[data-slot] {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+  }
+  .tpl-onepager .main .subtitle[data-slot] {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+  .tpl-onepager .main .body[data-slot] {
+    flex: 1;
+    line-height: 1.8;
+    color: var(--text);
+  }
+  .tpl-onepager .main .body h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 16px 0 8px;
+    color: var(--accent-dark);
+  }
+
+  /* Highlights */
+  .tpl-onepager .highlights[data-slot] {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .tpl-onepager .highlights h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-dark);
+    margin-bottom: 10px;
+  }
+
+  /* Contact */
+  .tpl-onepager .contact[data-slot] {
+    padding-top: 16px;
+    border-top: 1px solid #e7e5e4;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    gap: 24px;
+  }
+
+  .tpl-onepager [data-slot]:focus {
+    outline: 2px dashed var(--accent);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .tpl-onepager .page {
+      grid-template-columns: 1fr;
+      width: 100%;
+      min-height: auto;
+    }
+    .tpl-onepager .sidebar { padding: 24px; }
+    .tpl-onepager .main { padding: 24px; }
+  }
+  @media (max-width: 375px) {
+    .tpl-onepager { padding: 12px; }
+    .tpl-onepager .main h1[data-slot] { font-size: 1.6rem; }
+  }
+  @media print {
+    .tpl-onepager { background: #fff; padding: 0; }
+    .tpl-onepager .page {
+      box-shadow: none;
+      border-radius: 0;
+    }
+  }
+</style>
+
+<div class="tpl-onepager">
+  <div class="page">
+
+    <div class="sidebar" data-slot="sidebar-info" contenteditable="true">
+      <div class="logo-area">
+        <div class="icon">📋</div>
+        <div style="font-weight:700;font-size:0.9rem;">組織名稱</div>
+      </div>
+      <div>
+        <h2>快速資訊</h2>
+        <ul>
+          <li>產業：在此填入</li>
+          <li>日期：2026 年 3 月</li>
+          <li>分類：策略分析</li>
+          <li>頁數：1 頁</li>
+        </ul>
+      </div>
+      <div>
+        <h2>關鍵數字</h2>
+        <p style="font-size:2rem;font-weight:900;color:#f59e0b;">$1.2B</p>
+        <p>年度市場規模</p>
+      </div>
+    </div>
+
+    <div class="main">
+      <h1 data-slot="title" contenteditable="true">在此輸入摘要標題</h1>
+      <p class="subtitle" data-slot="subtitle" contenteditable="true">一句話描述此文件的核心目的與預期讀者。</p>
+      
+      <div class="body" data-slot="main-body" contenteditable="true">
+        <h3>背景脈絡</h3>
+        <p>在此描述議題背景與市場環境，建立讀者的理解基礎。</p>
+        <h3>核心分析</h3>
+        <p>展開主要論述，使用數據與案例支撐您的觀點。保持精煉，每段不超過 3-4 行。</p>
+        <h3>建議方案</h3>
+        <p>提出具體可操作的行動建議，包含優先順序與預期成效。</p>
+      </div>
+
+      <div class="highlights" data-slot="highlights" contenteditable="true">
+        <h3>⚡ 重點摘要</h3>
+        <p>• 第一個核心結論<br>• 第二個重要發現<br>• 第三個行動建議</p>
+      </div>
+
+      <div class="contact" data-slot="contact" contenteditable="true">
+        <span>📧 email@example.com</span>
+        <span>🔗 website.com</span>
+        <span>📞 +886-XXX-XXX</span>
+      </div>
+    </div>
+
+  </div>
+</div>

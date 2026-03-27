@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#07 Zero-Waste / Sustainable Design — 零廢棄 / 永續環保設計 | Top 50 UX/UI</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--surface:#161b22;--border:#30363d;
+  --text:#c9d1d9;--text-muted:#8b949e;--text-bright:#e6edf3;
+  --green:#3fb950;--green-dim:#238636;--green-muted:#1a7f37;
+  --accent:#58a6ff;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji';
+  background:var(--bg);color:var(--text);line-height:1.7;
+  padding-bottom:80px;
+}
+
+/* Style Info — sustainable / dark minimal */
+.style-info{
+  max-width:800px;margin:0 auto;
+  padding:80px 24px 64px;
+}
+.style-info .badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--green-muted);color:var(--green);
+  font-size:.7rem;font-weight:600;padding:4px 12px;border-radius:12px;
+  margin-bottom:16px;letter-spacing:.02em;
+}
+.style-info h1{
+  font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;
+  color:var(--text-bright);margin-bottom:4px;
+}
+.style-info .subtitle{
+  font-size:1rem;color:var(--text-muted);margin-bottom:32px;
+}
+.info-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+}
+.info-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:16px;
+}
+.info-card.full{grid-column:1/-1}
+.info-card .label{
+  font-size:.7rem;font-weight:600;color:var(--green);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;
+  display:flex;align-items:center;gap:4px;
+}
+.info-card p{font-size:.85rem;color:var(--text-muted);line-height:1.8}
+
+/* Demo — Green Energy Homepage */
+.demo{max-width:960px;margin:0 auto;padding:0 24px}
+
+/* Carbon counter */
+.carbon-banner{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:12px 20px;margin-bottom:48px;
+  font-size:.8rem;color:var(--text-muted);
+}
+.carbon-banner .dot{
+  width:8px;height:8px;border-radius:50%;background:var(--green);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.carbon-banner .val{color:var(--green);font-weight:700;font-size:.9rem}
+
+/* Hero */
+.hero{
+  text-align:center;padding:40px 0 64px;
+}
+.hero-icon{
+  width:80px;height:80px;margin:0 auto 24px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--green-dim),var(--green));
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;
+  filter:drop-shadow(0 4px 20px rgba(63,185,80,.25));
+}
+.hero h2{
+  font-size:clamp(1.8rem,5vw,3rem);font-weight:800;
+  color:var(--text-bright);margin-bottom:12px;line-height:1.2;
+}
+.hero p{
+  max-width:520px;margin:0 auto 32px;
+  font-size:.9rem;color:var(--text-muted);
+}
+.hero-cta{
+  display:inline-block;padding:12px 32px;border-radius:6px;
+  background:var(--green-dim);color:#fff;font-size:.85rem;
+  font-weight:600;text-decoration:none;border:1px solid var(--green);
+  transition:background .3s,transform .2s;cursor:pointer;
+}
+.hero-cta:hover{background:var(--green);transform:translateY(-2px)}
+
+/* Stats — duotone approach */
+.stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  margin-bottom:48px;
+}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:20px;text-align:center;
+  transition:border-color .3s;
+}
+.stat-card:hover{border-color:var(--green-dim)}
+.stat-card .num{
+  font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;
+  color:var(--green);margin-bottom:4px;
+}
+.stat-card .desc{font-size:.75rem;color:var(--text-muted)}
+
+/* Performance chart — pure CSS */
+.perf-section{margin-bottom:48px}
+.perf-section h3{
+  font-size:1.1rem;font-weight:600;color:var(--text-bright);
+  margin-bottom:16px;display:flex;align-items:center;gap:6px;
+}
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:12px}
+.bar-label{width:120px;font-size:.75rem;color:var(--text-muted);text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:20px;background:var(--surface);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.bar-fill{height:100%;border-radius:3px;transition:width 1.5s ease-out}
+.bar-fill.green{background:var(--green)}
+.bar-fill.dim{background:var(--green-dim)}
+.bar-val{width:40px;font-size:.75rem;color:var(--green);font-weight:600}
+
+/* Initiative cards */
+.initiatives{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  margin-bottom:48px;
+}
+.init-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:20px;
+  transition:transform .3s,border-color .3s;
+}
+.init-card:hover{transform:translateY(-3px);border-color:var(--green-dim)}
+.init-card .icon{font-size:1.5rem;margin-bottom:8px}
+.init-card h4{font-size:.9rem;color:var(--text-bright);margin-bottom:6px;font-weight:600}
+.init-card p{font-size:.78rem;color:var(--text-muted);line-height:1.7}
+
+/* Footer message */
+.eco-footer{
+  text-align:center;padding:32px 0;
+  font-size:.75rem;color:var(--text-muted);
+  border-top:1px solid var(--border);
+}
+.eco-footer strong{color:var(--green)}
+
+@media(max-width:768px){
+  .info-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr}
+  .initiatives{grid-template-columns:1fr}
+  .bar-label{width:80px;font-size:.65rem}
+  .style-info{padding:60px 16px 48px}
+  .demo{padding:0 16px}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(13,17,23,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+}
+.bottom-nav a{text-decoration:none;color:var(--text-muted);font-size:.85rem;padding:8px 20px;border-radius:8px;transition:color .3s,background .3s}
+.bottom-nav a:hover{color:var(--text-bright);background:rgba(255,255,255,.05)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.style-info{animation:fadeUp .6s ease}
+.demo{animation:fadeUp .6s ease .2s both}
+</style>
+</head>
+<body>
+
+<header class="style-info">
+  <div class="badge">🌱 極簡與結構化設計</div>
+  <h1>#07 — Zero-Waste / Sustainable Design</h1>
+  <p class="subtitle">零廢棄 / 永續環保設計</p>
+  <div class="info-grid">
+    <div class="info-card full">
+      <div class="label">📖 風格定義與視覺特徵</div>
+      <p>將環保理念具象化為數位介面。刻意採用低解析度或雙色調圖片以減少頻寬消耗，優先使用系統預設字體避免額外載入，並預設為暗黑模式。視覺呈現一種克制、乾淨且對地球友善的極速效能感。</p>
+    </div>
+    <div class="info-card">
+      <div class="label">🏢 適用產業與場景</div>
+      <p>綠色能源企業、社會影響力企業、非營利組織平台</p>
+    </div>
+    <div class="info-card">
+      <div class="label">🌍 主要流行地區</div>
+      <p>台灣、歐洲</p>
+    </div>
+    <div class="info-card full">
+      <div class="label">📂 所屬分類</div>
+      <p>極簡與結構化設計（Minimalism & Structured Design）</p>
+    </div>
+  </div>
+</header>
+
+<main class="demo">
+  <!-- Carbon footprint banner -->
+  <div class="carbon-banner">
+    <span class="dot"></span>
+    <span>此頁面碳排放量：</span>
+    <span class="val" id="carbon">0.00g CO₂</span>
+    <span>｜低於全球 92% 網頁</span>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-icon">⚡</div>
+    <h2>TerraVolt Energy</h2>
+    <p>為下一代打造零碳未來。我們以 100% 再生能源驅動世界，每一度電都源自陽光、風力與大地的恩惠。</p>
+    <a class="hero-cta" href="javascript:void(0)">🌍 了解我們的承諾</a>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div class="stat-card">
+      <div class="num" data-target="12847">0</div>
+      <div class="desc">MW 再生能源裝置容量</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" data-target="3200000">0</div>
+      <div class="desc">噸 CO₂ 年減排量</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" data-target="46">0</div>
+      <div class="desc">個國家營運據點</div>
+    </div>
+  </section>
+
+  <!-- Performance -->
+  <section class="perf-section">
+    <h3>📊 2025 能源結構分佈</h3>
+    <div class="bar-chart">
+      <div class="bar-row">
+        <span class="bar-label">太陽能</span>
+        <div class="bar-track"><div class="bar-fill green" data-width="42" style="width:0%"></div></div>
+        <span class="bar-val">42%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">風力發電</span>
+        <div class="bar-track"><div class="bar-fill green" data-width="31" style="width:0%"></div></div>
+        <span class="bar-val">31%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">水力發電</span>
+        <div class="bar-track"><div class="bar-fill dim" data-width="18" style="width:0%"></div></div>
+        <span class="bar-val">18%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">地熱能</span>
+        <div class="bar-track"><div class="bar-fill dim" data-width="9" style="width:0%"></div></div>
+        <span class="bar-val">9%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Initiatives -->
+  <section>
+    <h3 style="font-size:1.1rem;font-weight:600;color:var(--text-bright);margin-bottom:16px">🎯 永續行動計畫</h3>
+    <div class="initiatives">
+      <div class="init-card">
+        <div class="icon">🌿</div>
+        <h4>碳中和辦公室</h4>
+        <p>全球辦公據點已實現 100% 再生能源供電，年均用電效率提升 34%。</p>
+      </div>
+      <div class="init-card">
+        <div class="icon">♻️</div>
+        <h4>循環經濟供應鏈</h4>
+        <p>太陽能板回收再利用率達 96.2%，實現「從搖籃到搖籃」的完整生命週期管理。</p>
+      </div>
+      <div class="init-card">
+        <div class="icon">🌊</div>
+        <h4>海洋廢棄物清除</h4>
+        <p>與國際海洋保育組織合作，累計清除超過 180 噸海洋塑膠廢棄物。</p>
+      </div>
+      <div class="init-card">
+        <div class="icon">🌳</div>
+        <h4>百萬植樹計畫</h4>
+        <p>截至 2025 年已種植超過 240 萬棵樹木，覆蓋面積等同 3,200 座足球場。</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="eco-footer">
+    <p>🌱 此頁面使用 <strong>系統字體</strong>、<strong>暗黑模式</strong>、<strong>零外部圖片</strong> 設計，致力最低碳排放瀏覽體驗</p>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="06.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="08.html">下一頁 →</a>
+</nav>
+
+<script>
+// Animated number counter
+function animateCounters(){
+  document.querySelectorAll('[data-target]').forEach(el=>{
+    const target=parseInt(el.dataset.target);
+    const duration=1800;
+    const start=performance.now();
+    function update(now){
+      const elapsed=now-start;
+      const progress=Math.min(elapsed/duration,1);
+      const eased=1-Math.pow(1-progress,3);
+      const current=Math.floor(eased*target);
+      el.textContent=current.toLocaleString();
+      if(progress<1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+  });
+}
+
+// Animated bar chart
+function animateBars(){
+  document.querySelectorAll('.bar-fill').forEach((bar,i)=>{
+    setTimeout(()=>{
+      bar.style.width=bar.dataset.width+'%';
+    },i*200);
+  });
+}
+
+// Carbon counter simulation
+function animateCarbon(){
+  const el=document.getElementById('carbon');
+  let val=0;
+  const target=0.12;
+  const step=target/60;
+  const iv=setInterval(()=>{
+    val+=step;
+    if(val>=target){val=target;clearInterval(iv)}
+    el.textContent=val.toFixed(2)+'g CO₂';
+  },30);
+}
+
+// Intersection observer for sections
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+      if(e.target.classList.contains('stats')) animateCounters();
+      if(e.target.classList.contains('perf-section')) animateBars();
+    }
+  });
+},{threshold:0.2});
+
+document.querySelectorAll('.stats,.perf-section,.initiatives,section').forEach(el=>{
+  el.style.opacity='0';
+  el.style.transform='translateY(16px)';
+  el.style.transition='opacity .6s ease,transform .6s ease';
+  obs.observe(el);
+});
+
+animateCarbon();
+</script>
+</body>
+</html>

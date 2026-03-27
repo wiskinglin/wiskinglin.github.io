@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#50 Spatial Audio UX — 空間音訊與網頁聲景 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Outfit','Noto Sans TC',sans-serif;
+  background-color:#000;color:#fff;
+  height:100vh;overflow:hidden;
+  display:flex;justify-content:center;align-items:center;
+  cursor:crosshair;
+}
+
+/* Background visual grid */
+.grid-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size:50px 50px;
+  background-position:center center;
+  z-index:0;pointer-events:none;
+}
+
+/* Glowing Sound Source Orb */
+.sound-source{
+  position:absolute;width:40px;height:40px;
+  border-radius:50%;background:#38bdf8;
+  box-shadow:0 0 40px #38bdf8, inset 0 0 20px #fff;
+  transform:translate(-50%,-50%);
+  pointer-events:none;z-index:10;
+  opacity:0;transition:opacity 0.5s;
+}
+.active .sound-source{opacity:1;animation:pulseSize 1s ease-in-out infinite alternate}
+@keyframes pulseSize{from{transform:translate(-50%,-50%) scale(0.9)}to{transform:translate(-50%,-50%) scale(1.1);box-shadow:0 0 80px #ec4899, inset 0 0 30px #fff;background:#ec4899}}
+
+/* Headphone Hint UI */
+.ui-layer{
+  position:relative;z-index:20;text-align:center;
+  max-width:600px;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);
+  padding:40px;border-radius:24px;border:1px solid rgba(255,255,255,0.1);
+}
+.cat{
+  display:inline-block;padding:4px 12px;border:1px solid rgba(56,189,248,0.3);border-radius:20px;
+  color:#38bdf8;font-size:0.75rem;text-transform:uppercase;margin-bottom:16px;font-weight:700;
+}
+h1{font-weight:700;font-size:2.5rem;margin-bottom:12px;letter-spacing:-1px}
+.desc{color:#94a3b8;font-size:1rem;line-height:1.6;margin-bottom:32px;}
+
+.btn-enable{
+  background:transparent;border:2px solid #fff;color:#fff;
+  padding:16px 32px;font-size:1.1rem;font-weight:700;border-radius:40px;
+  cursor:pointer;transition:all 0.3s;
+  display:inline-flex;align-items:center;gap:12px;font-family:inherit;
+}
+.btn-enable:hover{background:#fff;color:#000;}
+.headphones-icon{font-size:1.5rem;}
+
+.active .ui-layer{opacity:0.2;pointer-events:none;transition:opacity 0.5s}
+.active .instruction{opacity:1;pointer-events:auto}
+
+.instruction{
+  position:absolute;bottom:100px;left:50%;transform:translateX(-50%);
+  color:#fff;font-size:1.2rem;letter-spacing:2px;text-transform:uppercase;
+  opacity:0;transition:opacity 0.5s;z-index:20;font-weight:300;text-align:center;
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  display:flex;justify-content:center;align-items:center;gap:30px;
+  padding:16px 24px;z-index:9000;
+}
+.bottom-nav a{text-decoration:none;color:#64748b;font-weight:700;font-size:.85rem;text-transform:uppercase;transition:color 0.2s}
+.bottom-nav a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<div class="sound-source" id="orb"></div>
+
+<main class="ui-layer" id="masterPanel">
+  <div class="cat">🎧 未來跨裝置與流動排版</div>
+  <h1>#50 Spatial Audio UX</h1>
+  <p class="desc">空間音訊與網頁聲景。視覺不再是唯一的維度。利用 Web API，當使用者操作網頁或懸停特定元素時，會觸發具有方位感（左耳或右耳偏折）的環境音效，打破平面限制，打造沈浸式的立體網頁感受。</p>
+  
+  <button class="btn-enable" id="btnStart">
+    <span class="headphones-icon">🎧</span> Enable Spatial Audio
+  </button>
+  <p style="font-size:0.75rem;color:#64748b;margin-top:12px;">Wear headphones for the full binaural effect.</p>
+</main>
+
+<div class="instruction">Move your mouse across the screen</div>
+
+<nav class="bottom-nav">
+  <a href="49.html">← PREV</a>
+  <a href="index.html">RETURN TO DASHBOARD</a>
+</nav>
+
+<script>
+const btnStart = document.getElementById('btnStart');
+const orb = document.getElementById('orb');
+let audioCtx;
+let oscillator;
+let panner;
+let gainNode;
+let isPlaying = false;
+
+// Initialize Web Audio API
+function initAudio() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AudioContext();
+  
+  // Create an oscillator (synthesizer)
+  oscillator = audioCtx.createOscillator();
+  oscillator.type = 'sine'; // Smooth ambient tone
+  oscillator.frequency.value = 220; // A3 note
+  
+  // Create a StereoPanner (or PannerNode for 3D coordinate panning)
+  // We use StereoPanner for simple Left/Right demo on 2D screen
+  panner = audioCtx.createStereoPanner();
+  
+  // Volume control to make it soft
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0.1; // 10% volume so it doesn't hurt ears
+  
+  // Connect graph: Osc -> Panner -> Gain -> Destination(Speakers)
+  oscillator.connect(panner);
+  panner.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  
+  oscillator.start();
+  isPlaying = true;
+}
+
+btnStart.addEventListener('click', () => {
+  if(!isPlaying) {
+    initAudio();
+    document.body.classList.add('active');
+  }
+});
+
+// Track mouse and map to audio Pan and frequency
+document.addEventListener('mousemove', (e) => {
+  if(!isPlaying) return;
+  
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+  
+  // Move visual orb
+  orb.style.left = mouseX + 'px';
+  orb.style.top = mouseY + 'px';
+  
+  // Audio Panning mapping:
+  // Mouse X from 0 to window.innerWidth -> Pan from -1 (Full Left) to 1 (Full Right)
+  const panValue = (mouseX / window.innerWidth) * 2 - 1;
+  panner.pan.rampToValueAtTime(panValue, audioCtx.currentTime + 0.1);
+  
+  // Audio Frequency mapping (Pitch):
+  // Mouse Y from window.innerHeight to 0 -> Pitch from 200hz to 400hz (higher as it goes up)
+  const pitchValue = 200 + ((1 - (mouseY / window.innerHeight)) * 400);
+  oscillator.frequency.rampToValueAtTime(pitchValue, audioCtx.currentTime + 0.1);
+});
+</script>
+</body>
+</html>

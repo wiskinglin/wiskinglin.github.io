@@ -1,0 +1,204 @@
+<!-- Template: Data Dashboard (數據儀表板) -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+  
+  .tpl-dashboard {
+    --accent: #10b981;
+    --accent-light: #6ee7b7;
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-alt: #334155;
+    --border: rgba(255,255,255,0.06);
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  .tpl-dashboard .dash-wrapper {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+
+  .tpl-dashboard .dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tpl-dashboard .dash-header h1[data-slot] {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .tpl-dashboard .dash-header .sub[data-slot] {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* KPI Cards Grid */
+  .tpl-dashboard .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .tpl-dashboard .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .tpl-dashboard .kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(16,185,129,0.3);
+  }
+  .tpl-dashboard .kpi-card .kpi-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+  }
+  .tpl-dashboard .kpi-card .kpi-value {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent-light);
+  }
+  .tpl-dashboard .kpi-card .kpi-change {
+    font-size: 0.8rem;
+    margin-top: 6px;
+    color: var(--accent);
+  }
+  .tpl-dashboard .kpi-card .kpi-change.negative { color: #f87171; }
+
+  /* Chart Area */
+  .tpl-dashboard .chart-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .tpl-dashboard .chart-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+  }
+  .tpl-dashboard .chart-panel h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  .tpl-dashboard .chart-placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--surface-alt);
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* Summary */
+  .tpl-dashboard .summary-panel[data-slot] {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(16,185,129,0.08) 100%);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .tpl-dashboard .summary-panel h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-light);
+    margin-bottom: 12px;
+  }
+  .tpl-dashboard .summary-panel p {
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  .tpl-dashboard [data-slot]:focus {
+    outline: 2px dashed var(--accent);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .tpl-dashboard .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .tpl-dashboard .chart-row { grid-template-columns: 1fr; }
+    .tpl-dashboard .dash-wrapper { padding: 16px; }
+  }
+  @media (max-width: 375px) {
+    .tpl-dashboard .kpi-grid { grid-template-columns: 1fr; }
+    .tpl-dashboard .dash-header h1[data-slot] { font-size: 1.5rem; }
+  }
+  @media print {
+    .tpl-dashboard { background: #fff; color: #1e293b; }
+    .tpl-dashboard .kpi-card { border: 1px solid #e2e8f0; }
+    .tpl-dashboard .kpi-card .kpi-value { color: #059669; }
+  }
+</style>
+
+<div class="tpl-dashboard">
+  <div class="dash-wrapper">
+
+    <div class="dash-header">
+      <div>
+        <h1 data-slot="title" contenteditable="true">儀表板標題</h1>
+        <p class="sub" data-slot="subtitle" contenteditable="true">追蹤期間與數據來源說明</p>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card" data-slot="kpi-1" contenteditable="true">
+        <div class="kpi-label">指標名稱 A</div>
+        <div class="kpi-value">1,234</div>
+        <div class="kpi-change">▲ 12.5% vs 上期</div>
+      </div>
+      <div class="kpi-card" data-slot="kpi-2" contenteditable="true">
+        <div class="kpi-label">指標名稱 B</div>
+        <div class="kpi-value">$5.6M</div>
+        <div class="kpi-change">▲ 8.3% vs 上期</div>
+      </div>
+      <div class="kpi-card" data-slot="kpi-3" contenteditable="true">
+        <div class="kpi-label">指標名稱 C</div>
+        <div class="kpi-value">89.2%</div>
+        <div class="kpi-change negative">▼ 2.1% vs 上期</div>
+      </div>
+      <div class="kpi-card" data-slot="kpi-4" contenteditable="true">
+        <div class="kpi-label">指標名稱 D</div>
+        <div class="kpi-value">4,567</div>
+        <div class="kpi-change">▲ 23.7% vs 上期</div>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-panel" data-slot="chart-area" contenteditable="true">
+        <h3>趨勢圖表區域</h3>
+        <div class="chart-placeholder">📊 在此貼入圖表、數據視覺化或趨勢分析內容</div>
+      </div>
+      <div class="chart-panel">
+        <h3>分佈分析</h3>
+        <div class="chart-placeholder">🥧 分類佔比或分佈圖</div>
+      </div>
+    </div>
+
+    <div class="summary-panel" data-slot="summary" contenteditable="true">
+      <h3>📝 分析摘要與行動建議</h3>
+      <p>根據上述數據，簡要描述關鍵趨勢、異常指標與建議的下一步行動方案。</p>
+    </div>
+
+  </div>
+</div>

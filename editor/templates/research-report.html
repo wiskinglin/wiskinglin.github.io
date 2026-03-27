@@ -1,0 +1,208 @@
+<!-- Template: Research Report (深度分析報告) -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+  
+  .tpl-report {
+    --accent: #0ea5e9;
+    --accent-dark: #0369a1;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  .tpl-report .report-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 48px;
+  }
+
+  /* Hero Header */
+  .tpl-report .hero {
+    background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0ea5e9 100%);
+    border-radius: 24px;
+    padding: 60px;
+    color: #fff;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tpl-report .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .tpl-report .hero h1[data-slot] {
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .tpl-report .hero .subtitle-area[data-slot] {
+    font-size: 1.15rem;
+    opacity: 0.85;
+    line-height: 1.7;
+    max-width: 700px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Abstract */
+  .tpl-report .abstract[data-slot] {
+    background: var(--surface);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 28px 32px;
+    margin-bottom: 40px;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--text-muted);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tpl-report .abstract[data-slot] strong {
+    color: var(--accent-dark);
+  }
+
+  /* Body Sections */
+  .tpl-report .section-block {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 36px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tpl-report .section-block h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tpl-report .section-block h2::before {
+    content: '';
+    width: 4px;
+    height: 24px;
+    background: var(--accent);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .tpl-report .section-block p {
+    line-height: 1.9;
+    color: var(--text-muted);
+  }
+
+  /* Two-column layout */
+  .tpl-report .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Conclusion */
+  .tpl-report .conclusion[data-slot] {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-radius: 20px;
+    padding: 40px;
+    color: #e2e8f0;
+    margin-bottom: 24px;
+  }
+  .tpl-report .conclusion h2 {
+    color: #38bdf8;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+  .tpl-report .conclusion p { color: #94a3b8; line-height: 1.9; }
+
+  /* References */
+  .tpl-report .references[data-slot] {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px 32px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .tpl-report .references h3 { font-size: 1rem; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+
+  .tpl-report [data-slot]:focus {
+    outline: 2px dashed var(--accent);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .tpl-report .report-wrapper { padding: 24px 16px; }
+    .tpl-report .hero { padding: 36px 24px; }
+    .tpl-report .hero h1[data-slot] { font-size: 2rem; }
+    .tpl-report .two-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 375px) {
+    .tpl-report .hero h1[data-slot] { font-size: 1.6rem; }
+    .tpl-report .section-block { padding: 20px; }
+  }
+  @media print {
+    .tpl-report { background: #fff; }
+    .tpl-report .hero { break-inside: avoid; }
+    .tpl-report .section-block { break-inside: avoid; }
+  }
+</style>
+
+<div class="tpl-report">
+  <div class="report-wrapper">
+
+    <div class="hero">
+      <h1 data-slot="title" contenteditable="true">在此輸入報告標題</h1>
+      <p class="subtitle-area" data-slot="subtitle" contenteditable="true">簡述研究背景、方法論與核心發現，讓讀者快速理解報告價值。</p>
+    </div>
+
+    <div class="abstract" data-slot="abstract" contenteditable="true">
+      <strong>摘要 |</strong> 在此撰寫報告的執行摘要。包含研究問題、方法論、主要發現與策略建議。理想長度為 150-250 字，涵蓋所有關鍵結論。
+    </div>
+
+    <div class="section-block" data-slot="body-section-1" contenteditable="true">
+      <h2>第一章：背景與問題定義</h2>
+      <p>在此展開第一個主要章節。描述研究背景、問題框架與分析范圍。使用清晰的邏輯結構引導讀者進入核心議題。</p>
+    </div>
+
+    <div class="two-col">
+      <div class="section-block" data-slot="body-section-2" contenteditable="true">
+        <h2>第二章：分析框架</h2>
+        <p>在此展開理論框架或分析方法。使用圖表、模型或矩陣來視覺化您的分析邏輯。</p>
+      </div>
+      <div class="section-block" data-slot="body-section-3" contenteditable="true">
+        <h2>第三章：關鍵發現</h2>
+        <p>在此展示核心研究發現。使用數據支撐論述，並提供與現有文獻的對照分析。</p>
+      </div>
+    </div>
+
+    <div class="conclusion" data-slot="conclusion" contenteditable="true">
+      <h2>💡 結論與建議</h2>
+      <p>在此總結研究的核心發現，並提出可操作的策略建議。確保每個建議都有對應的數據支撐與可行性分析。</p>
+    </div>
+
+    <div class="references" data-slot="references" contenteditable="true">
+      <h3>參考文獻</h3>
+      <p>1. 在此列出引用的學術文獻、產業報告或數據來源。<br>
+         2. 使用 APA 或所屬領域慣用的引用格式。<br>
+         3. 確保所有數據引述都能追溯至原始來源。</p>
+    </div>
+
+  </div>
+</div>

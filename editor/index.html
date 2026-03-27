@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Studio — 智能模板編輯平台</title>
+    <meta name="description" content="Canva-style 純前端智能模板編輯器。從精美模板出發，AI 一鍵填入內容，導出為 PDF 或獨立 HTML。">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #09090b;
+            --surface: #18181b;
+            --surface-hover: #27272a;
+            --border: rgba(255,255,255,0.06);
+            --text: #fafafa;
+            --text-muted: #a1a1aa;
+            --accent: #a78bfa;
+            --accent-glow: rgba(167,139,250,0.15);
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            padding: 48px 40px 0;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .header-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .hero-text {
+            margin-bottom: 40px;
+        }
+        .hero-text h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-text p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* ===== Filters ===== */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 18px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .filter-btn:hover {
+            border-color: rgba(255,255,255,0.15);
+            color: var(--text);
+            background: var(--surface);
+        }
+        .filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        /* ===== Grid ===== */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px 80px;
+        }
+
+        /* ===== Card ===== */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s, border-color 0.3s;
+            perspective: 800px;
+        }
+        .card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), 0 0 40px var(--accent-glow);
+            border-color: rgba(167,139,250,0.3);
+        }
+
+        .card-preview {
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-preview-inner {
+            width: 90%;
+            height: 85%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-preview-inner .preview-icon {
+            font-size: 3rem;
+            opacity: 0.15;
+            position: absolute;
+        }
+        .card-preview-inner .preview-lines {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-start;
+            padding: 20px;
+            width: 100%;
+        }
+        .preview-line {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.15);
+        }
+        .preview-line.w-80 { width: 80%; }
+        .preview-line.w-60 { width: 60%; }
+        .preview-line.w-40 { width: 40%; }
+        .preview-line.w-100 { width: 100%; }
+        .preview-line.thick { height: 14px; background: rgba(255,255,255,0.25); margin-bottom: 4px; }
+
+        .card-body {
+            padding: 24px;
+        }
+        .card-category {
+            display: inline-flex;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 10px;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .card-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-slots {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .card-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .card:hover .card-arrow {
+            background: var(--accent);
+            transform: translateX(4px);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 1024px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .header { padding: 32px 20px 0; }
+            .grid { grid-template-columns: 1fr; padding: 0 20px 60px; }
+            .hero-text h1 { font-size: 1.8rem; }
+            .card-preview { height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <div class="logo">
+                <div class="logo-icon">✦</div>
+                Template Studio
+            </div>
+            <div class="header-meta">v1.0 · Local-First Editor</div>
+        </div>
+        <div class="hero-text">
+            <h1>從精美模板出發<br>打造專業文件</h1>
+            <p>選擇一個模板，用 AI 一鍵填入您的內容。所有操作在瀏覽器本地完成，無需後端服務。</p>
+        </div>
+        <div class="filters" id="filters">
+            <button class="filter-btn active" data-filter="all">全部模板</button>
+            <button class="filter-btn" data-filter="presentation">📊 簡報</button>
+            <button class="filter-btn" data-filter="report">📝 報告</button>
+            <button class="filter-btn" data-filter="dashboard">📈 儀表板</button>
+            <button class="filter-btn" data-filter="summary">📋 摘要</button>
+            <button class="filter-btn" data-filter="narrative">📖 敘事</button>
+        </div>
+    </div>
+
+    <div class="grid" id="template-grid"></div>
+
+    <script>
+    (async () => {
+        const res = await fetch('templates/_manifest.json');
+        const data = await res.json();
+        const templates = data.templates;
+        const grid = document.getElementById('template-grid');
+
+        const categoryLabels = {
+            presentation: '簡報',
+            report: '報告',
+            dashboard: '儀表板',
+            summary: '摘要',
+            narrative: '敘事'
+        };
+
+        const previewLayouts = {
+            'pitch-deck': `<div class="preview-lines"><div class="preview-line thick w-80"></div><div class="preview-line w-60"></div><div style="display:flex;gap:6px;width:100%;margin-top:8px"><div class="preview-line w-40" style="flex:1;height:40px;border-radius:6px"></div><div class="preview-line w-40" style="flex:1;height:40px;border-radius:6px"></div><div class="preview-line w-40" style="flex:1;height:40px;border-radius:6px"></div></div></div>`,
+            'research-report': `<div class="preview-lines"><div style="background:rgba(14,165,233,0.3);height:50px;width:100%;border-radius:8px;margin-bottom:6px"></div><div class="preview-line w-100"></div><div class="preview-line w-80"></div><div style="display:flex;gap:6px;width:100%;margin-top:6px"><div style="flex:1;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,0.1)"></div><div style="flex:1;height:30px;border-radius:6px;border:1px solid rgba(255,255,255,0.1)"></div></div></div>`,
+            'data-dashboard': `<div class="preview-lines"><div style="display:flex;gap:4px;width:100%"><div style="flex:1;height:36px;background:rgba(16,185,129,0.2);border-radius:6px"></div><div style="flex:1;height:36px;background:rgba(16,185,129,0.15);border-radius:6px"></div><div style="flex:1;height:36px;background:rgba(16,185,129,0.1);border-radius:6px"></div><div style="flex:1;height:36px;background:rgba(16,185,129,0.08);border-radius:6px"></div></div><div style="height:50px;width:100%;border:1px dashed rgba(255,255,255,0.1);border-radius:8px;margin-top:6px"></div></div>`,
+            'one-pager': `<div style="display:flex;gap:6px;width:100%;height:85%"><div style="width:30%;background:rgba(245,158,11,0.15);border-radius:6px"></div><div style="flex:1;display:flex;flex-direction:column;gap:4px;padding:8px"><div class="preview-line thick w-80"></div><div class="preview-line w-60"></div><div class="preview-line w-100"></div><div class="preview-line w-80"></div></div></div>`,
+            'narrative': `<div class="preview-lines" style="align-items:center;text-align:center"><div class="preview-line w-40" style="margin:0 auto"></div><div class="preview-line thick w-60" style="margin:4px auto"></div><div class="preview-line w-40" style="margin:0 auto;opacity:0.5"></div><div style="height:8px"></div><div class="preview-line w-80" style="margin:0 auto"></div><div class="preview-line w-100"></div><div class="preview-line w-60" style="margin:0 auto"></div></div>`
+        };
+
+        function renderCards(filter = 'all') {
+            grid.innerHTML = '';
+            const filtered = filter === 'all' ? templates : templates.filter(t => t.category === filter);
+
+            filtered.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.setAttribute('data-category', t.category);
+                card.onclick = () => window.location.href = `editor.html?template=${t.id}`;
+
+                card.innerHTML = `
+                    <div class="card-preview">
+                        <div class="card-preview-inner" style="background:linear-gradient(135deg, ${t.color}15 0%, ${t.color}08 100%); border:1px solid ${t.color}20;">
+                            <span class="preview-icon">✦</span>
+                            ${previewLayouts[t.id] || ''}
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <span class="card-category" style="background:${t.color}15; color:${t.color};">${categoryLabels[t.category] || t.category}</span>
+                        <div class="card-title">${t.name}</div>
+                        <div class="card-subtitle">${t.nameEn}</div>
+                        <div class="card-desc">${t.description}</div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-slots">${t.slots.length} 個可編輯區塊</span>
+                        <div class="card-arrow">→</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Filter buttons
+        document.getElementById('filters').addEventListener('click', e => {
+            if (e.target.classList.contains('filter-btn')) {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                renderCards(e.target.dataset.filter);
+            }
+        });
+
+        renderCards();
+    })();
+    </script>
+</body>
+</html>
