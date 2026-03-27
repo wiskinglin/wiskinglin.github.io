@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global WebTop 50 Museum Styles Gallery</title>
+    <!-- Base Styles -->
+    <link rel="stylesheet" href="themes/_base.css">
+    <link rel="stylesheet" href="themes/_base-responsive.css">
+    <!-- Switcher Script -->
+    <script src="themes/theme-switcher.js"></script>
+    <style>
+        /* Small helper for the demo UI */
+        #theme-menu {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(8px);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            font-family: 'Inter', sans-serif;
+            width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        #theme-menu h3 { margin: 0 0 15px 0; font-size: 16px; font-weight: 800; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
+        .category-label { margin: 15px 0 5px 0; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #666; letter-spacing: 1px; }
+        #theme-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            text-align: left;
+            font-size: 13px;
+            border-radius: 6px;
+            color: #334155;
+            transition: all 0.2s;
+        }
+        #theme-menu button:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateX(5px); }
+        #theme-menu button.active { background: #3b82f6; color: #fff; border-color: #2563eb; font-weight: 700; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+
+        /* Floating Indicator for Theme ID */
+        #theme-id-badge {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #000;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 800;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="theme-id-badge">ACTIVE THEME: DEFAULT</div>
+
+    <div id="theme-menu">
+        <h3>🏛️ Museum Style Gallery</h3>
+        <button onclick="changeTheme('default')" id="btn-default">00. Default System</button>
+        
+        <div class="category-label">Minimalism & Structured</div>
+        <button onclick="changeTheme('01-bento-grid')" id="btn-01">01. Bento Grid</button>
+        <button onclick="changeTheme('02-swiss-style')" id="btn-02">02. Swiss Style</button>
+        <button onclick="changeTheme('03-editorial-style')" id="btn-03">03. Editorial Style</button>
+        <button onclick="changeTheme('04-flat-design-2')" id="btn-04">04. Flat Design 2.0</button>
+        <button onclick="changeTheme('05-seo-driven')" id="btn-05">05. SEO-Driven</button>
+        <button onclick="changeTheme('06-minimalist-whitespace')" id="btn-06">06. Minimalist + Whitespace</button>
+        <button onclick="changeTheme('07-zero-waste')" id="btn-07">07. Zero-Waste</button>
+        <button onclick="changeTheme('08-content-first')" id="btn-08">08. Content-First</button>
+        <button onclick="changeTheme('09-high-contrast-typography')" id="btn-09">09. High Contrast</button>
+        <button onclick="changeTheme('10-data-dense')" id="btn-10">10. Data-Dense Clean</button>
+
+        <div class="category-label">3D, Spatial & Immersive</div>
+        <button onclick="changeTheme('11-liquid-glass')" id="btn-11">11. Liquid Glass</button>
+        <button onclick="changeTheme('12-spatial-ux')" id="btn-12">12. Spatial UX</button>
+        <button onclick="changeTheme('13-webxr-immersive')" id="btn-13">13. WebXR Immersive</button>
+        <button onclick="changeTheme('14-precision-3d')" id="btn-14">14. Precision 3D</button>
+        <button onclick="changeTheme('15-layered-depth')" id="btn-15">15. Layered Depth</button>
+        <button onclick="changeTheme('16-holographic-ui')" id="btn-16">16. Holographic UI</button>
+        <button onclick="changeTheme('17-adaptive-dark')" id="btn-17">17. Adaptive Dark</button>
+        <button onclick="changeTheme('18-interactive-cursors')" id="btn-18">18. Interactive Cursors</button>
+        <button onclick="changeTheme('19-ar-try-on')" id="btn-19">19. AR Try-on</button>
+        <button onclick="changeTheme('20-parallax-scrollytelling')" id="btn-20">20. Parallax Scrollytelling</button>
+
+        <div class="category-label">Retro, Nostalgic & Cultural</div>
+        <button onclick="changeTheme('21-y2k-neo-retro')" id="btn-21">21. Y2K Neo-Retro</button>
+        <button onclick="changeTheme('22-pc98-pixel-art')" id="btn-22">22. PC-98 Pixel Art</button>
+        <button onclick="changeTheme('23-showa-nostalgia')" id="btn-23">23. Showa Nostalgia</button>
+        <button onclick="changeTheme('24-museumcore')" id="btn-24">24. Museumcore</button>
+        <button onclick="changeTheme('25-retrofuture-femme')" id="btn-25">25. Retrofuture Femme</button>
+        <button onclick="changeTheme('26-dial-up-web1')" id="btn-26">26. Dial-up Design</button>
+        <button onclick="changeTheme('27-80s-excess')" id="btn-27">27. 80s Excess</button>
+        <button onclick="changeTheme('28-local-culture')" id="btn-28">28. Local Culture</button>
+        <button onclick="changeTheme('29-scrapbooking')" id="btn-29">29. Scrapbooking</button>
+        <button onclick="changeTheme('30-hand-drawn')" id="btn-30">30. Hand-drawn Organic</button>
+
+        <div class="category-label">AI, Kinetic & Micro-interactions</div>
+        <button onclick="changeTheme('31-generative-ui')" id="btn-31">31. Generative UI</button>
+        <button onclick="changeTheme('32-kinetic-typography')" id="btn-32">32. Kinetic Typography</button>
+        <button onclick="changeTheme('33-agentic-web')" id="btn-33">33. Agentic Web</button>
+        <button onclick="changeTheme('34-machine-experience')" id="btn-34">34. Machine Experience</button>
+        <button onclick="changeTheme('35-tldr-experience')" id="btn-35">35. TL;DR Experience</button>
+        <button onclick="changeTheme('36-micro-etiquette')" id="btn-36">36. Micro-interactions</button>
+        <button onclick="changeTheme('37-multimodal-interface')" id="btn-37">37. Multimodal Interface</button>
+        <button onclick="changeTheme('38-zero-ui')" id="btn-38">38. Zero-UI</button>
+        <button onclick="changeTheme('39-ai-dynamic-theming')" id="btn-39">39. AI Dynamic Theming</button>
+        <button onclick="changeTheme('40-gamified-experience')" id="btn-40">40. Gamified Experience</button>
+
+        <div class="category-label">Textures, Rebellion & Emotional</div>
+        <button onclick="changeTheme('41-neo-brutalism')" id="btn-41">41. Neo-Brutalism</button>
+        <button onclick="changeTheme('42-anti-design')" id="btn-42">42. Anti-Design 2.0</button>
+        <button onclick="changeTheme('43-tactile-maximalism')" id="btn-43">43. Tactile Maximalism</button>
+        <button onclick="changeTheme('44-organic-antigrid')" id="btn-44">44. Organic shapes</button>
+        <button onclick="changeTheme('45-dopamine-colors')" id="btn-45">45. Dopamine Colors</button>
+        <button onclick="changeTheme('46-exaggerated-hierarchy')" id="btn-46">46. Exaggerated Hierarchy</button>
+        <button onclick="changeTheme('47-chaotic-overlapping')" id="btn-47">47. Chaotic Overlapping</button>
+        <button onclick="changeTheme('48-emotionally-aware')" id="btn-48">48. Emotionally Aware</button>
+        <button onclick="changeTheme('49-emojis-informality')" id="btn-49">49. Emojis & Informality</button>
+        <button onclick="changeTheme('50-experimental-nav')" id="btn-50">50. Experimental Nav</button>
+    </div>
+
+    <!-- MAIN CONTENT (Same structure as Gem Report) -->
+    <main class="page-wrapper">
+        <header class="hero">
+            <div class="hero-badge">Style Verification Milestone</div>
+            <h1>Brave New Design World:<br>The Museum Theme System</h1>
+            <p class="hero-subtitle">Completed the implementation of all 50 global design trends. Testing the ultimate scalability of content-style decoupling.</p>
+            <div class="hero-meta">
+                <div class="hero-meta-item"><div class="label">Themes</div><div class="value">50 / 50</div></div>
+                <div class="hero-meta-item"><div class="label">Batch</div><div class="value">01-05</div></div>
+                <div class="hero-meta-item"><div class="label">Status</div><div class="value">Completed</div></div>
+            </div>
+        </header>
+
+        <section class="section">
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-num">01</div>
+                    <h2 class="section-title">Design Token Architecture</h2>
+                </div>
+                <h3>Parametric Design Variables</h3>
+                <p>The core of the Museum System is a standardized set of Design Tokens. By defining semantic variables like <code>--theme-primary</code> and <code>--radius-lg</code>, we can transform the entire visual interface without touching the underlying HTML content.</p>
+                
+                <div class="insight-grid">
+                    <div class="insight-card">
+                        <h4>🎨 Color Harmony</h4>
+                        <p>Themes define primary, secondary, and background colors. Some use earthy tones (Zero-Waste), while others use high-vibrancy neons (Dopamine Colors).</p>
+                    </div>
+                    <div class="insight-card">
+                        <h4>📐 Layout Grids</h4>
+                        <p>From the strict 12-column Swiss grid to the chaotic overlapping of Anti-Design, the layout adapts to the theme's core philosophy.</p>
+                    </div>
+                </div>
+
+                <div class="callout">
+                    <p><strong>Note:</strong> Content and Style are 100% decoupled. The same HTML generates radically different emotions in each theme.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-num">02</div>
+                    <h2 class="section-title">Batch Verification</h2>
+                </div>
+                <p>All batches have been successfully verified across vertical and horizontal layout stress tests. The system maintains readability even in extreme styles like Zero-UI or Kinetic Typography.</p>
+                
+                <div class="data-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Batch</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Focus</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>B1</td>
+                                <td>Minimalism</td>
+                                <td>✅ Verified</td>
+                                <td>Clarity & Logic</td>
+                            </tr>
+                            <tr>
+                                <td>B2</td>
+                                <td>3D/Immersive</td>
+                                <td>✅ Verified</td>
+                                <td>Depth & Material</td>
+                            </tr>
+                            <tr>
+                                <td>B3</td>
+                                <td>Retro/Cultural</td>
+                                <td>✅ Verified</td>
+                                <td>Emotion & Context</td>
+                            </tr>
+                            <tr>
+                                <td>B4</td>
+                                <td>AI/Kinetic</td>
+                                <td>✅ Verified</td>
+                                <td>Motion & Logic</td>
+                            </tr>
+                            <tr>
+                                <td>B5</td>
+                                <td>Experimental</td>
+                                <td>✅ Verified</td>
+                                <td>Rebellion & Feel</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <footer class="section">
+            <div class="conclusion-card">
+                <h2>All 50 Museum Styles Ready</h2>
+                <p>This completion marks the end of the Museum Theme Builder implementation phase. The system is now ready for deployment in research reports.</p>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        function changeTheme(themeId) {
+            window.museumTheme.switchTheme(themeId);
+            updateUI(themeId);
+        }
+
+        function updateUI(themeId) {
+            // Update active button state
+            document.querySelectorAll('#theme-menu button').forEach(btn => btn.classList.remove('active'));
+            const id = themeId === 'default' ? 'default' : themeId.split('-')[0];
+            const btn = document.getElementById('btn-' + id);
+            if (btn) btn.classList.add('active');
+            
+            // Update ID badge
+            document.getElementById('theme-id-badge').innerText = 'ACTIVE THEME: ' + themeId.toUpperCase();
+            
+            // Force scroll to top on theme change to see the hero
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Initial state
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('museum-theme') || 'default';
+            updateUI(saved);
+        });
+    </script>
+</body>
+</html>
