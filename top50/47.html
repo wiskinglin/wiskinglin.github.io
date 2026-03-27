@@ -1,135 +1,231 @@
-<!DOCTYPE html><html lang="zh-Hant"><head>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>#47 Carbon-Aware Design — 碳感知設計 | Top 50 UX/UI</title>
+<title>#47 Chaotic Overlapping — 混亂重疊佈局 | Top 50 UX/UI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg-color: #fafafa;
-  --text-main: #111827;
-  --primary: #059669; /* green */
-  --surface: #ffffff;
-  --border: #e5e7eb;
-}
-body{
-  font-family:'Space Grotesk','Noto Sans TC',sans-serif;
-  background-color:var(--bg-color);color:var(--text-main);
-  line-height:1.6;padding-bottom:120px;
-  transition:all 0.4s ease;
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: #dfdbd8; /* Concrete greyish */
+  color: #111;
+  overflow-x: hidden;
+  padding-bottom: 120px;
 }
 
-/* Global Low Carbon Overrides */
-body.low-carbon{
-  --bg-color: #f1f5f9;  /* less contrast means less power on OLEDs conceptually, though pure black #000 saves most, for this eco aesthetic we minimize bright whites */
-  --bg-color: #000;
-  --text-main: #9ca3af;
-  --border: #333;
+/* Style Info Header (A) */
+.style-info {
+  background: rgba(0,0,0,0.9);
+  color: #fff;
+  padding: 40px 24px;
+  position: relative;
+  z-index: 100; /* Highest to be readable */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  transform: rotate(-1deg);
+  margin-top: -10px;
+  margin-left: -10px;
+  margin-right: -10px;
 }
-body.low-carbon .rich-bg{
-  background-image:none !important;background-color:#111;
+.style-info-inner {
+  max-width: 1000px; margin: 0 auto;
 }
-body.low-carbon .rich-video{display:none;}
-body.low-carbon .video-placeholder{display:flex;}
-
-/* Toolbar */
-.toolbar{
-  position:fixed;top:0;left:0;right:0;background:var(--surface);
-  border-bottom:1px solid var(--border);padding:16px 24px;
-  display:flex;justify-content:space-between;align-items:center;z-index:9000;
+.cat {
+  display: inline-block;
+  background: #ff0044;
+  color: #fff;
+  font-family: 'Permanent Marker', cursive;
+  padding: 5px 15px;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  transform: rotate(-3deg);
 }
-body.low-carbon .toolbar{background:#111;color:#fff;}
-.eco-toggle{
-  display:flex;align-items:center;gap:12px;font-weight:700;font-size:0.9rem;
-  background:#f0fdf4;color:#059669;padding:8px 16px;border-radius:20px;border:1px solid #10b981;
-  cursor:pointer;transition:all 0.3s;
+.style-info h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #fff;
 }
-.eco-toggle.active{background:#047857;color:#fff;}
-.co2-stat{font-family:monospace;font-size:0.8rem;color:var(--text-main);font-weight:600}
-body.low-carbon .co2-stat{color:#10b981}
-
-.layout{max-width:900px;margin:100px auto 40px;padding:0 24px;}
-.cat{
-  display:inline-block;padding:4px 12px;border-radius:20px;
-  background:rgba(5,150,105,0.1);color:var(--primary);
-  font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
 }
-body.low-carbon .cat{background:#111;border:1px solid #10b981}
-h1{font-weight:700;font-size:clamp(1.8rem,4vw,2.5rem);margin-bottom:12px;letter-spacing:-0.5px}
-.desc{color:#64748b;font-size:1.05rem;line-height:1.8;max-width:800px;margin-bottom:40px}
-
-/* Rich Component */
-.hero-section{
-  width:100%;height:300px;border-radius:16px;overflow:hidden;
-  position:relative;margin-bottom:40px;
+.info-card h4 {
+  color: #aaa;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
-/* A heavy gradient representing an image */
-.rich-bg{
-  width:100%;height:100%;
-  background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400"%3E%3Cdefs%3E%3ClinearGradient id="g" x1="0" y1="0" x2="1" y2="1"%3E%3Cstop offset="0%25" stop-color="%2310b981"/%3E%3Cstop offset="100%25" stop-color="%233b82f6"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="800" height="400" fill="url(%23g)"/%3E%3C/svg%3E');
-  background-size:cover;background-position:center;
-  display:flex;justify-content:center;align-items:center;color:#fff;font-size:2rem;font-weight:700;
-  text-shadow:0 10px 20px rgba(0,0,0,0.5);
-}
-.video-placeholder{
-  width:100%;height:100%;background:#111;color:#64748b;
-  display:none;justify-content:center;align-items:center;
-  font-family:monospace;border:1px dashed #333;border-radius:16px;
+.info-card p {
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
-/* Article */
-.article-mock p{margin-bottom:24px;font-family:'Noto Sans TC',sans-serif;font-size:1.1rem}
-
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);
-  border-top:1px solid var(--border);
-  display:flex;justify-content:center;align-items:center;gap:30px;
-  padding:16px 24px;z-index:9000;
+/* Demo Content (B) -> CHAOTIC OVERLAP */
+.demo-content {
+  position: relative;
+  height: 800px;
+  max-width: 1200px;
+  margin: 40px auto;
 }
-body.low-carbon .bottom-nav{background:#000;border-top-color:#333}
-.bottom-nav a{text-decoration:none;color:#64748b;font-weight:700;font-size:.85rem;text-transform:uppercase}
-.bottom-nav a:hover{color:var(--primary)}
+
+/* Base structural elements placed randomly */
+.layer {
+  position: absolute;
+  transition: transform 0.3s ease-out;
+}
+.layer:hover {
+  z-index: 50 !important;
+  transform: scale(1.05) rotate(0deg) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.img-1 {
+  top: 10%; left: 5%;
+  width: 400px; height: 500px;
+  background: url('https://images.unsplash.com/photo-1564982755810-1e5bc53120ee?auto=format&fit=crop&w=400') center/cover;
+  z-index: 5;
+  transform: rotate(-5deg);
+  filter: grayscale(80%);
+}
+.img-2 {
+  top: 30%; right: 10%;
+  width: 300px; height: 350px;
+  background: url('https://images.unsplash.com/photo-1520045892732-304bc3ac5d8e?auto=format&fit=crop&w=300') center/cover;
+  z-index: 15;
+  transform: rotate(8deg);
+  border: 10px solid #fff;
+}
+
+.graf-text {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 8rem;
+  color: transparent;
+  -webkit-text-stroke: 3px #ff0044;
+  top: 40%; left: 20%;
+  z-index: 10;
+  transform: rotate(-10deg);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.graf-text-solid {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 5rem;
+  color: #00e5ff;
+  bottom: 10%; left: 40%;
+  z-index: 20;
+  transform: rotate(5deg);
+  mix-blend-mode: difference;
+}
+
+.tape-1 {
+  width: 200px; height: 40px;
+  background: rgba(255,255,200,0.5);
+  top: 8%; left: 15%;
+  z-index: 25;
+  transform: rotate(-15deg);
+  backdrop-filter: blur(2px);
+}
+
+.content-box {
+  background: #000;
+  color: #fff;
+  padding: 30px;
+  width: 350px;
+  top: 60%; left: 10%;
+  z-index: 30;
+  transform: rotate(2deg);
+}
+.content-box h2 { margin-bottom: 10px; color: #ff0044; }
+
+/* Interactive cursor spray */
+.spray {
+  position: absolute;
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, rgba(0,229,255,0.8) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 40;
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+/* Navigation (C) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  padding: 15px 40px;
+  border-top: 4px solid #000;
+  z-index: 100;
+}
+.bottom-nav a {
+  color: #000;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.bottom-nav a:hover {
+  color: #ff0044;
+  text-decoration: line-through;
+}
+
+@media (max-width: 900px) {
+  .img-1 { width: 300px; height: 400px; }
+  .img-2 { width: 200px; height: 250px; top: 50%; }
+  .graf-text { font-size: 4rem; }
+  .content-box { top: 70%; width: 300px; }
+}
 </style>
 </head>
 <body>
 
-<div class="toolbar">
-  <div class="co2-stat">Page Generation: <span id="co2Num">1.42g</span> CO2</div>
-  <button class="eco-toggle" id="btnEco">
-    🍃 Low Carbon Mode: OFF
-  </button>
-</div>
+<header class="style-info">
+  <div class="style-info-inner">
+    <div class="cat">🛹 街頭塗鴉風格</div>
+    <h1>#47 — Chaotic Overlapping</h1>
+    
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>📖 風格定義與視覺特徵</h4>
+        <p>容許甚至鼓勵版面元素之間的隨機交錯與物理遮蔽，背景與前景的界線被刻意模糊。這種營造出來的「受控的混亂」，帶給使用者一種不確定性的視覺趣味與探索慾望。</p>
+      </div>
+      <div class="info-card">
+        <h4>🏢 適用產業與場景</h4>
+        <p>青年街頭滑板品牌、線上互動式潮流雜誌、塗鴉藝術平台</p>
+      </div>
+      <div class="info-card">
+        <h4>🌍 主要流行地區</h4>
+        <p>美國</p>
+      </div>
+    </div>
+  </div>
+</header>
 
-<main class="layout">
-  <div class="cat">⚖️ 無障礙、包容性與道德設計</div>
-  <h1>#47 Carbon-Aware Design</h1>
-<div class="info-grid-standard" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:24px;text-align:left;border-top:1px solid rgba(128,128,128,0.2);padding-top:24px;width:100%;font-family:sans-serif;color:inherit;">
-  <div style="background:rgba(128,128,128,0.05);padding:16px;border-radius:8px;">
-    <h4 style="font-size:0.8rem;text-transform:uppercase;margin-bottom:8px;opacity:0.8;font-weight:700;">📖 風格定義與視覺特徵</h4>
-    <p style="font-size:0.9rem;line-height:1.6;opacity:0.9;margin:0;">容許甚至鼓勵版面元素之間的隨機交錯與物理遮蔽，背景與前景的界線被刻意模糊。這種營造出來的「受控的混亂」，帶給使用者一種不確定性的視覺趣味與探索慾望。</p>
-  </div>
-  <div style="background:rgba(128,128,128,0.05);padding:16px;border-radius:8px;">
-    <h4 style="font-size:0.8rem;text-transform:uppercase;margin-bottom:8px;opacity:0.8;font-weight:700;">🏢 適用產業與場景</h4>
-    <p style="font-size:0.9rem;line-height:1.6;opacity:0.9;margin:0;">青年街頭滑板品牌、線上互動式潮流雜誌、塗鴉藝術平台</p>
-  </div>
-  <div style="background:rgba(128,128,128,0.05);padding:16px;border-radius:8px;">
-    <h4 style="font-size:0.8rem;text-transform:uppercase;margin-bottom:8px;opacity:0.8;font-weight:700;">🌍 主要流行地區</h4>
-    <p style="font-size:0.9rem;line-height:1.6;opacity:0.9;margin:0;">美國</p>
-  </div>
-</div>
+<main class="demo-content" id="demoCanvas">
+  <div class="layer img-1"></div>
+  <div class="layer tape-1"></div>
   
-
-  <div class="hero-section">
-    <div class="rich-bg">Heavy Decorative Assets</div>
-    <div class="video-placeholder">[Media disabled to save 85% energy in Low Carbon mode]</div>
-  </div>
-
-  <div class="article-mock">
-    <p>隨著歐洲 ESG 報告標準的要求提高，許多歐洲的新創與公共部門都將「網站碳排放」納入 KPI。碳感知網站的伺服器通常使用綠色能源，並且會即時監控伺服器所在地的電網碳強度（Carbon Intensity）。</p>
-    <p>最著名的案例是由 Branch 雜誌與綠色科技公司創建的網站。當網格中的綠能較少時，網頁看起來就像是一份傳統的文本報紙，大幅減少了資料傳輸所需的兆節點，減輕了數據中心的冷卻需求。</p>
+  <div class="layer graf-text">SKATE OR DIE</div>
+  
+  <div class="layer img-2"></div>
+  
+  <div class="layer graf-text-solid">NO RULES</div>
+  
+  <div class="layer content-box">
+    <h2>STREET SERIES 04</h2>
+    <p>Break the grid. The new collection represents pure urban chaos. Limited stock available exclusively online.</p>
   </div>
 </main>
 
@@ -140,26 +236,37 @@ body.low-carbon .bottom-nav{background:#000;border-top-color:#333}
 </nav>
 
 <script>
-const btnEco = document.getElementById('btnEco');
-const co2Num = document.getElementById('co2Num');
-const body = document.body;
-
-btnEco.addEventListener('click', () => {
-  const isEco = body.classList.contains('low-carbon');
+  // Interaction 1: Spray paint cursor trail in chaotic mode
+  const canvas = document.getElementById('demoCanvas');
+  let isDrawing = false;
   
-  if(!isEco){
-    body.classList.add('low-carbon');
-    btnEco.classList.add('active');
-    btnEco.innerText = '🍃 Low Carbon Mode: ON';
-    co2Num.innerText = '0.08g';
-  } else {
-    body.classList.remove('low-carbon');
-    btnEco.classList.remove('active');
-    btnEco.innerText = '🍃 Low Carbon Mode: OFF';
-    co2Num.innerText = '1.42g';
-  }
-});
+  canvas.addEventListener('mousedown', () => isDrawing = true);
+  document.addEventListener('mouseup', () => isDrawing = false);
+  
+  canvas.addEventListener('mousemove', (e) => {
+    if (isDrawing) {
+      const s = document.createElement('div');
+      s.className = 'spray';
+      s.style.left = (e.pageX - 50) + 'px';
+      s.style.top = (e.pageY - 50) + 'px';
+      s.style.opacity = '1';
+      document.body.appendChild(s);
+      
+      // Keep only recent sprays
+      setTimeout(() => {
+        s.style.opacity = '0';
+        setTimeout(() => s.remove(), 500);
+      }, 2000);
+    }
+  });
+
+  // Interaction 2: Parallax overlapping scattering
+  window.addEventListener('scroll', () => {
+    const scrollPos = window.scrollY;
+    document.querySelector('.img-1').style.transform = `rotate(-5deg) translateY(${scrollPos * 0.2}px)`;
+    document.querySelector('.img-2').style.transform = `rotate(8deg) translateY(${scrollPos * -0.3}px)`;
+    document.querySelector('.graf-text').style.transform = `rotate(-10deg) translateX(${scrollPos * 0.5}px)`;
+  });
 </script>
-
-
-</body></html>
+</body>
+</html>

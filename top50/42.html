@@ -1,181 +1,224 @@
-<!DOCTYPE html><html lang="zh-Hant"><head>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>#42 Dark Patterns Eradication — 消除暗黑模式 | Top 50 UX/UI</title>
+<title>#42 Anti-Design 2.0 — 反設計 2.0 | Top 50 UX/UI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Space+Grotesk:wght@700&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg-color: #f1f5f9;
-  --text-main: #334155;
-  --primary: #3b82f6;
-  --danger: #ef4444;
-  --border: #e2e8f0;
-}
-body{
-  font-family:'Inter','Noto Sans TC',sans-serif;
-  background-color:var(--bg-color);color:var(--text-main);
-  line-height:1.6;padding-bottom:120px;
+/* Anti-reset */
+body {
+  font-family: 'Space Grotesk', 'Noto Sans TC', sans-serif;
+  background-color: #00ff00; /* Neon green */
+  color: #ff00ff; /* Magenta text */
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  padding-bottom: 120px;
 }
 
-header{text-align:center;padding:60px 24px 40px;}
-.cat{
-  display:inline-block;padding:6px 16px;border-radius:20px;
-  background:#fff;border:1px solid var(--border);color:#22c55e;
-  font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;
+/* Style Info Header (A) - intentionally chaotic */
+.style-info {
+  background: repeating-linear-gradient(45deg, #ffff00, #ffff00 10px, #000 10px, #000 20px);
+  padding: 60px 24px;
+  position: relative;
+  z-index: 10;
+  margin-bottom: -50px; /* Overlapping */
+  transform: rotate(2deg);
 }
-h1{font-weight:700;font-size:clamp(2rem,5vw,2.8rem);color:#0f172a;margin-bottom:12px;letter-spacing:-1px}
-.desc{max-width:700px;margin:0 auto;color:#64748b;font-size:1.05rem}
+.style-info-inner {
+  background: rgba(0, 0, 255, 0.8);
+  border: 10px dashed red;
+  padding: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  color: #fff;
+  transform: rotate(-3deg);
+  box-shadow: -20px 20px 0px #00ff00;
+}
+.cat {
+  background: #ff00ff;
+  color: #ffff00;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 10px;
+  position: absolute;
+  top: -20px; left: -20px;
+  border-radius: 50%;
+  width: 120px; height: 120px;
+  display: flex; justify-content: center; align-items: center; text-align: center;
+  animation: spin 5s infinite linear;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
-.split-container{
-  max-width:1100px;margin:20px auto;padding:0 24px;
-  display:grid;grid-template-columns:1fr 1fr;gap:40px;
+.style-info h1 {
+  font-size: 5rem;
+  font-family: 'Creepster', cursive;
+  margin-bottom: 20px;
+  color: #00ffff;
+  text-shadow: 4px 4px 0px red, -4px -4px 0px blue;
+  mix-blend-mode: difference;
 }
-
-/* Modal UI wrappers */
-.modal-frame{
-  background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.08);
-  padding:40px;position:relative;display:flex;flex-direction:column;
+.info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
-.modal-title{font-size:1.4rem;font-weight:700;color:#0f172a;margin-bottom:12px}
-.modal-desc{font-size:1rem;color:#64748b;margin-bottom:32px;line-height:1.6}
-
-/* ---- Dark Pattern (BAD) ---- */
-.bad-ui{border:2px solid #f87171;background:#fef2f2;}
-.bad-ui .label-tag{
-  position:absolute;top:-14px;left:24px;background:#ef4444;color:#fff;
-  padding:4px 12px;border-radius:4px;font-size:0.8rem;font-weight:700;text-transform:uppercase;
+.info-card {
+  background: yellow;
+  color: black;
+  padding: 20px;
+  border-left: 20px solid magenta;
 }
-.bad-ui .btn-primary{
-  background:#3b82f6;color:#fff;border:none;padding:16px;border-radius:8px;
-  font-weight:700;font-size:1.1rem;cursor:pointer;margin-bottom:12px;
-  transition: all 0.2s;
+.info-card:nth-child(2) {
+  margin-left: 40px; background: cyan; border-left: 20px solid red;
 }
-.bad-ui .btn-primary:hover{
-  transform: translateX(20px) rotate(2deg);
-  background: #1d4ed8;
+.info-card:nth-child(3) {
+  margin-left: -20px; background: black; color: white; border-left: 20px solid lime;
 }
-.bad-ui .btn-secondary{
-  background:transparent;border:none;color:#cbd5e1; /* extremely low contrast, hard to see */
-  font-size:0.75rem;cursor:pointer;text-decoration:underline;text-align:center;
-}
-.bad-ui .btn-secondary:hover{
-  color: #fff; background: #000;
-}
-.bad-ui .checkbox-group{margin-bottom:24px;font-size:0.85rem;color:#64748b;display:flex;align-items:flex-start;gap:8px}
-
-/* ---- Ethical UI (GOOD) ---- */
-.good-ui{border:2px solid #22c55e;background:#f0fdf4;}
-.good-ui .label-tag{
-  position:absolute;top:-14px;left:24px;background:#10b981;color:#fff;
-  padding:4px 12px;border-radius:4px;font-size:0.8rem;font-weight:700;text-transform:uppercase;
-}
-.good-ui .btn-group{
-  display:flex;gap:16px;margin-top:auto;
-}
-.good-ui .btn-cancel{
-  flex:1;background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;
-  padding:16px;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;text-align:center;
-  transition: all 0.2s;
-}
-.good-ui .btn-cancel:hover{
-  transform: scale(0.98);
-}
-.good-ui .btn-keep{
-  flex:1;background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;
-  padding:16px;border-radius:8px;font-weight:600;font-size:1rem;cursor:pointer;text-align:center;
-  transition: all 0.2s;
-}
-.good-ui .btn-keep:hover{
-  background: #cbd5e1;
+.info-card h4 {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+  text-decoration: line-through;
 }
 
-@keyframes panic-shake {
-  0% { transform: translate(1px, 1px) rotate(0deg); }
-  10% { transform: translate(-1px, -2px) rotate(-1deg); }
-  20% { transform: translate(-3px, 0px) rotate(1deg); }
-  30% { transform: translate(3px, 2px) rotate(0deg); }
-  40% { transform: translate(1px, -1px) rotate(1deg); }
-  50% { transform: translate(-1px, 2px) rotate(-1deg); }
-  60% { transform: translate(-3px, 1px) rotate(0deg); }
-  70% { transform: translate(3px, 1px) rotate(-1deg); }
-  80% { transform: translate(-1px, -1px) rotate(1deg); }
-  90% { transform: translate(1px, 2px) rotate(0deg); }
-  100% { transform: translate(1px, -2px) rotate(-1deg); }
+/* Demo Content (B) */
+.demo-content {
+  position: relative;
+  height: 800px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
-.bad-ui:hover {
-  animation: panic-shake 0.5s infinite;
+.demo-header {
+  position: absolute;
+  top: 100px; right: 20px;
+  font-size: 4rem;
+  color: rgba(255, 0, 0, 0.4);
+  z-index: 1;
+  pointer-events: none;
+}
+.messy-img {
+  position: absolute;
+  width: 400px; height: 300px;
+  background: url('https://picsum.photos/400/300?random=1') center/cover;
+  filter: contrast(200%) saturate(200%) invert(100%);
+  top: 200px; left: 50px;
+  z-index: 2;
+  mix-blend-mode: exclusion;
+  animation: float 4s ease-in-out infinite alternate;
+}
+@keyframes float { 100% { transform: translateY(-50px) rotate(10deg); } }
+
+.messy-text {
+  position: absolute;
+  top: 400px; left: 300px;
+  font-size: 6rem;
+  font-family: 'Space Grotesk', sans-serif;
+  color: blue;
+  z-index: 3;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  line-height: 0.5;
+  mix-blend-mode: overlay;
 }
 
-@media(max-width:900px){
-  .split-container{grid-template-columns:1fr;gap:60px;}
+.hidden-nav {
+  position: absolute;
+  top: 150px; left: 200px;
+  width: 20px; height: 20px;
+  background: transparent;
+  cursor: grab;
+  z-index: 100;
+}
+.hidden-nav:active { cursor: grabbing; }
+.hidden-nav::after {
+  content: 'find me';
+  font-size: 10px;
+  position: absolute;
+  color: #00ff00; /* Same as bg */
+  text-transform: uppercase;
 }
 
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:#fff;border-top:1px solid var(--border);
-  display:flex;justify-content:center;align-items:center;gap:30px;
-  padding:16px 24px;z-index:9000;
+.chaos-btn {
+  position: absolute;
+  bottom: 100px; right: 100px;
+  background: red;
+  color: yellow;
+  padding: 30px;
+  font-size: 2rem;
+  border: none;
+  border-radius: 50% 20% / 10% 40%;
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.1s;
 }
-.bottom-nav a{text-decoration:none;color:#64748b;font-weight:700;font-size:.85rem;text-transform:uppercase;}
-.bottom-nav a:hover{color:var(--primary)}
+.chaos-btn:hover {
+  transform: scale(2) rotate(180deg);
+  background: blue;
+  color: lime;
+}
+
+/* Navigation (C) */
+.bottom-nav {
+  position: fixed;
+  bottom: 10px; left: 10px; right: 10px;
+  background: rgba(0, 255, 255, 0.8);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 20px;
+  border: 4px dotted magenta;
+  z-index: 9000;
+}
+.bottom-nav a {
+  color: red;
+  font-weight: 900;
+  text-decoration: none;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+}
+.bottom-nav a:hover {
+  background: yellow;
+  color: black;
+  padding: 10px;
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="cat">⚖️ 無障礙、包容性與道德設計</div>
-  <h1>#42 Dark Patterns Eradication</h1>
-  
-
-<div class="info-grid-standard" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:24px;text-align:left;border-top:1px solid rgba(128,128,128,0.2);padding-top:24px;width:100%;">
-  <div style="background:rgba(128,128,128,0.05);padding:16px;border-radius:8px;">
-    <h4 style="font-size:0.8rem;text-transform:uppercase;margin-bottom:8px;opacity:0.8;font-weight:700;">📖 風格定義與視覺特徵</h4>
-    <p style="font-size:0.9rem;line-height:1.6;opacity:0.9;margin:0;">刻意違反所有易讀性與排版原則的極端風格。特徵包括混亂的不對稱佈局、極度不和諧的色彩衝突、文字與圖片的惡意重疊，以及隱晦難尋的導航，極度追求視覺刺激與解謎感。</p>
-  </div>
-  <div style="background:rgba(128,128,128,0.05);padding:16px;border-radius:8px;">
-    <h4 style="font-size:0.8rem;text-transform:uppercase;margin-bottom:8px;opacity:0.8;font-weight:700;">🏢 適用產業與場景</h4>
-    <p style="font-size:0.9rem;line-height:1.6;opacity:0.9;margin:0;">前衛藝術展覽與地下畫廊、獨立音樂廠牌、實驗性服飾</p>
-  </div>
-  <div style="background:rgba(128,128,128,0.05);padding:16px;border-radius:8px;">
-    <h4 style="font-size:0.8rem;text-transform:uppercase;margin-bottom:8px;opacity:0.8;font-weight:700;">🌍 主要流行地區</h4>
-    <p style="font-size:0.9rem;line-height:1.6;opacity:0.9;margin:0;">全球</p>
-  </div>
-</div></header>
-
-<main class="split-container">
-  
-  <!-- Bad UX: Dark Pattern -->
-  <div class="modal-frame bad-ui">
-    <div class="label-tag">❌ Dark Pattern (舊習慣)</div>
-    <div class="modal-title">Are you sure you don't not want to leave?</div>
-    <div class="modal-desc">By clicking "Cancel Cancellation", you agree to opt-out of not receiving our daily newsletters and your subscription will continue.</div>
-    
-    <div class="checkbox-group">
-      <input type="checkbox" checked="" id="confuseCb">
-      <label for="confuseCb">I <b>DO NOT</b> disagree to opt-out of future promotional charges.</label>
-    </div>
-
-    <!-- The actual action button is disguised -->
-    <button class="btn-primary" onclick="alert('Subscription renewed! (Wait, what?)')">Cancel Cancellation</button>
-    <button class="btn-secondary" onclick="alert('Finally canceled.')">I genuinely want to delete my account forever and lose all data.</button>
-  </div>
-
-  <!-- Good UX: Ethical UI -->
-  <div class="modal-frame good-ui">
-    <div class="label-tag">✅ Ethical UI (新趨勢)</div>
-    <div class="modal-title">Cancel Subscription</div>
-    <div class="modal-desc">This action will immediately stop auto-renewing your Premium Plan. You'll still have access until the end of your billing cycle on March 25, 2026.</div>
-    
-    <div class="btn-group">
-      <!-- Equal visual weighting or clear semantic coloring -->
-      <button class="btn-cancel" onclick="alert('Subscription effectively canceled.')">Cancel Subscription</button>
-      <button class="btn-keep" onclick="alert('Subscription kept.')">Keep Subscription</button>
+<header class="style-info">
+  <div class="style-info-inner">
+    <div class="cat">⚡ 特別/反叛</div>
+    <h1>#42 Anti-Design 2.0</h1>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>📖 風格定義與視覺特徵</h4>
+        <p>刻意違反所有易讀性與排版原則的極端風格。特徵包括混亂的不對稱佈局、極度不和諧的色彩衝突、文字與圖片的惡意重疊，以及隱晦難尋的導航，極度追求視覺刺激與解謎感。</p>
+      </div>
+      <div class="info-card">
+        <h4>🏢 適用產業與場景</h4>
+        <p>前衛藝術展覽與地下畫廊、獨立音樂廠牌、實驗性服飾</p>
+      </div>
+      <div class="info-card">
+        <h4>🌍 主要流行地區</h4>
+        <p>全球</p>
+      </div>
     </div>
   </div>
+</header>
 
+<main class="demo-content">
+  <div class="demo-header">UNDERGROUND GALLERY</div>
+  
+  <div class="messy-img"></div>
+  <div class="messy-text">E X H I B I T I O N</div>
+  
+  <!-- Draggable hidden nav -->
+  <div class="hidden-nav" id="dragMe"></div>
+
+  <button class="chaos-btn" id="chaosBtn">DO NOT CLICK</button>
 </main>
 
 <nav class="bottom-nav">
@@ -184,6 +227,38 @@ h1{font-weight:700;font-size:clamp(2rem,5vw,2.8rem);color:#0f172a;margin-bottom:
   <a href="43.html">下一頁 →</a>
 </nav>
 
+<script>
+  // Interaction 1: Chaotic button teleportation
+  const chaosBtn = document.getElementById('chaosBtn');
+  chaosBtn.addEventListener('mousemove', () => {
+    if (Math.random() > 0.5) {
+      chaosBtn.style.right = Math.random() * 80 + '%';
+      chaosBtn.style.bottom = Math.random() * 80 + '%';
+    }
+  });
 
-
-</body></html>
+  // Interaction 2: Draggable hidden element that uncovers text
+  const dragMe = document.getElementById('dragMe');
+  let isDragging = false;
+  dragMe.addEventListener('mousedown', () => isDragging = true);
+  document.addEventListener('mouseup', () => isDragging = false);
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      dragMe.style.left = e.clientX + 'px';
+      dragMe.style.top = e.clientY + 'px';
+      dragMe.style.background = `radial-gradient(circle, #fff 0%, transparent 100%)`;
+      dragMe.style.mixBlendMode = 'difference';
+      dragMe.style.width = '200px';
+      dragMe.style.height = '200px';
+      dragMe.style.transform = 'translate(-50%, -50%)';
+    } else {
+      dragMe.style.background = 'transparent';
+      dragMe.style.width = '20px';
+      dragMe.style.height = '20px';
+      dragMe.style.transform = 'none';
+      dragMe.style.mixBlendMode = 'normal';
+    }
+  });
+</script>
+</body>
+</html>
