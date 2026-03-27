@@ -30,7 +30,7 @@ context: .agents/CONTEXT.md
 
 1. 確認資料目錄存在
    ```powershell
-   New-Item -ItemType Directory -Path "_data/gems" -Force
+   New-Item -ItemType Directory -Path "_data/gems", "_dev/draft_report" -Force
    ```
 
 2. 閱讀相關 Skill 定義
@@ -108,7 +108,7 @@ context: .agents/CONTEXT.md
     - 未儲存變更 `beforeunload` 攔截
 
 12. 輸出最終頁面
-    - 存入 `reports/{gemId}.html`（可編輯版）
+    - 存入 `_dev/draft_report/{gemId}.html`（可編輯版）
     - 更新 `topics.json` 狀態為 `published`
 
 ---

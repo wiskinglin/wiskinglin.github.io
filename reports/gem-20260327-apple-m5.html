@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple M5 晶片元年 | Gem Report</title>
+    <meta name="description" content="解析 M5 晶片如何透過異質語法與 3nm N3P 實現端側 AI 巔峰。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'Noto Sans TC', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            900: '#4c1d95'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f3f4f6; margin: 0; padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 2rem; font-family: 'Inter', 'Noto Sans TC', sans-serif; color: #1f2937; -webkit-font-smoothing: antialiased; }
+        .page-container { width: 297mm; min-height: 210mm; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 15mm 20mm; box-sizing: border-box; border-radius: 8px; }
+        .pill { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+        .divider-gradient { height: 2px; background: linear-gradient(90deg, #8b5cf6, #3b82f6); border-radius: 2px; margin: 1rem 0; }
+        .page-header { border-left: 6px solid #8b5cf6; padding-left: 1rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; }
+        .page-title { font-size: 2.25rem; font-weight: 900; color: #111827; line-height: 1.2; letter-spacing: -0.025em; }
+        .page-subtitle { font-size: 1rem; color: #6b7280; margin-top: 0.5rem; font-weight: 500; }
+        .page-footer { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; }
+        @media print { @page { size: A4 landscape; margin: 0; } body { background-color: white; padding: 0; margin: 0; display: block; } .no-print { display: none !important; } .document-wrapper { padding: 0; gap: 0; display: block; } .page-container { width: 297mm; height: 210mm; min-height: 210mm; box-shadow: none; border-radius: 0; margin: 0; page-break-after: always; break-inside: avoid; } * { -webkit-print-color-adjust: exact !important; } }
+    </style>
+</head>
+<body>
+    <div class="fixed top-6 right-6 z-50 flex gap-3 backdrop-blur-xl bg-white/80 p-3 rounded-2xl shadow-soft border border-white/50 no-print">
+        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors text-sm">
+            <span>✏️</span> <span class="btn-text">編輯內容</span>
+        </button>
+        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl font-medium transition-colors text-sm">
+            <span>⬇️</span> 儲存網頁
+        </button>
+        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium transition-colors text-sm shadow-md">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <div class="document-wrapper" id="document-wrapper">
+        <!-- ============== PAGE 1: Hero ============== -->
+        <section class="page-container relative bg-slate-50">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-purple-100/50 to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-100/50 to-transparent rounded-tr-full pointer-events-none"></div>
+            <header class="flex-grow flex flex-col justify-center relative z-10 px-12">
+                <div class="mb-6">
+                    <span class="pill bg-slate-200 text-slate-700">Silicon Deep Research</span>
+                    <span class="pill bg-purple-500/10 text-purple-600 ml-2">Apple M5</span>
+                    <span class="pill bg-blue-500/10 text-blue-600 ml-2">Sovereign AI</span>
+                </div>
+                <h1 class="text-6xl font-black text-slate-900 leading-tight tracking-tight mb-6">
+                    Apple M5 晶片元年<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">3奈米 AI 算力大噴發</span>
+                </h1>
+                <div class="divider-gradient w-32 mb-8"></div>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-3xl font-medium">
+                    定義個人 AI 主權的硬體基石：異質計算架構與 GPU 神經加速器的全面整合。
+                </p>
+            </header>
+            <footer class="page-footer">
+                <span>APPLE SILICON REPORT 2026</span>
+                <span>Page 01</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 2: Architecture ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">異質計算新架構</h2>
+                    <p class="page-subtitle">GPU 與 Neural Engine 的深度融合</p>
+                </div>
+            </div>
+            <div class="flex-grow grid grid-cols-12 gap-6">
+                <div class="col-span-8 bg-gradient-to-br from-purple-50 to-white rounded-3xl p-8 border border-purple-100 shadow-soft">
+                    <h3 class="text-2xl font-black text-purple-700 mb-4">GPU 神經加速器</h3>
+                    <p class="text-slate-600 mb-6 text-sm">
+                        M5 在每個 GPU 核心中嵌入專用 AI 單元，釋放了以往由 NE 負擔的矩陣運算壓力。
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border text-center">
+                            <div class="text-xs text-slate-400 font-bold mb-1">GPU AI Compute</div>
+                            <div class="text-4xl font-black text-purple-600">4x Peak</div>
+                            <div class="text-xs text-slate-400 font-medium">vs M4 Generation</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border text-center">
+                            <div class="text-xs text-slate-400 font-bold mb-1">Local LLM Speed</div>
+                            <div class="text-4xl font-black text-slate-900">+40%</div>
+                            <div class="text-xs text-slate-400 font-medium">Enhanced NLP Engine</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-span-4 bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">架構核心</h3>
+                    <ul class="text-sm text-slate-600 space-y-3 leading-relaxed">
+                        <li>• <strong>TSMC N3P</strong>: 三代 3 奈米製程。</li>
+                        <li>• <strong>600GB/s</strong>: M5 Max 記憶體頻寬。</li>
+                        <li>• <strong>16-Core NE</strong>: 高效能 NLP 指令集。</li>
+                    </ul>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <span>M5 ARCHITECTURE DEEP DIVE</span>
+                <span>Page 02</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 3: Sovereign AI ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header" style="border-left-color: #3b82f6;">
+                <div>
+                    <h2 class="page-title">定義「主權式 AI」</h2>
+                    <p class="page-subtitle">為什麼隱私保護需要硬體級支援</p>
+                </div>
+            </div>
+            <div class="flex-grow grid grid-cols-2 gap-8 items-stretch">
+                <div class="bg-indigo-50 rounded-3xl p-8 border border-indigo-100">
+                    <h3 class="text-xl font-bold text-indigo-700 mb-4">Sovereign AI Vision</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-4">
+                        透過 600GB/s 頻寬與本地 NPU，M5 讓 30B 參數模型能完全在本地執行，數據永不離開裝置。這與雲端 AI 形成了本質上的競爭護城河。
+                    </p>
+                </div>
+                <div class="bg-slate-900 text-white rounded-3xl p-8 border border-slate-800">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">產品藍圖 (2025-2026)</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between border-b border-white/10 pb-2"><span>MacBook Pro M5</span><span>2025/11</span></div>
+                        <div class="flex justify-between border-b border-white/10 pb-2"><span>M5 Pro / Max</span><span>2026/03</span></div>
+                        <div class="flex justify-between"><span>M5 Ultra / Studio</span><span>2026/Q4</span></div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <span>PRODUCT STRATEGY</span>
+                <span>Page 03</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 4: Conclusion ============== -->
+        <section class="page-container bg-slate-900 text-white" style="border-left: none;">
+            <div class="flex-1 flex flex-col justify-center items-center text-center relative z-10 px-12">
+                <h2 class="text-4xl font-black mb-8">矽晶片上的 AI 未來</h2>
+                <div class="grid grid-cols-1 gap-4 max-w-4xl text-left">
+                    <div class="bg-white/10 p-5 rounded-xl border border-white/10 flex gap-4">
+                        <div class="bg-purple-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</div>
+                        <div>
+                            <h4 class="font-bold text-purple-200 mb-1">每瓦 AI 效能轉型</h4>
+                            <p class="text-sm text-slate-400">Apple M5 標誌著筆電效能衡量標準的徹底改變。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer border-slate-700">
+                <span>FINAL SUMMARY</span>
+                <span>Page 04 / 04</span>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById('btn-edit').addEventListener('click', () => {
+            const wrapper = document.getElementById('document-wrapper');
+            wrapper.setAttribute('contenteditable', wrapper.classList.toggle('is-editing'));
+        });
+        document.getElementById('btn-save').addEventListener('click', () => {
+             const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+             const blob = new Blob([html], { type: 'text/html' });
+             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Apple_M5_Report.html'; a.click();
+        });
+        document.getElementById('btn-print').addEventListener('click', () => { window.print(); });
+    </script>
+</body>
+</html>

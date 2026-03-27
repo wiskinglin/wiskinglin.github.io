@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 AI 巨頭戰略佈局 | Gem Report</title>
+    <meta name="description" content="解析 OpenAI, Google, Anthropic 與 xAI 如何在 2026 年從「生成式對話」轉向「自主代理」，重塑全球生產力版圖。">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter + Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'Noto Sans TC', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a'
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+                        'float': '0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #e2e8f0;
+            margin: 0; padding: 2rem;
+            display: flex; flex-direction: column; align-items: center; gap: 2rem;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-container {
+            width: 297mm;
+            min-height: 210mm;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 15mm 20mm;
+            box-sizing: border-box;
+            border-radius: 8px;
+        }
+
+        .pill {
+            display: inline-flex; align-items: center;
+            padding: 0.25rem 0.75rem; border-radius: 9999px;
+            font-size: 0.75rem; font-weight: 700;
+            letter-spacing: 0.05em; text-transform: uppercase;
+        }
+
+        .divider-gradient {
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px; margin: 1rem 0;
+        }
+
+        .page-header {
+            border-left: 6px solid #3b82f6; padding-left: 1rem;
+            margin-bottom: 2rem; display: flex;
+            justify-content: space-between; align-items: flex-end;
+        }
+        .page-title {
+            font-size: 2.25rem; font-weight: 900;
+            color: #0f172a; line-height: 1.2; letter-spacing: -0.025em;
+        }
+        .page-subtitle {
+            font-size: 1rem; color: #64748b;
+            margin-top: 0.5rem; font-weight: 500;
+        }
+
+        .page-footer {
+            margin-top: 1.5rem; padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: monospace; font-size: 0.75rem; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .document-wrapper.is-editing .page-container {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 4px;
+            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+        .document-wrapper.is-editing [contenteditable="true"]:hover {
+            background-color: rgba(241, 245, 249, 0.8);
+            border-radius: 4px; cursor: text;
+        }
+
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            body { background-color: white; padding: 0; margin: 0; display: block; }
+            .no-print { display: none !important; }
+            .document-wrapper { padding: 0; gap: 0; display: block; }
+            .page-container {
+                width: 297mm; height: 210mm; min-height: 210mm;
+                box-shadow: none; border-radius: 0; margin: 0;
+                page-break-after: always;
+                break-inside: avoid;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== 控制面板 (Control Panel) ===== -->
+    <div class="fixed top-6 right-6 z-50 flex gap-3 backdrop-blur-xl bg-white/80 p-3 rounded-2xl shadow-soft border border-white/50 no-print transition-all duration-300">
+        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors text-sm">
+            <span class="emoji">✏️</span> <span class="btn-text">編輯內容</span>
+        </button>
+        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-medium transition-colors text-sm">
+            <span>⬇️</span> 儲存網頁
+        </button>
+        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium transition-colors text-sm shadow-md">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <!-- ===== 主要文件容器 ===== -->
+    <div class="document-wrapper" id="document-wrapper">
+
+        <!-- ============== PAGE 1: Hero 封面 ============== -->
+        <section class="page-container relative bg-slate-50">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-100/50 to-transparent rounded-tr-full pointer-events-none"></div>
+
+            <header class="flex-grow flex flex-col justify-center relative z-10 px-12">
+                <div class="mb-6">
+                    <span class="pill bg-slate-200 text-slate-700">Gem Deep Research</span>
+                    <span class="pill bg-brand-500/10 text-brand-600 ml-2">AI-Agents</span>
+                    <span class="pill bg-purple-500/10 text-purple-600 ml-2">AGI-2026</span>
+                </div>
+                <h1 class="text-6xl font-black text-slate-900 leading-tight tracking-tight mb-6">
+                    2026 AI 巨頭戰略佈局<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-purple-500">Agent 巔峰對決</span>
+                </h1>
+                <div class="divider-gradient w-32 mb-8"></div>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-3xl font-medium">
+                    解析 OpenAI, Google, Anthropic 與 xAI 如何在 2026 年從「生成式對話」轉向「自主代理」，重塑全球生產力版圖。
+                </p>
+            </header>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-6">
+                <span>AI STRATEGY REPORT 2026</span>
+                <span>Page 01</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 2: OpenAI ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header" style="border-left-color: #3b82f6;">
+                <div>
+                    <h2 class="page-title">OpenAI — 250 億美元的防禦與擴張</h2>
+                    <p class="page-subtitle">透過規模化人才與社會影響力投資穩固霸權</p>
+                </div>
+            </div>
+
+            <div class="flex-grow grid grid-cols-12 gap-6">
+                <div class="col-span-5 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">關鍵軍備競賽</h3>
+                    <ul class="text-sm text-slate-600 space-y-3 leading-relaxed">
+                        <li>• <strong>員工人數翻倍</strong>：預計 2026 年底達 8,000 人。</li>
+                        <li>• <strong>技術大使計畫</strong>：重點推廣企業級佈署與 Codex 落地。</li>
+                        <li>• <strong>Sora 策略轉向</strong>：停止獨立 App，聚焦全線 API 整合。</li>
+                    </ul>
+                </div>
+                <div class="col-span-7 flex flex-col gap-6">
+                    <div class="flex-grow bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 border border-blue-100 shadow-soft">
+                        <h3 class="text-2xl font-black text-brand-600 mb-4">韌性戰略資產</h3>
+                        <p class="text-slate-600 leading-relaxed mb-6">
+                            OpenAI 投入 10 億美元於阿茲海默症研究與公共衛生，旨在透過科學貢獻緩解反壟斷監管，同時強化「AI 為人類福祉」的敘事位。
+                        </p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
+                                <div class="text-sm text-slate-500 font-semibold mb-1">企業營收佔比</div>
+                                <div class="text-4xl font-black text-brand-600 mb-1">50%</div>
+                                <div class="text-xs text-slate-400">Target by 2026 Year-End</div>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
+                                <div class="text-sm text-slate-500 font-semibold mb-1">研發投入</div>
+                                <div class="text-4xl font-black text-slate-800 mb-1">$25B</div>
+                                <div class="text-xs text-slate-400">Total Commitment</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <span>OPENAI STRATEGY</span>
+                <span>Page 02</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 3: Google ============== -->
+        <section class="page-container bg-slate-50">
+            <div class="page-header" style="border-left-color: #ef4444;">
+                <div>
+                    <h2 class="page-title">Google — 代理化攻勢與 XR 整合</h2>
+                    <p class="page-subtitle">Gemini 2.0 引領的全場域自主代理革命</p>
+                </div>
+            </div>
+
+            <div class="flex-grow grid grid-cols-3 gap-6">
+                <!-- 策略卡片 1 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center mb-4 text-xl">🤖</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">自主代理轉型</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        不再只是回答問題，Gemini Agents 現在能獨立規劃、執行多步驟工作流，實現企業自動化。
+                    </p>
+                </div>
+                <!-- 策略卡片 2 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 text-xl">🕶️</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Android XR</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        透過穿戴裝置將 AI 視覺感知與現實操作結合，定義後手機時代的 Agent 互動。
+                    </p>
+                </div>
+                <!-- 策略卡片 3 -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col">
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-4 text-xl">📈</div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">營銷自動化</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">
+                        AI Max for Search 與 Asset Studio 直接生成廣告資產，奪回營銷主導權。
+                    </p>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <span>GOOGLE ECOSYSTEM</span>
+                <span>Page 03</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 4: Anthropic ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header" style="border-left-color: #8b5cf6;">
+                <div>
+                    <h2 class="page-title">Claude — 專業代碼與永續記憶</h2>
+                    <p class="page-subtitle">深入開發者心智的「自主軟體營運」平台</p>
+                </div>
+            </div>
+
+            <div class="flex-grow flex gap-8">
+                <div class="w-1/2 flex flex-col gap-4">
+                    <div class="bg-purple-50 rounded-3xl p-8 border border-purple-100 flex-grow">
+                        <h3 class="text-2xl font-black text-purple-700 mb-4">Claude Code Platform</h3>
+                        <p class="text-slate-600 leading-relaxed">
+                            從 AI Pair Programmer 轉化為自主軟體營運平台。新款 Claude 4.6 支援遠端控制與排程任務，能獨立處理伺服器維護與代碼重構。
+                        </p>
+                        <div class="mt-6 flex gap-2">
+                            <span class="px-3 py-1 bg-white text-purple-600 rounded-lg text-xs font-bold border border-purple-200">Autonomous Ops</span>
+                            <span class="px-3 py-1 bg-white text-purple-600 rounded-lg text-xs font-bold border border-purple-200">Scheduled Tasks</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="w-1/2 flex flex-col gap-4">
+                    <div class="bg-slate-900 text-white rounded-3xl p-8 flex-grow relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/20 rounded-full blur-2xl"></div>
+                        <h3 class="text-2xl font-black mb-4">Persistent Memory</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                            2026 年全面啟用的 Persistent Memory 層，讓 Claude 能「記住」跨 Session 的技術偏好與架構細節。
+                        </p>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/10">
+                                <span class="text-sm">Context Window</span>
+                                <span class="text-purple-400 font-bold">2M+ Tokens</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/10">
+                                <span class="text-sm">Response Speed</span>
+                                <span class="text-purple-400 font-bold">+40% vs 4.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <span>ANTHROPIC CLAUDE</span>
+                <span>Page 04</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 5: xAI ============== -->
+        <section class="page-container bg-slate-50">
+            <div class="page-header" style="border-left-color: #000000;">
+                <div>
+                    <h2 class="page-title">xAI — Colossus 算力與實體融合</h2>
+                    <p class="page-subtitle">透過 SpaceX/Tesla 垂直整合挑戰 AGI 臨界點</p>
+                </div>
+            </div>
+
+            <div class="flex-grow overflow-auto">
+                <table class="w-full text-left border-collapse bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+                    <thead class="bg-slate-900 text-white">
+                        <tr>
+                            <th class="p-4 font-bold uppercase tracking-wider text-xs">戰略維度</th>
+                            <th class="p-4 font-bold uppercase tracking-wider text-xs">2026 核心佈局</th>
+                            <th class="p-4 font-bold uppercase tracking-wider text-xs">競爭優勢</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm text-slate-700">
+                        <tr class="border-b border-slate-100">
+                            <td class="p-4 font-bold bg-slate-50">算力基礎 (Compute)</td>
+                            <td class="p-4">Colossus 超集集群 (100K+ GPUs)</td>
+                            <td class="p-4 text-emerald-600 font-semibold">業界最強訓練效率</td>
+                        </tr>
+                        <tr class="border-b border-slate-100">
+                            <td class="p-4 font-bold bg-slate-50">實體 AI (Physical)</td>
+                            <td class="p-4">整合 Tesla Optimus / AI4 晶片</td>
+                            <td class="p-4 text-emerald-600 font-semibold">機器人大腦直連 Grok</td>
+                        </tr>
+                        <tr class="border-b border-slate-100">
+                            <td class="p-4 font-bold bg-slate-50">多模態 (Multimodal)</td>
+                            <td class="p-4">Grok Imagine API 與視頻直出</td>
+                            <td class="p-4 text-emerald-600 font-semibold">快速填補 Sora 空白</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-bold bg-slate-50">資本規模 (Funding)</td>
+                            <td class="p-4">Series E ($20B) + Tesla/SpaceX 支持</td>
+                            <td class="p-4 text-emerald-600 font-semibold">無限燒錢資本</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="mt-6 p-6 bg-slate-100 rounded-2xl border-l-8 border-slate-800 italic text-slate-600 text-sm">
+                    "We are rebuilding from the foundations up. The vertical integration of AI, compute, and physical robotics is the only path to AGI." — Elon Musk, 2026.
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <span>XAI STRATEGY</span>
+                <span>Page 05</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 6: Conclusion ============== -->
+        <section class="page-container bg-slate-900 text-white" style="border-left: none;">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-brand-600 rounded-full blur-[120px] opacity-20"></div>
+                <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-purple-600 rounded-full blur-[100px] opacity-20"></div>
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center items-center text-center relative z-10">
+                <h2 class="text-4xl font-black text-white mb-8 leading-tight">
+                    結論：2026 通往 AGI 的臨界點
+                </h2>
+                <div class="grid grid-cols-1 gap-4 max-w-4xl w-full">
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start text-left">
+                        <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                        <div>
+                            <h4 class="font-bold text-blue-200 mb-1">從對話轉向行動 (Actionable Agents)</h4>
+                            <p class="text-sm text-slate-300">能夠執行工作流而非僅僅生成文本的 Agent 將成為 2026 年企業採購的分水嶺。</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start text-left">
+                        <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                        <div>
+                            <h4 class="font-bold text-blue-200 mb-1">垂直領域的專業分化</h4>
+                            <p class="text-sm text-slate-300">Claude 專精編程、Google 專精檢索、OpenAI 專精企業流程、xAI 專精實體驅動。</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start text-left">
+                        <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">3</div>
+                        <div>
+                            <h4 class="font-bold text-blue-200 mb-1">硬體與雲端高度協同</h4>
+                            <p class="text-sm text-slate-300">Android XR 與 AI PC 的邊緣算力與雲端巨模型結合，解決了隱私與延遲的最後一哩路。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer border-slate-800 text-slate-500">
+                <span>CONCLUSION</span>
+                <span>Page 06 / 06</span>
+            </footer>
+        </section>
+
+    </div>
+
+    <!-- ===== 互動邏輯 (JavaScript) ===== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSave = document.getElementById('btn-save');
+            const btnPrint = document.getElementById('btn-print');
+            const wrapper = document.getElementById('document-wrapper');
+
+            let isEditing = false;
+            let fileHandle = null;
+
+            btnEdit.addEventListener('click', () => {
+                isEditing = !isEditing;
+                const btnText = btnEdit.querySelector('.btn-text');
+
+                if (isEditing) {
+                    wrapper.classList.add('is-editing');
+                    wrapper.setAttribute('contenteditable', 'true');
+                    btnText.textContent = '💾 結束編輯';
+                    btnEdit.classList.replace('bg-gray-100', 'bg-emerald-100');
+                    btnEdit.classList.replace('text-gray-700', 'text-emerald-700');
+                    btnEdit.classList.replace('hover:bg-gray-200', 'hover:bg-emerald-200');
+                } else {
+                    wrapper.classList.remove('is-editing');
+                    wrapper.setAttribute('contenteditable', 'false');
+                    btnText.textContent = '編輯內容';
+                    btnEdit.classList.replace('bg-emerald-100', 'bg-gray-100');
+                    btnEdit.classList.replace('text-emerald-700', 'text-gray-700');
+                    btnEdit.classList.replace('hover:bg-emerald-200', 'hover:bg-gray-200');
+                }
+            });
+
+            btnPrint.addEventListener('click', () => {
+                if (isEditing) btnEdit.click();
+                window.print();
+            });
+
+            btnSave.addEventListener('click', async () => {
+                const wasEditing = isEditing;
+                if (isEditing) btnEdit.click();
+
+                const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+                const date = new Date();
+                const dateStr = date.getFullYear().toString() +
+                    (date.getMonth() + 1).toString().padStart(2, '0') +
+                    date.getDate().toString().padStart(2, '0');
+
+                if (window.showSaveFilePicker) {
+                    try {
+                        if (!fileHandle) {
+                            fileHandle = await window.showSaveFilePicker({
+                                suggestedName: `AI_Giants_2026_Report.html`,
+                                types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }]
+                            });
+                        }
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(htmlContent);
+                        await writable.close();
+                    } catch (e) {
+                        if (e.name === 'AbortError') return;
+                        fallbackDownload(htmlContent, 'AI_Giants_2026_Report');
+                    }
+                } else {
+                    fallbackDownload(htmlContent, 'AI_Giants_2026_Report');
+                }
+
+                if (wasEditing) btnEdit.click();
+            });
+
+            function fallbackDownload(html, name) {
+                const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${name}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(a.href), 100);
+            }
+
+            let isDirty = false;
+            wrapper.addEventListener('input', () => { isDirty = true; });
+            window.addEventListener('beforeunload', (e) => {
+                if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+            });
+        });
+    </script>
+</body>
+</html>

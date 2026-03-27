@@ -8,7 +8,7 @@ metadata:
     requires:
       inputs: [_data/gems/{gemId}.md]
       skills: [Writer_DeepReport_Synthesizer]
-    outputs: [reports/{gemId}.html]
+    outputs: [_dev/draft_report/{gemId}.html]
     pillar: reports
     downstream:
       - QA_LayoutAPI_Tester

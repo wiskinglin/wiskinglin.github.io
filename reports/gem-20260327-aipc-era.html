@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PC 與端側大模型時代 | Gem Report</title>
+    <meta name="description" content="解析 NPU 架構與個人運算的未來重塑。">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'Noto Sans TC', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #e2e8f0; margin: 0; padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 2rem; font-family: 'Inter', 'Noto Sans TC', sans-serif; color: #1e293b; -webkit-font-smoothing: antialiased; }
+        .page-container { width: 297mm; min-height: 210mm; background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 15mm 20mm; box-sizing: border-box; border-radius: 8px; }
+        .pill { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+        .divider-gradient { height: 2px; background: linear-gradient(90deg, #0ea5e9, #6366f1); border-radius: 2px; margin: 1rem 0; }
+        .page-header { border-left: 6px solid #0ea5e9; padding-left: 1rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; }
+        .page-title { font-size: 2.25rem; font-weight: 900; color: #0f172a; line-height: 1.2; letter-spacing: -0.025em; }
+        .page-subtitle { font-size: 1rem; color: #64748b; margin-top: 0.5rem; font-weight: 500; }
+        .page-footer { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        @media print { @page { size: A4 landscape; margin: 0; } body { background-color: white; padding: 0; margin: 0; display: block; } .no-print { display: none !important; } .document-wrapper { padding: 0; gap: 0; display: block; } .page-container { width: 297mm; height: 210mm; min-height: 210mm; box-shadow: none; border-radius: 0; margin: 0; page-break-after: always; break-inside: avoid; } * { -webkit-print-color-adjust: exact !important; } }
+    </style>
+</head>
+<body>
+    <div class="fixed top-6 right-6 z-50 flex gap-3 backdrop-blur-xl bg-white/80 p-3 rounded-2xl shadow-soft border border-white/50 no-print">
+        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors text-sm">
+            <span>✏️</span> <span class="btn-text">編輯內容</span>
+        </button>
+        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-medium transition-colors text-sm">
+            <span>⬇️</span> 儲存網頁
+        </button>
+        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium transition-colors text-sm shadow-md">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <div class="document-wrapper" id="document-wrapper">
+        <!-- ============== PAGE 1: Hero ============== -->
+        <section class="page-container relative bg-slate-50">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-cyan-100/50 to-transparent rounded-tr-full pointer-events-none"></div>
+            <header class="flex-grow flex flex-col justify-center relative z-10 px-12">
+                <div class="mb-6">
+                    <span class="pill bg-slate-200 text-slate-700">Gem Research</span>
+                    <span class="pill bg-blue-500/10 text-blue-600 ml-2">NPU-Enabled</span>
+                    <span class="pill bg-cyan-500/10 text-cyan-600 ml-2">On-Device AI</span>
+                </div>
+                <h1 class="text-6xl font-black text-slate-900 leading-tight tracking-tight mb-6">
+                    AI PC 與端側大模型<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">個人運算的典範轉移</span>
+                </h1>
+                <div class="divider-gradient w-32 mb-8"></div>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-3xl font-medium">
+                    解析 2026 年 NPU 算力軍備競爭、自主代理 (Agentic AI) 的崛起，以及端側智能如何重新定義工作流。
+                </p>
+            </header>
+            <footer class="page-footer">
+                <span>AI PC ERA REPORT 2026</span>
+                <span>Page 01</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 2: NPU Wars ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">NPU 架構軍備競賽</h2>
+                    <p class="page-subtitle">四大晶片巨頭的算力博弈</p>
+                </div>
+            </div>
+            <div class="flex-grow grid grid-cols-12 gap-6">
+                <div class="col-span-4 bg-slate-50 rounded-2xl p-6 border border-slate-100 flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2">四大戰向</h3>
+                    <ul class="text-sm text-slate-600 space-y-3 leading-relaxed">
+                        <li>• <strong>Intel</strong>: 綜合算力 180 TOPS (NPU+GPU+CPU)。</li>
+                        <li>• <strong>AMD</strong>: Ryzen AI 400 強調效能穩定性。</li>
+                        <li>• <strong>Apple</strong>: M5 神經網路引擎整合記憶體。</li>
+                        <li>• <strong>Qualcomm</strong>: 單 NPU 突破 80 TOPS 領跑。</li>
+                    </ul>
+                </div>
+                <div class="col-span-8 grid grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 flex flex-col justify-between">
+                        <h4 class="font-bold text-blue-900">市場佔有率預估 (2026)</h4>
+                        <div class="text-5xl font-black text-blue-600">55%</div>
+                        <p class="text-xs text-blue-500">AI-Advanced PC Shipments</p>
+                    </div>
+                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 flex flex-col justify-between">
+                        <h4 class="font-bold text-indigo-900">最低性能門檻</h4>
+                        <div class="text-5xl font-black text-indigo-600">40+</div>
+                        <p class="text-xs text-indigo-500">NPU TOPS Standard</p>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <span>NPU ARCHITECTURE MONITOR</span>
+                <span>Page 02</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 3: Agents ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header" style="border-left-color: #6366f1;">
+                <div>
+                    <h2 class="page-title">自主代理與生態轉型</h2>
+                    <p class="page-subtitle">意向型運算取代指令式操作</p>
+                </div>
+            </div>
+            <div class="flex-grow grid grid-cols-2 gap-8 items-stretch">
+                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100">
+                    <h3 class="text-xl font-bold text-indigo-700 mb-4">Intent-based Computing</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        用戶不再點擊 ICON，而是透過描述目標（如：規劃本週出差行程並對接財務系統），由 AI PC 代理人自主拆解步驟並執行。
+                    </p>
+                </div>
+                <div class="bg-slate-900 text-white rounded-3xl p-8 border border-slate-800">
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">40% ISV Priority</h3>
+                    <p class="text-sm text-slate-300 leading-relaxed mb-6">
+                        到 2026 年底，近半數軟體商將優先投入端側 AI 開發。這將帶來前所未有的本地隱私處理與系統自我修復能力。
+                    </p>
+                </div>
+            </div>
+            <footer class="page-footer">
+                <span>AGENTIC SOFTWARE ECOSYSTEM</span>
+                <span>Page 03</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 4: Conclusion ============== -->
+        <section class="page-container bg-slate-900 text-white" style="border-left: none;">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-blue-600 rounded-full blur-[120px] opacity-20"></div>
+                <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-cyan-600 rounded-full blur-[100px] opacity-20"></div>
+            </div>
+            <div class="flex-1 flex flex-col justify-center items-center text-center relative z-10 px-12">
+                <h2 class="text-4xl font-black text-white mb-8 leading-tight">結論：科技退居幕後</h2>
+                <div class="grid grid-cols-1 gap-4 max-w-4xl w-full text-left">
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start">
+                        <div class="bg-blue-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</div>
+                        <div>
+                            <h4 class="font-bold text-blue-200 mb-1">生產力釋放</h4>
+                            <p class="text-sm text-slate-300">AI 代理人接管瑣碎庶務，將人類核心價值歸還於決策與設計。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="page-footer border-slate-700">
+                <span>FINAL PERSPECTIVE</span>
+                <span>Page 04 / 04</span>
+            </footer>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById('btn-edit').addEventListener('click', () => {
+            const wrapper = document.getElementById('document-wrapper');
+            const isEditing = wrapper.classList.toggle('is-editing');
+            wrapper.setAttribute('contenteditable', isEditing);
+        });
+        document.getElementById('btn-save').addEventListener('click', () => {
+             const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+             const blob = new Blob([html], { type: 'text/html' });
+             const a = document.createElement('a');
+             a.href = URL.createObjectURL(blob);
+             a.download = 'AI_PC_Era_Report.html';
+             a.click();
+        });
+        document.getElementById('btn-print').addEventListener('click', () => { window.print(); });
+    </script>
+</body>
+</html>

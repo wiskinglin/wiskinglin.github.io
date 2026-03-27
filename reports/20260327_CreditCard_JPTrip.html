@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 信用卡陣容優化與富士山自駕旅遊總企劃</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 核心字體設定 */
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9; /* preview background */
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 漸層與微型裝飾 */
+        .gradient-divider {
+            background: linear-gradient(90deg, #2563eb, #60a5fa, transparent);
+            height: 4px;
+            border: none;
+            border-radius: 2px;
+            width: 80px;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            top: 24px;
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: #cbd5e1;
+            z-index: 0;
+        }
+
+        /* --- 排版美學與橫式列印引擎 (Critical Rules) --- */
+        .a4-landscape {
+            box-sizing: border-box;
+            width: 297mm;
+            height: 210mm; /* 強制 A4 橫向高度 */
+            margin: 0 auto;
+            background: white;
+            padding: 15mm 20mm; /* 安全出血與內距 */
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15); /* 柔和懸浮陰影 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 自動延展撐開 */
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 斷頁防護 */
+        .page-break {
+            page-break-after: always;
+            break-inside: avoid;
+        }
+
+        /* 預覽模式的頁面間距 */
+        @media screen {
+            body {
+                padding: 2rem 0;
+                display: flex;
+                flex-direction: column;
+                gap: 2rem;
+                align-items: center;
+            }
+        }
+
+        /* --- 列印強制規範 --- */
+        @media print {
+            @page {
+                size: A4 landscape; /* 強制橫式 A4 */
+                margin: 0;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+                display: block;
+            }
+            .a4-landscape {
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 297mm;
+                height: 210mm;
+                page-break-after: always;
+            }
+            /* 隱藏控制面板 */
+            .no-print {
+                display: none !important;
+            }
+            /* 強制保留背景色與陰影，並停用動畫 */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- 互動控制面板 (毛玻璃效果) -->
+    <button onclick="window.print()" class="no-print fixed top-6 right-6 z-50 flex items-center gap-2 px-6 py-3 rounded-full bg-white/70 backdrop-blur-md border border-white shadow-xl shadow-gray-200/50 text-blue-700 font-bold hover:bg-white hover:-translate-y-1 transition-all duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+        輸出 PDF
+    </button>
+
+    <!-- Page 1: 封面與市場趨勢 -->
+    <div class="a4-landscape page-break">
+        <!-- Hero Section -->
+        <header class="mb-6">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-blue-50 text-blue-700 font-bold text-sm tracking-wider mb-4 border border-blue-100">
+                STRATEGIC REPORT 2026
+            </div>
+            <h1 class="text-[2.75rem] font-black text-gray-900 leading-tight tracking-tight">
+                2026 信用卡陣容優化與<br>
+                <span class="text-blue-600">富士山自駕旅遊總企劃</span>
+            </h1>
+            <div class="gradient-divider"></div>
+            <p class="text-lg text-gray-600 leading-relaxed max-w-4xl">
+                本報告旨在為您重新梳理 2026 年信用卡市場趨勢，優化您現有的信用卡陣容以達到<strong class="text-gray-900 font-bold">「專卡專用、利益最大化」</strong>的目標，並將您持有的 <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-md font-bold">49,825 點星展飛行積金</span>，完美轉換為「東京富士山自駕遊」的雙人來回機票。
+            </p>
+        </header>
+
+        <!-- Bento Box 網格: 趨勢總結 -->
+        <div class="flex-grow flex flex-col justify-end">
+            <div class="flex items-center gap-3 mb-4">
+                <span class="bg-gray-900 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">1</span>
+                <h2 class="text-2xl font-bold text-gray-900">2026 信用卡市場 3 大趨勢總結</h2>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-6 h-48">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full z-0"></div>
+                    <div class="relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">「點數回饋」取代現金</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">銀行主推自家生態圈點數（如小樹點、e point），雖不能直接扣抵，但透過 APP 手動折抵或兌換，靈活性與價值更高。</p>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-green-50 rounded-full z-0"></div>
+                    <div class="relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">行動支付佔據主導</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">實體刷卡回饋降低，針對 LINE Pay、街口支付或 Apple Pay 的加碼回饋成為主流。無腦刷門檻提高，需搭配指定任務。</p>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-xl shadow-gray-300/50 border border-gray-800 flex flex-col justify-between text-white relative overflow-hidden">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-gray-800 rounded-full z-0"></div>
+                    <div class="relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-gray-800 text-yellow-400 flex items-center justify-center mb-4">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">分期與回饋徹底脫鉤</h3>
+                        <p class="text-sm text-gray-300 leading-relaxed">2026 年市場鐵則：<strong class="text-white">「有自動分期 0 利率，通常就沒有現金/點數回饋」</strong>。分期卡與回饋卡需徹底分開配置。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 2: 陣容優化 -->
+    <div class="a4-landscape page-break">
+        <header class="mb-4">
+            <div class="flex items-center gap-3">
+                <span class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">2</span>
+                <h2 class="text-2xl font-bold text-gray-900">個人信用卡陣容檢視與優化方案</h2>
+            </div>
+            <p class="text-gray-600 mt-2 ml-11">為保留各家銀行信用額度，同時去除不符合效益的呆卡，以下為專屬「原行轉卡 / 任務分配」指南：</p>
+        </header>
+
+        <div class="flex-grow flex flex-col gap-4">
+            <!-- 橫向資料卡片 1 -->
+            <div class="flex bg-white rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/40 p-5">
+                <div class="w-1/4 border-r border-gray-100 pr-5 flex flex-col justify-center">
+                    <span class="inline-block px-3 py-1 rounded-full bg-green-100 text-green-700 font-bold text-sm mb-2 w-fit">✅ 維持現狀組</span>
+                    <h3 class="text-lg font-bold text-gray-900">精準打擊的<br>黃金陣容</h3>
+                    <p class="text-xs text-gray-500 mt-2">已發揮極大化效益，請保持目前習慣。</p>
+                </div>
+                <div class="w-3/4 pl-5 grid grid-cols-3 gap-4">
+                    <div class="bg-gray-50 p-3 rounded-xl">
+                        <div class="font-bold text-gray-900 mb-1">中國信託 英雄聯盟卡</div>
+                        <p class="text-sm text-gray-600">專屬任務：電動車充電、Kobo 電子書、Steam / PS 遊戲購買。</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-xl">
+                        <div class="font-bold text-gray-900 mb-1">國泰世華 CUBE 卡</div>
+                        <p class="text-sm text-gray-600">專屬任務：7-11 日常消費(集精選)、實體大額、百貨餐飲(切換方案)。</p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-xl">
+                        <div class="font-bold text-gray-900 mb-1">玉山 Unicard</div>
+                        <p class="text-sm text-gray-600">專屬任務：綁定街口/LINE Pay，主攻夜市、手搖飲與日常小額。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 橫向資料卡片 2 -->
+            <div class="flex bg-blue-50/30 rounded-2xl border border-blue-100 shadow-lg shadow-blue-100/40 p-5">
+                <div class="w-1/4 border-r border-blue-100 pr-5 flex flex-col justify-center">
+                    <span class="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold text-sm mb-2 w-fit">🔄 升級替換組</span>
+                    <h3 class="text-lg font-bold text-gray-900">加辦新卡後<br>剪舊卡</h3>
+                    <p class="text-xs text-gray-500 mt-2">轉換為該銀行最具競爭力卡別。</p>
+                </div>
+                <div class="w-3/4 pl-5 grid grid-cols-3 gap-4">
+                    <div class="bg-white p-3 rounded-xl shadow-sm">
+                        <div class="font-bold text-gray-900 mb-1">大潤發卡 ➡️ FlyGo卡</div>
+                        <p class="text-xs text-gray-600">延續悠遊卡/停車/eTag，新增交通票證、高鐵、中油 5% 加碼。</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm">
+                        <div class="font-bold text-gray-900 mb-1">好市多/數位 ➡️ J卡</div>
+                        <p class="text-xs text-gray-600">停用好市多卡；若欲活化額度，加辦主攻日韓旅遊與 LINE Pay 的 J 卡備用。</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-sm border-2 border-yellow-200">
+                        <div class="font-bold text-gray-900 mb-1">飛行卡 ➡️ eco永續卡</div>
+                        <p class="text-xs text-gray-600"><span class="text-red-600 font-bold">⚠️ 先消耗哩程再剪！</span>轉卡後國內外一般消費皆有無腦現金回饋。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 橫向資料卡片 3 -->
+            <div class="flex bg-white rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/40 p-5">
+                <div class="w-1/4 border-r border-gray-100 pr-5 flex flex-col justify-center">
+                    <span class="inline-block px-3 py-1 rounded-full bg-purple-100 text-purple-700 font-bold text-sm mb-2 w-fit">💳 特殊擴充</span>
+                    <h3 class="text-lg font-bold text-gray-900">大額自動分期</h3>
+                </div>
+                <div class="w-3/4 pl-5 flex items-center">
+                    <div class="bg-gray-50 p-4 rounded-xl w-full flex items-center gap-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 flex-shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                        </div>
+                        <div>
+                            <div class="font-bold text-gray-900 text-lg">上海銀行 小小兵分期卡</div>
+                            <p class="text-sm text-gray-600 mt-1">若未來有超過 3,000 元大額開銷（買家電、繳保費）且不強求回饋，單筆滿額自動分 6 期 0 利率（最高 12 期）。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 3: 星展哩程策略 -->
+    <div class="a4-landscape page-break">
+        <header class="mb-8 flex justify-between items-end">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-yellow-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">3</span>
+                    <h2 class="text-2xl font-bold text-gray-900">星展飛行積金價值最大化全攻略</h2>
+                </div>
+                <p class="text-gray-600 mt-2 ml-11 max-w-2xl">直接折抵帳單（約 $4,982）極度可惜。目標：兌換 2 張「亞洲萬里通 - 日航東京來回機票」（價值約 2.5 萬 ~ 3 萬元）。</p>
+            </div>
+            <div class="text-right bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100">
+                <div class="text-sm text-blue-600 font-bold mb-1">目前持有積金</div>
+                <div class="text-4xl font-black text-blue-700 tracking-tight">49,825 <span class="text-xl text-blue-500 font-medium">哩</span></div>
+            </div>
+        </header>
+
+        <!-- 橫向時間軸 (視覺化區塊) -->
+        <div class="flex-grow bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-8 relative">
+            <h3 class="text-xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                核心行動方針 (請嚴格依序執行)
+            </h3>
+            
+            <div class="relative pt-4">
+                <div class="timeline-line"></div>
+                <div class="grid grid-cols-4 gap-6 relative z-10">
+                    
+                    <!-- Step 1 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-12 h-12 bg-white border-4 border-blue-500 rounded-full flex items-center justify-center text-blue-600 font-bold text-lg mb-4 shadow-md group-hover:scale-110 transition-transform">1</div>
+                        <div class="bg-blue-50 rounded-xl p-4 w-full border border-blue-100 shadow-sm">
+                            <h4 class="font-bold text-gray-900 mb-2">最後一哩路</h4>
+                            <div class="inline-block px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded mb-2">差 175 哩</div>
+                            <p class="text-sm text-gray-600 text-left">立刻使用星展飛行卡，在國內消費約 <strong class="text-blue-700">NT$ 3,150</strong> (18元/哩計算)，湊滿整數 50,000 哩。</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-12 h-12 bg-white border-4 border-gray-300 rounded-full flex items-center justify-center text-gray-500 font-bold text-lg mb-4 shadow-md group-hover:border-blue-400 transition-colors">2</div>
+                        <div class="bg-gray-50 rounded-xl p-4 w-full border border-gray-100 shadow-sm">
+                            <h4 class="font-bold text-gray-900 mb-2">註冊會員</h4>
+                            <p class="text-sm text-gray-600 text-left">前往「國泰航空」官網，免費註冊「亞洲萬里通 (Asia Miles)」會員，取得會員卡號。</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-12 h-12 bg-white border-4 border-gray-300 rounded-full flex items-center justify-center text-gray-500 font-bold text-lg mb-4 shadow-md group-hover:border-blue-400 transition-colors">3</div>
+                        <div class="bg-gray-50 rounded-xl p-4 w-full border border-gray-100 shadow-sm">
+                            <h4 class="font-bold text-gray-900 mb-2">執行轉點</h4>
+                            <p class="text-sm text-gray-600 text-left">哩程達標後，透過星展 APP 或客服，將 5 萬哩全數轉入亞洲萬里通（需 3~7 個工作天）。</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-12 h-12 bg-white border-4 border-green-500 rounded-full flex items-center justify-center text-green-600 font-bold text-lg mb-4 shadow-md group-hover:scale-110 transition-transform flex-shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-4 w-full border border-green-100 shadow-sm">
+                            <h4 class="font-bold text-gray-900 mb-2">安全下莊</h4>
+                            <p class="text-sm text-gray-600 text-left">確認點數入帳後，安心將星展飛行卡<strong class="text-green-700">停卡</strong>，並轉辦 eco 永續卡。</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page 4: 富士山自駕企劃 -->
+    <div class="a4-landscape">
+        <header class="mb-6">
+            <div class="flex items-center gap-3">
+                <span class="bg-gray-900 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">4</span>
+                <h2 class="text-2xl font-bold text-gray-900">東京 - 富士山自駕旅遊企劃</h2>
+            </div>
+            <p class="text-gray-600 mt-2 ml-11">擁有 5 萬哩後，可兌換 2 張日本航空 (JAL) 台灣飛東京來回機票。以下為自駕專屬規劃重點：</p>
+        </header>
+
+        <!-- 三欄並排數據卡片 -->
+        <div class="grid grid-cols-3 gap-6 flex-grow mb-6">
+            <!-- Col 1 -->
+            <div class="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border-t-4 border-t-blue-500 flex flex-col">
+                <div class="text-3xl mb-3">✈️</div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">航班航線策略</h3>
+                <div class="flex-grow space-y-4 mt-2">
+                    <div>
+                        <div class="text-sm font-bold text-blue-700 bg-blue-50 inline-block px-2 py-1 rounded mb-1">首選黃金航線</div>
+                        <p class="text-sm text-gray-800 font-bold">松山 (TSA) ✈️ 東京羽田 (HND)</p>
+                        <p class="text-xs text-gray-600 mt-1">羽田位於市區南側，取車後駛出機場，能最快接上「東名高速」直奔富士山。</p>
+                    </div>
+                    <div>
+                        <div class="text-sm font-bold text-red-600 bg-red-50 inline-block px-2 py-1 rounded mb-1">避坑指南</div>
+                        <p class="text-xs text-gray-600 mt-1">避免飛往成田 (NRT)。成田在東邊，直接開車去富士山需橫跨大東京都會區，極易塞車且增加 1.5~2 小時疲勞駕駛車程。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Col 2 -->
+            <div class="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border-t-4 border-t-purple-500 flex flex-col">
+                <div class="text-3xl mb-3">🎫</div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">哩程搶票行內技巧</h3>
+                <ul class="space-y-4 text-sm text-gray-700 mt-2 flex-grow">
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div><strong class="text-gray-900">放票時間點：</strong>系統可預訂 353 天後機位。熱門時段需提早搶；時間彈性者，日航常在出發前 14 天釋放大量空位。</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <div><strong class="text-gray-900">單程搜尋法：</strong>國泰官網查票務必「先查去程、再查回程」，確認兩段都有位子再結帳。</div>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <div><strong class="text-gray-900">額外費用：</strong>需額外刷卡支付兩人的「機場稅與燃油附加費」。</div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Col 3 -->
+            <div class="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border-t-4 border-t-green-500 flex flex-col">
+                <div class="text-3xl mb-3">🚗</div>
+                <h3 class="text-lg font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">自駕前置作業</h3>
+                <ul class="space-y-4 text-sm text-gray-700 mt-2 flex-grow">
+                    <li>
+                        <strong class="block text-gray-900 mb-1">駕照準備：</strong>
+                        攜帶「台灣駕照正本」+「日文譯本」(監理所辦理，規費 100 元)。
+                    </li>
+                    <li>
+                        <strong class="block text-gray-900 mb-1">車輛選擇：</strong>
+                        考量富士山周邊山路與氣溫，租借<strong class="text-green-700">油電混合車 (Hybrid)</strong> 是最無里程焦慮且省油的首選。
+                    </li>
+                    <li class="bg-green-50 p-2 rounded-lg border border-green-100">
+                        <strong class="block text-gray-900 mb-1">ETC 租借 (極重要)：</strong>
+                        日本過路費高，務必租借 ETC 卡。不僅有折扣，且上下交流道免排隊走現金通道，大幅提升順暢度。
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 總結 -->
+        <div class="bg-gray-900 rounded-2xl p-6 text-white flex items-center justify-between shadow-2xl">
+            <div>
+                <h3 class="text-xl font-bold text-yellow-400 mb-1">總結下一步行動：</h3>
+                <p class="text-gray-300">您這個週末的任務，就是把星展卡拿出來刷個大約 3,200 元，將籌碼補足到 5 萬哩，準備啟動富士山之旅！</p>
+            </div>
+            <div class="text-4xl">🏔️</div>
+        </div>
+    </div>
+
+</body>
+</html>

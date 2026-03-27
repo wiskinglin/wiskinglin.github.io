@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美伊戰爭對 2026 年後續的影響深度分析 | Gem Report</title>
+    <meta name="description" content="分析 2026 年美伊衝突對全球能源市場、多極地緣格局、通膨壓力及中東權力平衡的深遠影響。">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter + Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'Noto Sans TC', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a'
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+                        'float': '0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #e2e8f0;
+            margin: 0; padding: 2rem;
+            display: flex; flex-direction: column; align-items: center; gap: 2rem;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            color: #1e293b;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-container {
+            width: 297mm;
+            min-height: 210mm;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 15mm 20mm;
+            box-sizing: border-box;
+            border-radius: 8px;
+        }
+
+        .pill {
+            display: inline-flex; align-items: center;
+            padding: 0.25rem 0.75rem; border-radius: 9999px;
+            font-size: 0.75rem; font-weight: 700;
+            letter-spacing: 0.05em; text-transform: uppercase;
+        }
+
+        .divider-gradient {
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 2px; margin: 1rem 0;
+        }
+
+        .page-header {
+            border-left: 6px solid; padding-left: 1rem;
+            margin-bottom: 2rem; display: flex;
+            justify-content: space-between; align-items: flex-end;
+        }
+        .page-title {
+            font-size: 2.25rem; font-weight: 900;
+            color: #0f172a; line-height: 1.2; letter-spacing: -0.025em;
+        }
+        .page-subtitle {
+            font-size: 1rem; color: #64748b;
+            margin-top: 0.5rem; font-weight: 500;
+        }
+
+        .page-footer {
+            margin-top: 1.5rem; padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: monospace; font-size: 0.75rem; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .document-wrapper.is-editing .page-container {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 4px;
+            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+        .document-wrapper.is-editing [contenteditable="true"]:hover {
+            background-color: rgba(241, 245, 249, 0.8);
+            border-radius: 4px; cursor: text;
+        }
+
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            body { background-color: white; padding: 0; margin: 0; display: block; }
+            .no-print { display: none !important; }
+            .document-wrapper { padding: 0; gap: 0; display: block; }
+            .page-container {
+                width: 297mm; height: 210mm; min-height: 210mm;
+                box-shadow: none; border-radius: 0; margin: 0;
+                page-break-after: always;
+                break-inside: avoid;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fixed top-6 right-6 z-50 flex gap-3 backdrop-blur-xl bg-white/80 p-3 rounded-2xl shadow-soft border border-white/50 no-print transition-all duration-300">
+        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors text-sm">
+            <span class="emoji">✏️</span> <span class="btn-text">編輯內容</span>
+        </button>
+        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-medium transition-colors text-sm">
+            <span>⬇️</span> 儲存網頁
+        </button>
+        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium transition-colors text-sm shadow-md">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <div class="document-wrapper" id="document-wrapper">
+
+        <!-- ============== PAGE 1: Hero ============== -->
+        <section class="page-container relative bg-slate-50">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-purple-100/50 to-transparent rounded-tr-full pointer-events-none"></div>
+
+            <header class="flex-grow flex flex-col justify-center relative z-10 px-12">
+                <div class="mb-6">
+                    <span class="pill bg-slate-200 text-slate-700">Gem Deep Research</span>
+                    <span class="pill bg-blue-500/10 text-blue-600 ml-2">Geopolitics</span>
+                    <span class="pill bg-purple-500/10 text-purple-600 ml-2">Energy Security</span>
+                </div>
+                <h1 class="text-6xl font-black text-slate-900 leading-tight tracking-tight mb-6" contenteditable="true">
+                    2026 美伊衝突<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">全球衝擊評估報告</span>
+                </h1>
+                <div class="divider-gradient w-32 mb-8"></div>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-3xl font-medium" contenteditable="true">
+                    2026 年 2 月底爆發的美伊軍事衝突已發展為自冷戰以來最具破壞性的區域衝突之一。本報告深入探討該衝突在 2026 年後續對全球地緣政治、能源經濟以及國際安全體系的深遠影響。
+                </p>
+            </header>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-6">
+                <span>2026 STRATEGIC INTELLIGENCE REPORT</span>
+                <span>Page 01</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 2: Chapter 1 ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header" style="border-left-color: #3b82f6;">
+                <div>
+                    <h2 class="page-title" contenteditable="true">第一章：地緣政治與區域版圖重塑</h2>
+                    <p class="page-subtitle" contenteditable="true">中東權力平衡的永久性移轉與大國博弈重心回流</p>
+                </div>
+            </div>
+
+            <div class="flex-grow grid grid-cols-12 gap-6">
+                <div class="col-span-5 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-200 pb-2" contenteditable="true">政權韌性與不對稱反擊</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed" contenteditable="true">
+                        儘管常規軍事力量受損，伊朗轉向去中心化的代理人戰爭（如在黎巴嫩、敘利亞和葉門的活動），對以色列及美軍基地發動更頻繁的無人機與飛彈襲擊。
+                    </p>
+                </div>
+                <div class="col-span-7 flex flex-col gap-6">
+                    <div class="flex-grow bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 border border-blue-100 shadow-soft">
+                        <h3 class="text-2xl font-black text-blue-600 mb-4" contenteditable="true">中東政治重新對齊</h3>
+                        <p class="text-slate-600 leading-relaxed mb-6" contenteditable="true">
+                            海灣國家（GCC）在「接待美軍」與「伊朗威脅」之間陷入兩難。部分國家因恐懼伊朗報復而收緊與美國的軍事合作。
+                        </p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
+                                <div class="text-sm text-slate-500 font-semibold mb-1">代理人武裝動員</div>
+                                <div class="text-4xl font-black text-blue-600 mb-1" contenteditable="true">1.2M+</div>
+                                <div class="text-xs text-slate-400">估計區域受影響武裝人數</div>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
+                                <div class="text-sm text-slate-500 font-semibold mb-1">區域不隱定指數</div>
+                                <div class="text-4xl font-black text-slate-800 mb-1" contenteditable="true">9.2</div>
+                                <div class="text-xs text-slate-400">達到十年來最高點</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <span>GEOPOLITICAL DYNAMICS</span>
+                <span>Page 02</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 3: Chapter 2 ============== -->
+        <section class="page-container bg-slate-50">
+            <div class="page-header" style="border-left-color: #8b5cf6;">
+                <div>
+                    <h2 class="page-title" contenteditable="true">第二章：全球能源市場的極端壓力測試</h2>
+                    <p class="page-subtitle" contenteditable="true">霍爾木茲海峽封鎖引發的全球能源通膨與綠能轉型拉鋸</p>
+                </div>
+            </div>
+
+            <div class="flex-grow grid grid-cols-2 gap-8 items-stretch">
+                <div class="bg-white rounded-3xl p-6 shadow-float border border-slate-200 flex flex-col">
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-4 bg-slate-100 py-2 rounded-lg" contenteditable="true">「航行終結」危機</h3>
+                    <div class="flex-grow space-y-4">
+                        <p class="text-sm text-slate-600 leading-relaxed" contenteditable="true">
+                            該海峽是全球 20% 石油供應的咽喉。持續的封鎖導致布倫特原油價格一度飆升至每桶 150 美元以上，液化天然氣（LNG）運輸受阻則讓歐洲能源價格再度失控。
+                        </p>
+                        <ul class="text-sm text-slate-500 space-y-2">
+                            <li class="flex items-center gap-2">🚩 原油出口減損: 18M bpd</li>
+                            <li class="flex items-center gap-2">🚩 LNG 船期延誤: 25-30 天</li>
+                        </ul>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-500 bg-blue-50 p-3 rounded-xl border border-blue-100">
+                        <strong class="text-blue-700">油價峰值:</strong> $180 USD/bbl (極端情況預測)
+                    </div>
+                </div>
+                <div class="bg-white rounded-3xl p-6 shadow-float border border-slate-200 flex flex-col">
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-4 bg-slate-100 py-2 rounded-lg" contenteditable="true">能源安全 vs 綠能轉型</h3>
+                    <div class="flex-grow space-y-4">
+                        <p class="text-sm text-slate-600 leading-relaxed" contenteditable="true">
+                            短期內，各國被迫回歸煤炭與石油以確保基礎運作；但長期看，這也加速了各國對能源自主（核能、再生能源）的投資意願，以擺脫對單一地區化石燃料的依賴。
+                        </p>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <div class="text-xs font-bold text-slate-400 uppercase mb-2">再生能源加速指標</div>
+                            <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-green-500 w-[65%]"></div>
+                            </div>
+                            <div class="flex justify-between mt-1 text-[10px] text-slate-400">
+                                <span>2025: 45%</span>
+                                <span>2026 PROJECTED: 65%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-500 bg-purple-50 p-3 rounded-xl border border-purple-100">
+                        <strong class="text-purple-700">長期趨勢:</strong> 本次危機被視為全球能源結構的「不可逆轉捩點」
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <span>ENERGY SECURITY MATRIX</span>
+                <span>Page 03</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 4: Chapter 3 & 4 (Bento 12-col) ============== -->
+        <section class="page-container bg-white">
+            <div class="page-header" style="border-left-color: #10b981;">
+                <div>
+                    <h2 class="page-title" contenteditable="true">連鎖反應：經濟體系與國際安全</h2>
+                    <p class="page-subtitle" contenteditable="true">通膨壓力升級、供應鏈斷裂與核擴散風險</p>
+                </div>
+            </div>
+
+            <div class="flex-grow grid grid-cols-3 grid-rows-2 gap-6">
+                <!-- 經濟衝擊 -->
+                <div class="col-span-2 row-span-1 bg-gradient-to-br from-emerald-50 to-white p-6 rounded-2xl border border-emerald-100 shadow-sm">
+                    <h3 class="text-xl font-black text-emerald-700 mb-2">通膨 2.0 與全球衰退</h3>
+                    <p class="text-sm text-slate-600 leading-loose" contenteditable="true">
+                        2026 年全球 GDP 將減損 0.5%。製造業與農產品成本急劇上升，全球貨櫃航運因繞道好望角增加 14 天工期，導致供應鏈瓶頸全面爆發。
+                    </p>
+                </div>
+                <!-- 核與安全 -->
+                <div class="col-span-1 row-span-2 bg-slate-900 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71L12 2z"/></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-blue-400 mb-4">核擴散風險</h3>
+                    <ul class="text-sm space-y-4 opacity-90" contenteditable="true">
+                        <li class="border-l-2 border-blue-500 pl-3">
+                            <strong>生存威脅激勵:</strong> 伊朗感知存亡考驗，重啟高豐度鈾濃縮。
+                        </li>
+                        <li class="border-l-2 border-blue-500 pl-3">
+                            <strong>區域軍備競賽:</strong> 沙烏地與土耳其同步尋求核威懾對沖。
+                        </li>
+                        <li class="border-l-2 border-blue-500 pl-3">
+                            <strong>技術黑市:</strong> 無人機與飛彈技術向非國家武裝外流。
+                        </li>
+                    </ul>
+                </div>
+                <!-- 供應鏈數據 -->
+                <div class="col-span-1 row-span-1 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <div class="text-4xl font-black text-slate-800 mb-1">+14D</div>
+                    <div class="text-xs text-slate-500 font-bold uppercase tracking-widest">平均航運延時</div>
+                    <div class="mt-4 text-sm text-slate-600" contenteditable="true">好望角繞向成為常態。</div>
+                </div>
+                <!-- 通膨數據 -->
+                <div class="col-span-1 row-span-1 bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                    <div class="text-4xl font-black text-red-600 mb-1">9.8%</div>
+                    <div class="text-xs text-slate-500 font-bold uppercase tracking-widest">預估核心通膨 (Q4)</div>
+                    <div class="mt-4 text-sm text-slate-600" contenteditable="true">受制於能源與食品運輸成本。</div>
+                </div>
+            </div>
+
+            <footer class="page-footer">
+                <span>SYSTEMIC RISKS ANALYSIS</span>
+                <span>Page 04</span>
+            </footer>
+        </section>
+
+        <!-- ============== PAGE 5: Conclusion ============== -->
+        <section class="page-container bg-slate-900 text-white" style="border-left: none;">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <div class="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-blue-600 rounded-full blur-[120px] opacity-20"></div>
+                <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-purple-600 rounded-full blur-[100px] opacity-20"></div>
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center items-center text-center relative z-10">
+                <h2 class="text-4xl font-black text-white mb-8 leading-tight" contenteditable="true">
+                    2026 年後的韌性重構：從危機中尋找新平衡
+                </h2>
+                <div class="grid grid-cols-1 gap-4 max-w-4xl w-full">
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start">
+                        <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-blue-200 mb-1" contenteditable="true">供應鏈路徑縮短 (Near-shoring)</h4>
+                            <p class="text-sm text-slate-300" contenteditable="true">企業必須將關鍵生產線移出高風險地緣區，追求「鄰岸外包」以應對航運中斷。</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start">
+                        <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-blue-200 mb-1" contenteditable="true">國防科技 AI 化</h4>
+                            <p class="text-sm text-slate-300" contenteditable="true">無人機與自主武器在本次衝突中表現出的高性價比，將改寫未來十年的軍備競賽規則。</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start">
+                        <div class="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">3</div>
+                        <div class="text-left">
+                            <h4 class="font-bold text-blue-200 mb-1" contenteditable="true">多極世界的對話機制</h4>
+                            <p class="text-sm text-slate-300" contenteditable="true">在聯合南機制功能受限下，區域性雙邊協議將取代傳統的多邊防禦體系，成為主流安全模式。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="page-footer border-slate-800 text-slate-500">
+                <span>CONCLUSION & OUTLOOK</span>
+                <span>Page 05</span>
+            </footer>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSave = document.getElementById('btn-save');
+            const btnPrint = document.getElementById('btn-print');
+            const wrapper = document.getElementById('document-wrapper');
+
+            let isEditing = false;
+            let fileHandle = null;
+
+            btnEdit.addEventListener('click', () => {
+                isEditing = !isEditing;
+                const btnText = btnEdit.querySelector('.btn-text');
+
+                if (isEditing) {
+                    wrapper.classList.add('is-editing');
+                    wrapper.setAttribute('contenteditable', 'true');
+                    btnText.textContent = '💾 結束編輯';
+                    btnEdit.classList.replace('bg-gray-100', 'bg-emerald-100');
+                    btnEdit.classList.replace('text-gray-700', 'text-emerald-700');
+                    btnEdit.classList.replace('hover:bg-gray-200', 'hover:bg-emerald-200');
+                } else {
+                    wrapper.classList.remove('is-editing');
+                    wrapper.setAttribute('contenteditable', 'false');
+                    btnText.textContent = '編輯內容';
+                    btnEdit.classList.replace('bg-emerald-100', 'bg-gray-100');
+                    btnEdit.classList.replace('text-emerald-700', 'text-gray-700');
+                    btnEdit.classList.replace('hover:bg-emerald-200', 'hover:bg-gray-200');
+                }
+            });
+
+            btnPrint.addEventListener('click', () => {
+                if (isEditing) btnEdit.click();
+                window.print();
+            });
+
+            btnSave.addEventListener('click', async () => {
+                const wasEditing = isEditing;
+                if (isEditing) btnEdit.click();
+
+                const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+                const date = new Date();
+                const dateStr = date.getFullYear().toString() +
+                    (date.getMonth() + 1).toString().padStart(2, '0') +
+                    date.getDate().toString().padStart(2, '0');
+
+                if (window.showSaveFilePicker) {
+                    try {
+                        if (!fileHandle) {
+                            fileHandle = await window.showSaveFilePicker({
+                                suggestedName: `Report_Iran_War_Impact_${dateStr}.html`,
+                                types: [{ description: 'HTML', accept: { 'text/html': ['.html'] } }]
+                            });
+                        }
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(htmlContent);
+                        await writable.close();
+                    } catch (e) {
+                        if (e.name === 'AbortError') return;
+                        fallbackDownload(htmlContent, dateStr);
+                    }
+                } else {
+                    fallbackDownload(htmlContent, dateStr);
+                }
+
+                if (wasEditing) btnEdit.click();
+            });
+
+            function fallbackDownload(html, dateStr) {
+                const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `Report_Iran_War_Impact_${dateStr}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(a.href), 100);
+            }
+
+            let isDirty = false;
+            wrapper.addEventListener('input', () => { isDirty = true; });
+            window.addEventListener('beforeunload', (e) => {
+                if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+            });
+        });
+    </script>
+</body>
+</html>
