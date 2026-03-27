@@ -1,6 +1,17 @@
 ---
-name: generate_top50_demos
+name: UIDesigner_UX50_Generator
 description: 自動生成 Top 50 UX/UI 設計風格的 HTML 範例檔案（01.html - 50.html），每個檔案展示一種設計風格的視覺效果與互動特性。
+version: 1.1.0
+owner: UI Designer Agent
+metadata:
+  klio:
+    requires:
+      inputs: [_docs/references/WebTop50.md, .agents/skills/UIDesigner_UX50_Generator/scripts/styles_data.json]
+      skills: []
+    outputs: [top50/index.html, top50/{01-50}.html]
+    pillar: showcase
+    downstream:
+      - UIDesigner_MuseumTheme_Builder
 ---
 
 # Generate Top 50 UX/UI Design Style Demos
@@ -8,6 +19,11 @@ description: 自動生成 Top 50 UX/UI 設計風格的 HTML 範例檔案（01.ht
 ## 概述
 
 此技能會在專案根目錄下建立 `top50-demos/` 資料夾，自動產出 50 個獨立的 HTML 範例頁面（`01.html` ~ `50.html`）加上 `index.html` 總覽導航頁。每個頁面忠實呈現 `top50.md` 中定義的一種 UX/UI 設計風格。
+
+## 系統狀態與會話交接 (Memory & Sessions)
+
+- **前置讀取**：執行任務前，必須優先讀取 `.agents/memory/preferences.json` (獲取全域偏好) 與 `.agents/memory/lessons_learned.md` (規避已知錯誤)。
+- **會話交接**：完成任務後，除輸出正式檔案外，須將執行狀態摘要寫入或更新當前的 Workflow Session 檔 (`.agents/sessions/session-{id}.md`) 供下游 Agent 閱讀。
 
 ---
 

@@ -1,8 +1,18 @@
 ---
 description: 以多重敘事宇宙與 AI 作者 Persona 為核心，自動生成無痛知識書籍與沉浸式閱讀器
+version: 1.1.0
+owner: Writer / PMM Agent
+triggers: [/immersive-knowledge-library]
+pipeline:
+  - Writer_DeepReport_Synthesizer
+  - Engineer_WebLayout_Builder
+  - UIDesigner_MuseumTheme_Builder
+  - QA_LayoutAPI_Tester
+quality_gate: QA_LayoutAPI_Tester
+context: .agents/CONTEXT.md
 ---
 
-# /smart-library — Smart Library 電子書城生成工作流
+# /immersive-knowledge-library — Smart Library 電子書城生成工作流
 
 跳脫傳統版型佈局，以賦予 AI 不同的「作家靈魂」為核心。將艱澀的商業理論轉化為奇幻/科幻等跨界故事，整合為沉浸式的電子書城。
 涵蓋 5 個領域特化 Agent 角色：跨界圖書館 PM → 多元宇宙小說家 → 沉浸式閱讀體驗設計師 → 生成式排版工程師 → 知識準確度 QA。
@@ -10,6 +20,11 @@ description: 以多重敘事宇宙與 AI 作者 Persona 為核心，自動生成
 ---
 
 ## Phase 0：前置準備
+
+0. 初始化系統狀態 (System State)
+   - 讀取 `.agents/memory/preferences.json` 獲取全域偏好設定
+   - 讀取 `.agents/memory/lessons_learned.md` 規避已知除錯地雷
+   - 建立 `.agents/sessions/session-{id}.md` (記錄本工作流產生之物件路徑與 Handoff 狀態)
 
 // turbo-all
 
@@ -21,9 +36,9 @@ description: 以多重敘事宇宙與 AI 作者 Persona 為核心，自動生成
 
 2. 閱讀相關 Skill 定義
    ```
-   view_file .agents/skills/gems_writer/SKILL.md
-   view_file .agents/skills/museum_theme_builder/SKILL.md
-   view_file .agents/skills/gems_builder/SKILL.md
+   view_file .agents/skills/Writer_DeepReport_Synthesizer/SKILL.md
+   view_file .agents/skills/UIDesigner_MuseumTheme_Builder/SKILL.md
+   view_file .agents/skills/Engineer_WebLayout_Builder/SKILL.md
    ```
 
 ---

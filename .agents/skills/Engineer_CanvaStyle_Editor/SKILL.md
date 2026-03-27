@@ -1,6 +1,21 @@
 ---
-name: template_editor
+name: Engineer_CanvaStyle_Editor
 description: 打造 Canva-style 的純前端智能模板編輯平台，讓使用者從預設模板出發，將 AI 生成的內容快速套入高質感的視覺文件中。
+version: 1.1.0
+owner: Engineering Agent
+metadata:
+  klio:
+    requires:
+      inputs: [_data/gems/{gemId}.md, editor/templates/_manifest.json]
+      skills:
+        - Writer_DeepReport_Synthesizer
+        - Engineer_WebLayout_Builder
+        - UIDesigner_MuseumTheme_Builder
+        - Engineer_PdfExport_Engine
+    outputs: [editor/index.html, editor/editor.html, editor/templates/{template}.html]
+    pillar: editor
+    downstream:
+      - QA_LayoutAPI_Tester
 ---
 
 # Template Editor — Canva-style 智能模板編輯引擎
@@ -10,10 +25,15 @@ description: 打造 Canva-style 的純前端智能模板編輯平台，讓使用
 此技能賦予 Engineering Agent 建構「模板驅動式純前端編輯器」的能力。核心理念是捨棄傳統 Office / Google Docs 從「空白文件」開始的模式，改為讓使用者從精美的 HTML 視覺模板出發，透過極簡的 WYSIWYG 介面直接編輯內容。
 
 與其他 Skill 的協作關係：
-- **上游**：承接 `gems_writer` 產出的 Markdown 報告，或使用者從 Gemini 取得的長文本
-- **借用**：`gems_builder` 的 contentEditable 與 File System Access API 能力
-- **借用**：`museum_theme_builder` 的 Design Token 體系與 CSS 模板架構
-- **借用**：`export_engine` 的 PDF / HTML 導出能力
+- **上游**：承接 `Writer_DeepReport_Synthesizer` 產出的 Markdown 報告，或使用者從 Gemini 取得的長文本
+- **借用**：`Engineer_WebLayout_Builder` 的 contentEditable 與 File System Access API 能力
+- **借用**：`UIDesigner_MuseumTheme_Builder` 的 Design Token 體系與 CSS 模板架構
+- **借用**：`Engineer_PdfExport_Engine` 的 PDF / HTML 導出能力
+
+## 系統狀態與會話交接 (Memory & Sessions)
+
+- **前置讀取**：執行任務前，必須優先讀取 `.agents/memory/preferences.json` (獲取全域偏好) 與 `.agents/memory/lessons_learned.md` (規避已知錯誤)。
+- **會話交接**：完成任務後，除輸出正式檔案外，須將執行狀態摘要寫入或更新當前的 Workflow Session 檔 (`.agents/sessions/session-{id}.md`) 供下游 Agent 閱讀。
 
 ---
 
@@ -82,8 +102,8 @@ editor/
 - **側邊操作面板**（點擊時展開，預設收合）：
   - 📂 開啟（File System Access API）
   - 💾 儲存（File System Access API / 降級下載）
-  - 📥 導出 PDF（整合 `export_engine`）
-  - 📄 導出 HTML（整合 `export_engine`）
+  - 📥 導出 PDF（整合 `Engineer_PdfExport_Engine`）
+  - 📄 導出 HTML（整合 `Engineer_PdfExport_Engine`）
   - 🔄 切換模板（不遺失已編輯內容）
   - 🤖 AI 填入（觸發 slot 自動匹配）
 
@@ -108,7 +128,7 @@ editor/
 
 ### 4. 純前端本地運作 (Local-First Architecture)
 
-- 完全借用 `gems_builder` 的實作模式：
+- 完全借用 `Engineer_WebLayout_Builder` 的實作模式：
   - File System Access API：開啟 / 儲存 / 記憶路徑
   - 降級方案：`<a download>` + `Blob`
   - Auto-save：每 30 秒或 `input` 事件觸發
@@ -150,7 +170,7 @@ editor/
 
 - 編輯中的草稿：IndexedDB（Key: `editor-draft-{timestamp}`）
 - 使用者儲存：File System Access API 指定路徑，或 `reports/` 目錄下
-- 導出 PDF / HTML：透過 `export_engine` 流程
+- 導出 PDF / HTML：透過 `Engineer_PdfExport_Engine` 流程
 
 ---
 
@@ -179,7 +199,7 @@ editor/
    - `data-slot` 標記的可編輯區塊
    - 引導文案（Placeholder / Tooltip，由 UX Writer 定義）
    - 響應式斷點（桌面 / 平板 / 手機）
-3. 模板可選擇性地引用 `museum_theme_builder` 的 Design Token 體系（共用 CSS Variables）
+3. 模板可選擇性地引用 `UIDesigner_MuseumTheme_Builder` 的 Design Token 體系（共用 CSS Variables）
 
 ---
 
@@ -199,7 +219,7 @@ editor/
 - [ ] Auto-save 每 30 秒觸發一次
 - [ ] 「AI 填入」能正確解析 Markdown 並自動匹配 Slot
 - [ ] 模板切換時已編輯內容不遺失
-- [ ] PDF / HTML 導出品質符合 `export_engine` 標準
+- [ ] PDF / HTML 導出品質符合 `Engineer_PdfExport_Engine` 標準
 
 ### 防呆驗證
 - [ ] IndexedDB 草稿在瀏覽器意外關閉後可恢復
@@ -212,10 +232,10 @@ editor/
 
 | 方向 | Agent / Skill | 銜接方式 |
 |------|--------------|---------|
-| ↑ 上游 | `gems_writer` | 產出的 Markdown 報告作為 AI 填入的內容來源 |
-| ↑ 上游 | `topic_collector` | 提供待填入報告的題目索引 |
-| ↔ 借用 | `gems_builder` | 共用 contentEditable、File System Access API、Auto-save 實作模式 |
-| ↔ 借用 | `museum_theme_builder` | 模板可選擇性引用 Design Token 體系，實現風格統一 |
-| ↔ 借用 | `export_engine` | 整合 PDF / HTML 導出流程 |
-| ↓ 下游 | `layout_qa_tester` | 提供模板供跨斷點排版驗證 |
+| ↑ 上游 | `Writer_DeepReport_Synthesizer` | 產出的 Markdown 報告作為 AI 填入的內容來源 |
+| ↑ 上游 | `DataAnalyst_TrendTopic_Collector` | 提供待填入報告的題目索引 |
+| ↔ 借用 | `Engineer_WebLayout_Builder` | 共用 contentEditable、File System Access API、Auto-save 實作模式 |
+| ↔ 借用 | `UIDesigner_MuseumTheme_Builder` | 模板可選擇性引用 Design Token 體系，實現風格統一 |
+| ↔ 借用 | `Engineer_PdfExport_Engine` | 整合 PDF / HTML 導出流程 |
+| ↓ 下游 | `QA_LayoutAPI_Tester` | 提供模板供跨斷點排版驗證 |
 | ← 指引 | 智能模板編輯器 PM | 定義模板分類、Slot 結構、操作動線 PRD |

@@ -1,8 +1,18 @@
 ---
 description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI 內容自動套入到本地儲存導出的全流程
+version: 1.1.0
+owner: PM Agent
+triggers: [/smart-template-editor]
+pipeline:
+  - Engineer_CanvaStyle_Editor
+  - UIDesigner_MuseumTheme_Builder
+  - Engineer_PdfExport_Engine
+  - QA_LayoutAPI_Tester
+quality_gate: QA_LayoutAPI_Tester
+context: .agents/CONTEXT.md
 ---
 
-# /template-editor — 智能模板編輯器建置工作流
+# /smart-template-editor — 智能模板編輯器建置工作流
 
 打造 Canva-style 的純前端直覺式編輯平台。使用者從精美的 HTML 模板出發，一鍵將 AI 生成的內容套入，透過極簡 WYSIWYG 介面編輯，最終導出為 PDF 或獨立 HTML。
 
@@ -11,6 +21,11 @@ description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI
 ---
 
 ## Phase 0：前置準備
+
+0. 初始化系統狀態 (System State)
+   - 讀取 `.agents/memory/preferences.json` 獲取全域偏好設定
+   - 讀取 `.agents/memory/lessons_learned.md` 規避已知除錯地雷
+   - 建立 `.agents/sessions/session-{id}.md` (記錄本工作流產生之物件路徑與 Handoff 狀態)
 
 // turbo-all
 
@@ -22,10 +37,10 @@ description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI
 
 2. 閱讀相關 Skill 定義
    ```
-   view_file .agents/skills/template_editor/SKILL.md
-   view_file .agents/skills/gems_builder/SKILL.md
-   view_file .agents/skills/export_engine/SKILL.md
-   view_file .agents/skills/museum_theme_builder/SKILL.md
+   view_file .agents/skills/Engineer_CanvaStyle_Editor/SKILL.md
+   view_file .agents/skills/Engineer_WebLayout_Builder/SKILL.md
+   view_file .agents/skills/Engineer_PdfExport_Engine/SKILL.md
+   view_file .agents/skills/UIDesigner_MuseumTheme_Builder/SKILL.md
    ```
 
 ---
@@ -52,7 +67,7 @@ description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI
 
 ## Phase 2：模板與介面設計 (SaaS 工具互動設計師 & 模板引導文案 UX Writer)
 
-**Skill**: `template_editor`（借用 `museum_theme_builder` Design Token 體系）
+**Skill**: `Engineer_CanvaStyle_Editor`（借用 `UIDesigner_MuseumTheme_Builder` Design Token 體系）
 
 6. 設計模板選擇器首頁 `editor/index.html`
    - Grid 卡片佈局展示所有模板
@@ -66,7 +81,7 @@ description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI
    - 每個模板為獨立 HTML 檔案，CSS 內嵌 `<style>`
    - 所有可編輯區塊標記 `data-slot="{name}"` + `contenteditable="true"`
    - UX Writer 為每個 Slot 撰寫引導文案（placeholder），確保使用者一看即懂
-   - 模板可選擇性引用 `museum_theme_builder` 的 Design Token（CSS Variables）
+   - 模板可選擇性引用 `UIDesigner_MuseumTheme_Builder` 的 Design Token（CSS Variables）
    - 每個模板至少 5 個 `data-slot` 可編輯區塊
    - 三斷點響應式（1440px / 768px / 375px）
    - 列印模式（`@media print`）排版正確
@@ -80,7 +95,7 @@ description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI
 
 ## Phase 3：編輯器引擎開發 (本地化應用架構師)
 
-**Skill**: `template_editor`（借用 `gems_builder` + `export_engine`）
+**Skill**: `Engineer_CanvaStyle_Editor`（借用 `Engineer_WebLayout_Builder` + `Engineer_PdfExport_Engine`）
 
 9. 建構通用編輯器殼層 `editor/editor.html`
    - 根據 URL 參數 `?template={id}` 動態載入對應模板 HTML
@@ -89,7 +104,7 @@ description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI
    - 啟動 Auto-save 機制（每 30 秒 + input 事件觸發）
    - 啟動 Dirty Flag + `beforeunload` 防呆
 
-10. 整合 File System Access API（借用 `gems_builder` 模式）
+10. 整合 File System Access API（借用 `Engineer_WebLayout_Builder` 模式）
     - 「開啟」：`showOpenFilePicker()` 載入已存檔的編輯器 HTML
     - 「儲存」：`showSaveFilePicker()` / Auto-save
     - 降級方案：不支援時以 `<a download>` + `Blob` 替代
@@ -106,15 +121,15 @@ description: 建構 Canva-style 智能模板編輯平台，從模板選擇到 AI
     - 載入新模板 → 以 `data-slot` 名稱為 Key 回填內容
     - 無法匹配的內容暫存於「未分配內容」提示區
 
-13. 整合導出功能（借用 `export_engine`）
-    - 「📥 PDF」：`export_engine` PDF 流程
-    - 「📄 HTML」：`export_engine` HTML 打包流程（移除 contentEditable + 編輯器 UI）
+13. 整合導出功能（借用 `Engineer_PdfExport_Engine`）
+    - 「📥 PDF」：`Engineer_PdfExport_Engine` PDF 流程
+    - 「📄 HTML」：`Engineer_PdfExport_Engine` HTML 打包流程（移除 contentEditable + 編輯器 UI）
 
 ---
 
 ## Phase 4：邊界防護驗證 (邊界防護 QA)
 
-**Skill**: `layout_qa_tester`
+**Skill**: `QA_LayoutAPI_Tester`
 
 14. 模板排版驗證
     - 5 種模板 × 3 斷點（1440px / 768px / 375px）= 15 組
