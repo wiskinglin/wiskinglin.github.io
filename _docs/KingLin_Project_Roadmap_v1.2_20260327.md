@@ -121,4 +121,8 @@
 *   **邊界防護 QA (針對編輯器)**：測試 Web-Native 工具在拒絕授權、網路異常、磁碟空間不足等極端條件下的穩定性 (Graceful Degradation)。
 
 ---
-*Last Updated: 2026-03-27*
+*Version: v1.2 | Last Updated: 2026-03-27*
+
+**Changelog**:
+- **v1.2 (2026-03-27)**：Section 3 新增「現有成品分析」（3.0），整合 `Ateam_v2.html` 與 `ebook.html` 的閱讀/編輯功能優缺點對照表，並新增「下一代編輯器設計決策摘要」（Section C）與「沉浸式閱讀模式整合」實作項目。
+- **v1.1 (2026-03-27)**：初版五大支柱戰略與 Agent 協作矩陣。
