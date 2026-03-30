@@ -561,6 +561,46 @@
         <p class="mt-2 text-gray-700">Built with Tailwind CSS & AI</p>
     </footer>
 
+    <!-- 智能路由：根據裝置自動切換 Desktop/Mobile 版本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reportLinks = document.querySelectorAll('a[href^="reports/"]');
+            
+            reportLinks.forEach(link => {
+                link.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    // 取得原始連結 (例如：reports/20260327_Ateam_v2.html)
+                    const originalHref = link.getAttribute('href');
+                    
+                    // 偵測是否為手機裝置 (寬度 <= 768px 或包含行動裝置標籤)
+                    const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
+                    
+                    if (isMobile) {
+                        // 嘗試替換路徑至 mobile/
+                        const mobileHref = originalHref.replace('reports/', 'mobile/');
+                        
+                        try {
+                            // 使用 HEAD 請求先確認行動版檔案是否存在，避免 404 錯誤
+                            const response = await fetch(mobileHref, { method: 'HEAD' });
+                            if (response.ok) {
+                                // 檔案存在，自動導向行動版
+                                window.location.href = mobileHref;
+                            } else {
+                                // 檔案不存在，fallback 回原桌機版
+                                window.location.href = originalHref;
+                            }
+                        } catch (error) {
+                            // 網路異常保守處理
+                            window.location.href = originalHref;
+                        }
+                    } else {
+                        // 桌機版直接放行
+                        window.location.href = originalHref;
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
