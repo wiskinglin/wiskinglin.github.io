@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion-Like Local Editor</title>
+    
+    <!-- Tailwind CSS with Typography Plugin for beautiful markdown rendering -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- DOMPurify for sanitizing HTML output -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        /* Auto-resizing textarea magic */
+        .auto-resize-textarea {
+            resize: none;
+            overflow: hidden;
+            min-height: 50vh;
+        }
+        
+        /* Notion-like placeholder styling */
+        [contenteditable]:empty:before {
+            content: attr(placeholder);
+            color: #9ca3af;
+            pointer-events: none;
+            display: block; /* For Firefox */
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-800 h-screen flex overflow-hidden font-sans selection:bg-blue-200 selection:text-blue-900">
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-gray-900/50 z-20 hidden md:hidden transition-opacity" onclick="toggleMobileMenu()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-gray-50 border-r border-gray-200 flex flex-col z-30 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <div class="p-4 flex items-center justify-between hover:bg-gray-100 cursor-pointer transition-colors group">
+            <div class="flex items-center space-x-2 font-medium text-sm text-gray-700">
+                <div class="w-5 h-5 bg-gray-800 rounded text-white flex items-center justify-center text-xs font-bold">H</div>
+                <span>Hank's Workspace</span>
+            </div>
+        </div>
+
+        <div class="px-3 mt-2">
+            <button onclick="createNewNote()" class="w-full flex items-center space-x-2 px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-md transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>新增頁面</span>
+            </button>
+        </div>
+
+        <!-- Notes List -->
+        <div class="flex-1 overflow-y-auto mt-4 px-3 space-y-0.5" id="notes-list">
+            <!-- Notes will be injected here -->
+        </div>
+
+        <div class="p-4 text-xs text-gray-400 border-t border-gray-200 flex items-center space-x-2">
+            <i data-lucide="hard-drive" class="w-4 h-4"></i>
+            <span>Local Storage Only</span>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen relative">
+        
+        <!-- Top Navigation -->
+        <header class="h-12 border-b border-gray-100 flex items-center justify-between px-4 lg:px-6 sticky top-0 bg-white/80 backdrop-blur-sm z-10">
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleMobileMenu()" class="md:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-md">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <div id="header-breadcrumbs" class="text-sm text-gray-500 font-medium truncate max-w-[200px] sm:max-w-xs">
+                    <!-- Title updates here -->
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-1 sm:space-x-2" id="toolbar-actions">
+                <!-- Preview Toggle -->
+                <button onclick="toggleMode()" id="mode-toggle-btn" class="flex items-center space-x-1 px-2.5 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors" title="切換預覽模式 (Ctrl+E)">
+                    <i data-lucide="eye" class="w-4 h-4" id="mode-icon"></i>
+                    <span class="hidden sm:inline" id="mode-text">閱讀模式</span>
+                </button>
+                
+                <!-- Export Action -->
+                <button onclick="exportCurrentNote()" class="p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-800 rounded-md transition-colors" title="匯出 Markdown">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </button>
+
+                <!-- Delete Action -->
+                <button onclick="deleteCurrentNote()" class="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors" title="刪除頁面">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Editor/Preview Area -->
+        <div class="flex-1 overflow-y-auto w-full scroll-smooth" id="scroll-container">
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden flex-col items-center justify-center h-full text-center px-4">
+                <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-4 text-gray-400">
+                    <i data-lucide="file-text" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-2">尚未選擇任何頁面</h2>
+                <p class="text-gray-500 text-sm mb-6 max-w-sm">從左側選擇一個現有頁面，或建立新頁面開始記錄你的想法。所有資料皆安全地儲存於瀏覽器中。</p>
+                <button onclick="createNewNote()" class="px-4 py-2 bg-gray-800 text-white text-sm font-medium rounded-md hover:bg-gray-700 transition-colors shadow-sm">
+                    新增頁面
+                </button>
+            </div>
+
+            <!-- Active Editor Area -->
+            <div id="editor-area" class="max-w-3xl mx-auto py-12 px-6 sm:px-12 w-full hidden pb-32">
+                <!-- Title Input -->
+                <input 
+                    type="text" 
+                    id="note-title" 
+                    class="w-full text-4xl font-bold text-gray-900 placeholder-gray-300 border-none outline-none bg-transparent mb-6 resize-none leading-tight"
+                    placeholder="無標題"
+                    autocomplete="off"
+                >
+
+                <!-- Meta info -->
+                <div class="flex items-center text-xs text-gray-400 mb-8 pb-4 border-b border-gray-100 space-x-4">
+                    <span id="note-date"></span>
+                    <span id="word-count">0 字</span>
+                </div>
+
+                <!-- Markdown Textarea -->
+                <textarea 
+                    id="note-content" 
+                    class="w-full text-base text-gray-700 placeholder-gray-300 border-none outline-none bg-transparent auto-resize-textarea font-mono sm:font-sans leading-relaxed"
+                    placeholder="輸入 '/' 探索功能，或直接使用 Markdown 語法開始寫作...&#10;&#10;# 大標題&#10;**粗體文字**&#10;- 列表項目"
+                ></textarea>
+
+                <!-- Markdown Preview (Hidden by default) -->
+                <div id="note-preview" class="hidden w-full prose prose-slate prose-a:text-blue-600 hover:prose-a:text-blue-500 max-w-none">
+                    <!-- Rendered HTML will appear here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg text-sm flex items-center space-x-2 z-50">
+            <i data-lucide="check-circle" class="w-4 h-4 text-green-400"></i>
+            <span id="toast-message">已儲存</span>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- State Management ---
+        const STORAGE_KEY = 'notion_clone_notes';
+        let notes = [];
+        let activeNoteId = null;
+        let isPreviewMode = false;
+        let saveTimeout = null;
+
+        // --- DOM Elements ---
+        const els = {
+            sidebar: document.getElementById('sidebar'),
+            mobileOverlay: document.getElementById('mobile-overlay'),
+            notesList: document.getElementById('notes-list'),
+            emptyState: document.getElementById('empty-state'),
+            editorArea: document.getElementById('editor-area'),
+            noteTitle: document.getElementById('note-title'),
+            noteContent: document.getElementById('note-content'),
+            notePreview: document.getElementById('note-preview'),
+            noteDate: document.getElementById('note-date'),
+            wordCount: document.getElementById('word-count'),
+            headerBreadcrumbs: document.getElementById('header-breadcrumbs'),
+            modeToggleBtn: document.getElementById('mode-toggle-btn'),
+            modeIcon: document.getElementById('mode-icon'),
+            modeText: document.getElementById('mode-text'),
+            toolbarActions: document.getElementById('toolbar-actions')
+        };
+
+        // --- Core Functions ---
+
+        function init() {
+            // Load notes from local storage
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    notes = JSON.parse(stored);
+                    // Sort by updatedAt descending
+                    notes.sort((a, b) => b.updatedAt - a.updatedAt);
+                } catch (e) {
+                    console.error('Failed to parse notes from local storage', e);
+                    notes = [];
+                }
+            }
+
+            renderSidebar();
+
+            // Load last active note or show empty state
+            if (notes.length > 0) {
+                loadNote(notes[0].id);
+            } else {
+                showEmptyState();
+            }
+
+            // Set up event listeners
+            els.noteTitle.addEventListener('input', handleInput);
+            els.noteContent.addEventListener('input', () => {
+                handleInput();
+                autoResize(els.noteContent);
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+E or Cmd+E to toggle edit/preview
+                if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                    e.preventDefault();
+                    if (activeNoteId) toggleMode();
+                }
+            });
+
+            // Marked.js configuration
+            marked.setOptions({
+                breaks: true, // Convert \n to <br>
+                gfm: true,    // GitHub Flavored Markdown
+            });
+        }
+
+        function renderSidebar() {
+            els.notesList.innerHTML = '';
+            
+            notes.forEach(note => {
+                const isActive = note.id === activeNoteId;
+                const title = note.title.trim() || '無標題';
+                
+                const btn = document.createElement('div');
+                btn.className = `flex items-center space-x-2 px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors group ${isActive ? 'bg-gray-200 text-gray-900 font-medium' : 'text-gray-600 hover:bg-gray-200'}`;
+                btn.onclick = () => {
+                    loadNote(note.id);
+                    if (window.innerWidth < 768) toggleMobileMenu();
+                };
+                
+                btn.innerHTML = `
+                    <i data-lucide="file-text" class="w-4 h-4 ${isActive ? 'text-gray-700' : 'text-gray-400 group-hover:text-gray-600'}"></i>
+                    <span class="truncate flex-1">${escapeHtml(title)}</span>
+                `;
+                
+                els.notesList.appendChild(btn);
+            });
+            
+            // Re-initialize dynamic icons injected into sidebar
+            lucide.createIcons({ root: els.notesList });
+        }
+
+        function createNewNote() {
+            const newNote = {
+                id: Date.now().toString(),
+                title: '',
+                content: '',
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            
+            notes.unshift(newNote);
+            saveToStorage();
+            
+            // Switch to edit mode if in preview
+            if (isPreviewMode) toggleMode();
+            
+            loadNote(newNote.id);
+            renderSidebar();
+            
+            // Focus title input
+            setTimeout(() => els.noteTitle.focus(), 50);
+            
+            if (window.innerWidth < 768 && !els.sidebar.classList.contains('-translate-x-full')) {
+                toggleMobileMenu();
+            }
+        }
+
+        function loadNote(id) {
+            const note = notes.find(n => n.id === id);
+            if (!note) return showEmptyState();
+
+            activeNoteId = id;
+            
+            // Update UI
+            els.emptyState.classList.add('hidden');
+            els.editorArea.classList.remove('hidden');
+            els.toolbarActions.classList.remove('hidden');
+            
+            // Populate data
+            els.noteTitle.value = note.title;
+            els.noteContent.value = note.content;
+            els.headerBreadcrumbs.textContent = note.title.trim() || '無標題';
+            els.noteDate.textContent = `最後編輯於 ${formatDate(note.updatedAt)}`;
+            
+            updateWordCount(note.content);
+            autoResize(els.noteContent);
+            
+            if (isPreviewMode) {
+                renderMarkdown();
+            }
+            
+            renderSidebar();
+        }
+
+        function showEmptyState() {
+            activeNoteId = null;
+            els.emptyState.classList.remove('hidden');
+            els.emptyState.classList.add('flex');
+            els.editorArea.classList.add('hidden');
+            els.toolbarActions.classList.add('hidden');
+            els.headerBreadcrumbs.textContent = '';
+            renderSidebar();
+        }
+
+        function handleInput() {
+            if (!activeNoteId) return;
+
+            const noteIndex = notes.findIndex(n => n.id === activeNoteId);
+            if (noteIndex === -1) return;
+
+            // Update local object
+            notes[noteIndex].title = els.noteTitle.value;
+            notes[noteIndex].content = els.noteContent.value;
+            notes[noteIndex].updatedAt = Date.now();
+            
+            // Update UI components
+            els.headerBreadcrumbs.textContent = els.noteTitle.value.trim() || '無標題';
+            updateWordCount(els.noteContent.value);
+            
+            // Move updated note to top
+            if (noteIndex > 0) {
+                const note = notes.splice(noteIndex, 1)[0];
+                notes.unshift(note);
+            }
+
+            // Debounce save to storage
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveToStorage();
+                renderSidebar();
+                showToast('已自動儲存');
+            }, 800);
+        }
+
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+        }
+
+        function deleteCurrentNote() {
+            if (!activeNoteId) return;
+            
+            if (confirm('確定要刪除此頁面嗎？這個動作無法復原。')) {
+                notes = notes.filter(n => n.id !== activeNoteId);
+                saveToStorage();
+                
+                if (notes.length > 0) {
+                    loadNote(notes[0].id);
+                } else {
+                    showEmptyState();
+                }
+                
+                showToast('已刪除頁面');
+            }
+        }
+
+        function toggleMode() {
+            isPreviewMode = !isPreviewMode;
+            
+            if (isPreviewMode) {
+                // Switch to Preview
+                renderMarkdown();
+                els.noteContent.classList.add('hidden');
+                els.notePreview.classList.remove('hidden');
+                
+                // Update Button UI
+                els.modeIcon.setAttribute('data-lucide', 'edit-3');
+                els.modeText.textContent = '編輯模式';
+                els.noteTitle.readOnly = true;
+                els.noteTitle.classList.add('cursor-default', 'opacity-90');
+            } else {
+                // Switch to Edit
+                els.noteContent.classList.remove('hidden');
+                els.notePreview.classList.add('hidden');
+                
+                // Update Button UI
+                els.modeIcon.setAttribute('data-lucide', 'eye');
+                els.modeText.textContent = '閱讀模式';
+                els.noteTitle.readOnly = false;
+                els.noteTitle.classList.remove('cursor-default', 'opacity-90');
+                
+                // Focus content
+                setTimeout(() => els.noteContent.focus(), 50);
+                autoResize(els.noteContent);
+            }
+            
+            lucide.createIcons({ root: els.modeToggleBtn });
+        }
+
+        function renderMarkdown() {
+            const rawMarkdown = els.noteContent.value;
+            if (!rawMarkdown.trim()) {
+                els.notePreview.innerHTML = '<p class="text-gray-400 italic">無內容...</p>';
+                return;
+            }
+            
+            const rawHtml = marked.parse(rawMarkdown);
+            const safeHtml = DOMPurify.sanitize(rawHtml);
+            els.notePreview.innerHTML = safeHtml;
+        }
+
+        function exportCurrentNote() {
+            if (!activeNoteId) return;
+            const note = notes.find(n => n.id === activeNoteId);
+            if (!note) return;
+
+            const title = note.title.trim() || 'Untitled';
+            const content = `# ${title}\n\n${note.content}`;
+            
+            const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title.replace(/[\\/:*?"<>|]/g, '_')}.md`; // sanitize filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('已匯出 Markdown');
+        }
+
+        // --- Utility Functions ---
+
+        function toggleMobileMenu() {
+            const sidebar = els.sidebar;
+            const overlay = els.mobileOverlay;
+            
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = (textarea.scrollHeight) + 'px';
+        }
+
+        function updateWordCount(text) {
+            const count = text.trim() ? text.trim().split(/\s+/).length : 0;
+            els.wordCount.textContent = `${count} 字`;
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            // If today, show time
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute:'2-digit' });
+            }
+            // Otherwise show date
+            return date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+
+        // Run initialization
+        init();
+    </script>
+</body>
+</html>
