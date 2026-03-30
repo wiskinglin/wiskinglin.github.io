@@ -69,7 +69,7 @@ owner: <Agent Role>              # 責任角色（參見 Team_Roster.md）
 | 文件 | 用途 | SSOT 管轄範圍 | 負責角色 |
 |:---|:---|:---|:---|
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | 專案全貌 | 目錄結構、架構分析、技術債、擴展藍圖 | PM Agent |
-| [KingLin_Project_Roadmap_v1.2](./roadmap/KingLin_Project_Roadmap_v1.2_20260327.md) | 產品規劃 | 五大支柱戰略目標、功能規格、Agent 協作矩陣 | PM Agent |
+| [ROADMAP.md](./ROADMAP.md) | 產品規劃 | 五大支柱戰略目標、功能規格、Agent 協作矩陣 | PM Agent |
 | [Team_Roster.md](./Team_Roster.md) | 團隊編制 | Agent 角色定義、Skill 分配、Workflow 責任歸屬 | PM Agent |
 | GOVERNANCE.md (本文件) | 治理規範 | 文件標準、版本管控、溝通規範 | PM Agent |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | 協作指南 | 開發流程、PR 規範、程式碼風格 | Engineering Agent |
@@ -180,13 +180,14 @@ generate_top50_demos ──→ museum_theme_builder (獨立流程)
 _docs/
 ├── 🏗️ SSOT 核心文件 (根層級)
 │   ├── ARCHITECTURE.md                  ← SSOT: 專案全貌
+│   ├── ROADMAP.md                       ← SSOT: 產品規劃
 │   ├── Team_Roster.md                   ← SSOT: 團隊編制
 │   ├── GOVERNANCE.md                    ← SSOT: 治理規範 (本文件)
 │   └── CONTRIBUTING.md                  ← SSOT: 協作指南
 │
-├── 🗺️ roadmap/                          ← 產品規劃 (含歷史版本)
-│   ├── KingLin_Project_Roadmap_v1.2_20260327.md  ← 最新版
-│   └── KingLin_Project_Roadmap_v1.1_20260327.md  ← 歷史版
+├── 🗺️ roadmap/                          ← 產品規劃 (歷史版本備份)
+│   ├── KingLin_Project_Roadmap_v1.2_20260327.md
+│   └── KingLin_Project_Roadmap_v1.1_20260327.md
 │
 ├── 📝 meetings/                          ← 會議紀錄
 │   ├── 2026-03-26_meeting_minutes_round2.md

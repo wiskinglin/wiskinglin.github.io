@@ -37,7 +37,7 @@ main                       ← 穩定發佈分支 (GitHub Pages 部署)
 | 想了解什麼？ | 請讀這份文件 |
 |:---|:---|
 | 專案全貌與架構 | [ARCHITECTURE.md](./ARCHITECTURE.md) |
-| 產品規劃與功能規格 | [KingLin_Project_Roadmap_v1.2](./roadmap/KingLin_Project_Roadmap_v1.2_20260327.md) |
+| 產品規劃與功能規格 | [ROADMAP.md](./ROADMAP.md) |
 | 團隊角色與技能分配 | [Team_Roster.md](./Team_Roster.md) |
 | 文件規範與溝通通道 | [GOVERNANCE.md](./GOVERNANCE.md) |
 | 如何協作開發 (本文件) | [CONTRIBUTING.md](./CONTRIBUTING.md) |
@@ -242,7 +242,7 @@ pipeline: [skill-a, skill-b, skill-c]
 | 修改文件 | 需同步審查 |
 |:---|:---|
 | `ARCHITECTURE.md` | Team_Roster (支柱對齊)、Roadmap (規格一致性) |
-| `KingLin_Project_Roadmap` | Team_Roster (任務分配)、所有 Workflows |
+| `ROADMAP.md` | Team_Roster (任務分配)、所有 Workflows |
 | `Team_Roster.md` | 所有 SKILL.md (owner 欄位)、所有 Workflows |
 | `GOVERNANCE.md` | CONTRIBUTING.md (規範一致性) |
 | 任何 `SKILL.md` | Team_Roster (技能清單)、相關 Workflow |

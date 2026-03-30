@@ -79,10 +79,11 @@ KLIO (wiskinglin.github.io/)
 │   │
 │   ├── _docs/                          # 📚 專案治理文件 (Governance)
 │   │   ├── ARCHITECTURE.md             # ← 本文件 (SSOT)
+│   │   ├── ROADMAP.md                  # SSOT: 產品規劃
 │   │   ├── Team_Roster.md
 │   │   ├── GOVERNANCE.md
 │   │   ├── CONTRIBUTING.md
-│   │   ├── roadmap/                    # 產品規劃 (含歷史版本)
+│   │   ├── roadmap/                    # 產品規劃 (歷史版本備份)
 │   │   ├── meetings/                   # 會議紀錄
 │   │   └── references/                 # 參考素材
 │   │

@@ -106,7 +106,7 @@ _data/topics.json ─────→ _data/gems/{gemId}.md ─────→ re
 | GOVERNANCE | `_docs/GOVERNANCE.md` | 治理規範 SSOT |
 | CONTRIBUTING | `_docs/CONTRIBUTING.md` | 協作指南 SSOT |
 | Team Roster | `_docs/Team_Roster.md` | 團隊編制 SSOT |
-| Roadmap | `_docs/roadmap/KingLin_Project_Roadmap_v1.2_20260327.md` | 產品規劃 |
+| Roadmap | `_docs/ROADMAP.md` | 產品規劃 |
 
 ---
 

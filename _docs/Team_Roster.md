@@ -6,7 +6,7 @@ status: active
 
 # AI Agent 團隊編制與技能拆解矩陣 (Team Roster & Skill Assignment)
 
-本文件將 `KingLin_Project_Roadmap_v1.0` 的專案目標，對齊並拆解至 `Ateam_v2.html` 定義的頂尖產品團隊架構中。
+本文件將 `ROADMAP.md` 的專案戰略目標，對齊並拆解至 `Ateam_v2.html` 定義的頂尖產品團隊架構中。
 這將作為未來系統 `Skill` 與 `Workflow` 開發的藍圖，讓每個 AI Agent 擁有清晰的 Input/Process/Output 介面，形成自動化的協作飛輪。
 
 ## 📜 版本管控 (Changelog)
