@@ -3,220 +3,210 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>#46 Algorithmic Transparency UI — 演算法透明度介面 | Top 50 UX/UI</title>
+<title>#46 Exaggerated Hierarchy — 誇張的視覺層級 | Top 50 UX/UI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Noto+Sans+TC:wght@300;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg: #fafafa;
-  --surface: #ffffff;
-  --text: #111827;
-  --muted: #6b7280;
-  --border: #e5e7eb;
-  --primary: #8b5cf6;
-  --transparent-bg: #f3f4f6;
-}
-body{
-  font-family:'Inter','Noto Sans TC',sans-serif;
-  background-color:var(--bg);color:var(--text);line-height:1.6;
-  padding-bottom:120px;
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Anton', 'Noto Sans TC', sans-serif;
+  background-color: #111;
+  color: #fff;
+  overflow-x: hidden;
+  padding-bottom: 120px;
 }
 
-header{max-width:900px;margin:60px auto 40px;padding:0 24px;}
-.cat{
-  display:inline-block;padding:4px 12px;border-radius:20px;
-  background:rgba(139,92,246,0.1);color:var(--primary);border:1px solid rgba(139,92,246,0.2);
-  font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;
+/* Style Info Header (A) - Miniature to contrast with main title */
+.style-info {
+  padding: 24px;
+  border-bottom: 1px solid #333;
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  font-family: 'Noto Sans TC', sans-serif;
+  position: relative;
+  z-index: 10;
 }
-h1{font-weight:700;font-size:clamp(1.8rem,4vw,2.5rem);margin-bottom:12px;line-height:1.2;letter-spacing:-0.5px}
-.desc{color:var(--muted);font-size:1.05rem;line-height:1.8;max-width:800px;}
-
-.app-layout{
-  max-width:1000px;margin:0 auto;padding:0 24px;
-  display:grid;grid-template-columns:1fr 350px;gap:32px;
+.style-info h1 {
+  font-size: 1rem; /* Intentionally tiny */
+  color: #888;
+  font-weight: 900;
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin-right: 20px;
 }
-
-/* Feed Section */
-.feed{
-  display:flex;flex-direction:column;gap:24px;
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  flex: 1;
 }
-.post-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:12px;padding:24px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);
-  position:relative;
+.info-card h4 {
+  font-size: 0.6rem; /* Tiny */
+  text-transform: uppercase;
+  color: #ff3366;
+  margin-bottom: 4px;
 }
-.post-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(45deg, #ddd, #eee);}
-.post-author{font-weight:600;font-size:1rem;}
-.post-handle{color:var(--muted);font-size:0.9rem;}
-.post-content{font-size:1.05rem;margin-bottom:16px;}
-
-/* Transparency Trigger */
-.why-btn{
-  position:absolute;top:24px;right:24px;
-  background:var(--transparent-bg);color:var(--muted);border:1px solid var(--border);
-  border-radius:16px;padding:4px 12px;font-size:0.75rem;font-weight:600;
-  cursor:pointer;display:flex;align-items:center;gap:4px;
-  transition:all 0.2s;
-}
-.why-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
-
-/* Explanation Box (Hidden initially) */
-.explanation-box{
-  background:var(--transparent-bg);border:1px solid #d1d5db;border-radius:8px;
-  padding:16px;margin-top:16px;font-size:0.85rem;color:#4b5563;
-  display:none; /* Toggled by JS */
-}
-.explanation-box.show{display:block;animation:fadeIn 0.3s}
-.explanation-box strong{color:var(--primary)}
-
-@keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-
-/* Tune Algorithm Section (Right Sidebar) */
-.algo-tuner{
-  background:var(--surface);border:1px solid var(--primary);border-radius:16px;
-  padding:32px;height:fit-content;position:sticky;top:40px;
-  box-shadow:0 10px 25px rgba(139,92,246,0.1);
-}
-.algo-title{
-  font-size:1.2rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;
-  color:var(--primary);
-}
-.algo-desc{font-size:0.85rem;color:var(--muted);margin-bottom:24px;line-height:1.5}
-
-/* Sliders */
-.slider-group{margin-bottom:24px}
-.slider-label{display:flex;justify-content:space-between;font-weight:600;font-size:0.9rem;margin-bottom:12px;color:var(--text)}
-.slider-input{
-  width:100%;appearance:none;height:6px;background:var(--border);border-radius:3px;
-  outline:none;
-}
-.slider-input::-webkit-slider-thumb{
-  appearance:none;width:20px;height:20px;border-radius:50%;
-  background:var(--primary);cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.2);
+.info-card p {
+  font-size: 0.75rem; /* Tiny */
+  color: #ccc;
+  line-height: 1.4;
+  font-weight: 300;
 }
 
-.save-btn{
-  width:100%;padding:12px;background:var(--text);color:#fff;border:none;border-radius:8px;
-  font-weight:600;cursor:pointer;transition:background 0.2s;
+/* Demo Content (B) -> EXAGGERATED */
+.demo-content {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 0 40px;
+  overflow: hidden;
 }
-.save-btn:hover{background:var(--primary)}
 
-@media(max-width:900px){
-  .app-layout{grid-template-columns:1fr}
-  .algo-tuner{position:relative;top:0;order:-1;margin-bottom:24px}
+.giant-text {
+  font-size: 35vw; /* Absolutely MASSIVE */
+  line-height: 0.75;
+  text-transform: uppercase;
+  color: #fff;
+  mix-blend-mode: exclusion;
+  position: relative;
+  z-index: 5;
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  letter-spacing: -2vw;
+  margin-left: -2vw;
+  white-space: nowrap;
+}
+.giant-text:hover {
+  transform: skewX(-5deg) scale(1.05);
+  color: #ff3366;
 }
 
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:rgba(255,255,255,0.9);backdrop-filter:blur(8px);
-  border-top:1px solid var(--border);
-  display:flex;justify-content:center;align-items:center;gap:30px;
-  padding:16px 24px;z-index:9000;
+.tiny-subtext {
+  position: absolute;
+  bottom: 15vh;
+  right: 10vw;
+  width: 200px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.6rem;
+  color: #aaa;
+  line-height: 1.6;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.6;
+  transition: opacity 0.3s;
 }
-.bottom-nav a{text-decoration:none;color:var(--muted);font-weight:600;font-size:.85rem;text-transform:uppercase;transition:color 0.2s}
-.bottom-nav a:hover{color:var(--primary)}
+.tiny-subtext:hover { opacity: 1; color: #fff; }
+
+/* Background image wrapper for contrast */
+.bg-wrapper {
+  position: absolute;
+  top: 10%; right: 5%;
+  width: 40vw; height: 60vh;
+  background: url('https://images.unsplash.com/photo-1544928147-79a2dbc1f389?auto=format&fit=crop&w=800') center/cover;
+  filter: grayscale(100%);
+  z-index: 1;
+  transition: filter 0.5s;
+}
+.demo-content:hover .bg-wrapper {
+  filter: grayscale(0%);
+}
+
+/* Navigation (C) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 40px;
+  border-top: 1px solid #222;
+  z-index: 100;
+}
+.bottom-nav a {
+  color: #555;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.6rem; /* Tiny */
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 2px;
+  transition: color 0.3s;
+}
+.bottom-nav a:hover {
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .style-info { flex-direction: column; }
+  .style-info h1 { writing-mode: horizontal-tb; transform: none; font-size: 2rem; margin-bottom: 20px;}
+  .info-grid { grid-template-columns: 1fr; }
+  .giant-text { font-size: 50vw; margin-top: 50px; }
+  .bg-wrapper { width: 100%; top: 50%; opacity: 0.3; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="cat">⚖️ 無障礙、包容性與道德設計</div>
-  <h1>#46 Algorithmic Transparency UI</h1>
-  <p class="desc">演算法透明度。過去，動態流（Feed）是一個神秘的黑盒子。在隱私與道德意識抬頭的今天，獨立社群與媒體開始在推薦系統中明確標示「為什麼你會看到這個內容」，並允許使用者透過直覺的滑桿系統，親自調控演算法的偏好權重，將資料控制權還給人類。</p>
+<header class="style-info">
+  <h1>#46 Exaggerated Hierarchy</h1>
+  
+  <div class="info-grid">
+    <div class="info-card">
+      <h4>📖 風格定義與視覺特徵</h4>
+      <p>將主標題字體無限放大至佔據整個螢幕的邊界，而次要的內文與導航則縮至極小，形成極端且戲劇性的比例對比。這種強制的視覺壓迫感能絕對主導使用者的閱讀動線。</p>
+    </div>
+    <div class="info-card">
+      <h4>🏢 適用產業與場景</h4>
+      <p>獨立電影與影集宣傳頁、高端且稀缺的房地產建案網頁</p>
+    </div>
+    <div class="info-card">
+      <h4>🌍 主要流行地區</h4>
+      <p>全球</p>
+    </div>
+  </div>
 </header>
 
-<main class="app-layout">
+<main class="demo-content" id="trackerArea">
+  <div class="bg-wrapper" id="imgBg"></div>
   
-  <div class="feed">
-    
-    <!-- Post 1 -->
-    <div class="post-card">
-      <button class="why-btn" onclick="toggleWhy('exp1')">ℹ️ Why am I seeing this?</button>
-      <div class="post-header">
-        <div class="avatar" style="background:linear-gradient(45deg, #10b981, #3b82f6)"></div>
-        <div>
-          <div class="post-author">Decentralized Web News</div>
-          <div class="post-handle">@d-web</div>
-        </div>
-      </div>
-      <div class="post-content">
-        Here are 10 new open-source protocols that are redefining how data ownership works in 2026. A massive shift from centralized massive platforms to individual control is underway.
-      </div>
-      
-      <div class="explanation-box" id="exp1">
-        <strong>Matched Algorithm:</strong><br>
-        1. You engaged (liked) 3 posts concerning <em>'Web3 & Protocol Design'</em> in the last 48 hours.<br>
-        2. Your <strong>'Discovery Weight'</strong> is set to 80%, pushing content from outside your direct following network.
-      </div>
-    </div>
-
-    <!-- Post 2 -->
-    <div class="post-card">
-      <button class="why-btn" onclick="toggleWhy('exp2')">ℹ️ Why am I seeing this?</button>
-      <div class="post-header">
-        <div class="avatar" style="background:linear-gradient(45deg, #f43f5e, #f59e0b)"></div>
-        <div>
-          <div class="post-author">Sarah Jenkins</div>
-          <div class="post-handle">@sjenkins</div>
-        </div>
-      </div>
-      <div class="post-content">
-        Finally finished organizing my CSS architecture for the new client dashboard. Pure fluid typography using clamp() is changing my life!
-      </div>
-      
-      <div class="explanation-box" id="exp2">
-        <strong>Matched Algorithm:</strong><br>
-        1. <strong>Direct Following:</strong> You follow @sjenkins.<br>
-        2. This post has a high engagement velocity within your network (trending chronologically).
-      </div>
-    </div>
-
+  <div class="giant-text" id="mainTitle">THE<br>END.</div>
+  
+  <div class="tiny-subtext">
+    A critically acclaimed indie thriller exploring the inevitable collapse of certainty. Coming to theaters tomorrow.<br><br>
+    [Click anywhere to purchase tickets]
   </div>
-
-  <aside class="algo-tuner">
-    <div class="algo-title">⚙️ Tune Your Feed Algorithm</div>
-    <div class="algo-desc">Take back control. Adjust the precise weights of what populates your timeline.</div>
-
-    <div class="slider-group">
-      <div class="slider-label"><span>Chronological (Time-based)</span><span id="v1">50%</span></div>
-      <input type="range" class="slider-input" min="0" max="100" value="50" oninput="document.getElementById('v1').innerText = this.value + '%'">
-    </div>
-
-    <div class="slider-group">
-      <div class="slider-label"><span>Followed Accounts Only</span><span id="v2">60%</span></div>
-      <input type="range" class="slider-input" min="0" max="100" value="60" oninput="document.getElementById('v2').innerText = this.value + '%'">
-    </div>
-
-    <div class="slider-group">
-      <div class="slider-label"><span>Outside Discovery</span><span id="v3">80%</span></div>
-      <input type="range" class="slider-input" min="0" max="100" value="80" oninput="document.getElementById('v3').innerText = this.value + '%'">
-    </div>
-
-    <button class="save-btn" onclick="alert('Algorithm preferences saved securely to your node.')">Apply Logic</button>
-  </aside>
-
 </main>
 
 <nav class="bottom-nav">
-  <a href="45.html">← PREV</a>
-  <a href="index.html">RETURN HOME</a>
-  <a href="47.html">NEXT →</a>
+  <a href="45.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="47.html">下一頁 →</a>
 </nav>
 
 <script>
-function toggleWhy(id) {
-  const el = document.getElementById(id);
-  if(el.classList.contains('show')){
-    el.classList.remove('show');
-  } else {
-    // hide others
-    document.querySelectorAll('.explanation-box').forEach(b => b.classList.remove('show'));
-    el.classList.add('show');
-  }
-}
+  // Interaction 1: Subtext follows mouse slightly
+  const subtext = document.querySelector('.tiny-subtext');
+  const trackerArea = document.getElementById('trackerArea');
+  
+  trackerArea.addEventListener('mousemove', (e) => {
+    const x = (window.innerWidth - e.pageX * 2) / 100;
+    const y = (window.innerHeight - e.pageY * 2) / 100;
+    subtext.style.transform = `translate(${x}px, ${y}px)`;
+  });
+
+  // Interaction 2: Image background parallax
+  const imgBg = document.getElementById('imgBg');
+  const mainTitle = document.getElementById('mainTitle');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    imgBg.style.transform = `translateY(${scrolled * 0.5}px)`;
+    mainTitle.style.transform = `translateX(${scrolled * -1}px)`;
+  });
 </script>
 </body>
 </html>

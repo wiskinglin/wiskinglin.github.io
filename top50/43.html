@@ -3,181 +3,290 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>#43 High Contrast Mode — 系統級高對比模式 | Top 50 UX/UI</title>
+<title>#43 Tactile Maximalism — 觸覺極繁主義 | Top 50 UX/UI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  /* Standard modern UI (Often criticized for low contrast grays) */
-  --bg-color: #f8fafc;
-  --text-main: #334155;
-  --text-muted: #94a3b8;
-  --primary: #3b82f6;
-  --border: #f1f5f9;
-  --input-bg: #fff;
-  --error: #ef4444;
-  --focus-ring: rgba(59,130,246,0.3);
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background-color: #0a0a0a;
+  color: #fff;
+  line-height: 1.6;
+  padding-bottom: 120px;
+  overflow-x: hidden;
+  /* Complex maximalist background */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(255,0,128,0.4), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(0,200,255,0.4), transparent 50%),
+    url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.15"/%3E%3C/svg%3E');
 }
 
-/* HIGH CONTRAST MODE OVERRIDES (Can also be triggered via @media (prefers-contrast: more)) */
-body.force-contrast{
-  --bg-color: #000000;
-  --text-main: #ffffff;
-  --text-muted: #ffff00; /* Yellow instead of gray */
-  --primary: #ffff00;
-  --border: #ffffff;
-  --input-bg: #000000;
-  --error: #ff0000; /* Red is still red but accompanied by text and thick borders */
-  --focus-ring: #ffffff;
+/* Style Info Header (A) */
+.style-info {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 60px 24px 40px;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+.style-info-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.cat {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #ff007f, #7f00ff);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(255,0,128,0.4);
+}
+.style-info h1 {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 900;
+  margin-bottom: 12px;
+  text-shadow: 0 10px 20px rgba(0,0,0,0.8);
+  background: linear-gradient(to right, #fff, #aaa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+.info-card {
+  background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: inset 0 2px 2px rgba(255,255,255,0.2), 0 10px 30px rgba(0,0,0,0.5);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: inset 0 2px 2px rgba(255,255,255,0.4), 0 20px 40px rgba(0,0,0,0.8);
+}
+.info-card h4 {
+  font-size: 0.9rem;
+  color: #ffb6ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.info-card p {
+  font-size: 0.95rem;
+  color: #ddd;
 }
 
-body{
-  font-family:'Inter','Noto Sans TC',sans-serif;
-  background-color:var(--bg-color);color:var(--text-main);
-  line-height:1.6;padding-bottom:120px;
-  transition:all 0.1s linear;
+/* Demo Content (B) */
+.demo-content {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 24px;
+}
+.demo-header {
+  font-size: 1rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #aaa;
+  margin-bottom: 40px;
 }
 
-.layout{max-width:800px;margin:60px auto;padding:0 24px;}
-.cat{
-  display:inline-block;padding:4px 12px;background:var(--primary);color:#fff;
-  border:2px solid transparent;font-weight:700;font-size:0.75rem;text-transform:uppercase;margin-bottom:16px;
-}
-body.force-contrast .cat{background:#000;color:var(--text-muted);border-color:var(--text-muted)}
-
-h1{font-size:2.5rem;margin-bottom:16px;font-weight:700;}
-.desc{font-size:1.1rem;color:var(--text-muted);margin-bottom:60px;line-height:1.8}
-
-/* The Demo Form */
-.form-panel{
-  background:var(--input-bg);padding:40px;border-radius:12px;
-  border:3px solid var(--border);
-  box-shadow:0 10px 30px rgba(0,0,0,0.05);
-}
-body.force-contrast .form-panel{border:4px solid var(--text-main);border-radius:0;box-shadow:none;}
-
-.form-title{font-size:1.4rem;margin-bottom:8px;font-weight:700}
-.form-desc{color:var(--text-muted);margin-bottom:32px;font-size:0.9rem}
-
-.form-group{margin-bottom:24px;}
-.form-label{display:block;font-weight:600;margin-bottom:8px;font-size:0.95rem}
-.form-input{
-  width:100%;padding:16px;border:1px solid #cbd5e1;border-radius:6px;
-  background:var(--input-bg);color:var(--text-main);font-size:1rem;font-family:inherit;
-  transition:all 0.2s;outline:none;
-}
-.form-input:focus{
-  border-color:var(--primary);box-shadow:0 0 0 4px var(--focus-ring);
-}
-body.force-contrast .form-input{
-  border:3px solid var(--text-main);border-radius:0;
-}
-body.force-contrast .form-input:focus{
-  border-style:dashed;box-shadow:none;
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
 }
 
-/* Error State Demo */
-.error-msg{
-  display:none;color:var(--error);font-size:0.85rem;margin-top:8px;font-weight:700;
-  align-items:center;gap:6px;
+/* Simulated Tactile Materials using CSS Gradients & Shadows */
+.material-box {
+  height: 400px;
+  border-radius: 30px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  align-items: flex-end;
+  padding: 30px;
 }
-.error-msg.show{display:flex}
-.form-group.has-error .form-input{border-color:var(--error)}
-body.force-contrast .form-group.has-error .form-input{
-  border:4px dashed var(--error);
+.material-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.4"/%3E%3C/svg%3E');
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 
-.submit-btn{
-  width:100%;background:var(--primary);color:#fff;border:none;border-radius:6px;
-  padding:16px;font-size:1.1rem;font-weight:700;cursor:pointer;
-  transition:opacity 0.2s;
+/* Metallic Brushed */
+.mat-1 {
+  background: linear-gradient(135deg, #d3c3b3 0%, #b8a390 25%, #d3c3b3 50%, #8b7355 75%, #b8a390 100%);
+  background-size: 200% 200%;
+  box-shadow: inset -10px -10px 20px rgba(0,0,0,0.5), inset 10px 10px 20px rgba(255,255,255,0.8), 0 20px 40px rgba(0,0,0,0.5);
 }
-.submit-btn:hover{opacity:0.9}
-body.force-contrast .submit-btn{
-  background:var(--text-muted);color:#000;border:3px solid var(--text-muted);border-radius:0;
-  text-transform:uppercase;letter-spacing:2px;
+/* Fur / Plush (Simulated via repeating radial gradients) */
+.mat-2 {
+  background-color: #ff007f;
+  background-image: radial-gradient(circle at center, rgba(0,0,0,0.1) 2px, transparent 3px);
+  background-size: 10px 10px;
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5), 0 20px 40px rgba(255,0,127,0.3);
 }
-body.force-contrast .submit-btn:hover{background:#000;color:var(--text-muted)}
+/* Liquid / Slime */
+.mat-3 {
+  background: radial-gradient(circle at 30% 30%, #00ffff 0%, #0080ff 50%, #000080 100%);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  box-shadow: inset 20px 20px 30px rgba(255,255,255,0.6), inset -20px -20px 30px rgba(0,0,0,0.8), 0 20px 40px rgba(0,255,255,0.2);
+  animation: morph 8s ease-in-out infinite alternate;
+}
+@keyframes morph {
+  0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+}
 
-/* OS Feature Toggle Toolbar */
-.toolbar{
-  position:fixed;top:0;left:0;right:0;background:var(--bg-color);
-  border-bottom:2px solid var(--text-main);padding:16px 24px;
-  display:flex;justify-content:space-between;align-items:center;z-index:9000;
+.material-title {
+  position: relative;
+  z-index: 5;
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-style: italic;
+  font-weight: 900;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.4s;
 }
-.toggle-btn{
-  background:transparent;border:2px solid var(--text-main);color:var(--text-main);
-  padding:8px 16px;font-weight:700;cursor:pointer;font-family:inherit;
-  display:flex;align-items:center;gap:8px;
+.material-box:hover .material-title {
+  transform: translateY(0);
+  opacity: 1;
 }
-body.force-contrast .toggle-btn{background:var(--text-muted);color:#000;}
 
-.bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:var(--bg-color);border-top:2px solid var(--text-main);
-  display:flex;justify-content:center;align-items:center;gap:30px;
-  padding:16px 24px;z-index:9000;
+.material-box:hover {
+  transform: scale(1.05) rotate(2deg);
+  z-index: 20;
 }
-.bottom-nav a{text-decoration:none;color:var(--text-main);font-weight:700;font-size:.85rem;text-transform:uppercase}
-.bottom-nav a:hover{text-decoration:underline}
+
+/* Navigation (C) */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(10,10,10,0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 16px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  z-index: 100;
+}
+.bottom-nav a {
+  color: #aaa;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: background 0.3s, color 0.3s;
+}
+.bottom-nav a:hover {
+  background: #fff;
+  color: #000;
+}
+
+@media (max-width: 900px) {
+  .gallery-grid { grid-template-columns: 1fr; }
+  .material-box { height: 300px; border-radius: 20px; }
+}
 </style>
 </head>
 <body>
 
-<div class="toolbar">
-  <div style="font-weight:700">OS Simulation</div>
-  <button class="toggle-btn" id="hcToggle">🌓 Toggle High Contrast</button>
-</div>
-
-<main class="layout">
-  <div class="cat">♿ 包容性與道德設計</div>
-  <h1>#43 Natively High Contrast</h1>
-  <p class="desc">現代 SaaS 不只提供暗黑模式 (Dark Mode)，還要能原生偵測並完美適配 Windows/macOS 的「高對比設定 (prefers-contrast: more)」。這意味著設計必須移除依靠低對比灰色文字帶來的層次感，並且不能僅靠「紅色邊框」來表示錯誤（必須有極粗的標線與文字標籤），以保障色盲或弱視族群的工作權利。</p>
-
-  <div class="form-panel">
-    <div class="form-title">Enter Transaction Details</div>
-    <div class="form-desc" id="formSub">Please fill out the required fields below.</div>
-
-    <div class="form-group has-error">
-      <label class="form-label" id="lblAmount">Transfer Amount <span style="color:var(--error)">*</span></label>
-      <input type="text" class="form-input" value="100,000" id="inpAmount">
-      <div class="error-msg show">
-        <!-- SVG icon critical for colorblindness when combined with color -->
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-        [Error]: Exceeds daily transfer limit of 50,000.
+<header class="style-info">
+  <div class="style-info-inner">
+    <div class="cat">⚡ 特別材質、反叛與情感化</div>
+    <h1>#43 — Tactile Maximalism</h1>
+    
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>📖 風格定義與視覺特徵</h4>
+        <p>結合 3D 渲染技術，在平面的網頁上呈現極度逼真且誇張的材質（如流動的黏液、蓬鬆的皮草、粗糙的金屬拉絲）。在擁擠且色彩斑斕的畫面中，創造出令人無法忽視的強烈觸覺錯覺。</p>
+      </div>
+      <div class="info-card">
+        <h4>🏢 適用產業與場景</h4>
+        <p>實驗性數位藝術展演、先鋒高級時尚品牌、潮流美妝</p>
+      </div>
+      <div class="info-card">
+        <h4>🌍 主要流行地區</h4>
+        <p>美國</p>
       </div>
     </div>
+  </div>
+</header>
 
-    <div class="form-group">
-      <label class="form-label">Recipient Account</label>
-      <input type="text" class="form-input" placeholder="e.g. 1234-5678-9012">
+<main class="demo-content">
+  <div class="demo-header">▼ DEMO: AVANT-GARDE FASHION COLLECTION</div>
+  
+  <div class="gallery-grid">
+    <div class="material-box mat-1" id="mat1">
+      <div class="material-title">Gilded Armor</div>
     </div>
-
-    <button class="submit-btn" onclick="alert('Proceeding...')">Proceed Transfer</button>
+    <div class="material-box mat-2" id="mat2">
+      <div class="material-title">Neon Velvet</div>
+    </div>
+    <div class="material-box mat-3" id="mat3">
+      <div class="material-title">Liquid Glass</div>
+    </div>
   </div>
 </main>
 
 <nav class="bottom-nav">
-  <a href="42.html">← PREV</a>
-  <a href="index.html">RETURN HOME</a>
-  <a href="44.html">NEXT →</a>
+  <a href="42.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="44.html">下一頁 →</a>
 </nav>
 
 <script>
-const toggle = document.getElementById('hcToggle');
-const body = document.body;
+  // Interaction 1: Moving metallic gradient on mousemove
+  const mat1 = document.getElementById('mat1');
+  mat1.addEventListener('mousemove', (e) => {
+    const rect = mat1.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    mat1.style.backgroundPosition = `${x}% ${y}%`;
+  });
+  mat1.addEventListener('mouseleave', () => {
+    mat1.style.backgroundPosition = 'center';
+  });
 
-// Also detect system preference automatically
-window.matchMedia('(prefers-contrast: more)').addEventListener('change', e => {
-  if(e.matches) body.classList.add('force-contrast');
-});
-
-// Manual override
-toggle.addEventListener('click', () => {
-  body.classList.toggle('force-contrast');
-});
+  // Interaction 2: Interactive squish effect built over morphing shape
+  const mat3 = document.getElementById('mat3');
+  mat3.addEventListener('mousedown', () => {
+    mat3.style.transform = 'scale(0.9) skew(5deg)';
+    mat3.style.filter = 'brightness(1.2)';
+  });
+  mat3.addEventListener('mouseup', () => {
+    mat3.style.transform = 'scale(1.05) rotate(2deg)';
+    mat3.style.filter = 'brightness(1)';
+  });
 </script>
 </body>
 </html>
