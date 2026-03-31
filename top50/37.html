@@ -21,10 +21,10 @@ body{
 
 /* Info overlay (always visible in pure web demo context) */
 .style-info{
-  position:absolute;top:20px;left:20px;z-index:100;background:rgba(15,23,42,0.8);
+  position:absolute;top:70px;left:20px;z-index:100;background:rgba(15,23,42,0.8);
   padding:20px;border-radius:12px;max-width:400px;backdrop-filter:blur(10px);
   border:1px solid rgba(255,255,255,0.1);
-  transform:translateY(calc(-100% - 20px));
+  transform:translateY(calc(-100% - 70px));
   transition:transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .style-info.show{transform:translateY(0)}
@@ -123,7 +123,7 @@ body{
 }
 .voice-text{
   margin-top:40px;font-size:2rem;font-weight:300;letter-spacing:1px;
-  background:linear-gradient(90deg, #fff, var(--text-sec));-webkit-background-clip:text;color:transparent;
+  background:linear-gradient(90deg, #fff, var(--text-sec));-webkit-background-clip:text;background-clip:text;color:transparent;
 }
 
 @media(max-width:768px){
@@ -142,7 +142,7 @@ body{
 <body>
 
 <div class="info-toggle" id="btnInfo">Style Info ℹ️</div>
-<div class="style-info" id="infoPanel">
+<div class="style-info show" id="infoPanel">
   <div class="cat">🤖 AI 生成、動態與微互動</div>
   <h1>#37 Multimodal Interfaces</h1>
   
@@ -220,7 +220,7 @@ body{
 <script>
 // Info toggle
 const infoPanel = document.getElementById('infoPanel');
-let infoOpen = false;
+let infoOpen = true;
 document.getElementById('btnInfo').addEventListener('click', () => {
   infoOpen = !infoOpen;
   if(infoOpen) {

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#53 Interactive Shoppable Lookbook — 動態 Lookbook 與熱點導購 | Top 50 UX/UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* Top 50 Base */
+        body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding-bottom: 100px; background: #fafafa; }
+        .style-info { max-width: 1000px; margin: 40px auto; padding: 24px; }
+        .cat { display: inline-block; padding: 6px 16px; border-radius: 20px; background: #e11d48; color: white; font-size: .8rem; font-weight: bold; margin-bottom: 20px; }
+        .style-info h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 12px; }
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-top: 24px; }
+        .info-card { background: white; padding: 24px; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .info-card h4 { font-size: 0.8rem; color: #e11d48; text-transform: uppercase; margin-bottom: 8px; }
+        .info-card p { font-size: 0.9rem; line-height: 1.6; }
+        
+        /* Nav */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); color: white; display: flex; justify-content: center; gap: 20px; padding: 16px; z-index: 9999; }
+        .bottom-nav a { color: white; text-decoration: none; font-size: 0.9rem; padding: 8px 16px; border-radius: 8px; transition: background 0.2s; }
+        .bottom-nav a:hover { background: rgba(255,255,255,0.2); }
+
+        /* Demo Custom Styles */
+        .demo-container {
+            position: relative;
+            width: 100%;
+            height: 800px;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+        }
+        .font-serif-tc { font-family: 'Noto Serif TC', serif; }
+        .hotspot-ring { animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.8; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+        #product-drawer { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease; }
+        .drawer-hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
+        .drawer-visible { transform: translateX(0); opacity: 1; pointer-events: auto; }
+        .hero-bg { transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .zoomed-in { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+<header class="style-info">
+    <div class="cat">🌟 特刊策展與前衛編輯風格</div>
+    <h1>#53 — Interactive Shoppable Lookbook</h1>
+    <p>動態 Lookbook 與熱點導購</p>
+    <div class="info-grid">
+        <div class="info-card">
+            <h4>📖 風格定義與視覺特徵</h4>
+            <p>將傳統實體雜誌的 Lookbook 轉換為數位互動場景。以全螢幕高畫質滿版影像為主體，散佈脈衝互動熱點。點擊後透過優雅的毛玻璃側邊欄揭露商品資訊，完成無縫的「展示到導購」體驗。</p>
+        </div>
+        <div class="info-card">
+            <h4>🏢 適用產業與場景</h4>
+            <p>奢華時尚選品店、戶外機能服飾、美妝保養新品發布</p>
+        </div>
+        <div class="info-card">
+            <h4>🌍 主要流行地區</h4>
+            <p>全球</p>
+        </div>
+    </div>
+</header>
+
+<main class="demo-container max-w-[1400px] mx-auto shadow-2xl relative select-none">
+    <nav class="absolute top-0 left-0 w-full z-40 p-6 md:p-10 flex justify-between items-center mix-blend-difference pointer-events-none">
+        <div class="text-2xl font-black tracking-tighter uppercase pointer-events-auto cursor-pointer">
+            G<span class="text-gray-400">Q</span><br><span class="text-sm tracking-widest font-normal">Lookbook</span>
+        </div>
+        <div class="hidden md:flex space-x-8 text-sm font-semibold tracking-widest uppercase pointer-events-auto">
+            <a href="#" class="hover:text-gray-400 transition">Editorial</a>
+            <a href="#" class="hover:text-gray-400 transition">Brands</a>
+            <a href="#" class="hover:text-gray-400 transition border-b border-white pb-1">Shop The Look</a>
+        </div>
+    </nav>
+
+    <img id="hero-image" src="https://picsum.photos/seed/gqhero/1600/900" alt="Tokyo Street Style" class="hero-bg absolute inset-0 w-full h-full object-cover object-center grayscale contrast-125 brightness-75">
+    <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/30"></div>
+
+    <div class="absolute bottom-10 left-6 md:bottom-20 md:left-20 z-10 pointer-events-none">
+        <p class="text-sm font-semibold tracking-[0.3em] uppercase mb-4 text-gray-300">Tokyo Issue / Vol. 42</p>
+        <h1 class="font-serif-tc text-5xl md:text-8xl font-black leading-[1.1] tracking-tight mb-4 drop-shadow-lg">
+            都心機能<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-gray-100 to-gray-500">GORPCORE</span>
+        </h1>
+        <p class="max-w-md text-sm md:text-base leading-relaxed text-gray-200 drop-shadow-md">
+            點擊畫面上的脈衝光點，探索本次特輯的裏原宿機能服飾單品，將東京街頭的防潑水美學無縫加入你的衣櫥。
+        </p>
+    </div>
+
+    <div id="hotspots-container" class="absolute inset-0 z-20 pointer-events-none"></div>
+
+    <aside id="product-drawer" class="drawer-hidden absolute top-0 right-0 h-full w-full md:w-[400px] z-50 bg-white/10 backdrop-blur-2xl border-l border-white/20 p-8 flex flex-col shadow-2xl">
+        <button onclick="closeDrawer()" class="absolute top-8 right-8 text-white hover:text-gray-300 transition-colors z-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <div id="drawer-content" class="flex-grow flex flex-col mt-12 overflow-y-auto pr-2">
+        </div>
+
+        <div class="mt-auto pt-6 border-t border-white/20">
+            <button class="w-full bg-white text-black py-4 font-bold tracking-widest uppercase hover:bg-gray-200 transition-colors flex justify-center items-center gap-2">
+                Add to Cart
+            </button>
+        </div>
+    </aside>
+</main>
+
+<nav class="bottom-nav">
+  <a href="52.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="54.html">下一頁 →</a>
+</nav>
+
+<script>
+    const lookbookData = [
+        {
+            id: 'item-jacket', x: 45, y: 35,
+            brand: 'NANAMICA', name: 'GORE-TEX Cruiser', price: '¥ 75,000',
+            description: '採用高階三層 GORE-TEX 面料，完美抵禦陣雨。寬鬆剪裁保留了 City Boy 慵懶感。',
+            image: 'https://picsum.photos/seed/nanamicajacket/600/800',
+            tags: ['Waterproof', 'Oversized', 'Navy']
+        },
+        {
+            id: 'item-pants', x: 52, y: 65,
+            brand: 'WTAPS', name: 'Jungle Cargo', price: '¥ 38,500',
+            description: '經典六口袋軍褲改良。重磅水洗，呈現古著褪色質感，工裝完美的平衡。',
+            image: 'https://picsum.photos/seed/wtapspants/600/800',
+            tags: ['Military', 'Olive Drab', 'Cotton']
+        },
+        {
+            id: 'item-shoes', x: 48, y: 88,
+            brand: 'VISVIM', name: 'FBT Lhamo Suede', price: '¥ 92,000',
+            description: '結合莫卡辛鞋與 EVA 避震中底的終極逸品。手工縫製鹿皮，呈現 Wabi-Sabi 工藝精神。',
+            image: 'https://picsum.photos/seed/visvimshoes/600/800',
+            tags: ['Handcrafted', 'Suede']
+        }
+    ];
+
+    const container = document.getElementById('hotspots-container');
+    const drawer = document.getElementById('product-drawer');
+    const drawerContent = document.getElementById('drawer-content');
+    const heroBg = document.getElementById('hero-image');
+
+    function initHotspots() {
+        lookbookData.forEach(item => {
+            const dotWrapper = document.createElement('div');
+            dotWrapper.className = 'absolute pointer-events-auto cursor-pointer group flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2';
+            dotWrapper.style.left = `${item.x}%`;
+            dotWrapper.style.top = `${item.y}%`;
+            dotWrapper.onclick = () => openDrawer(item);
+
+            const ring = document.createElement('div');
+            ring.className = 'absolute w-6 h-6 bg-white rounded-full hotspot-ring';
+            const core = document.createElement('div');
+            core.className = 'absolute w-3 h-3 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)] group-hover:scale-150 transition-transform duration-300';
+
+            dotWrapper.appendChild(ring);
+            dotWrapper.appendChild(core);
+            container.appendChild(dotWrapper);
+        });
+    }
+
+    function openDrawer(itemData) {
+        heroBg.classList.add('zoomed-in');
+        const tagsHtml = itemData.tags.map(tag =>
+            `<span class="px-3 py-1 border border-white/30 text-xs tracking-widest uppercase rounded-full">${tag}</span>`
+        ).join('');
+
+        drawerContent.innerHTML = `
+            <p class="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-2">${itemData.brand}</p>
+            <h2 class="font-serif-tc text-3xl font-bold leading-tight mb-2">${itemData.name}</h2>
+            <p class="text-xl font-light font-serif italic text-gray-300 mb-8">${itemData.price}</p>
+            <div class="w-full aspect-square bg-white/5 rounded-xl overflow-hidden mb-8 border border-white/10 relative group">
+                <img src="${itemData.image}" alt="${itemData.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 grayscale contrast-125">
+            </div>
+            <div class="flex flex-wrap gap-2 mb-8">${tagsHtml}</div>
+            <p class="text-sm leading-relaxed text-gray-300 font-light">${itemData.description}</p>
+        `;
+
+        drawer.classList.remove('drawer-hidden');
+        drawer.classList.add('drawer-visible');
+    }
+
+    function closeDrawer() {
+        heroBg.classList.remove('zoomed-in');
+        drawer.classList.remove('drawer-visible');
+        drawer.classList.add('drawer-hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', initHotspots);
+</script>
+</body>
+</html>
