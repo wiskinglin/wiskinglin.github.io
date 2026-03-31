@@ -14,20 +14,108 @@
         #theme-menu {
             position: fixed;
             top: 10px;
-            right: 10px;
-            z-index: 9999;
+            right: -360px; /* Hide off-screen by default */
+            z-index: 10001; /* Show above toggle button */
             background: rgba(255,255,255,0.92);
             backdrop-filter: blur(8px);
             padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: -5px 10px 30px rgba(0,0,0,0.15); /* Shadow on the left */
             font-family: 'Inter', sans-serif;
             width: 300px;
             max-height: 90vh;
             overflow-y: auto;
             border: 1px solid rgba(0,0,0,0.05);
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        #theme-menu h3 { margin: 0 0 15px 0; font-size: 16px; font-weight: 800; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; }
+        #theme-menu.is-open {
+            right: 10px;
+        }
+
+        /* Toggle Button */
+        #theme-menu-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 10000;
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #theme-menu-toggle:hover {
+            transform: scale(1.05);
+            background: #2563eb;
+        }
+
+        .theme-menu-header {
+            position: sticky;
+            top: -24px; /* match the 1.5rem padding */
+            margin-top: -24px;
+            padding-top: 24px;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            border-bottom: 2px solid #3b82f6;
+            flex-wrap: nowrap;
+            gap: 12px;
+        }
+        #theme-menu h3 { 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            font-size: 15px !important; 
+            font-weight: 800 !important; 
+            border: none !important; 
+            color: #1e293b !important;
+            font-family: 'Inter', sans-serif !important;
+            white-space: nowrap !important;
+            line-height: 1.2 !important;
+        }
+        #theme-menu h3::before, #theme-menu h3::after {
+            content: none !important;
+            display: none !important;
+        }
+
+        /* Close Button inside menu */
+        #theme-menu .close-menu-btn {
+            background: transparent !important;
+            border: none !important;
+            cursor: pointer !important;
+            font-size: 18px !important;
+            color: #64748b !important;
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px !important;
+            min-height: 32px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 6px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            transition: all 0.2s !important;
+            box-shadow: none !important;
+        }
+        #theme-menu .close-menu-btn:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+            transform: scale(1.1) !important;
+        }
         .category-label { margin: 15px 0 5px 0; font-size: 11px; font-weight: 800; text-transform: uppercase; color: #666; letter-spacing: 1px; }
         #theme-menu button {
             display: block;
@@ -67,8 +155,16 @@
 
     <div id="theme-id-badge">ACTIVE THEME: DEFAULT</div>
 
+    <!-- Toggle Button visible when menu is hidden -->
+    <button id="theme-menu-toggle" onclick="toggleThemeMenu()">
+        🎨 <span>選擇風格</span>
+    </button>
+
     <div id="theme-menu">
-        <h3>🏛️ Museum Style Gallery</h3>
+        <div class="theme-menu-header">
+            <h3>🏛️ Museum Style Gallery</h3>
+            <button class="close-menu-btn" onclick="toggleThemeMenu(false)" aria-label="Close menu">✕</button>
+        </div>
         <button onclick="changeTheme('default')" id="btn-default">00. Default System</button>
         
         <div class="category-label">Minimalism & Structured</div>
@@ -254,10 +350,48 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
+        function toggleThemeMenu(forceState) {
+            const menu = document.getElementById('theme-menu');
+            const toggle = document.getElementById('theme-menu-toggle');
+            
+            if (typeof forceState === 'boolean') {
+                if(forceState) menu.classList.add('is-open');
+                else menu.classList.remove('is-open');
+            } else {
+                menu.classList.toggle('is-open');
+            }
+            
+            const isOpen = menu.classList.contains('is-open');
+            if (toggle) {
+                toggle.style.opacity = isOpen ? '0' : '1';
+                toggle.style.pointerEvents = isOpen ? 'none' : 'auto';
+                toggle.style.transform = isOpen ? 'translateX(20px)' : 'none';
+            }
+        }
+
         // Initial state
         window.addEventListener('load', () => {
             const saved = localStorage.getItem('museum-theme') || 'default';
             updateUI(saved);
+
+            // Auto-open menu briefly to show users it exists
+            setTimeout(() => {
+                toggleThemeMenu(true);
+            }, 100);
+            
+            // Allow auto-collapse after 3 seconds
+            let autoCloseTimer = setTimeout(() => {
+                toggleThemeMenu(false);
+            }, 3000); 
+            
+            // Cancel auto-collapse if user hovers over the menu or clicks
+            const menu = document.getElementById('theme-menu');
+            menu.addEventListener('mouseenter', () => {
+                clearTimeout(autoCloseTimer);
+            });
+            menu.addEventListener('click', () => {
+                clearTimeout(autoCloseTimer);
+            });
         });
     </script>
 </body>
