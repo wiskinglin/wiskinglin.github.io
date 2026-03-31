@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026-2027 台灣汽車市場日系品牌戰略剖析</title>
-    <!-- Tailwind CSS for rapid modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     
@@ -165,11 +164,21 @@
             body.portrait-mode { @page { size: A4 portrait; margin: 0; } }
             body.landscape-mode { @page { size: A4 landscape; margin: 0; } }
         }
+
+        /* 編輯模式的視覺提示 */
+        .document-wrapper[contenteditable="true"] {
+            outline: 3px dashed var(--brand-accent);
+            outline-offset: 15px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        .document-wrapper[contenteditable="true"]:focus {
+            outline: 3px solid var(--brand-accent);
+        }
     </style>
 </head>
 <body class="portrait-mode">
 
-    <!-- Control Panel -->
     <div class="control-panel no-print">
         <button id="btn-portrait" class="btn active" onclick="setMode('portrait')">
             <span>📄</span> 直式版型
@@ -177,6 +186,11 @@
         <button id="btn-landscape" class="btn" onclick="setMode('landscape')">
             <span>📺</span> 橫式版型
         </button>
+        
+        <button id="btn-edit" class="btn text-blue-600 border-blue-200 hover:bg-blue-50" onclick="toggleEditMode()">
+            <span>✏️</span> 編輯內容
+        </button>
+
         <button class="btn !bg-slate-900 !text-white !border-slate-900 hover:!bg-slate-800" onclick="window.print()">
             <span>🖨️</span> 輸出 PDF
         </button>
@@ -184,7 +198,6 @@
 
     <div class="document-wrapper">
 
-        <!-- Page 1: Cover & Exec Summary -->
         <section class="page-container flex flex-col justify-center">
             <div class="mb-8">
                 <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-bold tracking-wider mb-4">INDUSTRY REPORT</span>
@@ -226,7 +239,6 @@
             </div>
         </section>
 
-        <!-- Page 2: Table Overview -->
         <section class="page-container">
             <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-2">日系品牌主力車型與戰略動能總覽</h2>
             <p class="text-slate-600 mb-4">為了清晰勾勒各車廠的戰略藍圖，下表橫向對比各大日系車廠在2026至2027年間，針對台灣市場的國產與進口重點新車預測、預估價格帶以及新能源動力主軸的差異化佈局。</p>
@@ -306,7 +318,6 @@
             </div>
         </section>
 
-        <!-- Page 3: Macro Environment (Part 1) -->
         <section class="page-container">
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">總體經濟與政策法規環境深度剖析 (一)</h2>
@@ -314,7 +325,6 @@
             </div>
 
             <div class="grid-adaptive">
-                <!-- CAFE Section -->
                 <div class="card flex flex-col h-full">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="bg-blue-100 text-blue-800 p-2 rounded">🍃</span>
@@ -326,7 +336,6 @@
                     </div>
                 </div>
 
-                <!-- Local Content Rate Section -->
                 <div class="card flex flex-col h-full">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="bg-orange-100 text-orange-800 p-2 rounded">⚙️</span>
@@ -340,14 +349,12 @@
             </div>
         </section>
 
-        <!-- Page 4: Macro Environment (Part 2) -->
         <section class="page-container">
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">總體經濟與政策法規環境深度剖析 (二)</h2>
             </div>
 
             <div class="grid-adaptive">
-                <!-- Subsidy & Tax Section -->
                 <div class="card flex flex-col h-full col-span-1">
                     <div class="flex items-center gap-2 mb-3">
                         <span class="bg-red-100 text-red-800 p-2 rounded">💰</span>
@@ -365,7 +372,6 @@
             </div>
         </section>
 
-        <!-- Page 5: Toyota / Lexus -->
         <section class="page-container">
             <div class="flex justify-between items-end border-b pb-4 mb-6">
                 <div>
@@ -397,7 +403,6 @@
             </div>
         </section>
 
-        <!-- Page 6: Honda -->
         <section class="page-container">
             <div class="flex justify-between items-end border-b pb-4 mb-6">
                 <div>
@@ -428,7 +433,6 @@
             </div>
         </section>
 
-        <!-- Page 7: Nissan -->
         <section class="page-container">
             <div class="flex justify-between items-end border-b pb-4 mb-6">
                 <div>
@@ -460,7 +464,6 @@
             </div>
         </section>
 
-        <!-- Page 8: Mazda -->
         <section class="page-container">
             <div class="flex justify-between items-end border-b pb-4 mb-6">
                 <div>
@@ -494,7 +497,6 @@
             </div>
         </section>
 
-        <!-- Page 9: Suzuki -->
         <section class="page-container">
             <div class="flex justify-between items-end border-b pb-4 mb-6">
                 <div>
@@ -528,7 +530,6 @@
             </div>
         </section>
 
-        <!-- Page 10: Conclusion & Dual Strategy -->
         <section class="page-container flex flex-col">
             <h2 class="text-2xl font-bold text-slate-800 mb-4 border-b pb-2">戰略總結：雙軌策略的深層意涵</h2>
             
@@ -560,7 +561,6 @@
             </div>
         </section>
 
-        <!-- Page 11: References -->
         <section class="page-container text-sm text-slate-500">
             <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">引用的著作</h2>
             <div class="grid-adaptive landscape-grid-2">
@@ -595,7 +595,6 @@
 
     </div>
 
-    <!-- Dynamic JS for Mode Switching -->
     <script>
         function setMode(mode) {
             const body = document.body;
@@ -615,6 +614,33 @@
             }
             
             // Note: The @media print size is driven by these body classes in the CSS.
+        }
+
+        // 切換編輯模式的函數
+        let isEditing = false;
+        function toggleEditMode() {
+            isEditing = !isEditing;
+            const wrapper = document.querySelector('.document-wrapper');
+            const btnEdit = document.getElementById('btn-edit');
+
+            if (isEditing) {
+                // 開啟編輯
+                wrapper.setAttribute('contenteditable', 'true');
+                wrapper.focus();
+                
+                // 改變按鈕外觀為「完成」狀態
+                btnEdit.classList.add('!bg-blue-600', '!text-white', '!border-blue-600');
+                btnEdit.classList.remove('text-blue-600', 'border-blue-200', 'hover:bg-blue-50');
+                btnEdit.innerHTML = '<span>💾</span> 結束編輯';
+            } else {
+                // 關閉編輯
+                wrapper.setAttribute('contenteditable', 'false');
+                
+                // 恢復按鈕原本外觀
+                btnEdit.classList.remove('!bg-blue-600', '!text-white', '!border-blue-600');
+                btnEdit.classList.add('text-blue-600', 'border-blue-200', 'hover:bg-blue-50');
+                btnEdit.innerHTML = '<span>✏️</span> 編輯內容';
+            }
         }
     </script>
 </body>
