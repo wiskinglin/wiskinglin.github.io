@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣連鎖超商咖啡市場競爭動態解析</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts: Noto Sans TC (內文) & Inter (數字與英文) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        },
+                        dark: '#0f172a'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- 核心排版與列印規範 (Critical Rules) --- */
+        body {
+            background-color: #f3f4f6; /* 編輯模式底色 */
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 橫式 A4 滿版優化 */
+        .a4-landscape {
+            width: 297mm;
+            min-height: 210mm;
+            margin: 2rem auto;
+            background: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            
+            /* 斷頁防護 */
+            page-break-after: always;
+            break-inside: avoid;
+            
+            /* Flex 延展撐開 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15mm 20mm;
+            box-sizing: border-box;
+        }
+
+        /* 第一頁的特殊漸層背景 */
+        .cover-page {
+            background: radial-gradient(circle at top right, #eff6ff 0%, #ffffff 50%, #f8fafc 100%);
+        }
+
+        /* 列印引擎強制對應 */
+        @media print {
+            body {
+                background-color: transparent;
+                margin: 0;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            .a4-landscape {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                width: 297mm;
+                height: 210mm; /* 強制固定高度防溢出 */
+                min-height: 210mm;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            .no-print {
+                display: none !important;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* 編輯模式視覺防呆 */
+        .document-wrapper[contenteditable="true"] .editable-block {
+            outline: 2px dashed #3b82f6;
+            outline-offset: 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: text;
+        }
+        .document-wrapper[contenteditable="true"] .editable-block:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        /* 微型裝飾與陰影 */
+        .soft-shadow {
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.08);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- 多功能控制面板 (Control Panel) -->
+    <div class="no-print fixed top-6 right-6 z-50 glass-panel px-4 py-3 rounded-2xl soft-shadow flex items-center gap-3">
+        <button id="btn-edit" onclick="toggleEdit()" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors border border-gray-200 shadow-sm text-sm">
+            <span>✏️</span> <span id="text-edit">編輯內容</span>
+        </button>
+        <button onclick="saveHTML()" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors border border-gray-200 shadow-sm text-sm">
+            <span>⬇️</span> 儲存網頁
+        </button>
+        <button onclick="window.print()" class="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-medium transition-colors shadow-lg shadow-brand-500/30 text-sm">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <!-- 文件主體容器 -->
+    <div class="document-wrapper" id="main-document" contenteditable="false">
+
+        <!-- ================= PAGE 1: 封面與摘要 ================= -->
+        <section class="a4-landscape cover-page">
+            <!-- 裝飾背景圖形 -->
+            <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-brand-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+            <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70"></div>
+            
+            <header class="relative z-10 pt-16 px-8 editable-block">
+                <div class="inline-block px-4 py-1.5 rounded-full bg-brand-100 text-brand-600 font-bold tracking-wider text-sm mb-6 uppercase">
+                    Game Theory Analysis Report
+                </div>
+                <h1 class="text-6xl font-black text-dark leading-tight tracking-tight mb-4">
+                    台灣連鎖超商咖啡市場<br>競爭動態解析
+                </h1>
+                <h2 class="text-3xl font-semibold text-brand-600 mt-2 tracking-wide">
+                    以 7-ELEVEN 與全家便利商店之賽局理論模型探討
+                </h2>
+            </header>
+
+            <main class="relative z-10 mt-auto px-8 pb-8 flex gap-8">
+                <div class="flex-1 bg-white p-8 rounded-3xl soft-shadow border border-gray-100 editable-block">
+                    <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-full bg-dark text-white flex items-center justify-center text-sm">01</span>
+                        產業宏觀背景與賽局框架
+                    </h3>
+                    <p class="text-gray-600 leading-relaxed text-lg">
+                        台灣現煮咖啡市場歷經二十年演變，已進入高度飽和的高原期。咖啡消費從「第三空間」體驗，轉變為具備高度剛性需求與高頻次特徵的日常消費品。憑藉破萬家門市優勢，連鎖超商成功將咖啡打造為帶動總體營收與會員黏著度的關鍵引擎。這使台灣咖啡市場結構演化為一個涵蓋多重價格帶的<strong class="text-brand-600">複雜寡占市場 (Oligopoly)</strong>。
+                    </p>
+                </div>
+                <div class="w-1/3 bg-dark text-white p-8 rounded-3xl soft-shadow flex flex-col justify-center editable-block">
+                    <div class="text-brand-100 text-sm mb-2 font-semibold tracking-wider uppercase">Research Scope</div>
+                    <div class="text-3xl font-black mb-6 leading-snug">雙雄對決：<br>高維度戰略對抗</div>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-center gap-3"><div class="w-1.5 h-1.5 rounded-full bg-brand-500"></div>大數據會員生態圈</li>
+                        <li class="flex items-center gap-3"><div class="w-1.5 h-1.5 rounded-full bg-brand-500"></div>數位支付基礎建設</li>
+                        <li class="flex items-center gap-3"><div class="w-1.5 h-1.5 rounded-full bg-brand-500"></div>全球供應鏈垂直整合</li>
+                        <li class="flex items-center gap-3"><div class="w-1.5 h-1.5 rounded-full bg-brand-500"></div>產品線精品化分級</li>
+                    </ul>
+                </div>
+            </main>
+        </section>
+
+        <!-- ================= PAGE 2: 資源稟賦實證數據 (Bento Box) ================= -->
+        <section class="a4-landscape">
+            <header class="px-8 pt-8 flex justify-between items-end editable-block border-b border-gray-200 pb-6 mb-8">
+                <div>
+                    <div class="text-brand-600 font-bold tracking-wider text-sm mb-2 uppercase">Chapter 02</div>
+                    <h2 class="text-3xl font-black text-dark">參與者資源稟賦與咖啡業務獨立估算</h2>
+                </div>
+                <p class="text-gray-500 text-sm text-right w-1/3 leading-relaxed">
+                    嚴格區分「母集團財務主體」與「咖啡單一業務子體」，並基於權威市場數據進行獨立量化估算，為賽局參數奠定實證基礎。
+                </p>
+            </header>
+
+            <main class="flex-1 px-8 pb-8 editable-block">
+                <!-- Data Cards Grid (Bento Box) -->
+                <div class="grid grid-cols-2 gap-8 h-full">
+                    
+                    <!-- 7-ELEVEN Card -->
+                    <div class="bg-gradient-to-br from-white to-gray-50 p-8 rounded-3xl border border-gray-200 soft-shadow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-black text-green-700">7-ELEVEN (CITY CAFE)</h3>
+                                <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">市場龍頭</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6 mb-6">
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">母集團營收 (2025)</div>
+                                    <div class="text-2xl font-black text-dark">3507 億<span class="text-sm font-normal text-gray-500 ml-1">TWD</span></div>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">預估咖啡營收</div>
+                                    <div class="text-2xl font-black text-dark">190 億<span class="text-sm font-normal text-gray-500 ml-1">TWD</span></div>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">全台實體門市</div>
+                                    <div class="text-2xl font-black text-dark">~7,000 <span class="text-sm font-normal text-gray-500 ml-1">家</span></div>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">OPENPOINT 會員</div>
+                                    <div class="text-2xl font-black text-brand-600">1950 萬</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-dark text-white p-5 rounded-2xl mt-auto">
+                            <strong class="block text-brand-100 mb-1 text-sm">核心戰略定位：</strong>
+                            出杯快、穩定度高、極致自動化。以極高「財務容錯率」支撐全方位生活服務圈。
+                        </div>
+                    </div>
+
+                    <!-- FamilyMart Card -->
+                    <div class="bg-gradient-to-br from-white to-gray-50 p-8 rounded-3xl border border-gray-200 soft-shadow flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-black text-blue-800">全家 (Let's Café)</h3>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">創新先驅</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-6 mb-6">
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">母集團地位</div>
+                                    <div class="text-2xl font-black text-dark">穩居第二</div>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">預估咖啡營收</div>
+                                    <div class="text-2xl font-black text-dark">110-120 億<span class="text-sm font-normal text-gray-500 ml-1">TWD</span></div>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">全台實體門市</div>
+                                    <div class="text-2xl font-black text-dark">~4,200 <span class="text-sm font-normal text-gray-500 ml-1">家</span></div>
+                                </div>
+                                <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                    <div class="text-gray-400 text-xs font-bold mb-1 uppercase">FaPoint 會員</div>
+                                    <div class="text-2xl font-black text-brand-600">1700 萬</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-blue-900 text-white p-5 rounded-2xl mt-auto">
+                            <strong class="block text-blue-200 mb-1 text-sm">核心戰略定位：</strong>
+                            口感厚實、推廣單品咖啡 (Single Origin)。率先端出高差異化與高端化精品策略。
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </section>
+
+        <!-- ================= PAGE 3: 靜態賽局 (收益矩陣) ================= -->
+        <section class="a4-landscape">
+            <header class="px-8 pt-8 editable-block">
+                <div class="text-brand-600 font-bold tracking-wider text-sm mb-2 uppercase">Chapter 03</div>
+                <h2 class="text-3xl font-black text-dark border-b border-gray-200 pb-4 mb-6">完全訊息靜態賽局：產品線精品化戰略</h2>
+            </header>
+
+            <main class="flex-1 px-8 pb-8 flex gap-10 editable-block">
+                <!-- 說明區 -->
+                <div class="w-[45%] flex flex-col justify-center">
+                    <p class="text-gray-600 leading-relaxed text-lg mb-6">
+                        市場進入高原期，企業若僅依賴物理展店將引發「互相蠶食效應 (Cannibalization)」。成長引擎必須轉向<strong class="text-dark">「客單價 (Ticket Size) 提升」</strong>。
+                    </p>
+                    <div class="bg-brand-50 border-l-4 border-brand-500 p-5 rounded-r-2xl mb-6">
+                        <h4 class="font-bold text-dark mb-2">優勢策略均衡 (Dominant Strategy Equilibrium)</h4>
+                        <p class="text-gray-700 text-sm leading-relaxed">
+                            全家洞察天花板，大膽發動「單品咖啡」戰略。7-ELEVEN 憑藉龐大資源啟動優勢策略全面反擊，大舉佈建「CITY PRIMA」。此一均衡狀態創造了正向外部性，將市場價格天花板成功推升至 80-90 元區間。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 矩陣視覺化 -->
+                <div class="w-[55%] flex items-center justify-center">
+                    <div class="w-full bg-white rounded-3xl soft-shadow border border-gray-100 p-6 overflow-hidden">
+                        <div class="text-center font-bold text-gray-500 mb-4 text-sm uppercase tracking-widest">風險調整後的戰略收益矩陣</div>
+                        
+                        <div class="grid grid-cols-[auto_1fr_1fr] grid-rows-[auto_1fr_1fr] gap-2 text-center">
+                            <!-- 空白左上 -->
+                            <div></div>
+                            <!-- 全家 Header -->
+                            <div class="bg-blue-50 text-blue-800 font-bold p-3 rounded-xl flex flex-col justify-center">全家 (F)<br><span class="text-xs font-normal">推廣精品 (Premium)</span></div>
+                            <div class="bg-blue-50 text-blue-800 font-bold p-3 rounded-xl flex flex-col justify-center">全家 (F)<br><span class="text-xs font-normal">維持標準 (Standard)</span></div>
+                            
+                            <!-- 7-11 Row 1 -->
+                            <div class="bg-green-50 text-green-800 font-bold p-3 rounded-xl flex items-center justify-center writing-mode-vertical">
+                                7-ELEVEN (7)<br><span class="text-xs font-normal">推廣精品 (Premium)</span>
+                            </div>
+                            <!-- Cell 1 (均衡點) -->
+                            <div class="bg-brand-600 text-white rounded-xl p-6 relative shadow-inner flex flex-col items-center justify-center">
+                                <div class="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full border-2 border-white shadow-sm">Nash Equilibrium</div>
+                                <span class="text-3xl font-black tracking-widest">(6, 5)</span>
+                                <span class="text-xs text-brand-200 mt-2 block">雙方皆獲取高端溢價</span>
+                            </div>
+                            <!-- Cell 2 -->
+                            <div class="bg-gray-50 border border-gray-100 rounded-xl p-6 flex items-center justify-center">
+                                <span class="text-2xl font-bold text-gray-700 tracking-widest">(8, 3)</span>
+                            </div>
+
+                            <!-- 7-11 Row 2 -->
+                            <div class="bg-green-50 text-green-800 font-bold p-3 rounded-xl flex items-center justify-center writing-mode-vertical">
+                                7-ELEVEN (7)<br><span class="text-xs font-normal">維持標準 (Standard)</span>
+                            </div>
+                            <!-- Cell 3 -->
+                            <div class="bg-gray-50 border border-gray-100 rounded-xl p-6 flex items-center justify-center">
+                                <span class="text-2xl font-bold text-gray-700 tracking-widest">(4, 7)</span>
+                            </div>
+                            <!-- Cell 4 -->
+                            <div class="bg-gray-100 border border-gray-200 rounded-xl p-6 flex items-center justify-center">
+                                <span class="text-2xl font-bold text-gray-500 tracking-widest">(5, 4)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- ================= PAGE 4: 混合策略 (促銷機率) ================= -->
+        <section class="a4-landscape">
+            <header class="px-8 pt-8 editable-block">
+                <div class="text-brand-600 font-bold tracking-wider text-sm mb-2 uppercase">Chapter 04</div>
+                <h2 class="text-3xl font-black text-dark border-b border-gray-200 pb-4 mb-6">混合策略賽局：促銷資源配置與防禦性邏輯</h2>
+            </header>
+
+            <main class="flex-1 px-8 pb-8 flex flex-col justify-between editable-block">
+                <div class="flex gap-8 mb-6">
+                    <div class="flex-1 bg-white p-6 rounded-3xl soft-shadow border border-gray-100">
+                        <h3 class="text-xl font-bold text-dark mb-3">促銷戰役的經濟學本質</h3>
+                        <p class="text-gray-600 leading-relaxed text-sm">
+                            咖啡促銷並非為了賺取單杯微薄利潤，而是扮演強大的<strong class="text-brand-600">「帶路雞 (Loss Leader)」</strong>角色。固定頻率的純策略促銷會引發嚴重的「遞延消費效應」，摧毀常態毛利。因此，必須引入隨機性。
+                        </p>
+                    </div>
+                    <div class="flex-1 bg-white p-6 rounded-3xl soft-shadow border border-gray-100">
+                        <h3 class="text-xl font-bold text-dark mb-3">數位應用之實務解讀</h3>
+                        <p class="text-gray-600 leading-relaxed text-sm">
+                            雙方高度依賴 App 進行<strong class="text-brand-600">「限時、限量、無預警」</strong>的隨機推播。這徹底癱瘓了消費者的預期心理，避免了惡性焦土戰，更實現了大數據驅動的千人千面精準打擊。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 text-white rounded-3xl p-8 shadow-xl flex items-center gap-10">
+                    <div class="w-1/2">
+                        <h4 class="text-xl font-bold mb-4 text-blue-300">期望值求解模型 (無異原理)</h4>
+                        <p class="text-gray-300 text-sm mb-4 leading-relaxed">
+                            假設 7-ELEVEN 以機率 <i class="font-serif">p</i> 發動促銷，全家必須在選擇「促銷」與「不促銷」的預期收益上達到完全相等，才能使其決策隨機化。
+                        </p>
+                        <div class="space-y-3 font-mono text-sm bg-slate-900 p-4 rounded-xl border border-slate-700">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">E<sub>F</sub>(Promo)</span>
+                                <span class="text-green-400">= 3p + 8(1 - p) = 8 - 5p</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">E<sub>F</sub>(NoPromo)</span>
+                                <span class="text-blue-400">= 1p + 6(1 - p) = 6 - 5p</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-1/2 border-l border-slate-600 pl-10">
+                        <div class="text-4xl text-brand-400 mb-2 font-black">8 - 5p = 6 - 5p</div>
+                        <div class="inline-block px-3 py-1 bg-red-500/20 text-red-300 text-xs font-bold rounded mt-2 border border-red-500/30">方程式無解 (不穩定邊界)</div>
+                        <p class="text-gray-400 text-sm mt-4 leading-relaxed">
+                            此極端參數設定下的無解，在學術上發出強烈訊號：<strong class="text-white">雙方在潛意識中極力避免同時陷入無底線的割喉戰。</strong>透過演算法將促銷資源錯開，保護總體營業利益率。
+                        </p>
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- ================= PAGE 5: 貝氏與動態賽局 (時間軸與決策樹) ================= -->
+        <section class="a4-landscape">
+            <header class="px-8 pt-8 editable-block">
+                <div class="text-brand-600 font-bold tracking-wider text-sm mb-2 uppercase">Chapter 05 & 06</div>
+                <h2 class="text-3xl font-black text-dark border-b border-gray-200 pb-4 mb-6">不完全訊息與動態防禦壁壘</h2>
+            </header>
+
+            <main class="flex-1 px-8 pb-8 flex gap-8 editable-block">
+                
+                <!-- 貝氏信號傳遞 -->
+                <div class="w-1/2 flex flex-col">
+                    <div class="bg-white p-6 rounded-3xl soft-shadow border border-gray-100 h-full">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="p-2 bg-purple-100 text-purple-600 rounded-lg text-xl">📡</span>
+                            <h3 class="text-xl font-bold text-dark">貝氏信號傳遞 (Signaling)</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed mb-6">
+                            面對供應鏈成本壓力，全家調漲售價並投入高昂成本升級設備與生豆。這成為一個<strong class="text-purple-600">「可信信號 (Credible Signal)」</strong>。7-ELEVEN 進行信念更新後，選擇跟進升級而非發動價格戰，維持了定價紀律。
+                        </p>
+                        <!-- Flowchart UI -->
+                        <div class="flex flex-col gap-2 mt-auto">
+                            <div class="bg-gray-50 border border-gray-200 p-3 rounded-xl flex items-center justify-between">
+                                <span class="text-xs font-bold text-gray-500">Nature (自然)</span>
+                                <span class="text-sm font-semibold text-dark">成本壓力 (Type H) / 溢價追逐 (Type L)</span>
+                            </div>
+                            <div class="flex justify-center text-gray-400">↓</div>
+                            <div class="bg-purple-50 border border-purple-200 p-3 rounded-xl flex items-center justify-between">
+                                <span class="text-xs font-bold text-purple-600">Player F 行動</span>
+                                <span class="text-sm font-semibold text-purple-800">高昂資本升級 + 調價 (發送可信信號)</span>
+                            </div>
+                            <div class="flex justify-center text-gray-400">↓</div>
+                            <div class="bg-green-50 border border-green-200 p-3 rounded-xl flex items-center justify-between">
+                                <span class="text-xs font-bold text-green-600">Player 7 反應</span>
+                                <span class="text-sm font-semibold text-green-800">信念更新 ➔ 同步升級 (維持紀律)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 動態賽局與寄杯 -->
+                <div class="w-1/2 flex flex-col">
+                    <div class="bg-white p-6 rounded-3xl soft-shadow border border-gray-100 h-full flex flex-col">
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="p-2 bg-orange-100 text-orange-600 rounded-lg text-xl">☕</span>
+                            <h3 class="text-xl font-bold text-dark">App 數位寄杯與轉換成本</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed mb-4">
+                            寄杯資金在經濟學上絕非「沉沒成本」，而是創造了巨大的<strong class="text-orange-600">「轉換成本 (Switching Costs)」</strong>與心理帳戶效應。此機制極大化了消費者的需求剛性。
+                        </p>
+                        
+                        <!-- Decision Tree UI -->
+                        <div class="mt-auto bg-gray-900 rounded-2xl p-5 text-white relative overflow-hidden">
+                            <div class="absolute right-0 top-0 w-32 h-32 bg-brand-500 rounded-full mix-blend-screen opacity-20 filter blur-xl"></div>
+                            <h4 class="text-sm font-bold text-brand-300 mb-3 border-b border-gray-700 pb-2">反向歸納法推演 (Backward Induction)</h4>
+                            <ul class="space-y-4 text-sm relative z-10">
+                                <li class="flex items-start gap-3">
+                                    <div class="w-6 h-6 rounded bg-gray-800 flex items-center justify-center font-bold text-brand-400 shrink-0">1</div>
+                                    <div>
+                                        <div class="font-bold text-gray-200">全家先動 (Node 1)</div>
+                                        <div class="text-gray-400 text-xs mt-1">選擇：大舉推動數位寄杯鎖客 <span class="text-brand-400 font-mono">(Launch)</span></div>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <div class="w-6 h-6 rounded bg-gray-800 flex items-center justify-center font-bold text-brand-400 shrink-0">2</div>
+                                    <div>
+                                        <div class="font-bold text-gray-200">7-11 後動 (Node 2)</div>
+                                        <div class="text-gray-400 text-xs mt-1">察覺護城河已成，價格戰無效。選擇：著重生態圈防禦 <span class="text-brand-400 font-mono">(Follow)</span></div>
+                                    </div>
+                                </li>
+                                <li class="pt-2 border-t border-gray-700 mt-2">
+                                    <div class="text-brand-400 font-bold text-center">子賽局完美均衡成立</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </section>
+
+        <!-- ================= PAGE 6: 綜合結論 ================= -->
+        <section class="a4-landscape">
+            <header class="px-8 pt-8 editable-block">
+                <div class="text-brand-600 font-bold tracking-wider text-sm mb-2 uppercase">Chapter 07</div>
+                <h2 class="text-3xl font-black text-dark border-b border-gray-200 pb-4 mb-6">綜合結論與寡占均衡展望</h2>
+            </header>
+
+            <main class="flex-1 px-8 pb-8 flex flex-col justify-center editable-block h-full">
+                <div class="grid grid-cols-2 gap-6 h-full">
+                    
+                    <!-- Conclusion 1 -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">1</div>
+                            <h3 class="font-bold text-lg text-dark">不對稱資源決定財務容錯率</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            以集團 3507 億總體戰力與近 2000 萬會員數據為後盾的「重資產、重供應鏈」型態，注定這是一個極端穩固的寡占結構，新品牌難以單憑低價顛覆。
+                        </p>
+                    </div>
+
+                    <!-- Conclusion 2 -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold">2</div>
+                            <h3 class="font-bold text-lg text-dark">跨越紅海的優勢策略均衡</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            面對毛利觸頂，雙方皆採取精品化戰略（單品豆 vs CITY PRIMA），透過非價格競爭拉高產業天花板，在不引發割喉戰下極大化總利潤。
+                        </p>
+                    </div>
+
+                    <!-- Conclusion 3 -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">3</div>
+                            <h3 class="font-bold text-lg text-dark">混合策略與信號維持紀律</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            運用 App 實施無預警隨機促銷癱瘓預期心理；面對通膨，則以實質設備升級發送「可信信號」，讓對手進行信念更新，溫和消化成本壓力。
+                        </p>
+                    </div>
+
+                    <!-- Conclusion 4 -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col justify-center">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold">4</div>
+                            <h3 class="font-bold text-lg text-dark">數位寄杯構築完美防禦壁壘</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed">
+                            數位跨店寄杯透過預收帳款創造極高「轉換成本」，成為穩固的子賽局完美均衡，徹底將競爭維度昇華為「大數據點數生態圈」的終極對決。
+                        </p>
+                    </div>
+
+                </div>
+            </main>
+            
+            <footer class="px-8 pb-4 text-center text-xs text-gray-400 no-print editable-block">
+                此報告版面由 Gamma 風格排版引擎自動生成，專為高品質橫向 PDF 列印設計。
+            </footer>
+        </section>
+
+    </div>
+
+    <!-- 互動控制面板與動態邏輯 (JS) -->
+    <script>
+        let isEditing = false;
+        
+        // 切換編輯模式
+        function toggleEdit() {
+            const doc = document.getElementById('main-document');
+            const btn = document.getElementById('btn-edit');
+            const textSpan = document.getElementById('text-edit');
+            
+            isEditing = !isEditing;
+            
+            if (isEditing) {
+                doc.setAttribute('contenteditable', 'true');
+                textSpan.innerText = '💾 結束編輯';
+                btn.classList.add('bg-blue-50', 'border-blue-300', 'text-blue-700');
+                btn.classList.remove('bg-white', 'text-gray-700');
+            } else {
+                doc.setAttribute('contenteditable', 'false');
+                textSpan.innerText = '編輯內容';
+                btn.classList.remove('bg-blue-50', 'border-blue-300', 'text-blue-700');
+                btn.classList.add('bg-white', 'text-gray-700');
+            }
+        }
+
+        // 儲存網頁另存新檔
+        function saveHTML() {
+            // 如果在編輯模式，先自動關閉以確保儲存乾淨的 HTML
+            const wasEditing = isEditing;
+            if (isEditing) {
+                toggleEdit();
+            }
+
+            // 取得當前 HTML 內容
+            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            // 建立下載連結並點擊
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 設定檔名 (加上當天日期)
+            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            a.download = `GameTheory_Report_${dateStr}.html`;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // 恢復編輯狀態
+            if (wasEditing) {
+                toggleEdit();
+            }
+        }
+    </script>
+</body>
+</html>

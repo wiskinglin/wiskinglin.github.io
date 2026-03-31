@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTC 2026 NVIDIA CEO Keynote Highlights</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        nvidia: '#76b900',
+                        brand: {
+                            primary: '#3b82f6',
+                            secondary: '#14b8a6',
+                            dark: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Core A4 Landscape Styles */
+        body {
+            background-color: #e2e8f0;
+            margin: 0;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .document-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .page-container {
+            width: 297mm;
+            height: 210mm;
+            min-height: 210mm;
+            background: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15mm 20mm;
+            box-sizing: border-box;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        /* Editing Mode */
+        .document-wrapper.is-editing .page-container {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 4px;
+            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1);
+        }
+
+        .document-wrapper.is-editing [contenteditable="true"]:hover {
+            background-color: rgba(241, 245, 249, 0.8);
+            border-radius: 4px;
+            cursor: text;
+        }
+
+        /* Print Engine Styles */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background-color: transparent;
+                margin: 0;
+                padding: 0;
+            }
+            .document-wrapper {
+                padding: 0;
+                gap: 0;
+                display: block;
+            }
+            .page-container {
+                width: 297mm;
+                height: 210mm;
+                min-height: 210mm;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none !important;
+                page-break-after: always;
+                break-inside: avoid;
+            }
+            .no-print { display: none !important; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* Decorative Elements */
+        .bg-glow {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .gradient-line {
+            height: 4px;
+            width: 80px;
+            background: linear-gradient(90deg, #3b82f6, #14b8a6);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Control Panel -->
+    <div class="fixed top-6 right-6 z-50 flex gap-3 backdrop-blur-xl bg-white/80 p-3 rounded-2xl shadow-lg border border-white/50 no-print">
+        <button id="btn-edit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-bold transition-colors">✏️ 編輯內容</button>
+        <button id="btn-save" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-bold transition-colors">⬇️ 儲存網頁</button>
+        <button id="btn-print" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-sm font-bold transition-colors">🖨️ 輸出 PDF</button>
+    </div>
+
+    <div id="content-root" class="document-wrapper">
+        
+        <!-- Page 1: Hero -->
+        <section class="page-container">
+            <div class="bg-glow -top-20 -left-20"></div>
+            <header class="z-10 flex justify-between items-center">
+                <div class="px-3 py-1 bg-nvidia/10 text-nvidia text-xs font-black tracking-widest rounded-full uppercase">Insight Report / GTC 2026</div>
+                <div class="text-slate-400 text-xs font-medium">MARCH 27, 2026</div>
+            </header>
+
+            <main class="z-10 flex flex-col items-center justify-center flex-grow text-center gap-6">
+                <div class="gradient-line mb-4"></div>
+                <h1 contenteditable="true" class="text-7xl font-black text-slate-900 leading-tight tracking-tighter">
+                    GTC 2026 NVIDIA CEO<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-emerald-500">主言金句與技術趨勢</span>
+                </h1>
+                <p contenteditable="true" class="text-xl text-slate-500 max-w-2xl font-medium leading-relaxed">
+                    見證公司從「晶片供應商」到「全球 AI 基礎設施操作系統」的終極轉型，解析 Agentic 與 Physical AI 的萬倍成長路徑。
+                </p>
+            </main>
+
+            <footer class="z-10 flex justify-between border-t border-slate-100 pt-6 items-end">
+                <div class="flex gap-10">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Author</span>
+                        <span contenteditable="true" class="text-sm font-bold text-slate-800">KLIO x AI</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Format</span>
+                        <span class="text-sm font-bold text-slate-800">Bento landscape A4</span>
+                    </div>
+                </div>
+                <div class="text-4xl font-black text-slate-100 tracking-tighter">PAGE 01</div>
+            </footer>
+        </section>
+
+        <!-- Page 2: Hardware (Bento Box) -->
+        <section class="page-container">
+            <header class="flex justify-between items-center mb-8">
+                <h2 contenteditable="true" class="text-2xl font-black text-slate-900">01 / Vera Rubin 架構：算力的量子級跳躍</h2>
+                <div class="h-px flex-grow mx-6 bg-slate-100"></div>
+                <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">Hardware Evolution</span>
+            </header>
+
+            <main class="grid grid-cols-12 gap-8 flex-grow">
+                <!-- col-5: Key Specs -->
+                <div class="col-span-5 flex flex-col gap-6">
+                    <div contenteditable="true" class="p-8 bg-slate-900 text-white rounded-3xl flex flex-col justify-between h-full group hover:shadow-2xl transition-all">
+                        <div>
+                            <div class="text-nvidia text-4xl font-black mb-2">4X</div>
+                            <div class="text-slate-400 text-sm font-bold uppercase tracking-widest">Inference Efficiency</div>
+                        </div>
+                        <p class="text-lg text-slate-300 leading-tight">Vera CPU 全新自研架构，專為 Agentic AI 的上下文切換進行硬體級加速。</p>
+                    </div>
+                    <div contenteditable="true" class="p-8 bg-blue-50 text-blue-900 rounded-3xl flex flex-col justify-center gap-2">
+                        <div class="text-3xl font-black">$1 Trillion</div>
+                        <div class="text-blue-600/70 text-xs font-bold uppercase tracking-widest">Projected AI Infrastructure Revenue</div>
+                    </div>
+                </div>
+                <!-- col-7: Analysis -->
+                <div contenteditable="true" class="col-span-7 bg-white border border-slate-100 p-10 rounded-3xl flex flex-col gap-6">
+                    <h3 class="text-xl font-bold text-slate-800">智算工廠的系統級優化</h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        黃仁勳正式發佈了繼 Blackwell 之後的下一代架構——Vera Rubin。這不僅僅是主頻的提升，而是針對「智算工廠」進行的系統級優化。
+                        Rubin AI System 專為極大規模動態代理網絡優化，預計 2025-2027 年間將主導全球資本支出。
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="w-1.5 h-1.5 mt-2 rounded-full bg-blue-500 shrink-0"></span>
+                            <span class="text-slate-700"><b>Vera CPU:</b> 全新自研架構，針對代理式 AI 動態指令集優化。</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="w-1.5 h-1.5 mt-2 rounded-full bg-blue-500 shrink-0"></span>
+                            <span class="text-slate-700"><b>Rubin Networking:</b> 支援超百萬節點規模的線速通訊。</span>
+                        </li>
+                    </ul>
+                </div>
+            </main>
+
+            <footer class="mt-8 flex justify-between items-center">
+                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">NVIDIA GTC 2026 Keynote Digest</div>
+                <div class="text-4xl font-black text-slate-100 tracking-tighter">PAGE 02</div>
+            </footer>
+        </section>
+
+        <!-- Page 3: Software (Double Column) -->
+        <section class="page-container">
+            <header class="flex justify-between items-center mb-8">
+                <h2 contenteditable="true" class="text-2xl font-black text-slate-900">02 / Agentic AI：從思考到行動的 OpenClaw 革命</h2>
+                <div class="h-px flex-grow mx-6 bg-slate-100"></div>
+                <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">Software Stack</span>
+            </header>
+
+            <main class="grid grid-cols-2 gap-8 flex-grow">
+                <div contenteditable="true" class="p-10 bg-gradient-to-br from-slate-50 to-white border border-slate-100 rounded-3xl flex flex-col gap-6">
+                    <div class="w-12 h-12 bg-blue-600 text-white flex items-center justify-center rounded-2xl font-black text-xl">L</div>
+                    <h3 class="text-2xl font-black text-slate-900">OpenClaw: <br><span class="text-blue-600">AI 時代的 Linux</span></h3>
+                    <p class="text-slate-600 leading-relaxed">
+                        NVIDIA 推出開源代理框架，定義了代理間通訊、任務拆解與自我修正的標準協定。
+                        這標誌著軟體架構從「請求-響應」轉向「目標-達成」的典範轉移。
+                    </p>
+                    <div class="mt-auto p-4 bg-white rounded-xl border border-slate-100 flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Ecosystem: 10M+ Agents</span>
+                    </div>
+                </div>
+                <div contenteditable="true" class="p-10 bg-slate-900 text-white rounded-3xl flex flex-col gap-6">
+                    <div class="w-12 h-12 bg-nvidia text-white flex items-center justify-center rounded-2xl font-black text-xl">S</div>
+                    <h3 class="text-2xl font-black text-white">NemoClaw: <br><span class="text-nvidia">企業級安全防線</span></h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        提供隱私與安全層，黃仁勳將其定義為「個人專屬 AI 的操作系統」。確保自主代理在企業環境下符合資安合規與合規預算。
+                    </p>
+                    <div class="mt-auto p-4 bg-slate-800 rounded-xl flex items-center gap-4">
+                        <div class="w-2 h-2 rounded-full bg-nvidia"></div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Enterprise Ready Architecture</span>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="mt-8 flex justify-between items-center">
+                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">NVIDIA GTC 2026 Keynote Digest</div>
+                <div class="text-4xl font-black text-slate-100 tracking-tighter">PAGE 03</div>
+            </footer>
+        </section>
+
+        <!-- Page 4: Robotics (Triple Column) -->
+        <section class="page-container">
+            <header class="flex justify-between items-center mb-8">
+                <h2 contenteditable="true" class="text-2xl font-black text-slate-900">03 / Physical AI：Cosmos 3 與物理世界</h2>
+                <div class="h-px flex-grow mx-6 bg-slate-100"></div>
+                <span class="text-xs font-bold text-slate-400 tracking-widest uppercase">Robotics & Industry</span>
+            </header>
+
+            <main class="grid grid-cols-3 gap-6 flex-grow">
+                <div contenteditable="true" class="p-8 bg-slate-50 rounded-3xl flex flex-col gap-4 border border-transparent hover:border-blue-200 transition-all">
+                    <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Cosmos 3<br>世界模型</h3>
+                    <div class="h-px w-full bg-slate-200"></div>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        統一視覺推理與動作模擬，讓機器人理解物理定律，而非僅僅模仿。
+                    </p>
+                    <div class="mt-auto text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full self-start">Reasoning Engine</div>
+                </div>
+                <div contenteditable="true" class="p-8 bg-slate-50 rounded-3xl flex flex-col gap-4 border border-transparent hover:border-emerald-200 transition-all">
+                    <h3 class="text-lg font-black text-slate-800 uppercase tracking-tight">Open Physical AI<br>Data Factory</h3>
+                    <div class="h-px w-full bg-slate-200"></div>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        開源物理 AI 數據工廠藍圖，顯著降低開發人形機器人門檻。
+                    </p>
+                    <div class="mt-auto text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full self-start">Open Source</div>
+                </div>
+                <div contenteditable="true" class="p-8 bg-slate-900 text-white rounded-3xl flex flex-col gap-4 hover:shadow-xl transition-all">
+                    <h3 class="text-lg font-black text-nvidia uppercase tracking-tight">Project<br>Space-1</h3>
+                    <div class="h-px w-full bg-slate-700"></div>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        為軌道衛星設計的航太級 AI 數據中心，將算力推向太空。
+                    </p>
+                    <div class="mt-auto text-xs font-bold text-white bg-slate-800 px-3 py-1 rounded-full self-start">New Frontier</div>
+                </div>
+            </main>
+
+            <footer class="mt-8 flex justify-between items-center">
+                <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">NVIDIA GTC 2026 Keynote Digest</div>
+                <div class="text-4xl font-black text-slate-100 tracking-tighter">PAGE 04</div>
+            </footer>
+        </section>
+
+        <!-- Page 5: Economics & Conclusion (Dark Theme) -->
+        <section class="page-container bg-slate-950 text-white">
+            <div class="bg-glow -bottom-20 -right-20 opacity-30"></div>
+            <header class="z-10 flex justify-between items-center mb-8">
+                <h2 contenteditable="true" class="text-2xl font-black text-white italic">"Data Center is the NEW Factory."</h2>
+                <div class="h-px flex-grow mx-6 bg-slate-800"></div>
+                <span class="text-xs font-bold text-slate-500 tracking-widest uppercase">Conclusion</span>
+            </header>
+
+            <main class="z-10 flex flex-col justify-center flex-grow gap-12">
+                <div class="grid grid-cols-2 gap-16">
+                    <div contenteditable="true" class="flex flex-col gap-6">
+                        <h3 class="text-4xl font-black leading-tight">AI 工廠經濟學：<br><span class="text-blue-500">每瓦特 Token 產出比</span></h3>
+                        <p class="text-slate-400 text-lg leading-relaxed">
+                            黃仁勳重新定義了數據中心：原材料是電力，產出是智慧（Tokens）。
+                            未來考量算力價值的核心指標將是能源效率。
+                        </p>
+                    </div>
+                    <div contenteditable="true" class="flex flex-col justify-center gap-8">
+                        <div class="flex items-center gap-6">
+                            <div class="text-5xl font-black text-white/20 italic tracking-tighter shrink-0">01</div>
+                            <p class="text-slate-300"><b>基礎設施即電力:</b> AI 已成為與電力同等地位的基礎設施。</p>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-5xl font-black text-white/20 italic tracking-tighter shrink-0">02</div>
+                            <p class="text-slate-300"><b>跨界融合:</b> 從通訊網路、創意娛樂到宇宙探索的全面佈局。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div contenteditable="true" class="mt-12 p-10 bg-white/5 backdrop-blur-md rounded-[40px] border border-white/10 text-center">
+                    <div class="text-nvidia text-xs font-black tracking-[0.3em] uppercase mb-4">Final Perspective</div>
+                    <div class="text-4xl font-black tracking-tight mb-2 italic">"It all starts here."</div>
+                    <p class="text-slate-500 font-medium">AI 成為人類文明第二操作系統的正式宣告</p>
+                </div>
+            </main>
+
+            <footer class="z-10 mt-8 flex justify-between items-center pt-6 border-t border-white/5">
+                <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">NVIDIA GTC 2026 Keynote Digest</div>
+                <div class="text-4xl font-black text-white/5 tracking-tighter">PAGE 05</div>
+            </footer>
+        </section>
+
+    </div>
+
+    <!-- Initialization Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSave = document.getElementById('btn-save');
+            const btnPrint = document.getElementById('btn-print');
+            const contentRoot = document.getElementById('content-root');
+
+            let isEditing = false;
+
+            // Edit Mode Toggle
+            btnEdit.addEventListener('click', () => {
+                isEditing = !isEditing;
+                contentRoot.classList.toggle('is-editing', isEditing);
+                
+                // Toggle contentEditable for all containers
+                const editables = contentRoot.querySelectorAll('[contenteditable]');
+                editables.forEach(el => {
+                    el.contentEditable = isEditing;
+                });
+                
+                btnEdit.innerText = isEditing ? '✅ 完成編輯' : '✏️ 編輯內容';
+                btnEdit.classList.toggle('bg-blue-100', isEditing);
+                btnEdit.classList.toggle('text-blue-700', isEditing);
+            });
+
+            // Save HTML Function
+            btnSave.addEventListener('click', () => {
+                // Ensure edit mode is off for clean save
+                const wasEditing = isEditing;
+                if (wasEditing) btnEdit.click();
+
+                const htmlContent = document.documentElement.outerHTML;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                a.href = url;
+                a.download = `GTC_2026_Report_${dateStr}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                if (wasEditing) btnEdit.click(); // Restore edit mode
+            });
+
+            // Print / PDF Function
+            btnPrint.addEventListener('click', () => {
+                const wasEditing = isEditing;
+                if (wasEditing) btnEdit.click(); // Turn off edit mode markers
+                
+                window.print();
+                
+                if (wasEditing) btnEdit.click(); // Restore edit mode
+            });
+        });
+    </script>
+</body>
+</html>

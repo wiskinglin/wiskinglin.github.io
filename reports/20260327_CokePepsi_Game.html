@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哈佛個案分析：可口可樂與百事可樂廣告預算博弈</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Google Fonts: Noto Sans TC 與 Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            coke: '#F40009',
+                            pepsi: '#004B93',
+                            gray: '#F8F9FA',
+                            dark: '#1E293B'
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+                        'float': '0 25px 50px -12px rgba(0, 0, 0, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* 基礎重置與背景 */
+        body {
+            background-color: #E2E8F0; /* 桌面預設背景 */
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* -----------------------------------------------------
+           核心排版與列印規範 (Critical Rules)
+           ----------------------------------------------------- */
+        .document-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        /* A4 橫式滿版容器 */
+        .page-container {
+            width: 297mm;
+            height: 210mm; /* 強制高度以確保單頁佈局 */
+            background-color: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15mm 20mm; /* 安全出血與內距 */
+            box-sizing: border-box;
+            border-radius: 8px; /* 網頁端微圓角 */
+        }
+
+        /* 標籤微型裝飾 */
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* 裝飾線條 */
+        .divider-gradient {
+            height: 2px;
+            background: linear-gradient(90deg, rgba(244,0,9,0.8) 0%, rgba(0,75,147,0.8) 100%);
+            border-radius: 2px;
+            margin: 1rem 0;
+        }
+
+        /* 編輯模式反饋 (CSS UI Feedback) */
+        .document-wrapper.is-editing .page-container {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 4px;
+            box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .document-wrapper.is-editing [contenteditable="true"]:hover {
+            background-color: rgba(241, 245, 249, 0.8);
+            border-radius: 4px;
+            cursor: text;
+        }
+
+        /* -----------------------------------------------------
+           列印引擎強制對應 (Print Media Query)
+           ----------------------------------------------------- */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background-color: transparent;
+                margin: 0;
+                padding: 0;
+            }
+            .document-wrapper {
+                padding: 0;
+                gap: 0;
+                display: block; /* 讓列印引擎接管分頁 */
+            }
+            .page-container {
+                width: 297mm;
+                height: 210mm;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none !important;
+                page-break-after: always;
+                break-inside: avoid;
+                /* 確保色彩與背景無損輸出 */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* 停用所有動畫 */
+            * {
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 互動控制面板 (Control Panel) -->
+    <div class="fixed top-6 right-6 z-50 flex gap-3 backdrop-blur-xl bg-white/80 p-3 rounded-2xl shadow-soft border border-white/50 no-print transition-all duration-300">
+        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors text-sm">
+            <span class="emoji">✏️</span> <span class="text">編輯內容</span>
+        </button>
+        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl font-medium transition-colors text-sm">
+            <span>⬇️</span> 儲存網頁
+        </button>
+        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium transition-colors text-sm shadow-md">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <!-- 主要文件容器 -->
+    <div class="document-wrapper" id="document-wrapper">
+
+        <!-- ================= PAGE 1: 封面與摘要 (Hero Layout) ================= -->
+        <section class="page-container relative bg-slate-50">
+            <!-- 背景裝飾 -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-red-100/50 to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-100/50 to-transparent rounded-tr-full pointer-events-none"></div>
+
+            <header class="flex-grow flex flex-col justify-center relative z-10 px-12">
+                <div class="mb-6">
+                    <span class="pill bg-slate-200 text-slate-700 mb-4">哈佛個案分析</span>
+                    <span class="pill bg-brand-coke/10 text-brand-coke ml-2">商戰史詩</span>
+                    <span class="pill bg-brand-pepsi/10 text-brand-pepsi ml-2">賽局理論</span>
+                </div>
+                <h1 class="text-6xl font-black text-brand-dark leading-tight tracking-tight mb-6">
+                    囚徒困境下的<br>
+                    <span class="text-brand-coke">可口可樂</span> 與 <span class="text-brand-pepsi">百事可樂</span><br>
+                    廣告預算博弈
+                </h1>
+                <div class="divider-gradient w-32 mb-8"></div>
+                <p class="text-xl text-slate-600 leading-relaxed max-w-3xl font-medium">
+                    全球碳酸飲料產業的百年發展史，本質上是一部由兩大巨頭共同譜寫的雙佔市場（Duopoly）競爭史。這段歷史深刻地塑造了現代行銷學樣貌，更為探討企業在不完全資訊下的決策機制，提供了極具價值的實證觀察場域。
+                </p>
+            </header>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-6">
+                <span>Harvard Case Study Analysis</span>
+                <span>Page 01</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 2: 歷史形塑與百事挑戰 (Bento Box) ================= -->
+        <section class="page-container bg-white">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-brand-dark flex items-center gap-3">
+                    <span class="w-2 h-8 bg-slate-800 rounded-full"></span>
+                    歷史形塑與不完全資訊下的戰略轉折
+                </h2>
+            </header>
+
+            <!-- Bento Box 佈局 -->
+            <div class="flex-grow grid grid-cols-12 gap-6">
+                <!-- 左側：歷史時間軸 -->
+                <div class="col-span-5 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-center">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-200 pb-2">世紀雙占的崛起</h3>
+                    <div class="space-y-6 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
+                        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                            <div class="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-brand-coke text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2"></div>
+                            <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                                <span class="font-bold text-brand-coke block text-sm mb-1">1886</span>
+                                <p class="text-sm text-slate-600 leading-snug">約翰·彭伯頓發明可口可樂，憑藉標誌性玻璃瓶與經銷網絡建立霸權。</p>
+                            </div>
+                        </div>
+                        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                            <div class="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-brand-pepsi text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2"></div>
+                            <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                                <span class="font-bold text-brand-pepsi block text-sm mb-1">1930s</span>
+                                <p class="text-sm text-slate-600 leading-snug">經濟大蕭條期間，百事採取激進定價「五美分兩倍容量」，站穩對價格敏感的基層市場。</p>
+                            </div>
+                        </div>
+                        <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                            <div class="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-brand-pepsi text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2"></div>
+                            <div class="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                                <span class="font-bold text-brand-pepsi block text-sm mb-1">1970s</span>
+                                <p class="text-sm text-slate-600 leading-snug">啟動「百事新一代」行銷，瞄準戰後嬰兒潮，與青春叛逆建立連結。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：百事挑戰 -->
+                <div class="col-span-7 flex flex-col gap-6">
+                    <div class="flex-grow bg-gradient-to-br from-blue-50 to-white rounded-3xl p-8 border border-blue-100 shadow-soft">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-2xl font-black text-brand-pepsi">1975 百事挑戰 (Pepsi Challenge)</h3>
+                            <span class="pill bg-blue-100 text-blue-700">盲測行銷戰役</span>
+                        </div>
+                        <p class="text-slate-600 leading-relaxed mb-6">
+                            百事可樂在全美設立攤位進行盲測。結果顯示，在沒有品牌標籤提示下，過半數消費者偏好口感較甜的百事可樂。這場基於「不完全資訊」的戰役直接擊中可口可樂軟肋。
+                        </p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
+                                <div class="text-sm text-slate-500 font-semibold mb-1">市場份額躍升</div>
+                                <div class="text-4xl font-black text-brand-pepsi mb-1">6% ➔ 14%</div>
+                                <div class="text-xs text-slate-400">百事可樂市佔率顯著侵蝕對手</div>
+                            </div>
+                            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm text-center">
+                                <div class="text-sm text-slate-500 font-semibold mb-1">忠誠者版圖轉變 (1982)</div>
+                                <div class="text-4xl font-black text-slate-800 mb-1">12% : 11%</div>
+                                <div class="text-xs text-slate-400">可口可樂絕對忠誠者暴跌，雙方逼近持平</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-4 mt-6">
+                <span>Strategic Turning Point</span>
+                <span>Page 02</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 3: 賽局理論矩陣 (Game Theory Core) ================= -->
+        <section class="page-container bg-slate-50">
+            <header class="mb-6">
+                <h2 class="text-3xl font-bold text-brand-dark flex items-center gap-3">
+                    <span class="w-2 h-8 bg-brand-dark rounded-full"></span>
+                    賽局理論：廣告預算與定價的囚徒困境
+                </h2>
+                <p class="mt-3 text-slate-600">寡占市場中，企業決策具備高度相互依存性。若需求缺乏彈性，廣告的作用便流於掠奪對手顧客的「零和博弈」。</p>
+            </header>
+
+            <div class="flex-grow grid grid-cols-2 gap-8 items-center">
+                <!-- 廣告預算矩陣 -->
+                <div class="bg-white rounded-3xl p-6 shadow-float border border-slate-200">
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-4 bg-slate-100 py-2 rounded-lg">廣告預算報酬矩陣 (百萬美元)</h3>
+                    
+                    <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                        <!-- Header -->
+                        <div class="p-3"></div>
+                        <div class="p-3 bg-brand-pepsi/10 text-brand-pepsi font-bold rounded-t-xl border-b-2 border-brand-pepsi">百事：維持低預算</div>
+                        <div class="p-3 bg-brand-pepsi/10 text-brand-pepsi font-bold rounded-t-xl border-b-2 border-brand-pepsi">百事：採取高預算</div>
+                        
+                        <!-- Row 1 -->
+                        <div class="p-3 bg-brand-coke/10 text-brand-coke font-bold rounded-l-xl border-r-2 border-brand-coke flex items-center justify-center">可樂：維持低預算</div>
+                        <div class="p-4 border border-slate-200 bg-green-50 rounded-lg flex flex-col justify-center">
+                            <span class="text-brand-coke font-bold">可：750</span>
+                            <span class="text-brand-pepsi font-bold">百：750</span>
+                            <span class="text-xs text-green-700 mt-1 font-semibold">(隱性共謀最佳解)</span>
+                        </div>
+                        <div class="p-4 border border-slate-200 bg-slate-50 rounded-lg flex flex-col justify-center">
+                            <span class="text-brand-coke font-bold">可：400</span>
+                            <span class="text-brand-pepsi font-bold text-lg">百：900</span>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="p-3 bg-brand-coke/10 text-brand-coke font-bold rounded-l-xl border-r-2 border-brand-coke flex items-center justify-center">可樂：採取高預算</div>
+                        <div class="p-4 border border-slate-200 bg-slate-50 rounded-lg flex flex-col justify-center">
+                            <span class="text-brand-coke font-bold text-lg">可：900</span>
+                            <span class="text-brand-pepsi font-bold">百：400</span>
+                        </div>
+                        <div class="p-4 border-2 border-slate-800 bg-yellow-50 rounded-lg flex flex-col justify-center relative shadow-inner">
+                            <div class="absolute -top-3 -right-3 bg-slate-800 text-white text-xs px-2 py-1 rounded-full font-bold shadow-md">納許均衡</div>
+                            <span class="text-brand-coke font-bold">可：500</span>
+                            <span class="text-brand-pepsi font-bold">百：500</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-500 bg-slate-50 p-3 rounded-xl">
+                        <strong>邏輯推演：</strong>對雙方而言，「採取高預算」皆為優勢策略 (Dominant Strategy)，導致雙方陷入次優的納許均衡，利潤雙雙跌至 500。
+                    </div>
+                </div>
+
+                <!-- 定價策略矩陣 -->
+                <div class="bg-white rounded-3xl p-6 shadow-float border border-slate-200">
+                    <h3 class="text-xl font-bold text-center text-slate-800 mb-4 bg-slate-100 py-2 rounded-lg">定價策略報酬矩陣 (利潤變動)</h3>
+                    
+                    <div class="grid grid-cols-3 gap-2 text-center text-sm">
+                        <!-- Header -->
+                        <div class="p-3"></div>
+                        <div class="p-3 bg-brand-pepsi/10 text-brand-pepsi font-bold rounded-t-xl border-b-2 border-brand-pepsi">百事：維持高定價</div>
+                        <div class="p-3 bg-brand-pepsi/10 text-brand-pepsi font-bold rounded-t-xl border-b-2 border-brand-pepsi">百事：降價促銷</div>
+                        
+                        <!-- Row 1 -->
+                        <div class="p-3 bg-brand-coke/10 text-brand-coke font-bold rounded-l-xl border-r-2 border-brand-coke flex items-center justify-center">可樂：維持高定價</div>
+                        <div class="p-4 border border-slate-200 bg-green-50 rounded-lg flex flex-col justify-center">
+                            <span class="text-brand-coke font-bold">可：+80</span>
+                            <span class="text-brand-pepsi font-bold">百：+80</span>
+                        </div>
+                        <div class="p-4 border border-slate-200 bg-slate-50 rounded-lg flex flex-col justify-center">
+                            <span class="text-brand-coke font-bold">可：+30</span>
+                            <span class="text-brand-pepsi font-bold text-lg">百：+100</span>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="p-3 bg-brand-coke/10 text-brand-coke font-bold rounded-l-xl border-r-2 border-brand-coke flex items-center justify-center">可樂：降價促銷</div>
+                        <div class="p-4 border border-slate-200 bg-slate-50 rounded-lg flex flex-col justify-center">
+                            <span class="text-brand-coke font-bold text-lg">可：+100</span>
+                            <span class="text-brand-pepsi font-bold">百：+30</span>
+                        </div>
+                        <div class="p-4 border-2 border-slate-800 bg-yellow-50 rounded-lg flex flex-col justify-center relative shadow-inner">
+                            <div class="absolute -top-3 -right-3 bg-slate-800 text-white text-xs px-2 py-1 rounded-full font-bold shadow-md">價格泥沼</div>
+                            <span class="text-brand-coke font-bold">可：+70</span>
+                            <span class="text-brand-pepsi font-bold">百：+70</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm text-slate-500 bg-slate-50 p-3 rounded-xl">
+                        <strong>反托拉斯法核心：</strong>法律禁止價格勾結，迫使企業相互競爭以提供低價；但對高管而言，這是一場資本消耗戰。
+                    </div>
+                </div>
+            </div>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-4 mt-6">
+                <span>The Prisoner's Dilemma</span>
+                <span>Page 03</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 4: 神經科學與零和博弈 ================= -->
+        <section class="page-container bg-white">
+            <header class="mb-6">
+                <h2 class="text-3xl font-bold text-brand-dark flex items-center gap-3">
+                    <span class="w-2 h-8 bg-purple-600 rounded-full"></span>
+                    科學實證：大腦防禦機制與抵銷效應
+                </h2>
+            </header>
+
+            <div class="flex-grow flex flex-col gap-6">
+                
+                <!-- 神經科學 (fMRI) 區塊 -->
+                <div class="bg-slate-50 rounded-3xl p-6 border border-slate-100 flex gap-6 items-center">
+                    <div class="w-1/3">
+                        <div class="bg-purple-100 text-purple-700 font-bold px-4 py-2 rounded-lg inline-block mb-3">2004 貝勒醫學院 fMRI 研究</div>
+                        <h3 class="text-2xl font-black text-slate-800 mb-2">味覺生理 vs. 品牌認知</h3>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            為何明知廣告具抵銷效應，仍投入數十億美元？行銷終極目標是建立能降低需求價格彈性的<strong class="text-purple-700">情感屏障</strong>。
+                        </p>
+                    </div>
+                    <div class="w-2/3 grid grid-cols-2 gap-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-brand-pepsi">
+                            <h4 class="font-bold text-slate-800 mb-2">階段一：雙盲測試階段</h4>
+                            <p class="text-sm text-slate-600 mb-3">喝下百事可樂時，與味覺/獎賞相關區域極為活躍。</p>
+                            <div class="bg-blue-50 text-brand-pepsi font-bold p-3 rounded-xl text-center">🧠 腹側紋狀體 (Ventral putamen) 活躍</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-brand-coke relative">
+                            <div class="absolute -top-3 -right-3 text-2xl">🔥</div>
+                            <h4 class="font-bold text-slate-800 mb-2">階段二：品牌揭露階段</h4>
+                            <p class="text-sm text-slate-600 mb-3">告知飲用可口可樂後，高級中樞的認知活動<strong class="text-brand-coke">覆蓋 (Override)</strong>了味蕾的生理反饋。</p>
+                            <div class="bg-red-50 text-brand-coke font-bold p-3 rounded-xl text-center">🧠 內側前額葉皮質 (Medial PFC) 活躍</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 抵銷效應區塊 -->
+                <div class="grid grid-cols-2 gap-6 flex-grow">
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-6 text-white shadow-float flex flex-col justify-center">
+                        <h3 class="text-xl font-bold mb-3 flex items-center gap-2"><span class="text-2xl">🏈</span> 超級盃廣告的零和博弈</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-4">
+                            計量經濟學證實，當兩大品牌同時投放鉅額廣告時，最終市場效果相互抵銷 (Offsetting Effect)，為一種破壞價值的行為。<br><br>
+                            這類鉅額支出本質上是一種維持現狀的<strong class="text-white">「沉沒成本」(Sunk Cost) </strong>與准入障礙。
+                        </p>
+                        <div class="bg-white/10 p-3 rounded-xl backdrop-blur-sm text-sm border border-white/20">
+                            "若百事投放而可樂缺席，邊緣消費者將流失；故必須投入等量資金防禦。"
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-3xl p-6 border border-slate-200 flex flex-col justify-center">
+                        <h3 class="text-xl font-bold text-slate-800 mb-3">目標轉移：爭奪游離選民</h3>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-1/2 text-center p-3 bg-brand-coke/5 rounded-xl border border-brand-coke/20">
+                                <div class="text-2xl font-black text-brand-coke">95.9%</div>
+                                <div class="text-xs text-slate-500 font-medium">可樂重度使用者不轉換</div>
+                            </div>
+                            <div class="w-1/2 text-center p-3 bg-brand-pepsi/5 rounded-xl border border-brand-pepsi/20">
+                                <div class="text-2xl font-black text-brand-pepsi">94.0%</div>
+                                <div class="text-xs text-slate-500 font-medium">百事重度使用者不轉換</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-600 text-sm italic border-l-2 border-slate-300 pl-3">
+                            「我們將市場分為我們的、他們的，以及可以爭奪的 (up for grabs)。持續曝光是為了防止大腦認知防禦機制出現裂痕。」
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-4 mt-6">
+                <span>Neuroscience & Zero-Sum Dynamics</span>
+                <span>Page 04</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 5: 決策災難與領導風格 ================= -->
+        <section class="page-container bg-slate-50">
+            <header class="mb-6">
+                <h2 class="text-3xl font-bold text-brand-dark flex items-center gap-3">
+                    <span class="w-2 h-8 bg-orange-500 rounded-full"></span>
+                    高階決策：新可口可樂災難與主帥哲學
+                </h2>
+            </header>
+
+            <div class="flex-grow grid grid-cols-12 gap-6">
+                <!-- 新可口可樂災難 (New Coke) -->
+                <div class="col-span-7 bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-2xl font-black text-brand-coke">1985 新可樂災難 (New Coke)</h3>
+                            <span class="pill bg-orange-100 text-orange-700">防禦性過當反應</span>
+                        </div>
+                        <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                            基於對 20 萬人盲測數據（新配方 53% 勝出）的迷信，可口可樂宣布放棄 99 年經典配方。結果引發海嘯般的民怨抗議。
+                        </p>
+                        <div class="bg-red-50 text-brand-coke p-4 rounded-xl border border-red-100 mb-4 text-sm font-medium">
+                            <strong class="block mb-1 text-base">致命盲點分析：</strong>
+                            1. 忽視品牌資產：僅測量物理口感，忽略了與美國文化綁定的情感連結。<br>
+                            2. 框架誤導：未評估消費者的「損失厭惡 (Loss aversion)」心理。
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 text-white p-4 rounded-xl flex justify-between items-center">
+                        <span class="text-sm font-medium">歷經 79 天後屈服民意，推出 Coca-Cola Classic，</span>
+                        <span class="font-bold text-orange-400">意外喚醒底層情感，銷量大反彈！</span>
+                    </div>
+                </div>
+
+                <!-- 領導風格對比 -->
+                <div class="col-span-5 flex flex-col gap-4">
+                    <div class="bg-white p-5 rounded-2xl border-t-4 border-brand-coke shadow-sm flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-black text-lg text-slate-800">羅伯特·古茲維塔 (Roberto Goizueta)</h4>
+                            <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded">可口可樂 CEO</span>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-2 mt-3 list-disc pl-4 marker:text-brand-coke">
+                            <li><strong>菁英技術官僚：</strong> 化工背景，充滿工程師邏輯與財務冷靜，過度迷信客觀數據。</li>
+                            <li><strong>財務紀律：</strong> 關注股東權益報酬率(ROE)，批判單純追求市佔是「萬惡之源」。</li>
+                            <li><strong>結構改革：</strong> 剝離非核心業務，整併裝瓶廠，強化供應鏈效率。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white p-5 rounded-2xl border-t-4 border-brand-pepsi shadow-sm flex-grow">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-black text-lg text-slate-800">羅傑·恩里科 (Roger Enrico)</h4>
+                            <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded">百事可樂 總裁</span>
+                        </div>
+                        <ul class="text-sm text-slate-600 space-y-2 mt-3 list-disc pl-4 marker:text-brand-pepsi">
+                            <li><strong>行銷天才：</strong> 具攻擊性與顛覆性，深諳「挑戰者戰略」。</li>
+                            <li><strong>流行文化綁定：</strong> 500萬天價簽下麥可·傑克森，引爆年輕世代熱情。</li>
+                            <li><strong>共生哲學：</strong> <span class="italic">「如果可口可樂不存在，我們會祈禱有人發明它。高強度的對抗能共同擴大品類關注度。」</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-4 mt-6">
+                <span>Decision Failures & Leadership</span>
+                <span>Page 05</span>
+            </footer>
+        </section>
+
+        <!-- ================= PAGE 6: 突破困境與結論 ================= -->
+        <section class="page-container bg-white">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-brand-dark flex items-center gap-3">
+                    <span class="w-2 h-8 bg-green-500 rounded-full"></span>
+                    突破囚徒困境與三大管理啟示
+                </h2>
+                <p class="mt-3 text-slate-600 max-w-4xl">透過市場信號、產品線延伸與業務多角化，兩大巨頭最終從單維度的消耗戰，轉向多維度的組合戰，實現商業長遠繁榮。</p>
+            </header>
+
+            <!-- 戰略轉移動態卡片 -->
+            <div class="grid grid-cols-3 gap-5 mb-8">
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <div class="text-xl mb-3">📡</div>
+                    <h3 class="font-bold text-slate-800 mb-2">市場信號與隱性停戰</h3>
+                    <p class="text-sm text-slate-600">雙方高層透過年報與發言發出信號，將目標從「市佔狂熱」轉向「資本回報」，實現廣告降級 (De-escalation)。</p>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <div class="text-xl mb-3">🥤</div>
+                    <h3 class="font-bold text-slate-800 mb-2">產品線延伸與轉型</h3>
+                    <p class="text-sm text-slate-600">可口可樂力排眾議推出 Diet Coke (1982)；雙方同步跨足運動飲料、果汁等非碳酸領域 (如百事收購桂格/開特力)。</p>
+                </div>
+                <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <div class="text-xl mb-3">🌍</div>
+                    <h3 class="font-bold text-slate-800 mb-2">多元佈局與全球化</h3>
+                    <p class="text-sm text-slate-600">百事可樂與休閒食品 (Frito-Lay) 合併，利用高利潤零食改變財務約束條件；可口可樂則展開摧枯拉朽的全球擴張。</p>
+                </div>
+            </div>
+
+            <!-- 總結論 -->
+            <div class="flex-grow bg-slate-900 rounded-3xl p-8 text-white shadow-float relative overflow-hidden flex flex-col justify-center">
+                <!-- 裝飾光暈 -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-red-500/20 rounded-full blur-3xl"></div>
+                
+                <h3 class="text-2xl font-black text-white mb-6 relative z-10">給現代高階經理人的核心啟示</h3>
+                <div class="grid grid-cols-1 gap-4 relative z-10">
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start">
+                        <div class="bg-white/20 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">1</div>
+                        <div>
+                            <h4 class="font-bold text-blue-200 mb-1">拒絕盲目殲滅，鞏固情感護城河</h4>
+                            <p class="text-sm text-slate-300">在高度同質化市場，徹底殲滅對手是不切實際的。應將資源聚焦建立無可取代的品牌忠誠度與情感共鳴，降低需求彈性。</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start">
+                        <div class="bg-white/20 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">2</div>
+                        <div>
+                            <h4 class="font-bold text-blue-200 mb-1">重新定義戰場邊界</h4>
+                            <p class="text-sm text-slate-300">透過精準差異化定位（傳統溫馨 vs. 青春流行）與多角化佈局，將「你死我活」的紅海消耗戰，轉化為「各霸一方」的共存格局。</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-xl border border-white/10 flex gap-4 items-start">
+                        <div class="bg-white/20 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0">3</div>
+                        <div>
+                            <h4 class="font-bold text-blue-200 mb-1">超越短期博弈的戰略定力</h4>
+                            <p class="text-sm text-slate-300">卓越領導者必須懂得發送市場理性信號，將核心目標堅定地回歸長期的資本回報、財務紀律與可持續的獲利增長。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="flex justify-between items-center text-sm text-slate-400 font-semibold uppercase tracking-wider border-t border-slate-200 pt-4 mt-6">
+                <span>Conclusion & Management Insights</span>
+                <span>Page 06</span>
+            </footer>
+        </section>
+
+    </div>
+
+    <!-- 互動邏輯腳本 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSave = document.getElementById('btn-save');
+            const btnPrint = document.getElementById('btn-print');
+            const wrapper = document.getElementById('document-wrapper');
+            
+            let isEditing = false;
+
+            // 1. 編輯模式切換
+            btnEdit.addEventListener('click', () => {
+                isEditing = !isEditing;
+                
+                if (isEditing) {
+                    // 開啟編輯
+                    wrapper.classList.add('is-editing');
+                    wrapper.setAttribute('contenteditable', 'true');
+                    btnEdit.innerHTML = '<span class="emoji">💾</span> <span class="text">結束編輯</span>';
+                    btnEdit.classList.replace('bg-gray-100', 'bg-emerald-100');
+                    btnEdit.classList.replace('text-gray-700', 'text-emerald-700');
+                    btnEdit.classList.replace('hover:bg-gray-200', 'hover:bg-emerald-200');
+                } else {
+                    // 關閉編輯
+                    wrapper.classList.remove('is-editing');
+                    wrapper.setAttribute('contenteditable', 'false');
+                    btnEdit.innerHTML = '<span class="emoji">✏️</span> <span class="text">編輯內容</span>';
+                    btnEdit.classList.replace('bg-emerald-100', 'bg-gray-100');
+                    btnEdit.classList.replace('text-emerald-700', 'text-gray-700');
+                    btnEdit.classList.replace('hover:bg-emerald-200', 'hover:bg-gray-200');
+                }
+            });
+
+            // 2. 輸出 PDF (呼叫列印)
+            btnPrint.addEventListener('click', () => {
+                // 列印前先確認關閉編輯模式以防邊框被印出
+                if(isEditing) btnEdit.click(); 
+                window.print();
+            });
+
+            // 3. 儲存為 HTML 檔案
+            btnSave.addEventListener('click', () => {
+                // 暫時移除編輯狀態與屬性以便儲存乾淨的版本
+                const wasEditing = isEditing;
+                if (isEditing) btnEdit.click();
+
+                // 複製整個 HTML DOM
+                const htmlContent = document.documentElement.outerHTML;
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                
+                // 產生檔名包含今日日期
+                const date = new Date();
+                const dateStr = date.getFullYear() + 
+                                String(date.getMonth() + 1).padStart(2, '0') + 
+                                String(date.getDate()).padStart(2, '0');
+                const fileName = `Harvard_Case_ColaWars_${dateStr}.html`;
+
+                // 建立下載連結並觸發
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+                // 恢復原本的編輯狀態
+                if (wasEditing) btnEdit.click();
+            });
+        });
+    </script>
+</body>
+</html>

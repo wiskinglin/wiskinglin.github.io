@@ -1,0 +1,128 @@
+/* ============================================
+ * Theme: #31 — Generative UI (生成式動態介面)
+ * Category: AI 生成、動態與微互動體驗 (AI-Generated, Kinetic & Micro-interactions)
+ * Source: _docs/WebTop50.md
+ * ============================================ */
+
+:root[data-theme="generative-ui"] {
+  /* === Color Tokens === */
+  --theme-primary: #8b5cf6;
+  --theme-bg: #0f172a;
+  --theme-surface: rgba(30, 41, 59, 0.7);
+  --theme-text: #f8fafc;
+  --theme-text-secondary: #94a3b8;
+  --theme-border: rgba(139, 92, 246, 0.3);
+
+  /* === Typography Tokens === */
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-size-base: 1rem;
+
+  /* === Space Tokens === */
+  --space-unit: 0.5rem;
+  --section-gap: 3rem;
+  --content-padding: 2.5rem;
+
+  /* === Shape Tokens === */
+  --radius-sm: 1rem;
+  --radius-lg: 2.5rem;
+  --border-width: 1px;
+  --shadow-card: 0 0 40px rgba(139, 92, 246, 0.1);
+
+  /* === Motion Tokens === */
+  --transition-speed: 0.8s;
+  --ease-curve: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* === Style-specific overrides === */
+
+:root[data-theme="generative-ui"] body {
+  background-color: #0f172a;
+  background-image: 
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+:root[data-theme="generative-ui"] .hero,
+:root[data-theme="generative-ui"] .section-card,
+:root[data-theme="generative-ui"] .conclusion-card {
+  border: 1px solid var(--theme-border);
+  background: var(--theme-surface);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3), inset 0 0 20px rgba(139, 92, 246, 0.05);
+  padding: 4rem;
+  margin-bottom: 4rem;
+  transition: all 1s var(--ease-curve);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Generative particle simulation with CSS */
+:root[data-theme="generative-ui"] .section-card::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+  animation: move-particle 20s infinite alternate linear;
+  pointer-events: none;
+}
+
+@keyframes move-particle {
+  0% { transform: translate(-10%, -10%) scale(1); }
+  100% { transform: translate(10%, 10%) scale(1.2); }
+}
+
+:root[data-theme="generative-ui"] .hero h1 {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -3px;
+  background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.3));
+}
+
+:root[data-theme="generative-ui"] .section-num {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  border: 1px solid #c084fc;
+}
+
+:root[data-theme="generative-ui"] .insight-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 1.5rem;
+}
+
+:root[data-theme="generative-ui"] .insight-card:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+  transform: scale(1.05);
+}
+
+:root[data-theme="generative-ui"] .callout {
+  border-left: none;
+  border-radius: 2rem;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+:root[data-theme="generative-ui"] .data-table-wrap {
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="generative-ui"] .data-table th {
+  background: rgba(139, 92, 246, 0.2);
+}
+
+:root[data-theme="generative-ui"] .conclusion-card {
+  background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+  border-color: #8b5cf6;
+}
+
+:root[data-theme="generative-ui"] .conclusion-card h2 {
+  color: #c084fc;
+}

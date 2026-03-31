@@ -1,8 +1,15 @@
 ---
 description: 自動生成 Top 50 UX/UI 設計風格的 HTML 範例資料夾
+version: 1.1.0
+owner: UI Designer Agent
+triggers: [/top50-uxui-demos]
+pipeline:
+  - UIDesigner_UX50_Generator
+quality_gate: null
+context: .agents/CONTEXT.md
 ---
 
-# /generate-top50 — 生成 Top 50 UX/UI 設計風格互動範例集
+# /top50-uxui-demos — 生成 Top 50 UX/UI 設計風格互動範例集
 
 自動在 `top50/` 資料夾中生成 51 個 HTML 檔案（1 個 index + 50 個風格範例），每個範例頁面忠實呈現對應的設計風格，並附帶完整的風格定義說明與適用場景範本內容。
 
@@ -10,11 +17,16 @@ description: 自動生成 Top 50 UX/UI 設計風格的 HTML 範例資料夾
 
 ## Phase 0：前置知識載入
 
+0. 初始化系統狀態 (System State)
+   - 讀取 `.agents/memory/preferences.json` 獲取全域偏好設定
+   - 讀取 `.agents/memory/lessons_learned.md` 規避已知除錯地雷
+   - 建立 `.agents/sessions/session-{id}.md` (記錄本工作流產生之物件路徑與 Handoff 狀態)
+
 // turbo-all
 
 1. 閱讀 Skill 定義檔
    ```
-   view_file .agents/skills/generate_top50_demos/SKILL.md
+   view_file .agents/skills/UIDesigner_UX50_Generator/SKILL.md
    ```
    重點掌握：五大專業技能要求、頁面三層結構規範（A 風格說明 / B 主體展示 / C 導航列）、品質檢查清單
 
@@ -26,7 +38,7 @@ description: 自動生成 Top 50 UX/UI 設計風格的 HTML 範例資料夾
 
 3. 載入結構化資料
    ```
-   view_file .agents/skills/generate_top50_demos/scripts/styles_data.json
+   view_file .agents/skills/UIDesigner_UX50_Generator/scripts/styles_data.json
    ```
    此 JSON 包含 50 筆資料，每筆含 `id`, `en`, `zh`, `cat`, `catEn`, `desc`, `industry`, `region` 八個欄位。**所有頁面的文案內容必須直接引用此資料，禁止自行改寫或省略。**
 
@@ -36,7 +48,7 @@ description: 自動生成 Top 50 UX/UI 設計風格的 HTML 範例資料夾
 
 4. 建立輸出資料夾
    ```powershell
-   New-Item -ItemType Directory -Path "top50-demos" -Force
+   New-Item -ItemType Directory -Path "top50" -Force
    ```
 
 5. 生成 `top50-demos/index.html`（總覽導航頁面）

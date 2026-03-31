@@ -1,0 +1,192 @@
+<!-- Template: Pitch Deck (商務簡報) -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+  
+  .tpl-pitch {
+    --accent: #6366f1;
+    --accent-light: #a5b4fc;
+    --bg: #0f0f23;
+    --surface: #1a1a2e;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .tpl-pitch .slide {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 60px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .tpl-pitch .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .tpl-pitch .orb-1 { width: 500px; height: 500px; background: var(--accent); top: -100px; right: -100px; }
+  .tpl-pitch .orb-2 { width: 400px; height: 400px; background: #ec4899; bottom: -80px; left: -80px; }
+
+  .tpl-pitch .tag {
+    display: inline-flex;
+    padding: 6px 16px;
+    background: rgba(99,102,241,0.15);
+    color: var(--accent-light);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-right: 8px;
+    margin-bottom: 12px;
+  }
+
+  .tpl-pitch h1[data-slot] {
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin: 20px 0;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tpl-pitch .subtitle[data-slot] {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+    max-width: 700px;
+    margin-bottom: 40px;
+  }
+
+  .tpl-pitch .body-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .tpl-pitch .body-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 32px 24px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .tpl-pitch .body-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(99,102,241,0.4);
+  }
+
+  .tpl-pitch .body-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-light);
+    margin-bottom: 12px;
+  }
+
+  .tpl-pitch .key-points[data-slot] {
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(99,102,241,0.1) 100%);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 20px;
+    padding: 40px;
+    margin-top: 48px;
+  }
+
+  .tpl-pitch .key-points h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+
+  .tpl-pitch .footer-note[data-slot] {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .tpl-pitch [data-slot]:focus {
+    outline: 2px dashed var(--accent);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .tpl-pitch .slide { padding: 40px 24px; }
+    .tpl-pitch h1[data-slot] { font-size: 2.5rem; }
+    .tpl-pitch .body-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 375px) {
+    .tpl-pitch h1[data-slot] { font-size: 2rem; }
+    .tpl-pitch .slide { padding: 24px 16px; }
+  }
+  @media print {
+    .tpl-pitch { background: #fff; color: #1e293b; }
+    .tpl-pitch h1[data-slot] { -webkit-text-fill-color: #1e293b; background: none; }
+    .tpl-pitch .orb { display: none; }
+  }
+</style>
+
+<div class="tpl-pitch">
+  <div class="slide">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div>
+      <span class="tag" data-slot="tagline" contenteditable="true">在此輸入標籤分類</span>
+    </div>
+
+    <h1 data-slot="title" contenteditable="true">在這裡輸入您的簡報標題</h1>
+
+    <p class="subtitle" data-slot="subtitle" contenteditable="true">簡短描述您的提案核心價值與願景方向，讓觀眾在第一秒就理解重點。</p>
+
+    <div class="body-grid" data-slot="body" contenteditable="true">
+      <div class="body-card">
+        <h3>🎯 核心主張</h3>
+        <p>在此描述您最重要的價值主張或發現。用精煉的語言傳達核心訊息。</p>
+      </div>
+      <div class="body-card">
+        <h3>📊 關鍵數據</h3>
+        <p>放入最具說服力的數據支撐，量化您的論述以增強可信度。</p>
+      </div>
+      <div class="body-card">
+        <h3>🚀 行動呼籲</h3>
+        <p>明確指出下一步行動方案，讓決策者知道如何推進。</p>
+      </div>
+    </div>
+
+    <div class="key-points" data-slot="key-points" contenteditable="true">
+      <h2>核心要點摘要</h2>
+      <p>• 第一個關鍵要點：在此列出最重要的結論或建議<br>
+         • 第二個關鍵要點：補充支撐論述的重要發現<br>
+         • 第三個關鍵要點：未來展望與可能的延伸方向</p>
+    </div>
+
+    <div class="footer-note" data-slot="footer-note" contenteditable="true">
+      <span>Confidential Draft</span>
+      <span>March 2026</span>
+    </div>
+  </div>
+</div>

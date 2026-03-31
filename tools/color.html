@@ -1,0 +1,403 @@
+<title>KLIO COLOR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --c1: #f8fafc;
+            --c2: #ffffff;
+            --c3: #cbd5e1;
+            --c4: #64748b;
+            --c5: #0f172a;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, var(--c1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, var(--c2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, var(--c3) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, var(--c4) 0px, transparent 50%);
+            background-attachment: fixed;
+            transition: background 1s ease-in-out;
+            min-height: 100vh;
+        }
+        .color-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .color-card:hover { transform: translateY(-4px); z-index: 10; border-radius: 12px; }
+        .color-card:hover .copy-btn { opacity: 1; transform: translateY(0); }
+        .copy-btn { transform: translateY(10px); transition: all 0.3s ease; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+        
+        .preview-widget {
+            background-color: var(--c1);
+            color: var(--c5);
+            transition: all 0.5s ease;
+        }
+        .preview-surface { background-color: var(--c2); transition: all 0.5s ease; }
+        .preview-accent1 { background-color: var(--c3); transition: all 0.5s ease; }
+        .preview-accent2 { background-color: var(--c4); transition: all 0.5s ease; }
+        .preview-primary { background-color: var(--c5); transition: all 0.5s ease; }
+        .preview-text-primary { color: var(--c5); transition: all 0.5s ease; }
+        .preview-text-secondary { color: var(--c4); transition: all 0.5s ease; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+    <a href="../index.html" class="fixed top-4 left-4 md:top-6 md:left-6 font-black text-xl tracking-tighter text-slate-800 hover:text-indigo-600 transition-all hover:scale-105 z-[100] bg-white/70 backdrop-blur-md px-4 py-2 rounded-full border border-white/60 shadow-sm" style="font-family: 'Inter', sans-serif;">KLIO.</a>
+
+    <div id="app" class="max-w-7xl mx-auto px-4 py-8 md:py-12 relative z-10">
+        <!-- Header -->
+        <header class="mb-10 text-center space-y-4">
+            <div class="inline-flex items-center justify-center space-x-2 bg-white/50 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/60 shadow-sm mb-4">
+                <i class="ph-fill ph-sparkle text-indigo-500"></i>
+                <span class="text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Pro Version 超級更新</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 drop-shadow-sm">
+                KLIO <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">COLOR</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto font-medium">
+                將頂級視覺基因，無縫注入您的設計專案中。
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <!-- Sidebar -->
+            <aside class="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
+                <!-- Categories -->
+                <div class="glass-panel rounded-3xl p-2 flex flex-col sm:flex-row lg:flex-col gap-2 shadow-sm">
+                    <button onclick="filterPalettes('anime')" class="category-btn w-full text-left px-5 py-3.5 rounded-2xl transition-all font-semibold flex items-center justify-between group active-cat">
+                        <div class="flex items-center gap-3">
+                            <i class="ph-duotone ph-sword text-xl group-hover:scale-110 transition-transform text-orange-500"></i>
+                            <span>熱門動漫</span>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold shadow-inner">10</span>
+                    </button>
+                    <button onclick="filterPalettes('pro')" class="category-btn w-full text-left px-5 py-3.5 rounded-2xl transition-all font-semibold flex items-center justify-between group hover:bg-white/50">
+                        <div class="flex items-center gap-3">
+                            <i class="ph-duotone ph-briefcase text-xl group-hover:scale-110 transition-transform text-blue-500"></i>
+                            <span>專業商務</span>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold shadow-inner">10</span>
+                    </button>
+                    <button onclick="filterPalettes('life')" class="category-btn w-full text-left px-5 py-3.5 rounded-2xl transition-all font-semibold flex items-center justify-between group hover:bg-white/50">
+                        <div class="flex items-center gap-3">
+                            <i class="ph-duotone ph-leaf text-xl group-hover:scale-110 transition-transform text-green-500"></i>
+                            <span>生活情緒</span>
+                        </div>
+                        <span class="text-xs bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full font-bold shadow-inner">10</span>
+                    </button>
+                </div>
+
+                <!-- Enhanced Live Preview Widget -->
+                <div class="glass-panel rounded-3xl p-6 shadow-xl border-t border-white/80">
+                    <div class="flex justify-between items-center mb-5">
+                        <h4 class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="ph-duotone ph-magic-wand text-indigo-500 text-xl"></i>
+                            動態 UI 預覽
+                        </h4>
+                        <button onclick="exportCurrentPalette()" class="text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                            <i class="ph ph-export"></i> 匯出 CSS
+                        </button>
+                    </div>
+                    
+                    <!-- The Interactive Widget -->
+                    <div class="preview-widget p-5 rounded-2xl shadow-inner border border-black/5 relative overflow-hidden group">
+                        <!-- Decorative background element -->
+                        <div class="preview-accent1 absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-30 blur-2xl"></div>
+                        
+                        <!-- Widget Header -->
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div>
+                                <div class="preview-text-secondary text-[10px] font-bold tracking-wider uppercase mb-1">Total Revenue</div>
+                                <div class="preview-text-primary text-2xl font-black">$12,450.00</div>
+                            </div>
+                            <div class="preview-accent1 p-2.5 rounded-xl flex items-center justify-center shadow-sm">
+                                <i class="ph-bold ph-trend-up text-white"></i>
+                            </div>
+                        </div>
+
+                        <!-- Widget Body -->
+                        <div class="space-y-4 relative z-10">
+                            <div class="preview-surface p-3 rounded-xl flex items-center gap-3 border border-white/20 shadow-sm">
+                                <div class="preview-accent2 w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold shadow-inner">
+                                    <i class="ph-fill ph-lightning"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="preview-text-primary text-sm font-bold">Pro Subscription</div>
+                                    <div class="preview-text-secondary text-xs">+15% this week</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress -->
+                            <div class="space-y-1.5 pt-1">
+                                <div class="flex justify-between text-xs font-bold">
+                                    <span class="preview-text-secondary">Target Goal</span>
+                                    <span class="preview-text-primary">85%</span>
+                                </div>
+                                <div class="h-2.5 w-full preview-surface rounded-full overflow-hidden border border-black/5">
+                                    <div class="h-full preview-primary rounded-full w-[85%] relative overflow-hidden">
+                                        <div class="absolute inset-0 bg-white/20 w-full animate-pulse"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action -->
+                            <button class="w-full py-3 mt-3 preview-primary text-white rounded-xl text-sm font-bold shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2 group/btn active:scale-95">
+                                <span>Get Report</span>
+                                <i class="ph-bold ph-arrow-right group-hover/btn:translate-x-1 transition-transform"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-4 text-center flex items-center justify-center gap-1 font-medium">
+                        <i class="ph-fill ph-info"></i> 點選色盤右下角的「動態預覽」觀看效果
+                    </p>
+                </div>
+            </aside>
+
+            <!-- Main Content: Palette Grid -->
+            <main class="lg:col-span-8">
+                <div id="palette-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <!-- Palettes will be injected here -->
+                </div>
+                
+                <!-- Empty State for Search -->
+                <div id="empty-state" class="hidden text-center py-20 glass-panel rounded-3xl mt-4">
+                    <i class="ph-duotone ph-ghost text-6xl text-slate-300 mb-4"></i>
+                    <h3 class="text-xl font-bold text-slate-700">找不到相關配色</h3>
+                    <p class="text-slate-500 mt-2 text-sm">請嘗試其他關鍵字，例如「科技」、「紅色」或「動漫名稱」。</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 bg-slate-900/90 backdrop-blur-md border border-white/10 text-white px-6 py-3.5 rounded-2xl shadow-2xl transition-all duration-400 z-50 flex items-center space-x-3 pointer-events-none">
+        <i class="ph-fill ph-check-circle text-green-400 text-xl"></i>
+        <div class="flex flex-col">
+            <span id="toast-title" class="font-bold text-sm">已複製</span>
+            <span id="toast-msg" class="text-xs text-slate-300 font-mono mt-0.5">Hex Code</span>
+        </div>
+    </div>
+
+    <script>
+        // 為了讓 UI 預覽邏輯完美運作，2.0 版本的資料庫已將顏色依據「亮色背景 -> 深色強調」的層次重新排序
+        const palettes = [
+            // 動漫系列
+            { id: 1, name: "葬送的芙莉蓮", category: "anime", colors: ["#F9F6E6", "#E6F0F9", "#D4A373", "#4A628A", "#1A2B4C"], desc: "輕盈的淡藍與懷舊的金，展現悠久時光的孤寂與溫暖。" },
+            { id: 2, name: "膽大黨", category: "anime", colors: ["#F8F8F8", "#EEEEEE", "#FF007A", "#54119B", "#1A1A1A"], desc: "高飽和度霓虹色彩，迷幻且充滿動感的超現實氛圍。" },
+            { id: 3, name: "福音戰士 EVA", category: "anime", colors: ["#FAFAFA", "#F0F0F0", "#7FFF00", "#7030A0", "#1E1E1E"], desc: "標誌性的紫色與螢光綠，充滿衝擊力與不安的實驗感。" },
+            { id: 4, name: "鬼滅之刃 炭治郎", category: "anime", colors: ["#F5F5DC", "#E8E8CD", "#00B08B", "#8B4513", "#1A1A1A"], desc: "市松紋的綠黑組合，沉穩且具備日式傳統精神。" },
+            { id: 5, name: "一拳超人", category: "anime", colors: ["#FFFFFF", "#F5F5F5", "#9E9E9E", "#FFD700", "#D32F2F"], desc: "披風黃與拳套紅，最強大的簡潔與熱血正義。" },
+            { id: 6, name: "鏈鋸人", category: "anime", colors: ["#F5F2DF", "#E6DDBA", "#FF4500", "#8B0000", "#1A1A1A"], desc: "工業感的暗色調配上血橙色，粗獷、狂野且具都市感。" },
+            { id: 27, name: "咒術迴戰", category: "anime", colors: ["#F5F5F5", "#EBEBEB", "#D60000", "#142850", "#1A1A1A"], desc: "澀谷事變的暗黑、赤血與深沈咒力氛圍。" },
+            { id: 28, name: "進擊的巨人", category: "anime", colors: ["#F4EFE6", "#EAE2D6", "#4A5D23", "#8B4513", "#2F241D"], desc: "調查兵團披風的自由之綠與城牆的棕土。" },
+            { id: 29, name: "航海王", category: "anime", colors: ["#FDFBF7", "#F0F4F8", "#FF4757", "#1B6CA8", "#2F3542"], desc: "遼闊的冒險海洋藍與熱血的草帽黃紅交織。" },
+            { id: 30, name: "火影忍者", category: "anime", colors: ["#F9F9F9", "#FFF3E0", "#FF9F1C", "#103154", "#011627"], desc: "標誌性的橘色與忍者世界的堅定信仰。" },
+
+            // 專業系列
+            { id: 7, name: "科技數位 (Tech)", category: "pro", colors: ["#F8FAFC", "#F1F5F9", "#38BDF8", "#1E293B", "#0F172A"], desc: "深邃藍與天藍，代表穩定、智慧與未來感。" },
+            { id: 8, name: "高端奢華 (Luxury)", category: "pro", colors: ["#FAFAFA", "#E5E5E5", "#C5A059", "#8E6D3F", "#1A1A1A"], desc: "極致黑與香檳金，適合精品、珠寶與高級品牌。" },
+            { id: 9, name: "醫療健康 (Med)", category: "pro", colors: ["#F8FAFC", "#E0F2FE", "#0EA5E9", "#0D9488", "#064E3B"], desc: "清澈的藍綠色調，傳遞信任、清潔與專業感。" },
+            { id: 10, name: "極簡主義 (Minimal)", category: "pro", colors: ["#FAFAFA", "#F5F5F5", "#E0E0E0", "#9E9E9E", "#212121"], desc: "層次豐富的灰色階，強調結構與空間的純粹。" },
+            { id: 11, name: "創業活力 (Startup)", category: "pro", colors: ["#F7FFF7", "#E2F0CB", "#FF6B6B", "#1A6D80", "#152426"], desc: "鮮明跳躍的糖果色，代表創意、多元與快速迭代。" },
+            { id: 12, name: "金融安全 (Finance)", category: "pro", colors: ["#F0F8FF", "#A9D6E5", "#61A5C2", "#2C7DA0", "#012A4A"], desc: "深層海水藍色系，象徵資本的穩健與保護。" },
+            { id: 13, name: "建築工業 (Build)", category: "pro", colors: ["#F4F1DE", "#E9C46A", "#F4A261", "#E76F51", "#264653"], desc: "冷暖平衡的幾何配色，充滿結構力與生活感。" },
+            { id: 14, name: "教育學習 (Edu)", category: "pro", colors: ["#FAF3DD", "#F0E5C9", "#E56B6F", "#4A3C53", "#2D2136"], desc: "溫柔且穩定的紫色系，有助於思考與專注。" },
+            { id: 15, name: "網路行銷 (Marketing)", category: "pro", colors: ["#F8FAFC", "#F1F5F9", "#F43F5E", "#3730A3", "#1E1B4B"], desc: "高強度的漸層色系，能在海量資訊中瞬間抓住眼球。" },
+            { id: 16, name: "永續生態 (Eco)", category: "pro", colors: ["#ECF39E", "#D4E09B", "#90A955", "#4F772D", "#132A13"], desc: "自然演進的綠色，強調環保、有機與自然循環。" },
+
+            // 生活情緒
+            { id: 17, name: "北歐冬日 (Nordic)", category: "life", colors: ["#ECEFF4", "#E5E9F0", "#D8DEE9", "#81A1C1", "#4C566A"], desc: "清冷的莫蘭迪藍灰，安靜、平和且優雅。" },
+            { id: 18, name: "秋季暖陽 (Autumn)", category: "life", colors: ["#F5EBE0", "#D5BDAF", "#B6AD90", "#936639", "#582F0E"], desc: "溫厚的大地色與焦糖色，充滿季節感的包裹感。" },
+            { id: 19, name: "仲夏夜 (Summer)", category: "life", colors: ["#FFBA08", "#F48C06", "#DC2F02", "#9D0208", "#03071E"], desc: "從深紅到明橙，熱烈且神秘的夜晚派對氛圍。" },
+            { id: 20, name: "賽博龐克 (Cyber)", category: "life", colors: ["#050505", "#120458", "#FF0055", "#00FFCC", "#FFD700"], desc: "極致的衝突色，反叛且充滿科技感的混沌。" },
+            { id: 21, name: "復古 80s (Retro)", category: "life", colors: ["#FDF6E3", "#F9E8B6", "#F9844A", "#1A5A75", "#13384D"], desc: "飽滿的高飽和色塊，帶動懷舊與歡樂的情緒。" },
+            { id: 22, name: "春季櫻花 (Sakura)", category: "life", colors: ["#FFF0F5", "#FFE3EE", "#FFAFCC", "#4A7694", "#4D2C3B"], desc: "夢幻的粉藍組合，輕柔且散發甜蜜的氛圍。" },
+            { id: 23, name: "森林漫步 (Forest)", category: "life", colors: ["#D8F3DC", "#B7E4C7", "#74C69D", "#52B788", "#2D6A4F"], desc: "深淺不一的芬多精綠，清新舒壓且具生命力。" },
+            { id: 24, name: "甜點屋 (Pastel)", category: "life", colors: ["#FCF4DD", "#F5E8C9", "#FF9AA2", "#786B8A", "#3D3447"], desc: "極淡的粉彩色調，無壓力、療癒且純淨。" },
+            { id: 25, name: "沙漠旅行 (Desert)", category: "life", colors: ["#EDF6F9", "#D8ECEF", "#E29578", "#36847F", "#22333B"], desc: "乾燥的陶土色與綠松石色，具有異域風情的探險感。" },
+            { id: 26, name: "深夜讀書 (Night)", category: "life", colors: ["#CFDBD5", "#E8EDDF", "#F5CB5C", "#333533", "#242423"], desc: "低調的黑灰配上點睛的燈光黃，專業且靜謐。" }
+        ];
+
+        let currentCategory = 'anime';
+        let currentPaletteIndex = 1; // default active palette id
+
+        function renderPalettes(data) {
+            const grid = document.getElementById('palette-grid');
+            const emptyState = document.getElementById('empty-state');
+            
+            if (data.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            grid.innerHTML = data.map((p, index) => `
+                <div class="glass-panel rounded-[24px] p-5 hover:shadow-2xl transition-all duration-500 group border border-white/60 relative overflow-hidden h-full flex flex-col justify-between">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/40 to-transparent rounded-bl-full pointer-events-none"></div>
+                    
+                    <div class="flex justify-between items-start mb-5 relative z-10">
+                        <div>
+                            <h3 class="font-extrabold text-lg text-slate-800 tracking-tight leading-tight">${p.name}</h3>
+                            <p class="text-[11px] text-slate-500 mt-1.5 leading-relaxed pr-2 line-clamp-2">${p.desc}</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex h-16 sm:h-20 rounded-2xl overflow-hidden shadow-inner border border-black/5 bg-white mb-4">
+                            ${p.colors.map(color => `
+                                <div class="flex-1 relative group/color color-card cursor-pointer" 
+                                     style="background-color: ${color}" 
+                                     onclick="copyToClipboard('${color}', 'Hex 碼')"
+                                     title="複製 ${color}">
+                                    <div class="copy-btn absolute inset-0 bg-black/15 opacity-0 flex flex-col items-center justify-center transition-all backdrop-blur-[2px]">
+                                        <i class="ph-bold ph-copy text-white text-lg drop-shadow-md mb-1"></i>
+                                    </div>
+                                    <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-800 text-white opacity-0 group-hover/color:opacity-100 group-hover/color:bottom-2 transition-all shadow-lg pointer-events-none z-20">
+                                        ${color}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="applyPreview(${p.id})" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 border border-slate-200 shadow-sm">
+                                <i class="ph-bold ph-eye"></i> 動態預覽
+                            </button>
+                            <button onclick="copyPaletteArray(${p.id})" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm flex items-center justify-center transition-colors border border-slate-200 shadow-sm" title="複製完整陣列 (JSON)">
+                                <i class="ph-bold ph-brackets-curly"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterPalettes(category) {
+            currentCategory = category;
+            const filtered = palettes.filter(p => p.category === category);
+            renderPalettes(filtered);
+            
+            // UI State update
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'border-indigo-400', 'ring-2', 'ring-indigo-100/50', 'active-cat');
+                btn.classList.add('hover:bg-white/50');
+            });
+            const activeBtn = event.currentTarget;
+            activeBtn.classList.remove('hover:bg-white/50');
+            activeBtn.classList.add('bg-white', 'shadow-sm', 'border-white', 'ring-4', 'ring-indigo-500/10', 'active-cat');
+        }
+
+        function handleSearch(query) {
+            query = query.toLowerCase();
+            const filtered = palettes.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.desc.toLowerCase().includes(query) ||
+                p.category.includes(query)
+            );
+            renderPalettes(filtered);
+            
+            // Clear category active states if searching globally
+            if(query !== '') {
+                document.querySelectorAll('.category-btn').forEach(btn => {
+                    btn.classList.remove('bg-white', 'shadow-sm', 'ring-4', 'ring-indigo-500/10', 'active-cat');
+                });
+            } else {
+                // Re-apply current category UI state
+                const btns = document.querySelectorAll('.category-btn');
+                if(currentCategory === 'anime') filterAndHighlight(btns[0], 'anime');
+                if(currentCategory === 'pro') filterAndHighlight(btns[1], 'pro');
+                if(currentCategory === 'life') filterAndHighlight(btns[2], 'life');
+            }
+        }
+        
+        function filterAndHighlight(btnNode, category) {
+             const filtered = palettes.filter(p => p.category === category);
+             renderPalettes(filtered);
+             btnNode.classList.remove('hover:bg-white/50');
+             btnNode.classList.add('bg-white', 'shadow-sm', 'border-white', 'ring-4', 'ring-indigo-500/10', 'active-cat');
+        }
+
+        function copyToClipboard(text, type = 'Hex 碼') {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast(type, text);
+        }
+
+        function copyPaletteArray(id) {
+            const palette = palettes.find(p => p.id === id);
+            const arrayString = JSON.stringify(palette.colors);
+            copyToClipboard(arrayString, '色彩陣列 (JSON)');
+        }
+
+        function applyPreview(id) {
+            const palette = palettes.find(p => p.id === id);
+            currentPaletteIndex = id;
+            
+            // Mapping colors to CSS variables for dynamic rendering
+            const root = document.documentElement;
+            root.style.setProperty('--c1', palette.colors[0]);
+            root.style.setProperty('--c2', palette.colors[1]);
+            root.style.setProperty('--c3', palette.colors[2]);
+            root.style.setProperty('--c4', palette.colors[3]);
+            root.style.setProperty('--c5', palette.colors[4]);
+
+            showToast('已套用預覽', palette.name);
+            
+            // Pop animation
+            const widget = document.querySelector('.preview-widget');
+            widget.classList.add('scale-[0.98]');
+            setTimeout(() => widget.classList.remove('scale-[0.98]'), 150);
+        }
+
+        function exportCurrentPalette() {
+            const palette = palettes.find(p => p.id === currentPaletteIndex) || palettes[0];
+            const cssVars = `/* ${palette.name} Theme */\n:root {\n  --bg-primary: ${palette.colors[0]};\n  --bg-surface: ${palette.colors[1]};\n  --accent-light: ${palette.colors[2]};\n  --accent-dark: ${palette.colors[3]};\n  --primary: ${palette.colors[4]};\n}`;
+            copyToClipboard(cssVars, 'CSS 變數配置');
+        }
+
+        function showToast(title, msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-msg').innerText = msg;
+            
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            if(window.toastTimeout) clearTimeout(window.toastTimeout);
+            
+            window.toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        // Init
+        window.onload = () => {
+            applyPreview(1); // Default to first palette
+            renderPalettes(palettes.filter(p => p.category === 'anime'));
+            
+            const firstBtn = document.querySelector('.category-btn');
+            firstBtn.classList.add('bg-white', 'shadow-sm', 'border-white', 'ring-4', 'ring-indigo-500/10', 'active-cat');
+            firstBtn.classList.remove('hover:bg-white/50');
+        };
+    </script>
+</body>
+</html>
