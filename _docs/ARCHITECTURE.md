@@ -97,20 +97,22 @@ KLIO (wiskinglin.github.io/)
 │       │   ├── preferences.json
 │       │   └── lessons_learned.md
 │       ├── sessions/                   # Workflow 狀態與交接紀錄
-│       ├── skills/                     # 8 個已定義技能包
+│       ├── skills/                     # 9 個已定義技能包
 │       │   ├── DataAnalyst_TrendTopic_Collector/
 │       │   ├── Engineer_CanvaStyle_Editor/
 │       │   ├── Engineer_PdfExport_Engine/
 │       │   ├── Engineer_WebLayout_Builder/
 │       │   ├── QA_LayoutAPI_Tester/
+│       │   ├── QA_MobileHTML_Checker/
 │       │   ├── UIDesigner_MuseumTheme_Builder/
 │       │   ├── UIDesigner_UX50_Generator/
 │       │   └── Writer_DeepReport_Synthesizer/
-│       └── workflows/                  # 5 個已定義工作流
+│       └── workflows/                  # 6 個已定義工作流
 │           ├── web-modular-report.md
 │           ├── museum-curated-webapp.md
 │           ├── smart-template-editor.md
 │           ├── top50-uxui-demos.md
+│           ├── mobile-html-checker.md
 │           └── immersive-knowledge-library.md
 ```
 

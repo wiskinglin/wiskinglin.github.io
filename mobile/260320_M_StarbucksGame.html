@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣連鎖咖啡市場競爭動態解析 - 賽局理論模型報告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-blue: #2563eb;
+            --brand-dark: #1e293b;
+            --page-width: 100%; max-width: 430px; margin: 0 auto;
+            --page-min-height: 100dvh;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Page Setup */
+        .page {
+            width: var(--page-width);
+            height: var(--page-height);
+            padding: 20mm;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            box-sizing: border-box;
+            page-break-after: always;
+        }
+
+        /* Matrix Table Styling */
+        .payoff-table {
+            border-collapse: separate;
+            border-spacing: 4px;
+        }
+        .payoff-table td {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .payoff-table th {
+            font-size: 0.75rem;
+            color: #64748b;
+            padding: 4px;
+        }
+
+        /* Print Settings */
+        @media print {
+            body { background: none; }
+            .page {
+                margin: 0;
+                box-shadow: none;
+                width: 100%; max-width: 430px; margin: 0 auto;
+                min-height: 100dvh;
+            }
+            .no-print { display: none !important; }
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* Decorative Elements */
+        .gradient-text {
+            background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .frosted-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1rem;
+            flex-grow: 1;
+        }
+    </style>
+
+            <!-- Auto-injected Mobile Overrides -->
+    <style>
+        body { 
+            background-color: #f8fafc !important; 
+            margin: 0 !important; 
+            padding: 0 !important; 
+            display: flex !important; 
+            flex-direction: column !important; 
+            align-items: center !important; 
+        }
+        .a4-page, .page-container, .document-wrapper, #document-wrapper, #content-root, .a4-landscape, .slide-page {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            min-height: 100dvh !important;
+            max-height: none !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 24px 16px !important; /* Fix oversized padding for ALL layouts */
+        }
+        
+        /* Typography overrides for small screens */
+        .text-6xl { font-size: 2.5rem !important; line-height: 1.1 !important; }
+        .text-5xl { font-size: 2rem !important; line-height: 1.2 !important; }
+        .text-4xl { font-size: 1.5rem !important; line-height: 1.3 !important; }
+        .text-3xl { font-size: 1.25rem !important; line-height: 1.4 !important; }
+        
+        /* Container Spacing optimizations */
+        .p-8, .p-10 { padding: 20px !important; }
+        .p-6, .px-8 { padding: 16px !important; }
+        .gap-6, .gap-8, .gap-10, .gap-12 { gap: 16px !important; }
+        
+        /* Table responsive fixes */
+        table {
+            display: block !important;
+            width: 100% !important;
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+        td, th {
+            padding: 12px 16px !important;
+            white-space: normal !important;
+            min-width: 140px !important;
+        }
+        th { background: #f1f5f9 !important; color: #334155 !important; }
+
+        /* Make sure texts wrap gracefully */
+        * { word-wrap: break-word; }
+        .text-justify { text-align: left !important; } 
+        p { 
+            font-size: 16px !important; 
+            line-height: 1.65 !important; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 浮動控制面板 -->
+    <!-- 第一頁：封面 -->
+    <section class="page">
+        <div class="flex-grow flex flex-col justify-center items-center text-center">
+            <div class="mb-6 px-4 py-1 rounded-full bg-blue-50 text-blue-600 text-sm font-bold tracking-widest uppercase">
+                Industry Analysis Report 2026
+            </div>
+            <h1 class="text-7xl font-black gradient-text leading-tight mb-8">
+                台灣連鎖咖啡市場<br>競爭動態解析
+            </h1>
+            <p class="text-2xl text-gray-500 max-w-3xl leading-relaxed">
+                以路易莎與星巴克之賽局理論模型探討：<br>從紅海廝殺到策略均衡的演變路徑
+            </p>
+        </div>
+        <div class="border-t border-gray-100 pt-8 flex justify-between items-end">
+            <div>
+                <p class="text-sm text-gray-400 uppercase tracking-widest mb-1">Prepared by</p>
+                <p class="text-lg font-bold">KLIO x AI</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm text-gray-400 uppercase tracking-widest mb-1">Issue Date</p>
+                <p class="text-lg font-bold">March 2026</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第二頁：前言與市場概況 -->
+    <section class="page">
+        <div class="flex justify-between items-start mb-8">
+            <h2 class="text-3xl font-black flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                第一章：前言與研究背景
+            </h2>
+            <span class="text-gray-300 font-mono italic">01 / Introduction</span>
+        </div>
+        
+        <div class="flex flex-col gap-8 flex-grow">
+            <div class="w-full bg-gray-50 p-8 rounded-3xl flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 text-blue-600">市場格局演變</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        台灣咖啡市場已進入高度飽和的高原期。品牌競爭不再僅限於產品毛利，而是提升至資本配置、空間營造與數位轉型的綜合博弈。
+                    </p>
+                </div>
+                <div class="mt-8 space-y-4">
+                    <div class="p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span class="text-xs text-gray-400 block mb-1">關鍵主題</span>
+                        <span class="font-bold">賽局理論 (Game Theory)</span>
+                    </div>
+                    <div class="p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+                        <span class="text-xs text-gray-400 block mb-1">分析工具</span>
+                        <span class="font-bold">收益矩陣與動態決策樹</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full space-y-6">
+                <p class="text-xl leading-relaxed text-gray-700">
+                    本報告旨導入嚴謹的 <span class="text-blue-600 font-bold italic">賽局理論核心框架</span>，深度剖析路易莎 (LOUISA) 與台灣星巴克 (Starbucks) 在面對通膨壓力、數位轉型及定價策略時的互動。
+                </p>
+                <div class="flex flex-col gap-4">
+                    <div class="p-6 rounded-2xl border-2 border-dashed border-gray-100">
+                        <h4 class="font-bold mb-2">研究範疇</h4>
+                        <ul class="text-sm text-gray-500 space-y-2">
+                            <li>• 完全訊息靜態賽局：展店戰略</li>
+                            <li>• 混合賽局：促銷頻率隨機化</li>
+                            <li>• 貝氏賽局：資訊不對稱下的漲價</li>
+                            <li>• 動態賽局：先後手博弈與防禦</li>
+                        </ul>
+                    </div>
+                    <div class="p-6 rounded-2xl border-2 border-dashed border-gray-100">
+                        <h4 class="font-bold mb-2">核心價值</h4>
+                        <p class="text-sm text-gray-500 leading-relaxed">
+                            還原兩大巨頭戰略決策的底層經濟邏輯，提供未來面對變局時的競爭反應路徑預測。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第三頁：參與者剖析 -->
+    <section class="page">
+        <div class="flex justify-between items-start mb-8">
+            <h2 class="text-3xl font-black flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                第二章：賽局參與者實力分析
+            </h2>
+            <span class="text-gray-300 font-mono italic">02 / Players Profiles</span>
+        </div>
+
+        <div class="flex flex-col gap-8 flex-grow">
+            <!-- Louisa -->
+            <div class="p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-black tracking-tighter italic">LOUISA COFFEE</h3>
+                    <span class="px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-bold uppercase">本土龍頭</span>
+                </div>
+                <div class="space-y-4 flex-grow">
+                    <div class="flex flex-col gap-4">
+                        <div class="bg-gray-50 p-4 rounded-2xl">
+                            <span class="text-xs text-gray-400 block">2026 店數目標</span>
+                            <span class="text-2xl font-black">600+</span>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-2xl">
+                            <span class="text-xs text-gray-400 block">淨利變動 (2024)</span>
+                            <span class="text-2xl font-black text-red-500">-46M</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        定位於「平價精品」及「不限時第三空間」。2026年初面臨原物料上漲，啟動90項品項漲價，並大舉跨足重餐飲（如青焰牛排），企圖將餐食營收占比推升至 50% 以上。
+                    </p>
+                </div>
+                <div class="mt-6 pt-6 border-t border-gray-50 flex gap-2">
+                    <span class="text-xs px-2 py-1 bg-gray-100 rounded">成本敏感型</span>
+                    <span class="text-xs px-2 py-1 bg-gray-100 rounded">轉型複合餐飲</span>
+                </div>
+            </div>
+
+            <!-- Starbucks -->
+            <div class="p-8 rounded-3xl bg-slate-900 text-white flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-black tracking-tighter italic">STARBUCKS</h3>
+                    <span class="px-3 py-1 rounded-full bg-green-900 text-green-400 text-xs font-bold uppercase">國際巨星</span>
+                </div>
+                <div class="space-y-4 flex-grow text-slate-300">
+                    <div class="flex flex-col gap-4">
+                        <div class="bg-slate-800 p-4 rounded-2xl">
+                            <span class="text-xs text-slate-500 block">母集團營收 (2025)</span>
+                            <span class="text-2xl font-black text-white">350.7B</span>
+                        </div>
+                        <div class="bg-slate-800 p-4 rounded-2xl">
+                            <span class="text-xs text-slate-500 block">會員生態圈</span>
+                            <span class="text-2xl font-black text-white">19.5M</span>
+                        </div>
+                    </div>
+                    <p class="text-sm leading-relaxed">
+                        依靠統一集團資源，主打高端生活品味。營運高度數位化（Deep Brew AI），利用 uniopen 生態圈鎖定高淨值用戶。策略上汰弱留強，不盲目追求店數，專注於品牌溢價與轉化率。
+                    </p>
+                </div>
+                <div class="mt-6 pt-6 border-t border-slate-800 flex gap-2">
+                    <span class="text-xs px-2 py-1 bg-slate-800 rounded">數位飛輪</span>
+                    <span class="text-xs px-2 py-1 bg-slate-800 rounded">高轉換成本</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第四頁：靜態賽局與收益矩陣 -->
+    <section class="page">
+        <div class="flex justify-between items-start mb-8">
+            <h2 class="text-3xl font-black flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                第三、四章：靜態與混合策略均衡
+            </h2>
+            <span class="text-gray-300 font-mono italic">03-04 / Strategic Games</span>
+        </div>
+
+        <div class="flex flex-col gap-6 flex-grow">
+            <!-- Case 1: Expansion -->
+            <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-lg">
+                <h4 class="font-black text-blue-600 mb-4 uppercase text-xs tracking-widest text-center">展店博弈模型</h4>
+                <table class="payoff-table w-full text-xs mb-4">
+                    <thead>
+                        <tr>
+                            <th>L \ S</th>
+                            <th>大舉展店</th>
+                            <th>維持現狀</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="font-bold">大舉展店</th>
+                            <td>(2, 2)</td>
+                            <td class="bg-blue-100 text-blue-700">(5, 3) 🏆</td>
+                        </tr>
+                        <tr>
+                            <th class="font-bold">維持優化</th>
+                            <td class="bg-blue-100 text-blue-700">(3, 5) 🏆</td>
+                            <td>(4, 4)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    <b>納許均衡：</b>錯位發展。路易莎選擇大舉開發下沉市場，星巴克專注單店優化。
+                </p>
+            </div>
+
+            <!-- Case 2: Diversification -->
+            <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-lg">
+                <h4 class="font-black text-blue-600 mb-4 uppercase text-xs tracking-widest text-center">餐飲多元化博弈</h4>
+                <table class="payoff-table w-full text-xs mb-4">
+                    <thead>
+                        <tr>
+                            <th>L \ S</th>
+                            <th>咖啡本業</th>
+                            <th>重度餐飲</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="font-bold">重度餐飲</th>
+                            <td class="bg-blue-100 text-blue-700">(6, 5) 🏆</td>
+                            <td>(3, 3)</td>
+                        </tr>
+                        <tr>
+                            <th class="font-bold">咖啡本業</th>
+                            <td>(2, 6)</td>
+                            <td>(4, 4)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    路易莎具備跨足重餐飲的動機以減輕原物料壓力，星巴克優勢策略則是專注核心。
+                </p>
+            </div>
+
+            <!-- Case 3: Mixed Promo -->
+            <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-lg">
+                <h4 class="font-black text-blue-600 mb-4 uppercase text-xs tracking-widest text-center">混合策略：促銷</h4>
+                <table class="payoff-table w-full text-xs mb-4">
+                    <thead>
+                        <tr>
+                            <th>L \ S</th>
+                            <th>隨機促銷</th>
+                            <th>不促銷</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="font-bold">長期防禦</th>
+                            <td>(3, 4)</td>
+                            <td>(6, 2)</td>
+                        </tr>
+                        <tr>
+                            <th class="font-bold">不促銷</th>
+                            <td>(1, 7)</td>
+                            <td>(5, 5)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="text-xs text-gray-500 leading-relaxed">
+                    星巴克使用<b>隨機化策略</b>打破預期；路易莎則以<b>寄杯承諾機制</b>鈍化星巴克的殺傷力。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第五頁：動態賽局與決策樹 -->
+    <section class="page">
+        <div class="flex justify-between items-start mb-8">
+            <h2 class="text-3xl font-black flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                第六章：2026 定價動態賽局分析
+            </h2>
+            <span class="text-gray-300 font-mono italic">06 / Dynamic Games</span>
+        </div>
+
+        <div class="flex flex-col gap-8 flex-grow">
+            <div class="w-full bg-slate-50 p-8 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"/>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-black mb-6">反向歸納法決策樹 (Backward Induction)</h3>
+                
+                <div class="space-y-6 text-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
+                        <div class="flex-grow p-4 bg-white rounded-2xl shadow-sm border border-blue-100">
+                            <b>Node 1 - 路易莎先行：</b> 選擇「漲價 + 數位寄杯 (Hike & Lock-in)」。
+                        </div>
+                    </div>
+                    <div class="ml-12 border-l-2 border-dashed border-gray-200 pl-8 space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold">2</div>
+                            <div class="flex-grow p-4 bg-white rounded-2xl shadow-sm">
+                                <b>Node 2 - 星巴克反應：</b> 觀察到消費者已被「寄杯」鎖定，發動價格戰收益極低。
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold">✓</div>
+                            <div class="flex-grow p-4 bg-green-50 rounded-2xl border border-green-100 font-bold text-green-700">
+                                均衡狀態：星巴克維持現狀 (Maintain)，路易莎成功轉嫁成本並留存客源。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full flex flex-col gap-4">
+                <div class="p-6 bg-white border border-gray-100 rounded-3xl shadow-lg flex-grow">
+                    <h4 class="font-bold text-blue-600 mb-2">信號理論 (Signaling)</h4>
+                    <p class="text-xs text-gray-500 leading-relaxed mb-4">
+                        路易莎大舉投資牛排館是一個「分離均衡」信號。這告知星巴克：路易莎正主動避開高端咖啡競爭，轉向大眾餐飲。
+                    </p>
+                    <div class="p-4 bg-gray-50 rounded-xl text-center">
+                        <span class="text-xs font-mono">SEPARATING EQUILIBRIUM ACHIEVED</span>
+                    </div>
+                </div>
+                <div class="p-6 bg-blue-600 text-white rounded-3xl shadow-xl flex-grow">
+                    <h4 class="font-bold mb-2">戰略啟發</h4>
+                    <ul class="text-xs space-y-2 opacity-90">
+                        <li>• 承諾機制是抵禦掠奪性定價的關鍵</li>
+                        <li>• 資本支出可作為可信的信號 (Credible Signal)</li>
+                        <li>• 錯位發展可最大化整體產業鏈價值</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 第六頁：結論 -->
+    <section class="page">
+        <div class="flex justify-between items-start mb-8">
+            <h2 class="text-3xl font-black flex items-center gap-3">
+                <span class="w-2 h-8 bg-blue-600 rounded-full"></span>
+                結論：台灣咖啡市場的雙峰未來
+            </h2>
+            <span class="text-gray-300 font-mono italic">Final Summary</span>
+        </div>
+
+        <div class="bento-grid">
+            <div class="w-full row-span-1 bg-gray-50 p-8 rounded-3xl">
+                <h3 class="text-lg font-bold mb-2">錯位均衡的智慧</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                    雙方已達成默契和平：星巴克引領「頂級生活品味生態圈」，路易莎主導「平價複合機能餐飲」。競爭從產品轉向生態圈與場景的爭奪。
+                </p>
+            </div>
+            <div class="w-full row-span-1 bg-blue-50 p-8 rounded-3xl">
+                <h3 class="text-lg font-bold mb-2 text-blue-600">防禦機制的重要性</h3>
+                <p class="text-sm text-gray-500 leading-relaxed">
+                    路易莎的寄杯機制證明了，在提價陣痛期透過數位工具創造轉換障礙，是穩定市占率與現金流的最強戰略跳板。
+                </p>
+            </div>
+            <div class="w-full row-span-1 bg-slate-900 text-white p-8 rounded-3xl flex items-center justify-between">
+                <div class="max-w-xl">
+                    <h3 class="text-xl font-bold mb-2">展望 2026 - 2030</h3>
+                    <p class="text-sm opacity-70">
+                        未來將由 AI 驅動的全渠道體驗決定勝負。路易莎的垂直整合投資案具備高度安全性，因為其產品定位與星巴克的高端溢價空間存在天然的屏障。
+                    </p>
+                </div>
+                <div class="text-right">
+                    <div class="text-4xl font-black text-blue-500">OPTIMAL</div>
+                    <div class="text-xs tracking-widest opacity-50 uppercase">Strategic Response</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 pt-8 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-400">
+            <div class="flex gap-4">
+                <span>REFERENCE: 2025 ALL-TAIWAN POPULAR COFFEE REPORT</span>
+                <span>DATA SOURCE: PCSC ANNUAL REPORT 2025</span>
+            </div>
+            <div>© 2026 LOUISA VS STARBUCKS COMPETITION STUDY</div>
+        </div>
+    </section>
+
+    <script>
+        // 簡單的互動邏輯：點擊卡片增加高亮
+        document.querySelectorAll('.page div').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                if(card.classList.contains('p-8') || card.classList.contains('p-6')) {
+                    card.style.transform = 'translateY(-2px)';
+                    card.style.transition = 'all 0.3s ease';
+                }
+            });
+            card.addEventListener('mouseleave', () => {
+                if(card.classList.contains('p-8') || card.classList.contains('p-6')) {
+                    card.style.transform = 'translateY(0px)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
