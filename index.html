@@ -86,6 +86,17 @@
             text-decoration: none;
         }
     </style>
+
+    <!-- 行動裝置轉址：UA + 螢幕寬度雙重驗證 -->
+    <script>
+        (function () {
+            var ua = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            var narrow = window.innerWidth <= 768;
+            if (ua && narrow) {
+                window.location.replace('/m/index.html');
+            }
+        })();
+    </script>
 </head>
 
 <body class="antialiased selection:bg-blue-500 selection:text-white">
