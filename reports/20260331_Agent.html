@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 頂尖產品團隊協作矩陣：AI Agentic 工作模式全攻略</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 40px -10px rgba(59, 130, 246, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* =========================================
+           核心排版與列印規範 (Critical Rules)
+           ========================================= */
+        :root {
+            --page-width: 297mm;
+            --page-height: 210mm;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        /* 橫式 A4 滿版優化 */
+        .a4-landscape-page {
+            width: var(--page-width);
+            min-height: var(--page-height);
+            background: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border-radius: 1.5rem; /* rounded-2xl */
+            padding: 3rem; /* 內部安全出血邊界 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 延展撐開填滿高度 */
+            position: relative;
+            overflow: hidden;
+            
+            /* 斷頁防護 */
+            page-break-after: always;
+            break-inside: avoid;
+        }
+
+        /* 編輯模式視覺防呆 */
+        .document-wrapper[contenteditable="true"] .a4-landscape-page {
+            outline: 4px dashed #3b82f6;
+            outline-offset: 4px;
+            animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { outline-color: rgba(59, 130, 246, 1); }
+            50% { outline-color: rgba(59, 130, 246, 0.3); }
+        }
+
+        /* 背景裝飾圖形 */
+        .bg-shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* 內容層級確保在背景圖形之上 */
+        .content-layer {
+            position: relative;
+            z-index: 10;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 流程箭頭樣式 */
+        .flow-arrow {
+            position: relative;
+        }
+        .flow-arrow::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .flow-arrow:last-child::after {
+            display: none;
+        }
+
+        /* =========================================
+           列印引擎強制對應 (Print Media Query)
+           ========================================= */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+                margin: 0;
+                display: block;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .a4-landscape-page {
+                width: 297mm;
+                height: 210mm; /* 強制精確高度 */
+                min-height: 210mm;
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+                padding: 12mm 15mm; /* 列印用安全邊界 */
+            }
+            /* 強制背景顏色與圖形無損輸出 */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            /* 停用所有動畫 */
+            *, ::before, ::after {
+                animation-play-state: paused !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- 控制面板 (Control Panel) -->
+    <div class="no-print fixed top-6 right-6 z-50 flex gap-3 p-3 bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl rounded-2xl">
+        <a href="20260327_Ateam_JD.html" class="flex items-center gap-2 px-4 py-2 font-semibold text-slate-700 bg-white hover:bg-amber-50 rounded-xl transition-colors shadow-sm border border-slate-200">
+            <span>📄</span> Ateam JD
+        </a>
+        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 font-semibold text-slate-700 bg-white hover:bg-brand-50 rounded-xl transition-colors shadow-sm border border-slate-200">
+            <span>✏️</span> <span id="text-edit">編輯內容</span>
+        </button>
+        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 font-semibold text-slate-700 bg-white hover:bg-green-50 rounded-xl transition-colors shadow-sm border border-slate-200">
+            <span>⬇️</span> 儲存網頁
+        </button>
+        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl transition-colors shadow-glow border border-transparent">
+            <span>🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <!-- 內容包裝層 (可編輯區域) -->
+    <div id="document-wrapper" class="document-wrapper flex flex-col gap-8">
+
+        <!-- ==========================================
+             Page 1: 封面與概念介紹 (Hero 模組)
+             ========================================== -->
+        <section class="a4-landscape-page bg-slate-50">
+            <div class="bg-shape bg-brand-500 w-96 h-96 top-[-10%] left-[-10%]"></div>
+            <div class="bg-shape bg-purple-400 w-80 h-80 bottom-[-10%] right-[-10%]"></div>
+            
+            <div class="content-layer justify-center items-center text-center">
+                <div class="inline-block px-4 py-1.5 rounded-full bg-brand-100 text-brand-900 font-bold tracking-wider text-sm mb-6 border border-brand-200 uppercase">
+                    Operating Model Transformation
+                </div>
+                <h1 class="text-6xl font-black text-slate-900 mb-6 leading-tight tracking-tight">
+                    頂尖產品團隊協作矩陣 <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600">AI Agentic 工作模式全攻略</span>
+                </h1>
+                <p class="text-xl text-slate-600 max-w-3xl leading-relaxed mb-12">
+                    在打造高績效團隊時，協作流暢度決定產品成敗。本指南將產品開發週期拆解，並將傳統角色重塑為 <strong>自治與協作並重的 AI Agent 節點</strong>，透過標準化的 <span class="font-bold text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Input</span>、<span class="font-bold text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Process</span>、<span class="font-bold text-slate-800 bg-slate-200 px-2 py-0.5 rounded">Output</span>，建立無縫接軌的高速增長飛輪。
+                </p>
+
+                <!-- 流程概念圖 -->
+                <div class="flex items-center justify-center gap-6 w-full max-w-4xl">
+                    <div class="flex-1 bg-white p-6 rounded-3xl shadow-soft border border-slate-100">
+                        <div class="text-3xl mb-2">📥</div>
+                        <h3 class="font-bold text-lg mb-1">Input (感知輸入)</h3>
+                        <p class="text-sm text-slate-500">數據、用戶原聲、商業目標</p>
+                    </div>
+                    <div class="text-slate-300 text-2xl">➔</div>
+                    <div class="flex-1 bg-brand-600 text-white p-6 rounded-3xl shadow-glow">
+                        <div class="text-3xl mb-2">🧠</div>
+                        <h3 class="font-bold text-lg mb-1">Process (智能處理)</h3>
+                        <p class="text-sm text-brand-100">方法論套用、優先級決策</p>
+                    </div>
+                    <div class="text-slate-300 text-2xl">➔</div>
+                    <div class="flex-1 bg-white p-6 rounded-3xl shadow-soft border border-slate-100">
+                        <div class="text-3xl mb-2">📤</div>
+                        <h3 class="font-bold text-lg mb-1">Output (交付輸出)</h3>
+                        <p class="text-sm text-slate-500">策略文件、代碼、營收增長</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-layer justify-end">
+                <div class="flex justify-between items-center text-sm text-slate-400 border-t border-slate-200 pt-4">
+                    <span>Generated by Layout Architect</span>
+                    <span>Page 1 / 6</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 2: 核心樞紐 (The Trinity Agents)
+             ========================================== -->
+        <section class="a4-landscape-page">
+            <div class="content-layer flex-1">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-black text-slate-900 border-l-4 border-brand-500 pl-4">核心樞紐：產品管理的「三位一體」Agent</h2>
+                    <p class="text-slate-500 mt-2 pl-5">負責定義價值 (Value)、確保交付 (Feasibility) 與推動市場 (Go-to-Market) 的三大指揮中樞。</p>
+                </header>
+
+                <div class="flex flex-col gap-5 h-full justify-center">
+                    <!-- PM Agent -->
+                    <div class="flex gap-4 items-stretch">
+                        <div class="w-48 bg-slate-900 text-white p-5 rounded-2xl flex flex-col justify-center shadow-lg">
+                            <span class="text-2xl mb-1">🎯</span>
+                            <h3 class="font-bold text-lg leading-tight">Product Manager Agent</h3>
+                            <span class="text-xs text-slate-400 mt-1">聚焦 Value & Viability</span>
+                        </div>
+                        <div class="flex-1 flex gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm flow-arrow">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Input</h4>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc pl-4">
+                                    <li>市場趨勢、OKRs</li>
+                                    <li>UX 質化/Data 量化洞察</li>
+                                    <li>第一線顧客原聲 (VoC)</li>
+                                </ul>
+                            </div>
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm border-2 border-brand-100 flow-arrow relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-brand-100 text-brand-700 text-[10px] px-2 py-0.5 rounded-bl-lg font-bold">Process</div>
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Core Method</h4>
+                                <ul class="text-sm space-y-1 text-slate-700 font-medium">
+                                    <li>🔍 產品探索 (OST 解法樹)</li>
+                                    <li>⚖️ 優先級排序 (RICE/Kano)</li>
+                                    <li>🤝 願景對齊 (PR/FAQ)</li>
+                                </ul>
+                            </div>
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Output</h4>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc pl-4">
+                                    <li class="font-semibold text-brand-600">產品願景與戰略文件</li>
+                                    <li class="font-semibold text-brand-600">Product Roadmap</li>
+                                    <li class="font-semibold text-brand-600">產品需求文件 (PRD)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Program Manager Agent -->
+                    <div class="flex gap-4 items-stretch">
+                        <div class="w-48 bg-slate-800 text-white p-5 rounded-2xl flex flex-col justify-center shadow-lg">
+                            <span class="text-2xl mb-1">⚙️</span>
+                            <h3 class="font-bold text-lg leading-tight">Program Manager Agent</h3>
+                            <span class="text-xs text-slate-400 mt-1">聚焦 Feasibility & Delivery</span>
+                        </div>
+                        <div class="flex-1 flex gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm flow-arrow">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Input</h4>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc pl-4">
+                                    <li>PM的 PRD 與 Roadmap</li>
+                                    <li>工程團隊工時估算</li>
+                                    <li>跨部門依賴關係清單</li>
+                                </ul>
+                            </div>
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm border-2 border-slate-200 flow-arrow relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-slate-200 text-slate-700 text-[10px] px-2 py-0.5 rounded-bl-lg font-bold">Process</div>
+                                <ul class="text-sm space-y-1 text-slate-700 font-medium mt-4">
+                                    <li>🔄 敏捷框架 (Scrum/Kanban)</li>
+                                    <li>🛡️ 風險與相依性管理</li>
+                                    <li>🌉 跨團隊協調同步</li>
+                                </ul>
+                            </div>
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Output</h4>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc pl-4">
+                                    <li class="font-semibold text-slate-800">專案時程表 (Release Plan)</li>
+                                    <li class="font-semibold text-slate-800">Sprint 任務看板/燃盡圖</li>
+                                    <li class="font-semibold text-slate-800">專案回顧報告 (Post-mortem)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PMM Agent -->
+                    <div class="flex gap-4 items-stretch">
+                        <div class="w-48 bg-slate-700 text-white p-5 rounded-2xl flex flex-col justify-center shadow-lg">
+                            <span class="text-2xl mb-1">🚀</span>
+                            <h3 class="font-bold text-lg leading-tight">Product Marketing Agent</h3>
+                            <span class="text-xs text-slate-300 mt-1">聚焦 Go-to-Market</span>
+                        </div>
+                        <div class="flex-1 flex gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm flow-arrow">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Input</h4>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc pl-4">
+                                    <li>產品定位與新功能亮點</li>
+                                    <li>競爭對手分析報告</li>
+                                    <li>Win/Loss 分析數據</li>
+                                </ul>
+                            </div>
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm border-2 border-purple-100 flow-arrow relative overflow-hidden">
+                                <div class="absolute top-0 right-0 bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-bl-lg font-bold">Process</div>
+                                <ul class="text-sm space-y-1 text-slate-700 font-medium mt-4">
+                                    <li>🎯 STP 與買家輪廓定義</li>
+                                    <li>💎 價值主張論述設計</li>
+                                    <li>💰 定價與包裝策略</li>
+                                </ul>
+                            </div>
+                            <div class="flex-1 bg-white p-4 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Output</h4>
+                                <ul class="text-sm space-y-1 text-slate-600 list-disc pl-4">
+                                    <li class="font-semibold text-purple-700">GTM 上市作戰計畫</li>
+                                    <li class="font-semibold text-purple-700">銷售賦能 (Battle Cards)</li>
+                                    <li class="font-semibold text-purple-700">對外發佈文案與素材</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-layer justify-end h-auto mt-4">
+                <div class="flex justify-between items-center text-sm text-slate-400 border-t border-slate-200 pt-4">
+                    <span>協作矩陣 - 核心樞紐</span>
+                    <span>Page 2 / 6</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 3: Discovery & Delivery (Bento Box)
+             ========================================== -->
+        <section class="a4-landscape-page">
+            <div class="content-layer flex-1">
+                <header class="mb-6 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-900 border-l-4 border-indigo-500 pl-4 mb-1">探索與交付矩陣 (Discovery & Delivery)</h2>
+                        <p class="text-slate-500 pl-5">從發掘底層需求到化為可用系統的高效轉換網路。</p>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-3 grid-rows-2 gap-5 h-full">
+                    <!-- UX Agent -->
+                    <div class="bg-white p-5 rounded-3xl shadow-soft border border-slate-100 flex flex-col">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-indigo-100 text-indigo-600 p-2 rounded-lg text-xl">🎨</span>
+                            <h3 class="font-bold text-lg">UX / UR Agent</h3>
+                        </div>
+                        <div class="flex-1 bg-slate-50 rounded-xl p-3 text-sm space-y-3">
+                            <div><span class="font-bold text-slate-400 text-xs">IN:</span> 商業目標、行為異常數據</div>
+                            <div class="bg-white p-2 rounded-lg border border-indigo-100 shadow-sm relative">
+                                <div class="absolute -left-1 top-2 w-1 h-4 bg-indigo-500 rounded-r"></div>
+                                <span class="font-bold text-indigo-700">Process:</span> 深度訪談、Design Sprint、服務藍圖，挖掘底層動機。
+                            </div>
+                            <div><span class="font-bold text-slate-400 text-xs">OUT:</span> 洞察報告、旅程圖、低保真原型</div>
+                        </div>
+                    </div>
+
+                    <!-- Data Agent -->
+                    <div class="bg-white p-5 rounded-3xl shadow-soft border border-slate-100 flex flex-col">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-blue-100 text-blue-600 p-2 rounded-lg text-xl">📊</span>
+                            <h3 class="font-bold text-lg">Data Analyst Agent</h3>
+                        </div>
+                        <div class="flex-1 bg-slate-50 rounded-xl p-3 text-sm space-y-3">
+                            <div><span class="font-bold text-slate-400 text-xs">IN:</span> 商業提問、產品埋點計畫</div>
+                            <div class="bg-white p-2 rounded-lg border border-blue-100 shadow-sm relative">
+                                <div class="absolute -left-1 top-2 w-1 h-4 bg-blue-500 rounded-r"></div>
+                                <span class="font-bold text-blue-700">Process:</span> 漏斗分析、同群分析、A/B 測試模型，消滅「我覺得」。
+                            </div>
+                            <div><span class="font-bold text-slate-400 text-xs">OUT:</span> 數據儀表板、測試報告、預測模型</div>
+                        </div>
+                    </div>
+
+                    <!-- Stakeholder Agent -->
+                    <div class="bg-white p-5 rounded-3xl shadow-soft border border-slate-100 flex flex-col">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-amber-100 text-amber-600 p-2 rounded-lg text-xl">👑</span>
+                            <h3 class="font-bold text-lg">Leadership Agent</h3>
+                        </div>
+                        <div class="flex-1 bg-slate-50 rounded-xl p-3 text-sm space-y-3">
+                            <div><span class="font-bold text-slate-400 text-xs">IN:</span> 總體經濟、產品表現、董事會期許</div>
+                            <div class="bg-white p-2 rounded-lg border border-amber-100 shadow-sm relative">
+                                <div class="absolute -left-1 top-2 w-1 h-4 bg-amber-500 rounded-r"></div>
+                                <span class="font-bold text-amber-700">Process:</span> OKR 設定、資源投資組合管理，提供戰略護欄。
+                            </div>
+                            <div><span class="font-bold text-slate-400 text-xs">OUT:</span> 北極星指標、戰略邊界、預算授權</div>
+                        </div>
+                    </div>
+
+                    <!-- Eng Agent -->
+                    <div class="bg-slate-900 text-white p-5 rounded-3xl shadow-xl flex flex-col">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-slate-700 text-white p-2 rounded-lg text-xl">💻</span>
+                            <h3 class="font-bold text-lg">Engineering Agent</h3>
+                        </div>
+                        <div class="flex-1 bg-slate-800 rounded-xl p-3 text-sm space-y-3 border border-slate-700">
+                            <div class="text-slate-300"><span class="font-bold text-slate-500 text-xs">IN:</span> PRD、設計稿、技術債清單</div>
+                            <div class="bg-slate-700 p-2 rounded-lg border border-slate-600 relative">
+                                <div class="absolute -left-1 top-2 w-1 h-4 bg-green-400 rounded-r"></div>
+                                <span class="font-bold text-green-400">Process:</span> 架構 RFC、CI/CD 持續交付、Code Review。
+                            </div>
+                            <div class="text-green-300"><span class="font-bold text-slate-500 text-xs">OUT:</span> 擴充性代碼、API 文件、架構圖</div>
+                        </div>
+                    </div>
+
+                    <!-- QA Agent -->
+                    <div class="bg-white p-5 rounded-3xl shadow-soft border border-slate-100 flex flex-col">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-red-100 text-red-600 p-2 rounded-lg text-xl">🛡️</span>
+                            <h3 class="font-bold text-lg">QA / SDET Agent</h3>
+                        </div>
+                        <div class="flex-1 bg-slate-50 rounded-xl p-3 text-sm space-y-3">
+                            <div><span class="font-bold text-slate-400 text-xs">IN:</span> 驗收標準、測試環境與 Build</div>
+                            <div class="bg-white p-2 rounded-lg border border-red-100 shadow-sm relative">
+                                <div class="absolute -left-1 top-2 w-1 h-4 bg-red-500 rounded-r"></div>
+                                <span class="font-bold text-red-700">Process:</span> 測試左移 (Shift-Left)、建立自動化測試框架。
+                            </div>
+                            <div><span class="font-bold text-slate-400 text-xs">OUT:</span> 測試計畫、品質指標、Bug 清單</div>
+                        </div>
+                    </div>
+
+                    <!-- UI Agent -->
+                    <div class="bg-white p-5 rounded-3xl shadow-soft border border-slate-100 flex flex-col">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-pink-100 text-pink-600 p-2 rounded-lg text-xl">✨</span>
+                            <h3 class="font-bold text-lg">UI Designer Agent</h3>
+                        </div>
+                        <div class="flex-1 bg-slate-50 rounded-xl p-3 text-sm space-y-3">
+                            <div><span class="font-bold text-slate-400 text-xs">IN:</span> UX 線框圖、視覺規範、技術限制</div>
+                            <div class="bg-white p-2 rounded-lg border border-pink-100 shadow-sm relative">
+                                <div class="absolute -left-1 top-2 w-1 h-4 bg-pink-500 rounded-r"></div>
+                                <span class="font-bold text-pink-700">Process:</span> 原子設計理論、無障礙設計 (a11y) 驗證與組件化。
+                            </div>
+                            <div><span class="font-bold text-slate-400 text-xs">OUT:</span> 高保真原型、設計系統、標註</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-layer justify-end h-auto mt-4">
+                <div class="flex justify-between items-center text-sm text-slate-400 border-t border-slate-200 pt-4">
+                    <span>協作矩陣 - 探索與交付</span>
+                    <span>Page 3 / 6</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 4: 上市策略與增長團隊 (Growth Flow)
+             ========================================== -->
+        <section class="a4-landscape-page bg-gradient-to-br from-white to-slate-50">
+            <div class="content-layer flex-1">
+                <header class="mb-10">
+                    <h2 class="text-3xl font-black text-slate-900 border-l-4 border-green-500 pl-4 mb-1">上市策略與增長矩陣 (Growth & Market)</h2>
+                    <p class="text-slate-500 pl-5">將產品價值轉換為實際營收與品牌聲量的增長引擎。</p>
+                </header>
+
+                <div class="flex flex-col gap-6 relative">
+                    <!-- 連接線 -->
+                    <div class="absolute left-[3rem] top-8 bottom-8 w-1 bg-slate-200 rounded-full z-0"></div>
+
+                    <!-- Sales Agent -->
+                    <div class="flex items-center gap-6 z-10">
+                        <div class="w-24 h-24 rounded-full bg-white shadow-lg border-4 border-green-500 flex items-center justify-center text-4xl shrink-0 z-10">
+                            🤝
+                        </div>
+                        <div class="flex-1 bg-white p-6 rounded-2xl shadow-soft border border-slate-100 flex gap-6 items-center">
+                            <div class="w-1/4">
+                                <h3 class="font-bold text-xl text-slate-800">Sales / BD Agent</h3>
+                                <p class="text-xs text-slate-400 mt-1">變現與企業信賴建立</p>
+                            </div>
+                            <div class="flex-1 bg-slate-50 p-4 rounded-xl text-sm">
+                                <span class="block font-bold text-green-600 mb-1">⚙️ Process (顧問式銷售)</span>
+                                運用 MEDDIC 或 BANT 銷售資格框架，進行痛點深挖、談判與締結。
+                            </div>
+                            <div class="w-1/3 border-l border-slate-200 pl-6 text-sm">
+                                <ul class="space-y-2 text-slate-600">
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 實際營收 (ARR/MRR)</li>
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Win/Loss 結案分析</li>
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 帶營收價值的新功能許願清單</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marketing Agent -->
+                    <div class="flex items-center gap-6 z-10">
+                        <div class="w-24 h-24 rounded-full bg-white shadow-lg border-4 border-rose-500 flex items-center justify-center text-4xl shrink-0 z-10">
+                            📢
+                        </div>
+                        <div class="flex-1 bg-white p-6 rounded-2xl shadow-soft border border-slate-100 flex gap-6 items-center">
+                            <div class="w-1/4">
+                                <h3 class="font-bold text-xl text-slate-800">Marketing Agent</h3>
+                                <p class="text-xs text-slate-400 mt-1">規模化聲量與漏斗獲客</p>
+                            </div>
+                            <div class="flex-1 bg-slate-50 p-4 rounded-xl text-sm">
+                                <span class="block font-bold text-rose-600 mb-1">⚙️ Process (成長駭客)</span>
+                                執行 Inbound Marketing (入站行銷) 與 SEO/SEM 策略，最大化市場觸及。
+                            </div>
+                            <div class="w-1/3 border-l border-slate-200 pl-6 text-sm">
+                                <ul class="space-y-2 text-slate-600">
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 品牌曝光與媒體聲量</li>
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 行銷合格名單 (MQLs)</li>
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 行銷 ROI 分析</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CSM Agent -->
+                    <div class="flex items-center gap-6 z-10">
+                        <div class="w-24 h-24 rounded-full bg-white shadow-lg border-4 border-teal-500 flex items-center justify-center text-4xl shrink-0 z-10">
+                            ❤️
+                        </div>
+                        <div class="flex-1 bg-white p-6 rounded-2xl shadow-soft border border-slate-100 flex gap-6 items-center">
+                            <div class="w-1/4">
+                                <h3 class="font-bold text-xl text-slate-800">CSM Agent</h3>
+                                <p class="text-xs text-slate-400 mt-1">主動創造價值與留存</p>
+                            </div>
+                            <div class="flex-1 bg-slate-50 p-4 rounded-xl text-sm">
+                                <span class="block font-bold text-teal-600 mb-1">⚙️ Process (客戶健康管理)</span>
+                                建立客戶健康分數 (Health Score) 預警，舉辦季度業務回顧 (QBR)。
+                            </div>
+                            <div class="w-1/3 border-l border-slate-200 pl-6 text-sm">
+                                <ul class="space-y-2 text-slate-600">
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 淨推薦值 NPS / CSAT</li>
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 客戶成功案例 (Case Studies)</li>
+                                    <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 流失原因深度剖析</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-layer justify-end h-auto mt-4">
+                <div class="flex justify-between items-center text-sm text-slate-400 border-t border-slate-200 pt-4">
+                    <span>協作矩陣 - 上市與增長</span>
+                    <span>Page 4 / 6</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 5: 方法論字典 (Process Deep Dive)
+             ========================================== -->
+        <section class="a4-landscape-page">
+            <div class="content-layer flex-1">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-black text-slate-900 border-l-4 border-slate-800 pl-4 mb-1">Process 方法論深度解析 (Methodology Glossary)</h2>
+                    <p class="text-slate-500 pl-5">拆解各節點所使用的專業框架，這是 AI 團隊運算的「演算法」。</p>
+                </header>
+
+                <div class="grid grid-cols-2 gap-x-8 gap-y-6">
+                    <!-- Method Item -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-brand-100 text-brand-700 rounded text-xs font-bold">PM</span>
+                            <h3 class="font-bold text-slate-800 text-lg">機會解法樹 (Opportunity Solution Tree)</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            一種視覺化的探索工具。由頂層的「期望商業結果 (Outcome)」出發，向下展開使用者痛點或機會 (Opportunity)，再發想對應的解法 (Solution)，最後設計實驗 (Experiment) 來驗證。確保團隊不會陷入盲目開發功能。
+                        </p>
+                    </div>
+
+                    <!-- Method Item -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-brand-100 text-brand-700 rounded text-xs font-bold">PM</span>
+                            <h3 class="font-bold text-slate-800 text-lg">RICE / Kano 模型</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            <strong>RICE:</strong> 基於觸及率(Reach)、影響力(Impact)、信心(Confidence)與努力成本(Effort)的計分公式。<br>
+                            <strong>Kano:</strong> 將需求分類為「基本必備」、「線性期望」與「魅力興奮」屬性，幫助在資源有限下規劃最佳功能組合。
+                        </p>
+                    </div>
+
+                    <!-- Method Item -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-bold">PMM</span>
+                            <h3 class="font-bold text-slate-800 text-lg">STP 與買家輪廓 (Buyer Personas)</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            <strong>STP:</strong> 市場細分(Segmentation)、目標市場選擇(Targeting)與定位(Positioning)。搭配買家輪廓，具體化決策者的痛點、目標與購買障礙，確保產品行銷的子彈打在對的靶上。
+                        </p>
+                    </div>
+
+                    <!-- Method Item -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-slate-200 text-slate-700 rounded text-xs font-bold">Eng</span>
+                            <h3 class="font-bold text-slate-800 text-lg">CI / CD (持續整合與持續交付)</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            軟體工程實踐。開發者頻繁將程式碼合併回主分支 (CI)，並透過自動化測試確保品質，隨後自動部署至生產環境 (CD)。極大化降低上線風險並加速交付循環。
+                        </p>
+                    </div>
+
+                    <!-- Method Item -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-pink-100 text-pink-700 rounded text-xs font-bold">UI</span>
+                            <h3 class="font-bold text-slate-800 text-lg">原子設計理論 (Atomic Design)</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            將 UI 介面拆解為五個層級：原子 (如按鈕、字體)、分子 (如搜尋框)、有機體 (如導覽列)、模板與頁面。建立具備高度一致性且易於工程師封裝重用的設計系統。
+                        </p>
+                    </div>
+
+                    <!-- Method Item -->
+                    <div class="border-b border-slate-200 pb-4">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold">Sales</span>
+                            <h3 class="font-bold text-slate-800 text-lg">MEDDIC 銷售資格框架</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            B2B 複雜銷售的檢核表。包含 Metrics (指標)、Economic Buyer (經濟決策者)、Decision Criteria (決策標準)、Decision Process (決策流程)、Identify Pain (確認痛點) 與 Champion (擁護者)，確保銷售資源不被浪費。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="content-layer justify-end h-auto mt-4">
+                <div class="flex justify-between items-center text-sm text-slate-400 border-t border-slate-200 pt-4">
+                    <span>深度解析 - 方法論</span>
+                    <span>Page 5 / 6</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 6: 交付物結構解析 (Deliverables Structure)
+             ========================================== -->
+        <section class="a4-landscape-page bg-slate-900 text-slate-200">
+            <div class="content-layer flex-1">
+                <header class="mb-8">
+                    <h2 class="text-3xl font-black text-white border-l-4 border-brand-400 pl-4 mb-1">關鍵交付物結構 (Output Deliverables Blueprint)</h2>
+                    <p class="text-slate-400 pl-5">高品質的輸出不是流水帳，而是具備嚴謹結構的行動指南。</p>
+                </header>
+
+                <div class="grid grid-cols-3 gap-6 h-full">
+                    <!-- PRD -->
+                    <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col">
+                        <h3 class="text-xl font-bold text-brand-400 mb-4 flex items-center gap-2">📄 PRD 產品需求文件</h3>
+                        <div class="text-sm space-y-3 flex-1">
+                            <p class="text-slate-400 mb-2">由 PM 產出，工程與 QA 的唯一真相來源 (SSOT)。</p>
+                            <ul class="space-y-2">
+                                <li><span class="text-brand-300 font-bold">1. 戰略背景：</span> Why now? 解決什麼問題？</li>
+                                <li><span class="text-brand-300 font-bold">2. 目標受眾：</span> 這是為誰設計的？</li>
+                                <li><span class="text-brand-300 font-bold">3. 使用者故事：</span> As a [role], I want [feature], so that [value].</li>
+                                <li><span class="text-brand-300 font-bold">4. 業務邏輯：</span> 規則、極端邊界條件 (Edge cases)。</li>
+                                <li><span class="text-brand-300 font-bold">5. 驗收標準：</span> Given-When-Then 格式。</li>
+                                <li><span class="text-brand-300 font-bold">6. 數據追蹤：</span> 成功指標與埋點需求。</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- GTM Playbook -->
+                    <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col">
+                        <h3 class="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">🚀 GTM 上市作戰計畫</h3>
+                        <div class="text-sm space-y-3 flex-1">
+                            <p class="text-slate-400 mb-2">由 PMM 產出，跨部門上市的樂譜。</p>
+                            <ul class="space-y-2">
+                                <li><span class="text-purple-300 font-bold">1. 發佈目標：</span> 預期獲取多少 Lead 或營收？</li>
+                                <li><span class="text-purple-300 font-bold">2. 目標市場與 Persona：</span> 精準打擊對象。</li>
+                                <li><span class="text-purple-300 font-bold">3. 核心訊息框架：</span> Elevator Pitch 與價值主張。</li>
+                                <li><span class="text-purple-300 font-bold">4. 定價與促銷：</span> 首發優惠或免費試用策略。</li>
+                                <li><span class="text-purple-300 font-bold">5. 渠道策略：</span> PR、SEO、社群、Email 佈局。</li>
+                                <li><span class="text-purple-300 font-bold">6. 內部賦能：</span> Sales Battlecard 培訓時程。</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Battlecard -->
+                    <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col">
+                        <h3 class="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">⚔️ Sales Battlecard</h3>
+                        <div class="text-sm space-y-3 flex-1">
+                            <p class="text-slate-400 mb-2">提供給 Sales，用於前線廝殺的武器庫。</p>
+                            <ul class="space-y-2">
+                                <li><span class="text-green-300 font-bold">1. 產品一句話亮點：</span> 30秒內抓住客戶注意力。</li>
+                                <li><span class="text-green-300 font-bold">2. 目標痛點與解法：</span> 痛點對應產品功能的 Mapping。</li>
+                                <li><span class="text-green-300 font-bold">3. 競品分析 (Kill points)：</span> 對手弱點與我們的護城河。</li>
+                                <li><span class="text-green-300 font-bold">4. 常見異議處理 (Objection Handling)：</span> 客戶說太貴/不需要時的話術。</li>
+                                <li><span class="text-green-300 font-bold">5. 成功案例背書：</span> 相關產業的 ROI 數據。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content-layer justify-end h-auto mt-4">
+                <div class="flex justify-between items-center text-sm text-slate-500 border-t border-slate-700 pt-4">
+                    <span>深度解析 - 交付物</span>
+                    <span>Page 6 / 6</span>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 互動控制面板邏輯 (JavaScript) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnEdit = document.getElementById('btn-edit');
+            const textEdit = document.getElementById('text-edit');
+            const btnSave = document.getElementById('btn-save');
+            const btnPrint = document.getElementById('btn-print');
+            const docWrapper = document.getElementById('document-wrapper');
+
+            let isEditing = false;
+
+            // 1. 編輯內容 Toggle
+            btnEdit.addEventListener('click', () => {
+                isEditing = !isEditing;
+                if (isEditing) {
+                    docWrapper.setAttribute('contenteditable', 'true');
+                    textEdit.textContent = '💾 結束編輯';
+                    btnEdit.classList.replace('text-slate-700', 'text-brand-600');
+                    btnEdit.classList.add('bg-brand-50');
+                } else {
+                    docWrapper.setAttribute('contenteditable', 'false');
+                    textEdit.textContent = '編輯內容';
+                    btnEdit.classList.replace('text-brand-600', 'text-slate-700');
+                    btnEdit.classList.remove('bg-brand-50');
+                }
+            });
+
+            // 2. 輸出 PDF (呼叫列印引擎)
+            btnPrint.addEventListener('click', () => {
+                // 若正在編輯，先關閉編輯模式以確保列印樣式正常
+                if (isEditing) {
+                    btnEdit.click();
+                }
+                window.print();
+            });
+
+            // 3. 儲存網頁 (匯出 HTML 檔案)
+            btnSave.addEventListener('click', () => {
+                // 暫時移除 contenteditable 以保持匯出檔案乾淨
+                const wasEditing = isEditing;
+                if (wasEditing) btnEdit.click();
+
+                // 取得完整 HTML
+                const htmlContent = document.documentElement.outerHTML;
+                
+                // 建立 Blob
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                
+                // 產生日期字串 YYYYMMDD
+                const date = new Date();
+                const dateStr = date.getFullYear().toString() + 
+                               (date.getMonth() + 1).toString().padStart(2, '0') + 
+                               date.getDate().toString().padStart(2, '0');
+                
+                // 觸發下載
+                const a = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                a.href = url;
+                a.download = `AI_Product_Team_Matrix_${dateStr}.html`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // 清理
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    // 恢復編輯狀態
+                    if (wasEditing) btnEdit.click();
+                }, 100);
+            });
+            
+            // 避免編輯模式下的 Enter 鍵產生不預期的排版破壞
+            docWrapper.addEventListener('keydown', (e) => {
+                if(isEditing && e.key === 'Enter' && !e.shiftKey) {
+                    // 允許基本的段落換行，但提示使用者注意結構
+                    // 這裡依賴瀏覽器原生的 contenteditable 行為，通常會插入 <div> 或 <br>
+                }
+            });
+        });
+    </script>
+</body>
+</html>
