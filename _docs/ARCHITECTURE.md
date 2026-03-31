@@ -41,6 +41,9 @@ KLIO (wiskinglin.github.io/)
 │   ├── 20260327_*.html                 # 各式分析報告 (A-team、信用卡攻略等)
 │   └── gem-*.html                      # 由 web-modular-report 全自動生成之模組化報告 (共 9 篇)
 │
+├── 📱 mobile/                           # 手機版本次佳化視圖 (Mobile View)
+│   └── *.html                          # 純閱讀體驗 (移除編輯模式與 contenteditable)
+│
 ├── 🔧 tools/                           # Pillar 2: 工具類
 │   ├── ebook.html                      # 沉浸式電子書閱讀器
 │   └── pdf.html                        # PDF 檢視與輸出工具
@@ -134,11 +137,12 @@ KLIO (wiskinglin.github.io/)
 | # | 支柱 | 目錄 | 現有檔案數 | 成熟度 |
 |:---|:---|:---|:---|:---|
 | 1 | 深度報告 (Reports) | `reports/` | 22 篇 | ⭐⭐⭐⭐⭐ 自動化生成與成熟運作 |
-| 2 | Web 工具 (Tools) | `tools/` | 2 個 | ⭐⭐⭐ 功能完整 |
-| 3 | 知識圖書館 (Library) | `library/` | 2 頁 | ⭐⭐ 初始框架 |
-| 4 | 模板編輯器 (Editor) | `editor/` | 2 頁 + 模板包 | ⭐⭐ 初始框架 |
-| 5 | 主題系統 (Themes) | `themes/` | 50 CSS + 引擎 | ⭐⭐⭐⭐ 成熟運作 |
-| 6 | Top 50 展示 (Showcase) | `top50/` | 51 頁 | ⭐⭐⭐⭐ 成熟運作 |
+| 2 | 手機視圖 (Mobile) | `mobile/` | 2 篇 | ⭐⭐⭐⭐ 純閱讀模式 (唯讀/無編輯功能) |
+| 3 | Web 工具 (Tools) | `tools/` | 2 個 | ⭐⭐⭐ 功能完整 |
+| 4 | 知識圖書館 (Library) | `library/` | 2 頁 | ⭐⭐ 初始框架 |
+| 5 | 模板編輯器 (Editor) | `editor/` | 2 頁 + 模板包 | ⭐⭐ 初始框架 |
+| 6 | 主題系統 (Themes) | `themes/` | 50 CSS + 引擎 | ⭐⭐⭐⭐ 成熟運作 |
+| 7 | Top 50 展示 (Showcase) | `top50/` | 51 頁 | ⭐⭐⭐⭐ 成熟運作 |
 
 ### 2.4 技術債務與改善機會
 

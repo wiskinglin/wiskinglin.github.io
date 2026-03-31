@@ -190,7 +190,7 @@
             <!-- ===== 2026-03-27 Gem Reports (最新) ===== -->
 
             <!-- gem: GTC 2026 NVIDIA (2x1) -->
-            <a href="reports/gem-gtc-2026.html"
+            <a href="reports/gem-gtc-2026.html" data-mobile="mobile/260327_M_gtc2026.html"
                 class="bento-card col-span-1 md:col-span-2 bg-zinc-900 border border-emerald-500/30 rounded-[2rem] p-8 flex items-center justify-between group relative overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-r from-emerald-900/90 to-slate-900/80 z-10"></div>
                 <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity mix-blend-luminosity duration-500 group-hover:scale-105 z-0"></div>
@@ -209,7 +209,7 @@
             <!-- ===== 2026-03-27 原有報告 ===== -->
 
             <!-- AI Agentic Team Matrix (2x2) -->
-            <a href="reports/20260327_Ateam_v2.html"
+            <a href="reports/20260327_Ateam_v2.html" data-mobile="mobile/260327_M_Ateam_v2.html"
                 class="bento-card col-span-1 md:col-span-2 md:row-span-2 bg-zinc-900 border border-teal-500/30 rounded-[2rem] p-10 flex flex-col justify-between relative overflow-hidden group">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-teal-900/40 z-10"></div>
                 <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-40 group-hover:opacity-50 transition-opacity mix-blend-luminosity duration-500 group-hover:scale-105 z-0"></div>
@@ -512,8 +512,8 @@
                     const isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone/i.test(navigator.userAgent);
                     
                     if (isMobile) {
-                        // 嘗試替換路徑至 mobile/
-                        const mobileHref = originalHref.replace('reports/', 'mobile/');
+                        // 優先讀取自訂 mobile 連結，若無則替換路徑至 mobile/
+                        const mobileHref = link.getAttribute('data-mobile') || originalHref.replace('reports/', 'mobile/');
                         
                         try {
                             // 使用 HEAD 請求先確認行動版檔案是否存在，避免 404 錯誤
