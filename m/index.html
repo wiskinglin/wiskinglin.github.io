@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KLIO. | Mobile Insights</title>
+    <meta name="description" content="KLIO 行動端沉浸式閱讀 — 深度科技戰略與商業洞察">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* 隱藏滾動條 */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #000;
+            color: #f3f4f6;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 全螢幕滑動貼齊 */
+        .snap-y-mandatory { scroll-snap-type: y mandatory; }
+        .snap-start { scroll-snap-align: start; scroll-snap-stop: always; }
+
+        /* 漸層遮罩 */
+        .card-gradient {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 40%, rgba(0,0,0,0.92) 100%);
+        }
+
+        /* 按鈕微互動 */
+        .btn-read {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: transform 0.15s ease, background-color 0.2s ease;
+        }
+        .btn-read:active { transform: scale(0.97); }
+
+        /* 標籤膠囊 */
+        .tag {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* 分享按鈕 */
+        .share-btn {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: background-color 0.2s ease;
+        }
+        .share-btn:active { background-color: rgba(255,255,255,0.25); }
+
+        /* 底部滑動指示點 */
+        .dot { transition: all 0.3s ease; }
+        .dot.active { width: 24px; background-color: #fff; }
+
+        /* 進場動畫 */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.35s; opacity: 0; }
+    </style>
+</head>
+
+<body>
+
+    <!-- 頂部浮動 Logo -->
+    <div style="position:fixed;top:0;left:0;width:100%;z-index:50;padding:20px 24px;pointer-events:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:1.5rem;font-weight:900;letter-spacing:-0.05em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.5);">KLIO.</div>
+            <a href="../index.html" style="pointer-events:auto;font-size:0.7rem;font-weight:600;color:rgba(255,255,255,0.5);text-decoration:none;padding:6px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:100px;backdrop-filter:blur(8px);background:rgba(0,0,0,0.3);">
+                PC 版
+            </a>
+        </div>
+    </div>
+
+    <!-- 底部頁碼指示器 -->
+    <div id="dot-nav" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:6px;pointer-events:none;">
+    </div>
+
+    <!-- ============================== -->
+    <!--     首頁動態牆 (Feed View)       -->
+    <!-- ============================== -->
+    <main id="feed-view" class="snap-y-mandatory scrollbar-hide"
+        style="height:100dvh;width:100%;overflow-y:auto;background:#000;position:relative;z-index:10;">
+
+        <!-- ========== Card 1: 信用卡優化與富士山企劃 ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
+            <img src="https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?q=80&w=800&auto=format&fit=crop"
+                alt="Credit Card & Japan Trip" loading="eager"
+                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.75;">
+            <div class="card-gradient" style="position:absolute;inset:0;"></div>
+
+            <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
+                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                        Financial Planning
+                    </span>
+                    <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
+                        onclick="shareArticle('2026 信用卡陣容優化與富士山自駕旅遊總企劃')">
+                        <i class="ph ph-share-network" style="font-size:20px;"></i>
+                    </button>
+                </div>
+
+                <h2 class="animate-in delay-2" style="font-size:1.75rem;font-weight:800;line-height:1.25;margin-bottom:12px;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+                    信用卡陣容優化與<br>富士山自駕旅遊總企劃
+                </h2>
+
+                <p class="animate-in delay-2" style="color:rgba(209,213,219,0.9);font-size:0.85rem;line-height:1.6;margin-bottom:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    2026 無腦刷卡陣容最佳化佈局，星展 49,825 飛行積金兌換雙人日本來回機票完整攻略。
+                </p>
+
+                <a href="reports/creditcard_jptrip.html" class="btn-read"
+                    style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;background:#fff;color:#000;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;">
+                    閱讀深度解析 <i class="ph-bold ph-book-open" style="margin-left:8px;font-size:18px;"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- ========== Card 2: 台灣汽車日系品牌戰略 ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
+            <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop"
+                alt="Taiwan Cars 2026" loading="lazy"
+                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.7;">
+            <div class="card-gradient" style="position:absolute;inset:0;"></div>
+
+            <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
+                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                        Automotive Strategy
+                    </span>
+                    <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
+                        onclick="shareArticle('2026-2027 台灣汽車市場日系品牌戰略剖析')">
+                        <i class="ph ph-share-network" style="font-size:20px;"></i>
+                    </button>
+                </div>
+
+                <h2 class="animate-in delay-2" style="font-size:1.75rem;font-weight:800;line-height:1.25;margin-bottom:12px;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+                    台灣汽車市場<br>日系品牌戰略剖析
+                </h2>
+
+                <p class="animate-in delay-2" style="color:rgba(209,213,219,0.9);font-size:0.85rem;line-height:1.6;margin-bottom:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    2026至2027年五大日系車廠產品線佈局、CAFE法規應對與定價戰略全面深度剖析。
+                </p>
+
+                <a href="reports/taiwancars2026.html" class="btn-read"
+                    style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;background:#fff;color:#000;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;">
+                    閱讀深度解析 <i class="ph-bold ph-book-open" style="margin-left:8px;font-size:18px;"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- ========== Card 3: AI Agentic 產品團隊協作矩陣 ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
+            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop"
+                alt="AI Agentic Team Matrix" loading="lazy"
+                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.65;">
+            <div class="card-gradient" style="position:absolute;inset:0;"></div>
+
+            <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
+                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(45,212,191,0.15);color:#2dd4bf;border:1px solid rgba(45,212,191,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                        Framework 2.0
+                    </span>
+                    <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
+                        onclick="shareArticle('AI Agentic 產品團隊協作矩陣')">
+                        <i class="ph ph-share-network" style="font-size:20px;"></i>
+                    </button>
+                </div>
+
+                <h2 class="animate-in delay-2" style="font-size:1.75rem;font-weight:800;line-height:1.25;margin-bottom:12px;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+                    AI Agentic<br>產品團隊協作矩陣
+                </h2>
+
+                <p class="animate-in delay-2" style="color:rgba(209,213,219,0.9);font-size:0.85rem;line-height:1.6;margin-bottom:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    深度解析頂尖產品團隊的核心交付物規格，將團隊視為 AI Agent 節點，確立標準化 I/O 協作機制。
+                </p>
+
+                <a href="reports/agent.html" class="btn-read"
+                    style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;background:#fff;color:#000;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;">
+                    閱讀深度解析 <i class="ph-bold ph-book-open" style="margin-left:8px;font-size:18px;"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- ========== Card 4: GTC 2026 NVIDIA ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
+            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=800&auto=format&fit=crop"
+                alt="AI Infrastructure" loading="lazy"
+                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.75;">
+            <div class="card-gradient" style="position:absolute;inset:0;"></div>
+
+            <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
+                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                        AI Infrastructure
+                    </span>
+                    <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
+                        onclick="shareArticle('GTC 2026 NVIDIA 主旨演講')">
+                        <i class="ph ph-share-network" style="font-size:20px;"></i>
+                    </button>
+                </div>
+
+                <h2 class="animate-in delay-2" style="font-size:1.75rem;font-weight:800;line-height:1.25;margin-bottom:12px;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+                    GTC 2026 NVIDIA<br>算力大爆發與實體 AI
+                </h2>
+
+                <p class="animate-in delay-2" style="color:rgba(209,213,219,0.9);font-size:0.85rem;line-height:1.6;margin-bottom:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    深度解析 NVIDIA 最新戰略藍圖，Blackwell 之後算力極限突破與虛實整合。
+                </p>
+
+                <a href="reports/gtc2026.html" class="btn-read"
+                    style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;background:#fff;color:#000;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;">
+                    閱讀深度解析 <i class="ph-bold ph-book-open" style="margin-left:8px;font-size:18px;"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- ========== Card 5: 更多報告即將上線 ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;">
+            <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
+                <i class="ph ph-sparkle" style="font-size:32px;color:rgba(255,255,255,0.3);"></i>
+            </div>
+            <h2 style="font-size:1.5rem;font-weight:800;color:rgba(255,255,255,0.6);margin-bottom:12px;">
+                更多洞察即將上線
+            </h2>
+            <p style="color:rgba(255,255,255,0.3);font-size:0.85rem;line-height:1.6;max-width:280px;">
+                持續追蹤科技戰略與商業底層邏輯，敬請期待下一篇深度解析。
+            </p>
+            <a href="../index.html" style="margin-top:32px;padding:12px 28px;border:1px solid rgba(255,255,255,0.15);border-radius:100px;color:rgba(255,255,255,0.5);font-size:0.8rem;font-weight:600;text-decoration:none;">
+                前往 PC 完整版 →
+            </a>
+        </article>
+
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // Web Share API
+        function shareArticle(title) {
+            if (navigator.share) {
+                navigator.share({ title: title, url: window.location.href });
+            } else {
+                // Fallback: copy URL
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('連結已複製到剪貼簿！');
+                });
+            }
+        }
+
+        // 頁碼指示器
+        const feed = document.getElementById('feed-view');
+        const dotNav = document.getElementById('dot-nav');
+        const cards = feed.querySelectorAll('.snap-start');
+        const totalCards = cards.length;
+
+        // 建立指示點
+        for (let i = 0; i < totalCards; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.style.cssText = 'width:8px;height:8px;border-radius:100px;background:rgba(255,255,255,0.3);';
+            if (i === 0) { dot.classList.add('active'); dot.style.width = '24px'; dot.style.background = '#fff'; }
+            dotNav.appendChild(dot);
+        }
+
+        const dots = dotNav.querySelectorAll('.dot');
+
+        // 監聽滾動以更新指示器
+        let scrollTimeout;
+        feed.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                const index = Math.round(feed.scrollTop / window.innerHeight);
+                dots.forEach((d, i) => {
+                    if (i === index) {
+                        d.classList.add('active');
+                        d.style.width = '24px';
+                        d.style.background = '#fff';
+                    } else {
+                        d.classList.remove('active');
+                        d.style.width = '8px';
+                        d.style.background = 'rgba(255,255,255,0.3)';
+                    }
+                });
+            }, 50);
+        });
+    </script>
+</body>
+</html>
