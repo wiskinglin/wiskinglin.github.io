@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>AI Agentic 產品團隊協作矩陣 | KLIO.</title>
+    <meta name="description" content="頂尖產品團隊協作矩陣 — AI Agentic 工作模式全攻略">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: #0a0a0a; color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 16px; line-height: 1.75;
+        }
+
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #1a1a1a; z-index: 100; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #2dd4bf, #818cf8); width: 0%; transition: width 0.1s ease-out; }
+
+        .top-nav {
+            position: fixed; top: 3px; left: 0; width: 100%; z-index: 90;
+            background: rgba(10,10,10,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .top-nav a, .top-nav button { text-decoration: none; border: none; background: none; cursor: pointer; }
+
+        .article-body { padding: 80px 20px 60px; max-width: 640px; margin: 0 auto; }
+
+        .cover { width: calc(100% + 40px); margin: 0 -20px; position: relative; aspect-ratio: 16/9; overflow: hidden; }
+        .cover img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .cover-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, #0a0a0a, transparent); }
+
+        .tldr {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px; margin: 32px 0;
+        }
+        .tldr h3 { font-size: 0.8rem; font-weight: 700; color: #2dd4bf; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .tldr ul { list-style: none; }
+        .tldr li { padding: 8px 0; font-size: 0.9rem; line-height: 1.65; color: #9ca3af; display: flex; gap: 10px; }
+        .tldr li::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: #2dd4bf; margin-top: 8px; flex-shrink: 0; }
+        .tldr li strong { color: #e5e7eb; }
+
+        h1 { font-size: 1.65rem; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 12px; }
+        h2 { font-size: 1.25rem; font-weight: 700; color: #fff; margin: 40px 0 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        p { margin-bottom: 1.5rem; color: #9ca3af; font-size: 0.95rem; line-height: 1.75; }
+        strong { color: #e5e7eb; }
+
+        .meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #6b7280; margin-bottom: 28px; font-weight: 500; }
+        .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 36px 0; }
+
+        /* Agent 卡片 */
+        .agent-card {
+            border-radius: 16px; padding: 20px; margin-bottom: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .agent-card .agent-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+        }
+        .agent-card .agent-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+        }
+        .agent-card .agent-name { font-size: 1rem; font-weight: 700; color: #fff; }
+        .agent-card .agent-focus { font-size: 0.7rem; color: #6b7280; }
+
+        /* I/O 流 */
+        .io-flow { display: flex; flex-direction: column; gap: 10px; }
+        .io-item { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; }
+        .io-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+        .io-item ul { list-style: none; }
+        .io-item li { font-size: 0.85rem; color: #9ca3af; padding: 2px 0; line-height: 1.5; }
+        .io-item li strong, .io-item li span.highlight { color: #e5e7eb; }
+
+        /* 方法論卡片 */
+        .method-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px; padding: 18px; margin-bottom: 14px;
+        }
+        .method-card .method-tag {
+            display: inline-block; font-size: 0.65rem; font-weight: 700; padding: 3px 8px;
+            border-radius: 6px; margin-bottom: 8px;
+        }
+        .method-card h4 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .method-card p { font-size: 0.85rem; margin-bottom: 0; line-height: 1.65; }
+
+        /* 交付物暗色卡 */
+        .deliverable-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px; margin-bottom: 16px;
+        }
+        .deliverable-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .deliverable-card ol { list-style: none; counter-reset: item; }
+        .deliverable-card li { font-size: 0.85rem; color: #9ca3af; padding: 6px 0; line-height: 1.6; counter-increment: item; }
+        .deliverable-card li strong { font-weight: 700; }
+
+        .bottom-safe { height: 40px; }
+    </style>
+</head>
+<body class="scrollbar-hide">
+
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+
+    <nav class="top-nav">
+        <a href="../index.html" style="padding:8px;margin:-8px;color:#9ca3af;">
+            <i class="ph-bold ph-arrow-left" style="font-size:20px;"></i>
+        </a>
+        <div style="font-size:0.8rem;font-weight:700;color:#9ca3af;letter-spacing:0.05em;">KLIO.</div>
+        <button onclick="shareArticle()" style="padding:8px;margin:-8px;color:#9ca3af;">
+            <i class="ph-bold ph-share-network" style="font-size:20px;"></i>
+        </button>
+    </nav>
+
+    <div class="article-body">
+
+        <div class="cover">
+            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop" alt="Cover" loading="eager">
+            <div class="cover-fade"></div>
+        </div>
+
+        <div style="margin-top:-20px;position:relative;z-index:2;">
+            <span style="display:inline-block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#2dd4bf;border:1px solid rgba(45,212,191,0.3);padding:4px 10px;border-radius:6px;margin-bottom:12px;">Operating Model Transformation</span>
+            <h1>頂尖產品團隊協作矩陣<br><span style="background:linear-gradient(90deg,#2dd4bf,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AI Agentic 工作模式全攻略</span></h1>
+            <div class="meta">
+                <span>By King Lin</span>
+                <span style="color:#374151;">•</span>
+                <span>Mar 31, 2026</span>
+                <span style="color:#374151;">•</span>
+                <span>12 min read</span>
+            </div>
+        </div>
+
+        <!-- TL;DR -->
+        <div class="tldr">
+            <h3><i class="ph-fill ph-lightning" style="color:#2dd4bf;font-size:16px;"></i> 核心摘要 TL;DR</h3>
+            <ul>
+                <li><strong>Agent 化思維：</strong>將產品團隊每個角色視為具備標準化 Input/Process/Output 的 AI Agent 節點。</li>
+                <li><strong>三位一體樞紐：</strong>PM（定義價值）、Program Manager（確保交付）、PMM（推動上市）構成指揮中樞。</li>
+                <li><strong>探索與交付矩陣：</strong>UX、Data、Engineering、QA、UI 六大 Agent 形成高效轉換網路。</li>
+                <li><strong>增長引擎：</strong>Sales/BD、Marketing、CSM 三大 Agent 將產品價值轉換為實際營收。</li>
+            </ul>
+        </div>
+
+        <p>在打造高績效團隊時，協作流暢度決定產品成敗。本指南將產品開發週期拆解，並將傳統角色重塑為<strong>自治與協作並重的 AI Agent 節點</strong>，透過標準化的 Input、Process、Output，建立無縫接軌的高速增長飛輪。</p>
+
+        <div class="divider"></div>
+
+        <!-- 核心三位一體 -->
+        <h2>核心樞紐：三位一體 Agent</h2>
+        <p>負責定義價值 (Value)、確保交付 (Feasibility) 與推動市場 (Go-to-Market) 的三大指揮中樞。</p>
+
+        <!-- PM Agent -->
+        <div class="agent-card" style="background:rgba(15,23,42,0.6);">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa;">🎯</div>
+                <div>
+                    <div class="agent-name">Product Manager Agent</div>
+                    <div class="agent-focus">聚焦 Value & Viability</div>
+                </div>
+            </div>
+            <div class="io-flow">
+                <div class="io-item">
+                    <div class="io-label" style="color:#6b7280;">📥 Input</div>
+                    <ul><li>市場趨勢、OKRs、UX 質化/Data 量化洞察、顧客原聲 (VoC)</li></ul>
+                </div>
+                <div class="io-item" style="border-left:2px solid #3b82f6;">
+                    <div class="io-label" style="color:#60a5fa;">🧠 Process</div>
+                    <ul>
+                        <li>🔍 產品探索 (OST 解法樹)</li>
+                        <li>⚖️ 優先級排序 (RICE/Kano)</li>
+                        <li>🤝 願景對齊 (PR/FAQ)</li>
+                    </ul>
+                </div>
+                <div class="io-item">
+                    <div class="io-label" style="color:#6b7280;">📤 Output</div>
+                    <ul>
+                        <li><strong>產品願景與戰略文件</strong></li>
+                        <li><strong>Product Roadmap</strong></li>
+                        <li><strong>產品需求文件 (PRD)</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Program Manager Agent -->
+        <div class="agent-card" style="background:rgba(15,23,42,0.4);">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(100,116,139,0.2);color:#94a3b8;">⚙️</div>
+                <div>
+                    <div class="agent-name">Program Manager Agent</div>
+                    <div class="agent-focus">聚焦 Feasibility & Delivery</div>
+                </div>
+            </div>
+            <div class="io-flow">
+                <div class="io-item">
+                    <div class="io-label" style="color:#6b7280;">📥 Input</div>
+                    <ul><li>PM 的 PRD 與 Roadmap、工程團隊工時估算、跨部門依賴關係</li></ul>
+                </div>
+                <div class="io-item" style="border-left:2px solid #64748b;">
+                    <div class="io-label" style="color:#94a3b8;">🧠 Process</div>
+                    <ul>
+                        <li>🔄 敏捷框架 (Scrum/Kanban)</li>
+                        <li>🛡️ 風險與相依性管理</li>
+                        <li>🌉 跨團隊協調同步</li>
+                    </ul>
+                </div>
+                <div class="io-item">
+                    <div class="io-label" style="color:#6b7280;">📤 Output</div>
+                    <ul>
+                        <li><strong>專案時程表 (Release Plan)</strong></li>
+                        <li><strong>Sprint 任務看板 / 燃盡圖</strong></li>
+                        <li><strong>專案回顧報告 (Post-mortem)</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- PMM Agent -->
+        <div class="agent-card" style="background:rgba(15,23,42,0.4);">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(168,85,247,0.15);color:#c084fc;">🚀</div>
+                <div>
+                    <div class="agent-name">Product Marketing Agent</div>
+                    <div class="agent-focus">聚焦 Go-to-Market</div>
+                </div>
+            </div>
+            <div class="io-flow">
+                <div class="io-item">
+                    <div class="io-label" style="color:#6b7280;">📥 Input</div>
+                    <ul><li>產品定位與新功能亮點、競爭對手分析、Win/Loss 數據</li></ul>
+                </div>
+                <div class="io-item" style="border-left:2px solid #a855f7;">
+                    <div class="io-label" style="color:#c084fc;">🧠 Process</div>
+                    <ul>
+                        <li>🎯 STP 與買家輪廓定義</li>
+                        <li>💎 價值主張論述設計</li>
+                        <li>💰 定價與包裝策略</li>
+                    </ul>
+                </div>
+                <div class="io-item">
+                    <div class="io-label" style="color:#6b7280;">📤 Output</div>
+                    <ul>
+                        <li><strong>GTM 上市作戰計畫</strong></li>
+                        <li><strong>銷售賦能 (Battle Cards)</strong></li>
+                        <li><strong>對外發佈文案與素材</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 探索與交付矩陣 -->
+        <h2>探索與交付矩陣</h2>
+        <p>從發掘底層需求到化為可用系統的高效轉換網路。</p>
+
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(99,102,241,0.15);color:#818cf8;">🎨</div>
+                <div><div class="agent-name">UX / UR Agent</div></div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #818cf8;">
+                <div class="io-label" style="color:#818cf8;">Process</div>
+                <ul><li>深度訪談、Design Sprint、服務藍圖，挖掘底層動機</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → 洞察報告、旅程圖、低保真原型</p>
+        </div>
+
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(59,130,246,0.15);color:#60a5fa;">📊</div>
+                <div><div class="agent-name">Data Analyst Agent</div></div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #3b82f6;">
+                <div class="io-label" style="color:#60a5fa;">Process</div>
+                <ul><li>漏斗分析、同群分析、A/B 測試模型，消滅「我覺得」</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → 數據儀表板、測試報告、預測模型</p>
+        </div>
+
+        <div class="agent-card" style="background:rgba(15,23,42,0.6);">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(255,255,255,0.08);color:#e5e7eb;">💻</div>
+                <div><div class="agent-name">Engineering Agent</div></div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #22c55e;">
+                <div class="io-label" style="color:#4ade80;">Process</div>
+                <ul><li>架構 RFC、CI/CD 持續交付、Code Review</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → 擴充性代碼、API 文件、架構圖</p>
+        </div>
+
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(239,68,68,0.15);color:#f87171;">🛡️</div>
+                <div><div class="agent-name">QA / SDET Agent</div></div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #ef4444;">
+                <div class="io-label" style="color:#f87171;">Process</div>
+                <ul><li>測試左移 (Shift-Left)、建立自動化測試框架</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → 測試計畫、品質指標、Bug 清單</p>
+        </div>
+
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(236,72,153,0.15);color:#f472b6;">✨</div>
+                <div><div class="agent-name">UI Designer Agent</div></div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #ec4899;">
+                <div class="io-label" style="color:#f472b6;">Process</div>
+                <ul><li>原子設計理論、無障礙設計 (a11y) 驗證與組件化</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → 高保真原型、設計系統、標註</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 上市與增長 -->
+        <h2>上市策略與增長矩陣</h2>
+        <p>將產品價值轉換為實際營收與品牌聲量的增長引擎。</p>
+
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(34,197,94,0.15);color:#4ade80;">🤝</div>
+                <div>
+                    <div class="agent-name">Sales / BD Agent</div>
+                    <div class="agent-focus">變現與企業信賴建立</div>
+                </div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #22c55e;">
+                <div class="io-label" style="color:#4ade80;">Process (顧問式銷售)</div>
+                <ul><li>運用 MEDDIC 或 BANT 框架，進行痛點深挖、談判與締結</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → 實際營收 (ARR/MRR)、Win/Loss 分析、附帶營收的功能許願清單</p>
+        </div>
+
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(244,63,94,0.15);color:#fb7185;">📢</div>
+                <div>
+                    <div class="agent-name">Marketing Agent</div>
+                    <div class="agent-focus">規模化聲量與漏斗獲客</div>
+                </div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #f43f5e;">
+                <div class="io-label" style="color:#fb7185;">Process (成長駭客)</div>
+                <ul><li>Inbound Marketing 與 SEO/SEM 策略，最大化市場觸及</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → 品牌曝光、MQLs、行銷 ROI 分析</p>
+        </div>
+
+        <div class="agent-card">
+            <div class="agent-header">
+                <div class="agent-icon" style="background:rgba(20,184,166,0.15);color:#2dd4bf;">❤️</div>
+                <div>
+                    <div class="agent-name">CSM Agent</div>
+                    <div class="agent-focus">主動創造價值與留存</div>
+                </div>
+            </div>
+            <div class="io-item" style="border-left:2px solid #14b8a6;">
+                <div class="io-label" style="color:#2dd4bf;">Process (客戶健康管理)</div>
+                <ul><li>建立 Health Score 預警，舉辦季度業務回顧 (QBR)</li></ul>
+            </div>
+            <p style="font-size:0.8rem;margin:8px 0 0;color:#6b7280;">OUT → NPS / CSAT、成功案例、流失原因剖析</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 方法論 -->
+        <h2>Process 方法論深度解析</h2>
+        <p>拆解各節點所使用的專業框架 — 這是 AI 團隊運算的「演算法」。</p>
+
+        <div class="method-card">
+            <span class="method-tag" style="background:rgba(59,130,246,0.15);color:#60a5fa;">PM</span>
+            <h4>機會解法樹 (Opportunity Solution Tree)</h4>
+            <p>由頂層「期望商業結果」出發，向下展開使用者痛點，再發想對應解法，最後設計實驗驗證。確保團隊不會陷入盲目開發功能。</p>
+        </div>
+
+        <div class="method-card">
+            <span class="method-tag" style="background:rgba(59,130,246,0.15);color:#60a5fa;">PM</span>
+            <h4>RICE / Kano 模型</h4>
+            <p><strong>RICE：</strong>基於觸及率、影響力、信心與努力成本的計分公式。<strong>Kano：</strong>將需求分類為基本必備、線性期望與魅力興奮屬性。</p>
+        </div>
+
+        <div class="method-card">
+            <span class="method-tag" style="background:rgba(168,85,247,0.15);color:#c084fc;">PMM</span>
+            <h4>STP 與買家輪廓 (Buyer Personas)</h4>
+            <p>市場細分、目標市場選擇與定位。搭配買家輪廓具體化決策者的痛點、目標與購買障礙。</p>
+        </div>
+
+        <div class="method-card">
+            <span class="method-tag" style="background:rgba(100,116,139,0.15);color:#94a3b8;">Eng</span>
+            <h4>CI / CD (持續整合與持續交付)</h4>
+            <p>開發者頻繁將程式碼合併回主分支 (CI)，透過自動化測試確保品質，隨後自動部署至生產環境 (CD)。</p>
+        </div>
+
+        <div class="method-card">
+            <span class="method-tag" style="background:rgba(34,197,94,0.15);color:#4ade80;">Sales</span>
+            <h4>MEDDIC 銷售資格框架</h4>
+            <p>B2B 複雜銷售的檢核表：Metrics、Economic Buyer、Decision Criteria、Decision Process、Identify Pain 與 Champion。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 交付物 -->
+        <h2>關鍵交付物結構</h2>
+        <p>高品質的輸出不是流水帳，而是具備嚴謹結構的行動指南。</p>
+
+        <div class="deliverable-card">
+            <h4 style="color:#60a5fa;">📄 PRD 產品需求文件</h4>
+            <p style="font-size:0.8rem;color:#6b7280;margin-bottom:12px;">由 PM 產出，工程與 QA 的唯一真相來源 (SSOT)</p>
+            <ol>
+                <li><strong style="color:#93c5fd;">1. 戰略背景</strong> — Why now? 解決什麼問題？</li>
+                <li><strong style="color:#93c5fd;">2. 目標受眾</strong> — 這是為誰設計的？</li>
+                <li><strong style="color:#93c5fd;">3. 使用者故事</strong> — As a [role], I want [feature], so that [value]</li>
+                <li><strong style="color:#93c5fd;">4. 業務邏輯</strong> — 規則、Edge cases</li>
+                <li><strong style="color:#93c5fd;">5. 驗收標準</strong> — Given-When-Then 格式</li>
+                <li><strong style="color:#93c5fd;">6. 數據追蹤</strong> — 成功指標與埋點需求</li>
+            </ol>
+        </div>
+
+        <div class="deliverable-card">
+            <h4 style="color:#c084fc;">🚀 GTM 上市作戰計畫</h4>
+            <p style="font-size:0.8rem;color:#6b7280;margin-bottom:12px;">由 PMM 產出，跨部門上市的樂譜</p>
+            <ol>
+                <li><strong style="color:#d8b4fe;">1. 發佈目標</strong> — 預期獲取多少 Lead 或營收？</li>
+                <li><strong style="color:#d8b4fe;">2. 目標市場</strong> — 精準打擊對象</li>
+                <li><strong style="color:#d8b4fe;">3. 核心訊息框架</strong> — Elevator Pitch 與價值主張</li>
+                <li><strong style="color:#d8b4fe;">4. 定價與促銷</strong> — 首發優惠或免費試用</li>
+                <li><strong style="color:#d8b4fe;">5. 渠道策略</strong> — PR、SEO、社群、Email</li>
+                <li><strong style="color:#d8b4fe;">6. 內部賦能</strong> — Sales Battlecard 培訓</li>
+            </ol>
+        </div>
+
+        <div class="deliverable-card">
+            <h4 style="color:#4ade80;">⚔️ Sales Battlecard</h4>
+            <p style="font-size:0.8rem;color:#6b7280;margin-bottom:12px;">提供給 Sales，前線廝殺的武器庫</p>
+            <ol>
+                <li><strong style="color:#86efac;">1. 產品一句話亮點</strong> — 30 秒抓住注意力</li>
+                <li><strong style="color:#86efac;">2. 目標痛點與解法</strong> — 痛點對應功能 Mapping</li>
+                <li><strong style="color:#86efac;">3. 競品分析 (Kill points)</strong> — 對手弱點與護城河</li>
+                <li><strong style="color:#86efac;">4. 異議處理</strong> — 客戶說太貴/不需要時的話術</li>
+                <li><strong style="color:#86efac;">5. 成功案例背書</strong> — 相關產業的 ROI 數據</li>
+            </ol>
+        </div>
+
+        <div class="bottom-safe"></div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        });
+        function shareArticle() {
+            const data = { title: 'AI Agentic 產品團隊協作矩陣', url: window.location.href };
+            if (navigator.share) { navigator.share(data); }
+            else { navigator.clipboard.writeText(data.url).then(() => alert('連結已複製！')); }
+        }
+    </script>
+</body>
+</html>
