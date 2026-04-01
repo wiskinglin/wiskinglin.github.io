@@ -89,34 +89,8 @@ owner: <Agent Role>              # 責任角色（參見 Team_Roster.md）
 
 | 通道 | 用途 | 格式 | 存放位置 |
 |:---|:---|:---|:---|
-| **會議紀錄** | 重大決策、方案評估、跨 Agent 討論 | `YYYY-MM-DD_meeting_minutes_roundN.md` | `_docs/meetings/` |
 | **Workflow 指令** | 標準化操作流程觸發 | `/workflow-name` (Slash Command) | `.agents/workflows/` |
 
-### 3.2 會議紀錄格式
-
-```markdown
----
-project: KLIO
-version: 1.0.0
-last_updated: YYYY-MM-DD
-status: active
-type: meeting_minutes
-participants: [PM, Engineering, Designer, ...]
----
-
-# 🗓️ [日期] [會議主題]
-
-## 議題
-- ...
-
-## 決議
-- ...
-
-## 行動項目 (Action Items)
-| # | 項目 | 負責人 | 截止日 | 狀態 |
-|:---|:---|:---|:---|:---|
-| 1 | ... | ... | ... | ⬜ 待辦 / ✅ 完成 |
-```
 
 ---
 
