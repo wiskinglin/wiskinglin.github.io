@@ -28,12 +28,7 @@ context: .agents/CONTEXT.md
 
 // turbo-all
 
-1. 確認資料目錄存在
-   ```powershell
-   New-Item -ItemType Directory -Path "_data/gems", "_dev/draft_report" -Force
-   ```
-
-2. 閱讀相關 Skill 定義
+ 閱讀相關 Skill 定義
    ```
    view_file .agents/skills/DataAnalyst_TrendTopic_Collector/SKILL.md
    view_file .agents/skills/Writer_DeepReport_Synthesizer/SKILL.md
@@ -50,9 +45,8 @@ context: .agents/CONTEXT.md
    - 若不存在：初始化空的 `topics.json`（遵循 Schema）
    - 若已存在：讀取並顯示現有題目清單
 
-4. 蒐集新題目與降噪邏輯定義
+4. 蒐集新題目
    - 目標產業：3C / 電動車 / AI / 半導體 / 綠能
-   - 定義如何從 20 頁廢話中萃取核心價值的過濾規則（資訊降噪標準）
    - 每次至少新增 3 個高價值題目，依「產業影響力 × 時效性 × 分析潛力」評估優先級
 
 5. 寫入 `_data/topics.json`

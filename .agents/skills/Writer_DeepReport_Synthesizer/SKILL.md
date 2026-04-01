@@ -57,7 +57,8 @@ metadata:
   - Technology Deep Dive（技術深潛）
   - Investment & Valuation（投資與估值）
   - Future Outlook（未來展望）
-- **彈性深度控制**：可生成 TL;DR（500 字）/ 標準版（3000 字）/ 深度版（8000+ 字）
+  - Reference (參考資料)
+- **彈性深度控制**：深度版（8000+ 字）
 
 ---
 
@@ -123,7 +124,7 @@ targetStyles: ["swiss", "editorial", "bento"]
 
 - [ ] 報告包含完整的 YAML frontmatter
 - [ ] 至少包含 Executive Summary + 4 個深度章節
-- [ ] 每章字數不少於 500 字（深度版）
+- [ ] 每章字數不少於 5000 字（深度版）
 - [ ] 數據引用標注出處
 - [ ] 邏輯論述遵循 MECE 原則
 - [ ] 標題層級正確（H1 僅一個，依序使用 H2-H4）
