@@ -42,14 +42,4 @@
 
 ---
 
-## 📋 系統驗證與 DQA 實務 (DQA Practice)
-公司內部專案品質保證基準。
-
-| 專案名稱 | 類別 | 連結 | 備註 |
-| :--- | :--- | :--- | :--- |
-| **Athena_DQA** | 驗證計畫 | [Google Presentation](https://docs.google.com/presentation/d/1gOnZsW-jk1qgKnXmlKUDWBqAs2dE_T_G/) | 次世代平台影像品質與穩定性驗證流程。 |
-| **影像辨識評估** | 應用報告 | [Google Document](https://docs.google.com/document/d/1ZclOA2p8H7e7dDLYhTsyULsG2pCG_Uq7K2hOv0nSjzs/) | 針對 2025 年影像辨識技術之可行性與應用分析。 |
-
----
-
 *資料最後更新時間: 2026-04-02*
