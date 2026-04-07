@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 年 3 月科技產業月報彙整 | KLIO Tech Report</title>
+<meta name="description" content="2026年3月科技產業月報：AI全面滲透、新品密集迸發，涵蓋手機、筆電、PC組件、相機、穿戴、智慧家居、AI軟體與產業趨勢。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<style>
+/* === NARUTO PALETTE === */
+:root {
+  --c1: #F9F9F9; --c2: #FFF3E0; --c3: #FF9F1C; --c4: #103154; --c5: #011627;
+  --bg: #060d18; --surface: rgba(16,49,84,0.25); --surface-solid: #0a1e36;
+  --border: rgba(255,159,28,0.15); --border-hover: rgba(255,159,28,0.4);
+  --text: #e8edf3; --text-muted: #8aa4c0; --text-dim: #4a6a8a;
+  --accent: #FF9F1C; --accent-glow: rgba(255,159,28,0.3);
+  --gradient-hero: linear-gradient(135deg, #011627 0%, #103154 40%, #1a3d5c 100%);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter','Noto Sans TC',sans-serif;
+  background-color: var(--bg); color: var(--text);
+  line-height:1.8; -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(ellipse at 10% 0%, rgba(255,159,28,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 100%, rgba(16,49,84,0.3) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+::selection { background: var(--accent); color: var(--c5); }
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--c4); border-radius:3px; }
+
+/* === HERO === */
+.hero {
+  min-height:60vh; display:flex; flex-direction:column; justify-content:center;
+  padding:80px 40px 60px; position:relative; overflow:hidden;
+  background: var(--gradient-hero);
+  border-bottom:1px solid var(--border);
+}
+.hero::before {
+  content:''; position:absolute; top:-50%; right:-20%; width:80vw; height:80vw;
+  background:radial-gradient(circle, rgba(255,159,28,0.08) 0%, transparent 60%);
+  pointer-events:none;
+}
+.hero::after {
+  content:'TECH REPORT'; position:absolute; bottom:-30px; right:40px;
+  font-size:clamp(5rem,12vw,10rem); font-weight:900; letter-spacing:-4px;
+  color:rgba(255,159,28,0.04); pointer-events:none; white-space:nowrap;
+}
+.hero-inner { max-width:1100px; margin:0 auto; width:100%; position:relative; z-index:2; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(255,159,28,0.12); border:1px solid rgba(255,159,28,0.25);
+  padding:6px 16px; border-radius:24px; font-size:.75rem; font-weight:600;
+  color:var(--accent); margin-bottom:24px; backdrop-filter:blur(10px);
+}
+.hero h1 {
+  font-size:clamp(2.2rem,5vw,3.8rem); font-weight:900; letter-spacing:-1.5px;
+  line-height:1.15; margin-bottom:20px;
+  background:linear-gradient(135deg, var(--c1) 0%, var(--accent) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.hero-subtitle { font-size:1.1rem; color:var(--text-muted); max-width:700px; line-height:1.8; margin-bottom:32px; }
+.hero-meta {
+  display:flex; flex-wrap:wrap; gap:24px; font-size:.8rem; color:var(--text-dim);
+}
+.hero-meta-item { display:flex; align-items:center; gap:6px; }
+.hero-meta-item i { color:var(--accent); font-size:1rem; }
+
+/* === LAYOUT === */
+.report-container { max-width:1100px; margin:0 auto; padding:0 24px; }
+
+/* === NAV TOC === */
+.toc-strip {
+  position:sticky; top:0; z-index:100;
+  background:rgba(6,13,24,0.85); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border); padding:0 24px;
+}
+.toc-inner {
+  max-width:1100px; margin:0 auto; display:flex; gap:4px;
+  overflow-x:auto; padding:12px 0;
+  scrollbar-width:none;
+}
+.toc-inner::-webkit-scrollbar { display:none; }
+.toc-link {
+  white-space:nowrap; padding:6px 14px; border-radius:8px;
+  font-size:.72rem; font-weight:600; color:var(--text-dim);
+  text-decoration:none; transition:all .25s; border:1px solid transparent;
+  letter-spacing:.3px;
+}
+.toc-link:hover, .toc-link.active { color:var(--accent); background:rgba(255,159,28,0.08); border-color:var(--border); }
+
+/* === SECTIONS === */
+.report-section { padding:64px 0; border-bottom:1px solid rgba(255,159,28,0.06); }
+.section-header {
+  display:flex; align-items:center; gap:16px; margin-bottom:40px;
+}
+.section-num {
+  font-size:.7rem; font-weight:800; color:var(--accent);
+  background:rgba(255,159,28,0.1); border:1px solid rgba(255,159,28,0.2);
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.section-title {
+  font-size:clamp(1.5rem,3vw,2rem); font-weight:800; letter-spacing:-.5px;
+  color:var(--c1);
+}
+
+/* === GLASS CARDS === */
+.glass-card {
+  background:var(--surface); backdrop-filter:blur(16px);
+  border:1px solid var(--border); border-radius:16px;
+  padding:28px; margin-bottom:20px;
+  transition:border-color .3s, box-shadow .3s;
+}
+.glass-card:hover { border-color:var(--border-hover); box-shadow:0 8px 32px rgba(255,159,28,0.06); }
+.glass-card h3 {
+  font-size:1.15rem; font-weight:700; color:var(--c2); margin-bottom:12px;
+  display:flex; align-items:center; gap:10px;
+}
+.glass-card h3 .tag {
+  font-size:.6rem; font-weight:700; padding:3px 8px; border-radius:6px;
+  background:rgba(255,159,28,0.15); color:var(--accent);
+}
+.glass-card p, .glass-card li { font-size:.92rem; color:var(--text-muted); line-height:1.85; }
+.glass-card ul { padding-left:18px; }
+.glass-card ul li { margin-bottom:6px; }
+.glass-card ul li::marker { color:var(--accent); }
+
+/* === SUBSECTION TITLES === */
+.sub-title {
+  font-size:1.05rem; font-weight:700; color:var(--c2);
+  margin:32px 0 16px; padding-left:14px;
+  border-left:3px solid var(--accent);
+}
+
+/* === DATA TABLES === */
+.data-table-wrap { overflow-x:auto; margin:16px 0; border-radius:12px; border:1px solid var(--border); }
+table {
+  width:100%; border-collapse:collapse; font-size:.85rem;
+}
+thead { background:rgba(255,159,28,0.08); }
+th {
+  text-align:left; padding:12px 16px; font-weight:700; font-size:.75rem;
+  text-transform:uppercase; letter-spacing:.5px; color:var(--accent);
+  border-bottom:1px solid var(--border);
+}
+td {
+  padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.03);
+  color:var(--text-muted);
+}
+tbody tr:hover { background:rgba(255,159,28,0.04); }
+
+/* === HIGHLIGHT BOX === */
+.highlight-box {
+  background:linear-gradient(135deg, rgba(255,159,28,0.08), rgba(16,49,84,0.3));
+  border:1px solid rgba(255,159,28,0.2); border-radius:14px;
+  padding:24px 28px; margin:20px 0;
+}
+.highlight-box .hl-title {
+  font-size:.8rem; font-weight:800; color:var(--accent);
+  text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.highlight-box p { font-size:.9rem; color:var(--text-muted); }
+
+/* === STAT GRID === */
+.stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin:20px 0; }
+.stat-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:24px; text-align:center; transition:all .3s;
+}
+.stat-card:hover { border-color:var(--border-hover); transform:translateY(-2px); }
+.stat-value { font-size:1.8rem; font-weight:900; color:var(--accent); margin-bottom:4px; }
+.stat-label { font-size:.75rem; color:var(--text-dim); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+
+/* === KEY INSIGHTS === */
+.insights-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin:20px 0; }
+.insight-card {
+  background:var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:24px; transition:all .3s; position:relative; overflow:hidden;
+}
+.insight-card::before {
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+  background:var(--accent); border-radius:4px 0 0 4px;
+}
+.insight-card:hover { border-color:var(--border-hover); }
+.insight-card h4 { font-size:.95rem; font-weight:700; color:var(--c2); margin-bottom:8px; padding-left:12px; }
+.insight-card p { font-size:.85rem; color:var(--text-muted); padding-left:12px; }
+
+/* === TREND TAGS === */
+.trend-tags { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0; }
+.trend-tag {
+  padding:6px 14px; border-radius:8px; font-size:.75rem; font-weight:600;
+  background:rgba(255,159,28,0.08); color:var(--accent); border:1px solid rgba(255,159,28,0.15);
+}
+
+/* === FOOTER === */
+.report-footer {
+  padding:48px 0; text-align:center; border-top:1px solid var(--border);
+  margin-top:48px;
+}
+.report-footer p { font-size:.8rem; color:var(--text-dim); }
+.report-footer .brand {
+  font-size:1.2rem; font-weight:900; letter-spacing:-1px;
+  background:linear-gradient(135deg, var(--accent), var(--c2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:16px; display:inline-block;
+}
+
+/* === BACK TO TOP === */
+.back-top {
+  position:fixed; bottom:24px; right:24px; width:44px; height:44px;
+  background:var(--accent); color:var(--c5); border:none; border-radius:12px;
+  cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center;
+  opacity:0; transform:translateY(10px); transition:all .3s; z-index:99;
+  box-shadow:0 4px 20px rgba(255,159,28,0.3);
+}
+.back-top.show { opacity:1; transform:translateY(0); }
+.back-top:hover { transform:translateY(-2px); box-shadow:0 6px 24px rgba(255,159,28,0.4); }
+
+/* === TWO COL === */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+/* === RESPONSIVE === */
+@media(max-width:768px) {
+  .hero { padding:60px 20px 40px; min-height:auto; }
+  .hero h1 { font-size:1.8rem; }
+  .report-section { padding:40px 0; }
+  .two-col, .stat-grid, .insights-grid { grid-template-columns:1fr; }
+  .toc-strip { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <div class="hero-badge"><i class="ph ph-lightning"></i> Deep Research Agent 五步框架生成</div>
+    <h1>2026 年 3 月<br>科技產業月報彙整</h1>
+    <p class="hero-subtitle">AI 全面滲透、新品密集迸發 — 涵蓋手機、筆電、PC 組件、相機、穿戴裝置、智慧家居、AI 軟體與產業趨勢的深度研究報告。</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><i class="ph ph-calendar-dots"></i> 2026 年 4 月 7 日</div>
+      <div class="hero-meta-item"><i class="ph ph-clock"></i> 研究期間：3/7 ~ 4/7</div>
+      <div class="hero-meta-item"><i class="ph ph-globe"></i> 80+ 獨立來源</div>
+      <div class="hero-meta-item"><i class="ph ph-magnifying-glass"></i> 14 輪搜尋</div>
+    </div>
+  </div>
+</header>
+
+<!-- TOC -->
+<nav class="toc-strip" id="tocNav">
+  <div class="toc-inner">
+    <a class="toc-link" href="#sec-summary">執行摘要</a>
+    <a class="toc-link" href="#sec-mobile">📱 手機</a>
+    <a class="toc-link" href="#sec-laptop">💻 筆電</a>
+    <a class="toc-link" href="#sec-components">🔧 PC 組件</a>
+    <a class="toc-link" href="#sec-camera">📷 相機</a>
+    <a class="toc-link" href="#sec-wearable">⌚ 穿戴</a>
+    <a class="toc-link" href="#sec-smarthome">🏠 智慧家居</a>
+    <a class="toc-link" href="#sec-ai">🤖 AI 軟體</a>
+    <a class="toc-link" href="#sec-trends">📊 產業趨勢</a>
+    <a class="toc-link" href="#sec-conclusion">🔮 總結</a>
+  </div>
+</nav>
+
+<div class="report-container">
+
+<!-- EXECUTIVE SUMMARY -->
+<section class="report-section" id="sec-summary">
+  <div class="section-header"><div class="section-num">📌</div><h2 class="section-title">執行摘要</h2></div>
+  <div class="glass-card">
+    <p>2026 年 3 月，全球科技產業呈現「AI 全面滲透、新品密集迸發」的態勢。Samsung Galaxy S26 系列以全球首創<strong>硬體級智慧防窺螢幕</strong>引領隱私保護新紀元，Apple iPhone 17e 以平價策略攻入 AI 手機入門市場，Xiaomi 17 Ultra 持續深化與 Leica 的影像合作。</p>
+    <p style="margin-top:12px">AI 產業方面，OpenAI 發布 GPT-5.4（百萬 token 上下文窗口），Google 推出 Gemini 3.1 Flash-Lite，Anthropic 推出跨平台記憶遷移功能，Microsoft 正式啟動自研基礎模型戰略，標誌著從「聊天機器人」邁向「自主代理 (Agentic AI)」的歷史性轉折。</p>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-value">639-667</div><div class="stat-label">億美元 · 台灣 3 月出口</div></div>
+    <div class="stat-card"><div class="stat-value">29-35%</div><div class="stat-label">出口年增率</div></div>
+    <div class="stat-card"><div class="stat-value">14 萬片</div><div class="stat-label">台積電 CoWoS 產能</div></div>
+    <div class="stat-card"><div class="stat-value">2nm</div><div class="stat-label">預計下半年量產</div></div>
+  </div>
+</section>
+
+<!-- 1. MOBILE -->
+<section class="report-section" id="sec-mobile">
+  <div class="section-header"><div class="section-num">01</div><h2 class="section-title">智慧型手機</h2></div>
+
+  <div class="glass-card">
+    <h3>Samsung Galaxy S26 系列 <span class="tag">旗艦</span></h3>
+    <p>發表日期：2026/2/25（Galaxy Unpacked）｜台灣上市：2026/3/11</p>
+    <p>搭載 Snapdragon 8 Elite Gen 5 for Galaxy，全系列首度支援 eSIM。S26 Ultra 最大突破為全球首款<strong>硬體級隱私顯示技術</strong>——從像素結構重新設計，將像素分為「廣角型」與「窄角型」，啟用後側面極難辨識。</p>
+    <ul>
+      <li>支援 60W 有線快充，1TB 版本搭載 16GB RAM</li>
+      <li>深度整合 Galaxy AI，含「Now Nudge」情境感知系統</li>
+      <li>螢幕 6.9 吋延續超低反射面板設計</li>
+    </ul>
+  </div>
+
+  <div class="two-col">
+    <div class="glass-card">
+      <h3>Apple iPhone 17e <span class="tag">高 CP 值</span></h3>
+      <p>搭載 A19 晶片、256GB 起始容量、Ceramic Shield 2、iOS 26。首次在非旗艦機型提供完整 Apple Intelligence 功能。</p>
+    </div>
+    <div class="glass-card">
+      <h3>Xiaomi 17 Ultra <span class="tag">影像旗艦</span></h3>
+      <p>延續 Leica 合作，搭載 1 吋感光元件主鏡頭，輕薄化機身設計，以極具競爭力定價進攻中高階市場。</p>
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <h3>Google Pixel 10a</h3>
+    <p>AI 計算攝影、7 年軟體更新承諾、45W 充電與電池升級。定位策略與 iPhone 17e 形成對照：兩者都以親民價格提供完整 AI 體驗。</p>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-title"><i class="ph ph-trend-up"></i> 手機市場三大趨勢</div>
+    <div class="trend-tags">
+      <span class="trend-tag">AI 功能全面下沉</span>
+      <span class="trend-tag">硬體隱私保護崛起</span>
+      <span class="trend-tag">影像軍備競賽白熱化</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2. LAPTOP -->
+<section class="report-section" id="sec-laptop">
+  <div class="section-header"><div class="section-num">02</div><h2 class="section-title">筆記型電腦</h2></div>
+
+  <div class="glass-card">
+    <h3>AI PC 全面普及</h3>
+    <p>2026 年 AI PC 基本標準：<strong>RAM ≥ 16GB、SSD ≥ 256GB、NPU ≥ 40 TOPS</strong>。CES 2026 新品已陸續在台鋪貨上市。</p>
+  </div>
+
+  <div class="data-table-wrap">
+    <table>
+      <thead><tr><th>品牌</th><th>重點產品</th><th>核心亮點</th></tr></thead>
+      <tbody>
+        <tr><td><strong>ASUS 華碩</strong></td><td>Zenbook DUO / S14 / ProArt 創 13</td><td>雙 14 吋 3K OLED、續航 27 小時、StoryCube AI</td></tr>
+        <tr><td><strong>Acer 宏碁</strong></td><td>Aspire AI / 電競系列</td><td>本地端 AI 運算、無需額外訂閱、RTX 50 系列</td></tr>
+        <tr><td><strong>MSI 微星</strong></td><td>Raider 16 Max / Stealth / Prestige</td><td>Cooler Boost Trinity 散熱、智慧化辦公</td></tr>
+        <tr><td><strong>Apple</strong></td><td>MacBook Pro (M5 Pro/Max)、Air (M5)、Neo (A18 Pro)</td><td>MacBook Neo 首次使用 iPhone 晶片瞄準入門市場</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-title"><i class="ph ph-cpu"></i> 筆電趨勢</div>
+    <div class="trend-tags">
+      <span class="trend-tag">NPU 50+ TOPS 主流化</span>
+      <span class="trend-tag">品牌 AI 生態差異化</span>
+      <span class="trend-tag">本地端 AI 優先</span>
+      <span class="trend-tag">Apple 全線更新</span>
+    </div>
+  </div>
+</section>
+
+<!-- 3. COMPONENTS -->
+<section class="report-section" id="sec-components">
+  <div class="section-header"><div class="section-num">03</div><h2 class="section-title">PC 組件市場</h2></div>
+
+  <div class="two-col">
+    <div class="glass-card">
+      <h3>Intel Arrow Lake Refresh <span class="tag">3/26 發布</span></h3>
+      <p>Core Ultra 200S Plus 系列（Core Ultra 7 270K Plus / Core Ultra 5 250K Plus），強化本地 AI 處理，引入「Binary Optimization Tool」。上市即供需失衡，價格高於建議售價。</p>
+    </div>
+    <div class="glass-card">
+      <h3>AMD Zen 6 延期至 2027</h3>
+      <p>消費級「Medusa」確認推遲至 2027 年。伺服器端 EPYC「Venice」仍按計畫推進，2026 下半年推出，採用 2nm 製程。</p>
+    </div>
+  </div>
+
+  <div class="sub-title">記憶體與儲存</div>
+  <div class="two-col">
+    <div class="glass-card">
+      <h3>DDR5：零售端修正 <span class="tag" style="background:rgba(34,197,94,0.15);color:#22c55e;">價格下跌</span></h3>
+      <p>德國月跌 7.2%，華強北短期跌幅 20-30%。觸發因素：Google「TurboQuant」記憶體壓縮算法 + 前期漲幅過快。業界認為屬短期庫存調整。</p>
+    </div>
+    <div class="glass-card">
+      <h3>SSD：結構性供需緊張 <span class="tag" style="background:rgba(239,68,68,0.15);color:#ef4444;">價格上漲</span></h3>
+      <p>大廠產能集中於 AI 資料中心產品（HBM、伺服器級儲存），消費級 SSD 產能嚴重壓縮，合約價持續看漲。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 4. CAMERA -->
+<section class="report-section" id="sec-camera">
+  <div class="section-header"><div class="section-num">04</div><h2 class="section-title">相機與影像</h2></div>
+  <div class="two-col">
+    <div class="glass-card">
+      <h3>DJI Avata 360 <span class="tag">3/26 發表</span></h3>
+      <p>支援 8K 360° 拍攝的 FPV 航拍機，結合 FPV 飛行與全景攝影，提供前所未有的沉浸式航拍體驗。</p>
+    </div>
+    <div class="glass-card">
+      <h3>Panasonic Lumix TZ300</h3>
+      <p>3/24 前後發表的輕便相機，瞄準旅行攝影與日常記錄市場。</p>
+    </div>
+  </div>
+  <div class="glass-card">
+    <h3>傳聞中的機型</h3>
+    <div class="data-table-wrap">
+      <table>
+        <thead><tr><th>品牌</th><th>傳聞機型</th><th>狀態</th></tr></thead>
+        <tbody>
+          <tr><td>Canon</td><td>EOS R7 Mark II、PowerShot G7 X IV</td><td>傳聞活躍</td></tr>
+          <tr><td>Sony</td><td>A6900 / A7000、FX3 II</td><td>討論中</td></tr>
+          <tr><td>Nikon</td><td>Z7 III、Z9 II</td><td>傳聞階段</td></tr>
+          <tr><td>Fujifilm</td><td>X-Pro4</td><td>社群期待中</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 5. WEARABLE -->
+<section class="report-section" id="sec-wearable">
+  <div class="section-header"><div class="section-num">05</div><h2 class="section-title">影音與穿戴</h2></div>
+  <div class="two-col">
+    <div class="glass-card">
+      <h3>Huawei FreeBuds Pro 5 <span class="tag">AI 感知降噪</span></h3>
+      <p>雙單元雙路徑 AI 感知降噪，智慧判斷環境噪音類型並動態調整策略；FreeClip 2 推出玫瑰金配色。</p>
+    </div>
+    <div class="glass-card">
+      <h3>Garmin 動態</h3>
+      <p>Venu 4 上市（第五代心率 + ECG）；Forerunner 170/370/375 傳聞持續；代號「CIRQA」新型裝置引發討論。</p>
+    </div>
+  </div>
+  <div class="glass-card">
+    <h3>Huawei 穿戴新品 · Xiaomi 米粉節</h3>
+    <p>WATCH GT Runner 2（3D 浮動天線定位、智慧馬拉松模式）、Band 11（睡眠 HRV 分析）。Xiaomi 手環 9、Watch S4、Redmi Watch 5 等大幅促銷。</p>
+  </div>
+</section>
+
+<!-- 6. SMART HOME -->
+<section class="report-section" id="sec-smarthome">
+  <div class="section-header"><div class="section-num">06</div><h2 class="section-title">智慧家居</h2></div>
+
+  <div class="two-col">
+    <div class="glass-card">
+      <h3>Roborock Saros 20 <span class="tag">旗艦</span></h3>
+      <p>35,000 Pa 吸力、AdaptiLift® 智慧升降底盤（從避障進化到主動越障）、4.5+4 公分雙層門檻越障、高溫自清潔基座。</p>
+    </div>
+    <div class="glass-card">
+      <h3>Dyson 全面進攻 <span class="tag">四款新品</span></h3>
+      <p>Spot+Scrub AI（辨識 100+ 物體、15 次重複清潔）、PencilWash（170 度平躺）、HushJet（睡眠模式 24dB）。策略：AI + 機器人、多功能一體、極靜運行。</p>
+    </div>
+  </div>
+
+  <div class="glass-card">
+    <h3>Wi-Fi 7 全面普及</h3>
+    <p>TP-Link Wi-Fi 7 產品線已建立完整矩陣（Archer、Deco Mesh、Omada 商用），從「高階嚐鮮」進入「主流標配」階段。</p>
+  </div>
+
+  <div class="highlight-box">
+    <div class="hl-title"><i class="ph ph-house"></i> 智慧家居四大趨勢</div>
+    <div class="trend-tags">
+      <span class="trend-tag">全自動基站標配化</span>
+      <span class="trend-tag">AI 避障 → 主動越障</span>
+      <span class="trend-tag">薄型化設計</span>
+      <span class="trend-tag">寵物友善功能</span>
+    </div>
+  </div>
+</section>
+
+<!-- 7. AI -->
+<section class="report-section" id="sec-ai">
+  <div class="section-header"><div class="section-num">07</div><h2 class="section-title">AI 與軟體</h2></div>
+
+  <div class="highlight-box">
+    <div class="hl-title"><i class="ph ph-brain"></i> 歷史性轉折</div>
+    <p>2026 年 3 月標誌著 AI 產業從「生成式聊天機器人」向「<strong>Agentic AI（自主代理 AI）</strong>」的全面遷移——能自主建立策略計畫、與軟體工具互動、完成多步驟複雜任務。</p>
+  </div>
+
+  <div class="insights-grid">
+    <div class="insight-card">
+      <h4>OpenAI GPT-5.4</h4>
+      <p>100 萬 token 上下文窗口；GPT-5.4 / Thinking / mini / nano 四版本。收購 Promptfoo 與 Astral；測試 ChatGPT 廣告。</p>
+    </div>
+    <div class="insight-card">
+      <h4>Google Gemini</h4>
+      <p>Gemini 3.1 Flash-Lite 低成本高速模型；Gemini Embedding 2 首款原生多模態嵌入模型，統一文字/圖像/影片。</p>
+    </div>
+    <div class="insight-card">
+      <h4>Anthropic Claude</h4>
+      <p>Claude Import Memory：首次跨平台記憶匯入（從 ChatGPT/Gemini 遷移）；Claude Code 語音互動；企業應用市場。</p>
+    </div>
+    <div class="insight-card">
+      <h4>Microsoft Copilot</h4>
+      <p>自研模型戰略啟動：MAI-Transcribe-1 / MAI-Voice-1 / MAI-Image-2。Copilot Cowork 能自主執行工作任務。</p>
+    </div>
+  </div>
+
+  <div class="sub-title">Adobe & Canva</div>
+  <div class="two-col">
+    <div class="glass-card">
+      <h3>Canva 更新</h3>
+      <ul>
+        <li><strong>Magic Layers</strong> — 靜態 AI 圖像轉可編輯多層設計</li>
+        <li><strong>Image to Video</strong> — AI 為靜態圖添加動態</li>
+        <li>Claude/ChatGPT 連接器、Magic SEO</li>
+      </ul>
+    </div>
+    <div class="glass-card">
+      <h3>Adobe 更新</h3>
+      <ul>
+        <li><strong>Firefly</strong> — 影片/圖像編輯擴展、自訂模型</li>
+        <li><strong>Illustrator v30.3</strong> — Turntable 2D 多角度旋轉生成</li>
+        <li>Adobe Express 行動端列印、自動字幕</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sub-title">資安動態</div>
+  <div class="glass-card">
+    <ul>
+      <li><strong>Agentic AI 風險崛起</strong> — 自主 AI 代理成為攻擊目標</li>
+      <li><strong>身份攻擊主戰場化</strong> — 竊取憑證與 Session Token「合法登入」</li>
+      <li><strong>AI 驅動社交工程</strong> — 深偽詐騙與多階段跨通道攻擊</li>
+      <li><strong>Secrets Sprawl</strong> — 硬編碼 API Key 散佈程式碼庫</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 8. TRENDS -->
+<section class="report-section" id="sec-trends">
+  <div class="section-header"><div class="section-num">08</div><h2 class="section-title">產業趨勢總覽</h2></div>
+
+  <div class="sub-title">台灣出口與科技產業</div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-value">639-667 億</div><div class="stat-label">美元 · 預估出口金額</div></div>
+    <div class="stat-card"><div class="stat-value">7,189 億</div><div class="stat-label">元 · 台積電前兩月營收</div></div>
+    <div class="stat-card"><div class="stat-value">4/16</div><div class="stat-label">台積電法說會</div></div>
+  </div>
+
+  <div class="glass-card">
+    <h3>台積電 TSMC 動態</h3>
+    <p>CoWoS 從 CoWoS-S 向 <strong>CoWoS-L（局部矽互連）</strong>遷移。NVIDIA、Google、AWS 積極爭取 2nm 產能。AI 需求從 GPU 擴展至客製化 ASIC、網通晶片與 CPU。</p>
+  </div>
+
+  <div class="sub-title">風險因素</div>
+  <div class="data-table-wrap">
+    <table>
+      <thead><tr><th>風險</th><th>影響</th></tr></thead>
+      <tbody>
+        <tr><td>中東地緣政治</td><td>物流受阻、航運成本上升、能源價格波動</td></tr>
+        <tr><td>供應鏈重組</td><td>全球布局緩解風險但帶來成本調整壓力</td></tr>
+        <tr><td>傳統產業承壓</td><td>貿易壁壘、關稅不確定性</td></tr>
+        <tr><td>處理器漲價</td><td>Intel、AMD 均有調漲壓力</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 9. CONCLUSION -->
+<section class="report-section" id="sec-conclusion">
+  <div class="section-header"><div class="section-num">09</div><h2 class="section-title">總結與前瞻洞察</h2></div>
+
+  <div class="sub-title">五大關鍵結論</div>
+  <div class="insights-grid">
+    <div class="insight-card"><h4>1. AI 滲透全面化</h4><p>從手機到掃地機器人，AI 從「加分功能」變成「基礎架構」，2026 年 3 月標誌全面普及元年。</p></div>
+    <div class="insight-card"><h4>2. Agentic AI 時代開啟</h4><p>四大平台同步轉向自主代理 AI，從「回答問題」進化到「自主完成任務」。</p></div>
+    <div class="insight-card"><h4>3. 硬體隱私保護興起</h4><p>Samsung Privacy Display 開創硬體級隱私保護新品類。</p></div>
+    <div class="insight-card"><h4>4. 記憶體市場分化</h4><p>DDR5 零售修正 vs. SSD 持續漲價，AI 需求重塑供需平衡。</p></div>
+    <div class="insight-card"><h4>5. 台灣半導體超級週期</h4><p>出口數據、台積電營收與先進製程投資均確認 AI 超級週期延續。</p></div>
+  </div>
+
+  <div class="sub-title">未來一個月展望</div>
+  <div class="data-table-wrap">
+    <table>
+      <thead><tr><th>時間</th><th>預期事件</th></tr></thead>
+      <tbody>
+        <tr><td>4 月中旬</td><td>台積電 Q1 法說會（4/16），關注 AI 資本支出指引</td></tr>
+        <tr><td>4 月</td><td>Samsung Galaxy AI 擴展功能更新</td></tr>
+        <tr><td>4-5 月</td><td>NVIDIA 可能公布 RTX 50 Super 系列計畫</td></tr>
+        <tr><td>5 月</td><td>Computex 2026 前瞻，各品牌下半年產品路線圖</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub-title">消費者建議</div>
+  <div class="insights-grid">
+    <div class="insight-card"><h4>📱 手機</h4><p>S26 / iPhone 17e / Xiaomi 17 已可入手，依生態偏好選擇。</p></div>
+    <div class="insight-card"><h4>💻 筆電</h4><p>選購 NPU ≥ 40 TOPS 機型以確保未來 AI 功能相容性。</p></div>
+    <div class="insight-card"><h4>💾 記憶體/SSD</h4><p>DDR5 正處修正期，較好入手時機；SSD 短期不太可能降價。</p></div>
+    <div class="insight-card"><h4>🏠 智慧家居</h4><p>Roborock Saros 20 與 Dyson Spot+Scrub AI 代表掃拖新標竿。</p></div>
+  </div>
+</section>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="report-footer">
+  <div class="report-container">
+    <div class="brand">KLIO TECH REPORT</div>
+    <p>本報告由 Deep Research Agent 自動生成，基於 14 輪搜尋與 80+ 獨立來源交叉比對。</p>
+    <p style="margin-top:8px;">報告日期：2026-04-07 ｜ 色彩主題：火影忍者 ｜ 風格：Tactile Maximalism #43</p>
+  </div>
+</footer>
+
+<!-- BACK TO TOP -->
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <i class="ph ph-arrow-up"></i>
+</button>
+
+<script>
+// Back to top visibility
+const backTop = document.getElementById('backTop');
+window.addEventListener('scroll', () => {
+  backTop.classList.toggle('show', window.scrollY > 400);
+});
+
+// Active TOC link
+const sections = document.querySelectorAll('.report-section');
+const tocLinks = document.querySelectorAll('.toc-link');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      tocLinks.forEach(l => l.classList.remove('active'));
+      const id = entry.target.id;
+      const active = document.querySelector(`.toc-link[href="#${id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// Smooth entrance animations
+const animCards = document.querySelectorAll('.glass-card, .stat-card, .insight-card, .highlight-box');
+const fadeObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+      fadeObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+animCards.forEach(card => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(20px)';
+  card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  fadeObserver.observe(card);
+});
+</script>
+</body>
+</html>
