@@ -5,11 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2026 年 3 月科技產業月報彙整 | KLIO Tech Report</title>
 <meta name="description" content="2026年3月科技產業月報：AI全面滲透、新品密集迸發，涵蓋手機、筆電、PC組件、相機、穿戴、智慧家居、AI軟體與產業趨勢。">
+<meta property="og:title" content="2026 年 3 月科技產業月報彙整 | KLIO Tech Report">
+<meta property="og:description" content="2026年3月科技產業月報：AI全面滲透、新品密集迸發，涵蓋手機、筆電、PC組件、相機、穿戴、智慧家居、AI軟體與產業趨勢。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://klio.tech/report/202603">
+<meta property="og:image" content="https://klio.tech/assets/images/202603-report-cover.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css">
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://unpkg.com/@phosphor-icons/web" defer></script>
 <style>
 /* === NARUTO PALETTE === */
 :root {
@@ -64,7 +70,7 @@ body {
   font-size:clamp(2.2rem,5vw,3.8rem); font-weight:900; letter-spacing:-1.5px;
   line-height:1.15; margin-bottom:20px;
   background:linear-gradient(135deg, var(--c1) 0%, var(--accent) 100%);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
 }
 .hero-subtitle { font-size:1.1rem; color:var(--text-muted); max-width:700px; line-height:1.8; margin-bottom:32px; }
 .hero-meta {
@@ -141,7 +147,19 @@ body {
 }
 
 /* === DATA TABLES === */
-.data-table-wrap { overflow-x:auto; margin:16px 0; border-radius:12px; border:1px solid var(--border); }
+.data-table-wrap {
+  overflow-x:auto; margin:16px 0; border-radius:12px; border:1px solid var(--border);
+  /* 水平滾動提示 (Scroll Shadows) */
+  background: 
+    linear-gradient(to right, var(--surface) 30%, rgba(255,255,255,0)),
+    linear-gradient(to right, rgba(255,255,255,0), var(--surface) 70%) 0 100%,
+    radial-gradient(farthest-side at 0 50%, rgba(0,0,0,0.1), rgba(0,0,0,0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,0.1), rgba(0,0,0,0)) 0 100%;
+  background-repeat: no-repeat;
+  background-color: var(--surface);
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 table {
   width:100%; border-collapse:collapse; font-size:.85rem;
 }
@@ -210,7 +228,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
 .report-footer .brand {
   font-size:1.2rem; font-weight:900; letter-spacing:-1px;
   background:linear-gradient(135deg, var(--accent), var(--c2));
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
   margin-bottom:16px; display:inline-block;
 }
 
@@ -228,6 +246,10 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
 /* === TWO COL === */
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 
+/* === ANIMATIONS === */
+.fade-item { opacity:0; transform:translateY(20px); transition:opacity 0.6s ease, transform 0.6s ease; }
+.fade-item.show { opacity:1; transform:translateY(0); }
+
 /* === RESPONSIVE === */
 @media(max-width:768px) {
   .hero { padding:60px 20px 40px; min-height:auto; }
@@ -243,14 +265,15 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
 <!-- HERO -->
 <header class="hero" id="top">
   <div class="hero-inner">
-    <div class="hero-badge"><i class="ph ph-lightning"></i> Deep Research Agent 五步框架生成</div>
+    <div class="hero-badge"><i class="ph ph-lightning" aria-hidden="true"></i> Deep Research Agent 五步框架生成</div>
     <h1>2026 年 3 月<br>科技產業月報彙整</h1>
     <p class="hero-subtitle">AI 全面滲透、新品密集迸發 — 涵蓋手機、筆電、PC 組件、相機、穿戴裝置、智慧家居、AI 軟體與產業趨勢的深度研究報告。</p>
     <div class="hero-meta">
-      <div class="hero-meta-item"><i class="ph ph-calendar-dots"></i> 2026 年 4 月 7 日</div>
-      <div class="hero-meta-item"><i class="ph ph-clock"></i> 研究期間：3/7 ~ 4/7</div>
-      <div class="hero-meta-item"><i class="ph ph-globe"></i> 80+ 獨立來源</div>
-      <div class="hero-meta-item"><i class="ph ph-magnifying-glass"></i> 14 輪搜尋</div>
+      <div class="hero-meta-item"><i class="ph ph-calendar-dots" aria-hidden="true"></i> 2026 年 4 月 7 日</div>
+      <div class="hero-meta-item"><i class="ph ph-books" aria-hidden="true"></i> 預估閱讀時間：約 8 分鐘</div>
+      <div class="hero-meta-item"><i class="ph ph-clock" aria-hidden="true"></i> 研究期間：3/7 ~ 4/7</div>
+      <div class="hero-meta-item"><i class="ph ph-globe" aria-hidden="true"></i> 80+ 獨立來源</div>
+      <div class="hero-meta-item"><i class="ph ph-magnifying-glass" aria-hidden="true"></i> 14 輪搜尋</div>
     </div>
   </div>
 </header>
@@ -271,7 +294,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   </div>
 </nav>
 
-<div class="report-container">
+<main class="report-container">
 
 <!-- EXECUTIVE SUMMARY -->
 <section class="report-section" id="sec-summary">
@@ -320,7 +343,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   </div>
 
   <div class="highlight-box">
-    <div class="hl-title"><i class="ph ph-trend-up"></i> 手機市場三大趨勢</div>
+    <div class="hl-title"><i class="ph ph-trend-up" aria-hidden="true"></i> 手機市場三大趨勢</div>
     <div class="trend-tags">
       <span class="trend-tag">AI 功能全面下沉</span>
       <span class="trend-tag">硬體隱私保護崛起</span>
@@ -340,7 +363,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
 
   <div class="data-table-wrap">
     <table>
-      <thead><tr><th>品牌</th><th>重點產品</th><th>核心亮點</th></tr></thead>
+      <thead><tr><th scope="col">品牌</th><th scope="col">重點產品</th><th scope="col">核心亮點</th></tr></thead>
       <tbody>
         <tr><td><strong>ASUS 華碩</strong></td><td>Zenbook DUO / S14 / ProArt 創 13</td><td>雙 14 吋 3K OLED、續航 27 小時、StoryCube AI</td></tr>
         <tr><td><strong>Acer 宏碁</strong></td><td>Aspire AI / 電競系列</td><td>本地端 AI 運算、無需額外訂閱、RTX 50 系列</td></tr>
@@ -351,7 +374,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   </div>
 
   <div class="highlight-box">
-    <div class="hl-title"><i class="ph ph-cpu"></i> 筆電趨勢</div>
+    <div class="hl-title"><i class="ph ph-cpu" aria-hidden="true"></i> 筆電趨勢</div>
     <div class="trend-tags">
       <span class="trend-tag">NPU 50+ TOPS 主流化</span>
       <span class="trend-tag">品牌 AI 生態差異化</span>
@@ -406,7 +429,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
     <h3>傳聞中的機型</h3>
     <div class="data-table-wrap">
       <table>
-        <thead><tr><th>品牌</th><th>傳聞機型</th><th>狀態</th></tr></thead>
+        <thead><tr><th scope="col">品牌</th><th scope="col">傳聞機型</th><th scope="col">狀態</th></tr></thead>
         <tbody>
           <tr><td>Canon</td><td>EOS R7 Mark II、PowerShot G7 X IV</td><td>傳聞活躍</td></tr>
           <tr><td>Sony</td><td>A6900 / A7000、FX3 II</td><td>討論中</td></tr>
@@ -458,7 +481,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   </div>
 
   <div class="highlight-box">
-    <div class="hl-title"><i class="ph ph-house"></i> 智慧家居四大趨勢</div>
+    <div class="hl-title"><i class="ph ph-house" aria-hidden="true"></i> 智慧家居四大趨勢</div>
     <div class="trend-tags">
       <span class="trend-tag">全自動基站標配化</span>
       <span class="trend-tag">AI 避障 → 主動越障</span>
@@ -473,7 +496,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   <div class="section-header"><div class="section-num">07</div><h2 class="section-title">AI 與軟體</h2></div>
 
   <div class="highlight-box">
-    <div class="hl-title"><i class="ph ph-brain"></i> 歷史性轉折</div>
+    <div class="hl-title"><i class="ph ph-brain" aria-hidden="true"></i> 歷史性轉折</div>
     <p>2026 年 3 月標誌著 AI 產業從「生成式聊天機器人」向「<strong>Agentic AI（自主代理 AI）</strong>」的全面遷移——能自主建立策略計畫、與軟體工具互動、完成多步驟複雜任務。</p>
   </div>
 
@@ -546,7 +569,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   <div class="sub-title">風險因素</div>
   <div class="data-table-wrap">
     <table>
-      <thead><tr><th>風險</th><th>影響</th></tr></thead>
+      <thead><tr><th scope="col">風險</th><th scope="col">影響</th></tr></thead>
       <tbody>
         <tr><td>中東地緣政治</td><td>物流受阻、航運成本上升、能源價格波動</td></tr>
         <tr><td>供應鏈重組</td><td>全球布局緩解風險但帶來成本調整壓力</td></tr>
@@ -573,7 +596,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   <div class="sub-title">未來一個月展望</div>
   <div class="data-table-wrap">
     <table>
-      <thead><tr><th>時間</th><th>預期事件</th></tr></thead>
+      <thead><tr><th scope="col">時間</th><th scope="col">預期事件</th></tr></thead>
       <tbody>
         <tr><td>4 月中旬</td><td>台積電 Q1 法說會（4/16），關注 AI 資本支出指引</td></tr>
         <tr><td>4 月</td><td>Samsung Galaxy AI 擴展功能更新</td></tr>
@@ -592,7 +615,7 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
   </div>
 </section>
 
-</div>
+</main>
 
 <!-- FOOTER -->
 <footer class="report-footer">
@@ -604,8 +627,8 @@ tbody tr:hover { background:rgba(255,159,28,0.04); }
 </footer>
 
 <!-- BACK TO TOP -->
-<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
-  <i class="ph ph-arrow-up"></i>
+<button class="back-top" id="backTop" aria-label="回到頂部" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <i class="ph ph-arrow-up" aria-hidden="true"></i>
 </button>
 
 <script>
@@ -624,27 +647,27 @@ const observer = new IntersectionObserver((entries) => {
       tocLinks.forEach(l => l.classList.remove('active'));
       const id = entry.target.id;
       const active = document.querySelector(`.toc-link[href="#${id}"]`);
-      if (active) active.classList.add('active');
+      if (active) {
+        active.classList.add('active');
+        active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
     }
   });
 }, { rootMargin: '-30% 0px -60% 0px' });
 sections.forEach(s => observer.observe(s));
 
-// Smooth entrance animations
+// Smooth entrance animations (移至 CSS 處理效能更好)
 const animCards = document.querySelectorAll('.glass-card, .stat-card, .insight-card, .highlight-box');
 const fadeObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      entry.target.style.opacity = '1';
-      entry.target.style.transform = 'translateY(0)';
+      entry.target.classList.add('show');
       fadeObserver.unobserve(entry.target);
     }
   });
 }, { threshold: 0.1 });
 animCards.forEach(card => {
-  card.style.opacity = '0';
-  card.style.transform = 'translateY(20px)';
-  card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  card.classList.add('fade-item');
   fadeObserver.observe(card);
 });
 </script>
