@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>內容深度與專業度 (Content & Professionalism) - 範本模組</title>
+    <!-- 使用 Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables - Design Tokens */
+        :root {
+            --bg-color: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --brand-primary: #3b82f6;
+            --brand-light: #eff6ff;
+            --accent-green: #10b981;
+            --accent-green-light: #ecfdf5;
+            --accent-red: #ef4444;
+            --accent-red-light: #fef2f2;
+            --accent-amber: #f59e0b;
+            --accent-amber-light: #fffbeb;
+            --border-color: #e2e8f0;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-hover: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 3rem 2rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .page-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--text-primary), var(--brand-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Bento Grid Layout */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Component Card */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--brand-primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* --- Individual Element Styles --- */
+
+        /* 21. Executive Summary */
+        .exec-summary-box {
+            background: var(--brand-light);
+            border-left: 4px solid var(--brand-primary);
+            padding: 1.5rem;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        }
+        .exec-summary-box p {
+            color: #1e3a8a;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* 22. Cross-Reference Links */
+        .graph-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        .cross-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .cross-link:hover {
+            border-color: var(--brand-primary);
+            color: var(--brand-primary);
+            background: var(--brand-light);
+        }
+
+        /* 23. Risk & Mitigation */
+        .risk-mitigation {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .rm-box {
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+        }
+        .risk {
+            background: var(--accent-red-light);
+            border: 1px solid #fca5a5;
+        }
+        .mitigation {
+            background: var(--accent-green-light);
+            border: 1px solid #6ee7b7;
+        }
+        .rm-box h4 {
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .risk h4 { color: var(--accent-red); }
+        .mitigation h4 { color: var(--accent-green); }
+        .rm-box p { font-size: 0.9rem; color: var(--text-primary); }
+
+        /* 24. Cost-Benefit Analysis */
+        .roi-dashboard {
+            display: flex;
+            justify-content: space-around;
+            background: var(--text-primary);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+        .roi-stat span { display: block; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.25rem; }
+        .roi-stat strong { display: block; font-size: 1.5rem; font-weight: 800; }
+        .roi-stat .positive { color: #34d399; }
+
+        /* 25. Industry Matrix */
+        .matrix-container {
+            aspect-ratio: 2/1;
+            background: var(--bg-color);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .matrix-axis-x, .matrix-axis-y { position: absolute; background: var(--border-color); }
+        .matrix-axis-x { height: 2px; width: 80%; top: 50%; }
+        .matrix-axis-y { width: 2px; height: 80%; left: 50%; }
+        .matrix-dot {
+            position: absolute; width: 16px; height: 16px; background: var(--brand-primary);
+            border-radius: 50%; border: 3px solid white; box-shadow: var(--shadow-sm);
+            top: 30%; left: 60%;
+        }
+
+        /* 26. Role-based Filtering */
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-color);
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+        }
+        .filter-tab {
+            flex: 1; text-align: center; padding: 0.5rem; border-radius: var(--radius-sm);
+            font-size: 0.875rem; font-weight: 600; cursor: pointer; color: var(--text-secondary);
+            transition: var(--transition);
+        }
+        .filter-tab.active { background: white; color: var(--text-primary); box-shadow: var(--shadow-sm); }
+        .filter-content { margin-top: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.95rem; }
+
+        /* 27. Case Study Pop-over */
+        .case-preview {
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            position: relative;
+            background: linear-gradient(180deg, #ffffff 0%, var(--bg-color) 100%);
+        }
+        .case-tag {
+            position: absolute;
+            top: -0.75rem;
+            left: 1.5rem;
+            background: var(--text-primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .case-preview h4 { margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .case-preview p { font-size: 0.9rem; color: var(--text-secondary); }
+
+        /* 28. Action Items Checklist */
+        .action-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .action-item {
+            display: flex; align-items: flex-start; gap: 1rem;
+            padding: 1rem; background: var(--bg-color); border-radius: var(--radius-md);
+            border: 1px solid transparent; transition: var(--transition);
+        }
+        .action-item:hover { border-color: var(--brand-primary); background: white; }
+        .action-item input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: var(--brand-primary); margin-top: 0.1rem; cursor: pointer; }
+        .action-text { font-size: 0.95rem; font-weight: 500; }
+
+        /* 29. Industry Benchmark */
+        .benchmark-group { margin-bottom: 1rem; }
+        .benchmark-header { display: flex; justify-content: space-between; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .benchmark-track { height: 8px; background: var(--border-color); border-radius: 999px; overflow: hidden; }
+        .benchmark-fill { height: 100%; border-radius: 999px; }
+
+        /* 30. Glossary Tooltip */
+        .prose { font-size: 1rem; line-height: 1.8; color: var(--text-primary); }
+        .glossary-term {
+            color: var(--brand-primary);
+            font-weight: 600;
+            cursor: help;
+            border-bottom: 2px dotted #93c5fd;
+            position: relative;
+            transition: var(--transition);
+        }
+        .glossary-term:hover { border-bottom-color: var(--brand-primary); }
+        .tooltip-card {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            width: 260px;
+            background: var(--text-primary);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-hover);
+            transition: var(--transition);
+            z-index: 10;
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 1.5;
+            text-align: left;
+        }
+        .tooltip-card::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--text-primary) transparent transparent transparent;
+        }
+        .glossary-term:hover .tooltip-card {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .bento-grid { grid-template-columns: 1fr; }
+            .risk-mitigation { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="page-header">
+            <h1>內容深度與專業度模組</h1>
+            <p>實作 Report_Review_Strategy_50.md 提到的 21-30 項優化策略。展示如何提升觀點深度、專業感與資料呈現結構。</p>
+        </header>
+
+        <div class="bento-grid">
+
+            <!-- 21. Executive Summary -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 21</span>
+                    <h2 class="card-title">執行摘要 (Executive Summary)</h2>
+                    <p class="card-desc">為高層主管提煉精華，將複雜報告濃縮為易讀的 300 字摘要，快速展現核心價值與結論。</p>
+                </div>
+                <div class="card-content">
+                    <div class="exec-summary-box">
+                        <p><strong>自動萃取摘要：</strong> 本報告詳細解析 2026 年 Q3 系統遷移計劃。預估能降低 15% 伺服器成本，並提升前端載入速度達 40%。建議即刻啟動第一階段重構以避免安全漏洞風險。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 22. Cross-Reference Links -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 22</span>
+                    <h2 class="card-title">知識圖譜交叉引用 (Cross-Reference)</h2>
+                    <p class="card-desc">不同章節或報告間的觀點可互相跳轉，構建組織的知識圖譜，避免資訊形成孤島。</p>
+                </div>
+                <div class="card-content">
+                    <div class="graph-nav">
+                        <a href="#" class="cross-link">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                            參考：Q2 資安審查報告
+                        </a>
+                        <a href="#" class="cross-link">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                            連結：設計系統 Design Tokens
+                        </a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 23. Risk & Mitigation -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 23</span>
+                    <h2 class="card-title">風險與對策 (Risk/Mitigation)</h2>
+                    <p class="card-desc">不僅呈現專案可能遇到的問題，更提供並列的具體防護指引，展現專業評估能力。</p>
+                </div>
+                <div class="card-content">
+                    <div class="risk-mitigation">
+                        <div class="rm-box risk">
+                            <h4>潛在風險 (Risk)</h4>
+                            <p>API 升級期間可能導致舊版客戶端斷線，造成服務中斷與客訴。</p>
+                        </div>
+                        <div class="rm-box mitigation">
+                            <h4>緩解對策 (Mitigation)</h4>
+                            <p>實施雙軌並行 (Blue-Green Deployment)，維持 V1 版本 API 運行至少三個月。</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 24. Cost-Benefit Analysis -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 24</span>
+                    <h2 class="card-title">成本效益分析 (Cost-Benefit)</h2>
+                    <p class="card-desc">透過數據模組讓策略建議具備財務合理性，數據化指標有助於大幅提升提案通過率。</p>
+                </div>
+                <div class="card-content">
+                    <div class="roi-dashboard">
+                        <div class="roi-stat">
+                            <span>預估投資 (Cost)</span>
+                            <strong>$50K</strong>
+                        </div>
+                        <div class="roi-stat">
+                            <span>每年節省 (Savings)</span>
+                            <strong class="positive">$120K</strong>
+                        </div>
+                        <div class="roi-stat">
+                            <span>投資回報 (ROI)</span>
+                            <strong class="positive">140%</strong>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 25. Industry Matrix -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 25</span>
+                    <h2 class="card-title">產業坐標軸 (Industry Matrix)</h2>
+                    <p class="card-desc">仿效 Gartner 魔力象限，將專案或產品置於全球市場座標中，建構視覺化競爭分析，增加學術與權威感。</p>
+                </div>
+                <div class="card-content">
+                    <div class="matrix-container">
+                        <div class="matrix-axis-x"></div>
+                        <div class="matrix-axis-y"></div>
+                        <div class="matrix-dot" title="我們的定位"></div>
+                        <span style="position:absolute; top: 10px; right: 20px; font-size:0.75rem; color:#64748b;">前瞻視角 &rarr;</span>
+                        <span style="position:absolute; top: 20px; left: 10px; font-size:0.75rem; color:#64748b; writing-mode: vertical-rl;">&uarr; 執行力</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 26. Role-based Filtering -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 26</span>
+                    <h2 class="card-title">角色導向過濾 (Role-based Filter)</h2>
+                    <p class="card-desc">依據閱讀者身分自動隱藏或顯示特定深度的資訊，為 CEO 提供策略面，為工程師提供技術實作面。</p>
+                </div>
+                <div class="card-content">
+                    <div class="filter-tabs">
+                        <div class="filter-tab active">給決策者 (CEO)</div>
+                        <div class="filter-tab">給開發者 (Tech)</div>
+                    </div>
+                    <div class="filter-content">
+                        <strong>決策面重點：</strong>本次架構轉換能提升產品市場反應速度 30%，並符合 ISO-27001 資安規範，為打入歐盟市場奠定基礎。
+                    </div>
+                </div>
+            </article>
+
+            <!-- 27. Case Study Pop-over -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 27</span>
+                    <h2 class="card-title">案例研究浮窗 (Case Studies)</h2>
+                    <p class="card-desc">在抽象的理論或建議旁，加入實際的業界成功案例，能極大程度增強邏輯說服力與落地可信度。</p>
+                </div>
+                <div class="card-content">
+                    <div class="case-preview">
+                        <span class="case-tag">Success Case</span>
+                        <h4>Netflix 的微服務轉型</h4>
+                        <p>早在 2011 年，Netflix 將龐大的單體架構拆分為數百個微服務，成功支撐了隨後全球訂閱數 10 倍增長帶來的流量衝擊。</p>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 28. Action Items Checklist -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 28</span>
+                    <h2 class="card-title">行動核取清單 (Action Items)</h2>
+                    <p class="card-desc">將抽象的報告觀念，轉換為精確、可落地的 Checklist，提升報告在實體專案中的實用價值。</p>
+                </div>
+                <div class="card-content">
+                    <div class="action-list">
+                        <label class="action-item">
+                            <input type="checkbox" checked>
+                            <span class="action-text">完成舊版 API 依賴性盤點</span>
+                        </label>
+                        <label class="action-item">
+                            <input type="checkbox">
+                            <span class="action-text">建立新架構概念驗證 (PoC) 環境</span>
+                        </label>
+                        <label class="action-item">
+                            <input type="checkbox">
+                            <span class="action-text">排定 Q3 第一波跨部門需求訪談</span>
+                        </label>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 29. Industry Benchmark -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 29</span>
+                    <h2 class="card-title">基準數據對比 (Benchmark)</h2>
+                    <p class="card-desc">加入明確的業界參照數據指標對比，讓使用者清楚明白專案狀態目前在業界的相對水位。</p>
+                </div>
+                <div class="card-content">
+                    <div class="benchmark-group">
+                        <div class="benchmark-header">
+                            <span>現行系統 TTFB</span>
+                            <span style="color:var(--accent-red)">1.2s</span>
+                        </div>
+                        <div class="benchmark-track"><div class="benchmark-fill" style="width: 80%; background: var(--accent-red)"></div></div>
+                    </div>
+                    <div class="benchmark-group">
+                        <div class="benchmark-header">
+                            <span>業界頂標基準 (Top 10%)</span>
+                            <span style="color:var(--brand-primary)">0.3s</span>
+                        </div>
+                        <div class="benchmark-track"><div class="benchmark-fill" style="width: 20%; background: var(--brand-primary)"></div></div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- 30. Glossary Tooltip -->
+            <article class="card">
+                <div class="card-header">
+                    <span class="badge">Point 30</span>
+                    <h2 class="card-title">術語解釋提示 (Glossary Tooltip)</h2>
+                    <p class="card-desc">在專業術語或縮寫上提供即時的懸停解釋 (Tooltip)，顯著降低跨領域閱讀的技術門檻與認知負擔。</p>
+                </div>
+                <div class="card-content">
+                    <p class="prose">
+                        我們正在優化專案的 
+                        <span class="glossary-term">
+                            LCP
+                            <span class="tooltip-card"><strong>LCP (Largest Contentful Paint)</strong><br>最大內容繪製。<br>衡量頁面主要內容完成載入所需時間的核心指標，最佳實踐應小於 2.5 秒。</span>
+                        </span>
+                        與 
+                        <span class="glossary-term">
+                            FID
+                            <span class="tooltip-card"><strong>FID (First Input Delay)</strong><br>首次輸入延遲。<br>測量使用者首次互動（如點擊連結）時，瀏覽器實際能夠回應的時間。</span>
+                        </span>
+                        ，以符合 Google 最新的 Core Web Vitals 搜尋引擎排位演算法標準。
+                    </p>
+                </div>
+            </article>
+
+        </div>
+    </div>
+
+</body>
+</html>

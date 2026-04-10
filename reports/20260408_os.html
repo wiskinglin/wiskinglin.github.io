@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 年全球作業系統市場格局與戰略報告</title>
+    
+    <!-- 引入 Noto Sans TC 字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ==========================================
+           核心排版與列印規範 (Critical Rules)
+           ========================================== */
+        :root {
+            --page-width: 297mm;
+            --page-height: 210mm;
+            --bg-color: #f3f4f6; /* 瀏覽器背景色 */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 橫式 A4 滿版優化 */
+        .a4-landscape-page {
+            width: var(--page-width);
+            height: var(--page-height); /* 強制高度，防止溢出或不足 */
+            background: #ffffff;
+            margin: 0 auto;
+            padding: 12mm 15mm;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border-radius: 1.5rem;
+            box-sizing: border-box;
+            
+            /* 內部彈性佈局撐開 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            
+            /* 斷頁防護 */
+            page-break-after: always;
+            break-inside: avoid;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 漸層分隔線 */
+        .divider-gradient {
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb 0%, #93c5fd 50%, transparent 100%);
+            border-radius: 2px;
+            margin: 1rem 0;
+            width: 100%;
+        }
+
+        /* 編輯模式的視覺防呆 */
+        [contenteditable="true"] {
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        [contenteditable="true"]:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-radius: 0.5rem;
+        }
+        [contenteditable="true"]:focus {
+            outline: 3px dashed #3b82f6;
+            outline-offset: 4px;
+            background-color: rgba(59, 130, 246, 0.05);
+            border-radius: 0.5rem;
+        }
+        
+        .editing-mode-active .a4-landscape-page {
+            outline: 4px solid #bfdbfe;
+        }
+
+        /* ==========================================
+           列印專用樣式 (@media print)
+           ========================================== */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background-color: transparent;
+                padding: 0;
+                margin: 0;
+                gap: 0;
+            }
+            .a4-landscape-page {
+                width: 297mm;
+                height: 210mm;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                page-break-after: always;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* 強制保留背景色與陰影 */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* Bento Grid 特殊樣式 */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1.5rem;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- 控制面板 (Control Panel) -->
+    <div id="control-panel" class="no-print fixed top-6 right-6 z-50 flex gap-3 p-3 bg-white/70 backdrop-blur-md border border-gray-200/50 shadow-2xl rounded-2xl transition-all">
+        <button onclick="toggleEdit()" id="btn-edit" class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors">
+            <span class="text-lg">✏️</span> 編輯內容
+        </button>
+        <button onclick="saveHTML()" class="flex items-center gap-2 px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold rounded-xl transition-colors">
+            <span class="text-lg">⬇️</span> 儲存網頁
+        </button>
+        <button onclick="printPDF()" class="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white font-semibold rounded-xl shadow-lg transition-colors">
+            <span class="text-lg">🖨️</span> 輸出 PDF
+        </button>
+    </div>
+
+    <div id="document-wrapper" class="flex flex-col gap-8 w-full items-center">
+
+        <!-- ==========================================
+             Page 1: Hero Cover
+             ========================================== -->
+        <section class="a4-landscape-page bg-gradient-to-br from-slate-50 to-gray-100 relative overflow-hidden">
+            <!-- 裝飾背景 -->
+            <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 w-[30rem] h-[30rem] bg-purple-500/10 rounded-full blur-3xl"></div>
+            
+            <div class="flex-grow flex flex-col justify-center px-12 z-10">
+                <div class="inline-block px-4 py-1.5 mb-6 bg-brand-100 text-brand-600 font-bold tracking-widest text-sm rounded-full w-max uppercase">
+                    Annual Strategy Report 2026
+                </div>
+                <h1 class="text-6xl font-black leading-tight text-gray-900 mb-6">
+                    2026 年全球作業系統<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-purple-600">
+                        市場格局與戰略深度分析
+                    </span>
+                </h1>
+                <div class="w-24 h-2 bg-brand-500 rounded-full mb-8"></div>
+                <p class="text-xl text-gray-600 max-w-3xl leading-relaxed font-light">
+                    進入 2026 年，全球作業系統市場正處於由底層硬體成本劇變、AI 運算終端化以及地緣經濟共同推動的歷史性重塑期。本報告深度解析從市場份額、開發框架 ROI 到商業變現機制的板塊遷移與未來佈局。
+                </p>
+            </div>
+            
+            <div class="flex justify-between items-end px-12 pb-6 border-t border-gray-200/60 pt-6 mt-auto z-10">
+                <div>
+                    <p class="text-sm font-bold text-gray-800">數據涵蓋</p>
+                    <p class="text-sm text-gray-500">2026 Q1 全球行動端與桌面端終端市場</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-gray-800">報告分類</p>
+                    <p class="text-sm text-gray-500">開發架構與商業變現深度研究</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 2: Bento Box - Market Share & CAGR
+             ========================================== -->
+        <section class="a4-landscape-page">
+            <header class="mb-4">
+                <h2 class="text-3xl font-extrabold text-gray-900">第一階段：宏觀市場分佈與 CAGR 趨勢</h2>
+                <div class="divider-gradient w-1/3 mt-2"></div>
+                <p class="text-gray-600 text-sm mt-2">行動端與桌面端呈現高度的板塊固化，但特定生態系正處於爆發邊緣。</p>
+            </header>
+
+            <div class="bento-grid">
+                <!-- 大卡片：Android -->
+                <div class="col-span-4 row-span-2 bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-6 border border-emerald-100 shadow-xl shadow-emerald-900/5 flex flex-col justify-between">
+                    <div>
+                        <span class="px-3 py-1 bg-emerald-200 text-emerald-800 rounded-full text-xs font-bold">霸主地位</span>
+                        <h3 class="text-2xl font-black text-gray-900 mt-4 mb-1">Android</h3>
+                        <p class="text-6xl font-black text-emerald-600 mb-2">37.9%</p>
+                        <p class="text-sm font-semibold text-gray-600">行動端市佔：67.46%</p>
+                    </div>
+                    <div class="mt-4 p-4 bg-white/60 rounded-2xl text-sm text-gray-700">
+                        <strong>CAGR +1.2%：</strong>憑藉廣泛 OEM 覆蓋率壟斷新興市場，但受限於高階市場增長疲軟與換機週期延長。
+                    </div>
+                </div>
+
+                <!-- Windows -->
+                <div class="col-span-4 row-span-1 bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/50 flex flex-col justify-center">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">Windows</h3>
+                        <span class="text-red-500 text-sm font-bold bg-red-50 px-2 py-0.5 rounded-md">CAGR -2.1%</span>
+                    </div>
+                    <p class="text-3xl font-black text-blue-600 mb-1">26.3%</p>
+                    <p class="text-xs text-gray-500">桌面端：60.8% | 企業升級疲軟，低價 PC 市場流失。</p>
+                </div>
+
+                <!-- iOS -->
+                <div class="col-span-4 row-span-1 bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/50 flex flex-col justify-center">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-gray-800">iOS</h3>
+                        <span class="text-green-500 text-sm font-bold bg-green-50 px-2 py-0.5 rounded-md">CAGR +2.5%</span>
+                    </div>
+                    <p class="text-3xl font-black text-gray-800 mb-1">18.6%</p>
+                    <p class="text-xs text-gray-500">行動端：32.2% | 北美與西歐基本盤穩固，受惠硬體升級。</p>
+                </div>
+
+                <!-- Linux (爆發) -->
+                <div class="col-span-5 row-span-1 bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-3xl p-5 shadow-xl flex items-center gap-6">
+                    <div class="flex-shrink-0">
+                        <p class="text-sm text-gray-400 mb-1">歷史臨界點突破</p>
+                        <h3 class="text-4xl font-black">Linux</h3>
+                    </div>
+                    <div class="flex-grow">
+                        <span class="inline-block px-2 py-1 bg-brand-500 text-white text-xs font-bold rounded mb-2">CAGR +18.5% 爆發</span>
+                        <p class="text-xs text-gray-300 leading-relaxed">SteamOS 掌機硬體銷量爆發，帶動 Linux 在遊戲與特定開發者市場突破歷史臨界點 (佔比 1.64%)。</p>
+                    </div>
+                </div>
+
+                <!-- macOS -->
+                <div class="col-span-3 row-span-1 bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/50 flex flex-col justify-center">
+                    <div class="flex justify-between items-start mb-1">
+                        <h3 class="text-lg font-bold text-gray-800">macOS</h3>
+                        <span class="text-green-500 text-xs font-bold bg-green-50 px-2 py-0.5 rounded-md">+4.3%</span>
+                    </div>
+                    <p class="text-2xl font-black text-gray-800 mb-1">6.39%</p>
+                    <p class="text-[10px] text-gray-500">A 系列晶片下放刺激 Windows 用戶跳槽。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 3: Hardware Drivers (4 Pillars)
+             ========================================== -->
+        <section class="a4-landscape-page">
+            <header class="mb-6">
+                <h2 class="text-3xl font-extrabold text-gray-900">決定性衝擊：底層硬體驅動的市場轉折點</h2>
+                <div class="divider-gradient w-1/3 mt-2"></div>
+                <p class="text-gray-600 text-sm mt-2">核心驅動力並非軟體架構迭代，而是硬體成本震盪與新形態運算設備的強勢崛起。</p>
+            </header>
+
+            <div class="grid grid-cols-2 grid-rows-2 gap-6 flex-grow">
+                <!-- Card 1 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/40 flex gap-4">
+                    <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-xl font-black text-red-600">01</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">記憶體暴漲與入門 PC 消亡</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">DRAM/SSD 價格暴漲 130%，PC 終端售價上漲 17%。$500 以下入門 Windows 筆電無利可圖預計 2028 前消失，拖累 Win11 升級與市佔成長。</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/40 flex gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-xl font-black text-blue-600">02</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">MacBook Neo 顛覆預算市場</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">定價 $599，搭載源自 iPhone 16 Pro 的 A18 Pro 晶片。填補 Windows 低價市場真空，對 ChromeOS 構成毀滅性威脅，推動 macOS 市佔跨越增長。</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/40 flex gap-4">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-xl font-black text-purple-600">03</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">書本式摺疊機主導 Android 高階</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">Book-style 徹底擊敗翻蓋式，佔全球摺疊機出貨 65%。成為 Android 陣營抵抗 iOS 侵蝕高階市場的核心防線，資源全力傾注於大螢幕生產力優化。</p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-lg shadow-gray-200/40 flex gap-4">
+                    <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-xl font-black text-emerald-600">04</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">SteamOS 突破桌面臨界點</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">Linux 在 Steam 平台市佔首破 5.33%。Proton 相容層技術成熟使 90% Win 應用無縫運行，打破「缺乏消費軟體」認知，行動掌機成為新 OS 成長極。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 4: Developer Tech Stack ROI
+             ========================================== -->
+        <section class="a4-landscape-page bg-slate-50/50">
+            <header class="mb-6">
+                <h2 class="text-3xl font-extrabold text-gray-900">第二階段：開發技術棧投資報酬率 (ROI) 評估</h2>
+                <div class="divider-gradient w-1/3 mt-2"></div>
+                <p class="text-gray-600 text-sm mt-2">技術選型決策不再是單純工程問題，而是決定企業資金消耗率的商業戰略。</p>
+            </header>
+
+            <div class="grid grid-cols-4 gap-4 flex-grow">
+                <!-- Native -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-gray-800 shadow-md flex flex-col">
+                    <div class="mb-4">
+                        <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-[10px] font-bold">Swift / Kotlin</span>
+                        <h3 class="text-lg font-bold mt-2">原生開發</h3>
+                    </div>
+                    <ul class="text-xs text-gray-600 space-y-3 flex-grow">
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 適用：極度依賴 GPU/NPU、AR、3A 遊戲。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 週期：9-12 個月，維護成本為跨平台 1.5-2 倍。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 特徵：提供極致 60+ FPS，最低記憶體耗損。僅適合資金極度充裕團隊。</li>
+                    </ul>
+                    <div class="mt-4 pt-3 border-t border-gray-100 text-center font-bold text-sm text-red-500">ROI 回收長 / 資金極高</div>
+                </div>
+
+                <!-- Cross-Platform -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-brand-500 shadow-md flex flex-col relative overflow-hidden">
+                    <div class="absolute -right-6 top-4 bg-brand-500 text-white text-[10px] font-bold py-1 px-8 rotate-45">首選推薦</div>
+                    <div class="mb-4">
+                        <span class="px-2 py-1 bg-brand-50 text-brand-700 rounded text-[10px] font-bold">Flutter / React Native</span>
+                        <h3 class="text-lg font-bold mt-2">現代跨平台框架</h3>
+                    </div>
+                    <ul class="text-xs text-gray-600 space-y-3 flex-grow">
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 適用：B2C 商業、電商、社群軟體。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 週期：縮短至 4-7 個月，節省 30-40% 預算。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 特徵：單一程式碼解決 Android 碎片化，迭代速度遠勝原生，綜合體驗極佳。</li>
+                    </ul>
+                    <div class="mt-4 pt-3 border-t border-gray-100 text-center font-bold text-sm text-brand-600">綜合 ROI 最高</div>
+                </div>
+
+                <!-- KMP -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-purple-500 shadow-md flex flex-col">
+                    <div class="mb-4">
+                        <span class="px-2 py-1 bg-purple-50 text-purple-700 rounded text-[10px] font-bold">Kotlin Multiplatform</span>
+                        <h3 class="text-lg font-bold mt-2">KMP 漸進式跨平台</h3>
+                    </div>
+                    <ul class="text-xs text-gray-600 space-y-3 flex-grow">
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 適用：Android 主導，漸進拓展 iOS。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 週期：共用底層邏輯，保留原生 UI 渲染。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 特徵：適合金融、醫療等需要客製化 UI 且底層演算要求絕對精準的領域。</li>
+                    </ul>
+                    <div class="mt-4 pt-3 border-t border-gray-100 text-center font-bold text-sm text-purple-600">ROI 中偏高 / 效能極佳</div>
+                </div>
+
+                <!-- Web-based -->
+                <div class="bg-white rounded-2xl p-5 border-t-4 border-emerald-500 shadow-md flex flex-col">
+                    <div class="mb-4">
+                        <span class="px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-[10px] font-bold">PWA / Uno Platform</span>
+                        <h3 class="text-lg font-bold mt-2">Web-based</h3>
+                    </div>
+                    <ul class="text-xs text-gray-600 space-y-3 flex-grow">
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 適用：B2B 工具、內部系統、桌面端為主。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 週期：壓縮至 2-5 個月，繞過商店審查。</li>
+                        <li class="flex gap-2"><span class="text-brand-500">❖</span> 特徵：部署維護成本極低。雖硬體調用弱，但在 Win11 背景下為 B2B 輕量首選。</li>
+                    </ul>
+                    <div class="mt-4 pt-3 border-t border-gray-100 text-center font-bold text-sm text-emerald-600">ROI 極高 / B2B 首選</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 5: NPU AI & Startup Roadmap
+             ========================================== -->
+        <section class="a4-landscape-page">
+            <header class="mb-6">
+                <h2 class="text-3xl font-extrabold text-gray-900">邊緣 AI (NPU) 佈局與新創企業分階段 Roadmap</h2>
+                <div class="divider-gradient w-1/3 mt-2"></div>
+                <p class="text-gray-600 text-sm mt-2">AI 戰場全面下放至 Edge AI。未整合本地 NPU 推理將面臨延遲與 API 成本劣勢。</p>
+            </header>
+
+            <div class="flex flex-col gap-6 flex-grow">
+                <!-- AI NPU Ecosystems (Horizontal Cards) -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <h4 class="font-bold text-gray-800 mb-1 flex items-center gap-2"><span class="text-xl"></span> Apple 生態</h4>
+                        <p class="text-xs text-gray-600">iOS/macOS 26 內建 3B 參數 Foundation Models。利用 Core ML 部署客製模型，實現無延遲與絕對隱私。</p>
+                    </div>
+                    <div class="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+                        <h4 class="font-bold text-blue-800 mb-1 flex items-center gap-2"><span class="text-xl">⊞</span> Windows 生態</h4>
+                        <p class="text-xs text-gray-600">Windows ML 驅動 ONNX 運行時，動態調度 CPU/GPU/NPU。跨硬體實現低延遲影像與生成式工具唯一路徑。</p>
+                    </div>
+                    <div class="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100">
+                        <h4 class="font-bold text-emerald-800 mb-1 flex items-center gap-2"><span class="text-xl">🤖</span> Android 生態</h4>
+                        <p class="text-xs text-gray-600">AICore 整合 Gemini Nano 4。遷移 OCR 與聽寫至本地執行，縮減體積並確保低階網路環境可用性。</p>
+                    </div>
+                </div>
+
+                <!-- Roadmap Timeline -->
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-6 mt-2 flex-grow flex flex-col justify-center relative">
+                    <h3 class="text-lg font-bold mb-6 text-center">預算有限團隊：分階段 OS 入場路徑圖</h3>
+                    
+                    <!-- Timeline Nodes -->
+                    <div class="flex justify-between items-stretch relative px-4">
+                        <!-- Line -->
+                        <div class="absolute top-6 left-12 right-12 h-1 bg-gray-200 z-0"></div>
+                        
+                        <!-- Phase 1 -->
+                        <div class="relative z-10 flex flex-col items-center w-1/3 px-4">
+                            <div class="w-12 h-12 rounded-full bg-brand-500 text-white font-black flex items-center justify-center text-xl mb-3 shadow-lg shadow-brand-500/30">1</div>
+                            <h4 class="font-bold text-gray-900 mb-2">跨平台驗證 (M1-M6)</h4>
+                            <div class="bg-gray-50 rounded-xl p-3 text-xs text-gray-600 text-center w-full">
+                                <p class="mb-2"><strong>策略：</strong>Flutter / React Native 建立單一程式碼庫 (MVP)。</p>
+                                <p><strong>獲客：</strong>預算集中 Android 新興市場 (CPI < $1)，iOS 僅自然上架測高端反饋，極低資本消耗驗證產品。</p>
+                            </div>
+                        </div>
+
+                        <!-- Phase 2 -->
+                        <div class="relative z-10 flex flex-col items-center w-1/3 px-4">
+                            <div class="w-12 h-12 rounded-full bg-purple-500 text-white font-black flex items-center justify-center text-xl mb-3 shadow-lg shadow-purple-500/30">2</div>
+                            <h4 class="font-bold text-gray-900 mb-2">桌面端變現 (M7-M12)</h4>
+                            <div class="bg-gray-50 rounded-xl p-3 text-xs text-gray-600 text-center w-full">
+                                <p class="mb-2"><strong>策略：</strong>編譯為桌面版或 PWA 上架 Microsoft Store。</p>
+                                <p><strong>變現：</strong>利用 Win Store「非遊戲 0% 抽成」紅利。針對 B2B 收取全額訂閱費，建立高 ARPU 與穩定 MRR 現金流。</p>
+                            </div>
+                        </div>
+
+                        <!-- Phase 3 -->
+                        <div class="relative z-10 flex flex-col items-center w-1/3 px-4">
+                            <div class="w-12 h-12 rounded-full bg-emerald-500 text-white font-black flex items-center justify-center text-xl mb-3 shadow-lg shadow-emerald-500/30">3</div>
+                            <h4 class="font-bold text-gray-900 mb-2">AI 護城河 (M13-M18)</h4>
+                            <div class="bg-gray-50 rounded-xl p-3 text-xs text-gray-600 text-center w-full">
+                                <p class="mb-2"><strong>策略：</strong>逐步導入原生 AI 模組 (Foundation Models / Windows ML)。</p>
+                                <p><strong>護城河：</strong>雲端轉本地處理。「絕對隱私、離線零延遲」作 Premium 賣點，削雲端 API 成本，提升留存。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 6: Monetization & User Behavior
+             ========================================== -->
+        <section class="a4-landscape-page">
+            <header class="mb-6">
+                <h2 class="text-3xl font-extrabold text-gray-900">第三階段：商業變現與跨平台差異化策略</h2>
+                <div class="divider-gradient w-1/3 mt-2"></div>
+                <p class="text-gray-600 text-sm mt-2">付費意願呈現結構性鴻溝。案例：跨平台生產力工具的兩極化操作。</p>
+            </header>
+
+            <div class="grid grid-cols-2 gap-8 flex-grow">
+                <!-- Apple Ecosystem -->
+                <div class="bg-white rounded-3xl p-8 border border-gray-200 shadow-xl shadow-gray-200/50 flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-bl-[100px] -z-10"></div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-3 bg-gray-900 text-white rounded-2xl"><span class="text-2xl"></span></div>
+                        <h3 class="text-2xl font-black text-gray-900">macOS / iOS 端</h3>
+                        <span class="ml-auto px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-bold">價值體驗導向</span>
+                    </div>
+                    
+                    <div class="space-y-5 flex-grow">
+                        <div>
+                            <h4 class="text-sm font-bold text-brand-600 mb-1">定價與變現模型</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">徹底摒棄廣告。採用高單價的「年訂閱制」為主，輔以針對專業工作者的「極高價單次買斷 (Lifetime)」選項。</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-brand-600 mb-1">產品包裝與賣點</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">嚴格遵守 Apple HIG 規範。利用 Foundation Models 達成「本地端處理，絕不上傳雲端」的隱私承諾，極具說服力。</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-brand-600 mb-1">獲客路徑 (UA)</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">不依賴低品質買量。靠內容行銷、SEO、專業論壇擴散及爭取編輯推薦。容忍極高 CPA，專注回收高 LTV ($140/年花費，為 Android 兩倍)。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Android Ecosystem -->
+                <div class="bg-white rounded-3xl p-8 border border-emerald-100 shadow-xl shadow-emerald-900/5 flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-[100px] -z-10"></div>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-3 bg-emerald-500 text-white rounded-2xl"><span class="text-2xl">🤖</span></div>
+                        <h3 class="text-2xl font-black text-gray-900">Android 端</h3>
+                        <span class="ml-auto px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">流量混合變現</span>
+                    </div>
+                    
+                    <div class="space-y-5 flex-grow">
+                        <div>
+                            <h4 class="text-sm font-bold text-emerald-600 mb-1">定價與變現模型</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">採用「免費增值 (Freemium)」結合「混合變現」。80% 功能免費，透過精準廣告或獎勵影音變現，輔以低價去廣告訂閱。</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-emerald-600 mb-1">產品包裝與賣點</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">提供摺疊機專屬優化 (大螢幕左右分屏)。強調檔案管理自由度與 Google Drive 深度綁定，將應用化為基礎設施提升留存率。</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-emerald-600 mb-1">獲客路徑 (UA)</h4>
+                            <p class="text-sm text-gray-600 leading-relaxed">針對印度、東南亞或拉美等統治區大規模社群買量。利用極低 CPI ($0.3-$1.0) 快速累積百萬活躍用戶，以龐大流量池支撐廣告底盤。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             Page 7: Conclusion - 3 Niche Opportunities
+             ========================================== -->
+        <section class="a4-landscape-page bg-gray-900 text-white">
+            <header class="mb-8">
+                <h2 class="text-3xl font-extrabold text-white">結論：2026 年三個被低估的細分市場機會</h2>
+                <div class="divider-gradient w-1/3 mt-2 opacity-80"></div>
+                <p class="text-gray-400 text-sm mt-2">避開紅海泥淖，具有極高商業爆發潛力的隱密戰場。</p>
+            </header>
+
+            <div class="grid grid-cols-3 gap-6 flex-grow">
+                <!-- Niche 1 -->
+                <div class="bg-gray-800 p-6 rounded-3xl border border-gray-700 shadow-2xl">
+                    <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl mb-4 border border-gray-600">🎮</div>
+                    <h3 class="text-lg font-bold text-white mb-3">SteamOS 與 Linux 掌機<br><span class="text-brand-400 text-sm">非遊戲生產力工具</span></h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        數百萬台具備 PC 級效能的掌機，本質是配備觸控與搖桿的 Linux 電腦。針對小尺寸與搖桿優化的工具（效能面板、媒體播放、覆蓋套件）目前競爭空白。極客用戶極具付費意願。
+                    </p>
+                </div>
+
+                <!-- Niche 2 -->
+                <div class="bg-gray-800 p-6 rounded-3xl border border-gray-700 shadow-2xl relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent pointer-events-none"></div>
+                    <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl mb-4 border border-gray-600">📱</div>
+                    <h3 class="text-lg font-bold text-white mb-3">書本式摺疊機<br><span class="text-purple-400 text-sm">深度 B2B 商務多工</span></h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        展開佔 65% 份額的商務客群消費力驚人。多數 App 僅粗暴拉伸 UI。若針對醫療、財報可視化等場景進行深度雙螢幕適配，將能以極高軟體溢價賣給商務菁英，避開 Android 廣告紅海。
+                    </p>
+                </div>
+
+                <!-- Niche 3 -->
+                <div class="bg-gray-800 p-6 rounded-3xl border border-gray-700 shadow-2xl relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-brand-900/20 to-transparent pointer-events-none"></div>
+                    <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center text-xl mb-4 border border-gray-600">💻</div>
+                    <h3 class="text-lg font-bold text-white mb-3">Windows Store 零抽成<br><span class="text-emerald-400 text-sm">PWA 與 AI Agent 部署</span></h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        微軟對非遊戲應用實施 0% 抽成。將 B2B SaaS 或 AI Agent 打包為 PWA 上架，降低企業 IT 採購阻力，完美避開 30% 平台稅。是建立 MRR 與實現現金流轉正的最隱密高效渠道。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-center text-xs text-gray-500 pt-4 border-t border-gray-800">
+                Data Sources: Statcounter 2026, Gartner, Dataintelo, Apple Newsroom, Windows Developer Blog, RevenueCat 2026
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ==========================================
+         互動控制邏輯 (JavaScript)
+         ========================================== -->
+    <script>
+        let isEditing = false;
+        const documentWrapper = document.getElementById('document-wrapper');
+        const btnEdit = document.getElementById('btn-edit');
+
+        // 1. 切換編輯模式
+        function toggleEdit() {
+            isEditing = !isEditing;
+            
+            // 選取所有具有實際文字內容的標籤，允許編輯 (排除佈局容器)
+            const textNodes = documentWrapper.querySelectorAll('h1, h2, h3, h4, p, span, li, strong, div:not(.a4-landscape-page):not(.bento-grid):not(.flex)');
+            
+            if (isEditing) {
+                // 進入編輯模式
+                document.body.classList.add('editing-mode-active');
+                textNodes.forEach(node => {
+                    node.setAttribute('contenteditable', 'true');
+                });
+                btnEdit.innerHTML = '<span class="text-lg">💾</span> 結束編輯';
+                btnEdit.classList.remove('bg-gray-100', 'text-gray-700');
+                btnEdit.classList.add('bg-blue-100', 'text-blue-700', 'border', 'border-blue-300');
+            } else {
+                // 結束編輯模式
+                document.body.classList.remove('editing-mode-active');
+                textNodes.forEach(node => {
+                    node.removeAttribute('contenteditable');
+                });
+                btnEdit.innerHTML = '<span class="text-lg">✏️</span> 編輯內容';
+                btnEdit.classList.remove('bg-blue-100', 'text-blue-700', 'border', 'border-blue-300');
+                btnEdit.classList.add('bg-gray-100', 'text-gray-700');
+            }
+        }
+
+        // 2. 輸出 PDF (呼叫瀏覽器列印)
+        function printPDF() {
+            // 若在編輯中，先關閉編輯模式再列印以確保排版無框線
+            if (isEditing) {
+                toggleEdit();
+            }
+            window.print();
+        }
+
+        // 3. 儲存網頁 (匯出 HTML Blob)
+        function saveHTML() {
+            // 確保儲存時不會帶有 contenteditable 屬性
+            if (isEditing) {
+                toggleEdit();
+            }
+
+            // 抓取整個網頁結構
+            const htmlContent = document.documentElement.outerHTML;
+            
+            // 建立 Blob
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            
+            // 產生今天日期 YYYYMMDD
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const filename = `Report_${yyyy}${mm}${dd}.html`;
+            
+            // 觸發下載
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

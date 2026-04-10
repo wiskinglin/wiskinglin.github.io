@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 靈魂色光測驗 | 你的專屬數位名片</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a;
+            /* Tailwind slate-900 */
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* 玻璃擬物化效果 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 漸層背景動畫 */
+        .bg-animate {
+            background-size: 200% 200%;
+            animation: gradientMove 5s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* 隱藏與顯示動畫 */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app-container"
+        class="w-full max-w-md glass-panel rounded-3xl p-6 relative overflow-hidden shadow-2xl transition-all duration-500">
+
+        <div id="view-start"
+            class="text-center flex flex-col items-center justify-center min-h-[400px] fade-enter fade-enter-active">
+            <div
+                class="w-24 h-24 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 mb-6 bg-animate shadow-[0_0_40px_rgba(168,85,247,0.4)]">
+            </div>
+            <h1 class="text-3xl font-black mb-2 tracking-wider">靈魂色光測驗</h1>
+            <p class="text-slate-400 text-sm mb-8">透過 3 個直覺選擇，<br>解析你此刻的能量狀態與專屬社交名片。</p>
+            <button onclick="startQuiz()"
+                class="w-full py-4 rounded-full bg-white text-slate-900 font-bold text-lg hover:scale-105 transition-transform duration-300 shadow-lg">
+                開始探索
+            </button>
+            <p class="mt-4 text-xs text-slate-500">已有超過 152,491 人完成測驗</p>
+        </div>
+
+        <div id="view-quiz" class="hidden flex flex-col min-h-[400px] fade-enter">
+            <div class="w-full bg-slate-800 rounded-full h-1.5 mb-8">
+                <div id="progress-bar"
+                    class="bg-gradient-to-r from-blue-400 to-purple-500 h-1.5 rounded-full transition-all duration-300"
+                    style="width: 33%"></div>
+            </div>
+
+            <span id="question-counter" class="text-purple-400 font-bold text-sm mb-2">Q1 / 3</span>
+            <h2 id="question-text" class="text-2xl font-bold mb-8 leading-relaxed">週末突然空了下來，你第一時間的念頭是？</h2>
+
+            <div id="options-container" class="flex flex-col gap-4 mt-auto">
+            </div>
+        </div>
+
+        <div id="view-loading"
+            class="hidden text-center flex flex-col items-center justify-center min-h-[400px] fade-enter">
+            <div class="w-16 h-16 border-4 border-slate-700 border-t-purple-500 rounded-full animate-spin mb-6"></div>
+            <h2 class="text-xl font-bold mb-2">正在讀取你的能量頻率...</h2>
+            <p class="text-slate-400 text-sm">生成專屬視覺名片中</p>
+        </div>
+
+        <div id="view-result" class="hidden fade-enter relative">
+            <div id="result-card"
+                class="rounded-2xl p-6 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -top-20 -right-20 w-40 h-40 bg-white opacity-20 rounded-full blur-2xl"></div>
+
+                <div class="mb-8">
+                    <p class="text-sm font-bold opacity-80 mb-1 tracking-widest">YOUR AURA COLOR</p>
+                    <h2 id="result-title" class="text-4xl font-black mb-2 drop-shadow-md">極光霓虹</h2>
+                    <div id="result-tags" class="flex gap-2 text-xs font-bold mt-3">
+                        <span class="bg-white/20 px-2 py-1 rounded backdrop-blur-sm">#自由靈魂</span>
+                        <span class="bg-white/20 px-2 py-1 rounded backdrop-blur-sm">#靈感爆棚</span>
+                    </div>
+                </div>
+
+                <p id="result-desc" class="text-sm leading-relaxed mb-6 font-light drop-shadow-sm">
+                    你的能量充滿跳躍性與創造力。在人群中你或許不是話最多的，但總能給出最獨特的觀點。你就像極光一樣，難以被定義，卻總讓人忍不住注視。
+                </p>
+
+                <div class="border-t border-white/20 pt-4 mt-4 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs opacity-80 mb-1">能量共振夥伴</p>
+                        <p id="result-match" class="font-bold text-sm">深海幽藍</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                        ✨
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <button onclick="shareResult()"
+                    class="flex-1 py-3 rounded-full bg-white text-slate-900 font-bold text-sm hover:bg-slate-200 transition-colors">
+                    儲存 / 分享至 IG
+                </button>
+                <button onclick="resetQuiz()"
+                    class="px-5 py-3 rounded-full glass-panel text-white font-bold text-sm hover:bg-white/10 transition-colors">
+                    重測
+                </button>
+            </div>
+            <div class="mt-4 text-center">
+                <a href="#"
+                    class="text-xs text-purple-400 hover:text-purple-300 underline decoration-purple-400/50">解鎖完整 2026
+                    個人運勢報告 ($49)</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 題庫資料
+        const questions = [
+            {
+                text: "週末突然空了下來，你第一時間的念頭是？",
+                options: [
+                    { text: "太棒了！終於可以一個人窩著充電", score: { I: 1, E: 0 } },
+                    { text: "馬上滑 IG 看大家在哪，找朋友聚聚", score: { I: 0, E: 1 } }
+                ]
+            },
+            {
+                text: "遇到工作/生活上的突發危機，你的大腦通常怎麼運作？",
+                text: "朋友向你抱怨工作上的委屈，你通常第一反應是？",
+                options: [
+                    { text: "幫他分析問題出在哪，提供解決方案", score: { T: 1, F: 0 } },
+                    { text: "先接住他的情緒，跟他一起罵主管", score: { T: 0, F: 1 } }
+                ]
+            },
+            {
+                text: "對於未來的規劃，你更傾向哪一種風格？",
+                options: [
+                    { text: "隨遇而安，相信直覺會帶領我到對的地方", score: { P: 1, J: 0 } },
+                    { text: "喜歡有清晰的目標和階段性的計畫", score: { P: 0, J: 1 } }
+                ]
+            }
+        ];
+
+        // 結果資料庫
+        const results = {
+            "ITP": { title: "深海幽藍", gradient: "from-blue-600 via-indigo-700 to-slate-900", tags: ["#冷靜理性", "#獨立思考", "#高冷"], desc: "你擁有深邃的內在世界，比起盲從，你更相信邏輯與自己的判斷。你的能量沉穩而安定，是朋友圈裡最可靠的智庫。", match: "晨曦玫瑰" },
+            "ITJ": { title: "曜石純黑", gradient: "from-gray-800 via-slate-900 to-black", tags: ["#秩序控", "#極簡主義", "#執行力"], desc: "你不喜歡廢話，追求效率與秩序。你的氣場帶有一種神秘且專業的距離感，能輕易看透事物的本質。", match: "極光霓虹" },
+            "IFP": { title: "薄荷星光", gradient: "from-teal-400 via-emerald-500 to-green-600", tags: ["#高敏感", "#和平主義", "#療癒系"], desc: "你對世界有著細膩的感知力，溫柔且包容。你的存在就像夏夜的微風，總能在不知不覺中療癒身邊的人。", match: "烈焰赤紅" },
+            "IFJ": { title: "晨曦玫瑰", gradient: "from-rose-400 via-pink-500 to-orange-400", tags: ["#溫暖共情", "#細節控", "#奉獻者"], desc: "你散發著溫暖親和的光芒，總能敏銳察覺他人的需求。你懂得照顧別人，但也別忘了把這份溫柔留給自己。", match: "深海幽藍" },
+            "ETP": { title: "極光霓虹", gradient: "from-purple-500 via-pink-500 to-yellow-500", tags: ["#自由靈魂", "#靈感爆棚", "#不按牌理"], desc: "你的能量充滿跳躍性與創造力。你討厭被框架束縛，就像極光一樣難以被定義，充滿變幻莫測的魅力。", match: "曜石純黑" },
+            "ETJ": { title: "烈焰赤紅", gradient: "from-red-500 via-orange-600 to-yellow-600", tags: ["#天生領袖", "#目標導向", "#氣場全開"], desc: "你自帶聚光燈，熱情且充滿行動力。你不畏懼挑戰，喜歡掌控全局的感覺，是團隊中破浪前行的火車頭。", match: "薄荷星光" },
+            "EFP": { title: "盛夏向日葵", gradient: "from-yellow-400 via-amber-500 to-orange-500", tags: ["#快樂小狗", "#能量泉源", "#氣氛製造"], desc: "你的靈魂自帶陽光，熱愛生活且充滿好奇心。你具有強大的感染力，只要有你在的地方就絕對不會冷場。", match: "曜石純黑" },
+            "EFJ": { title: "晨星金光", gradient: "from-amber-300 via-yellow-500 to-orange-400", tags: ["#社交達人", "#高情商", "#照顧者"], desc: "你擅長連結不同的人事物，在社交場合游刃有餘。你就像一顆閃耀的恆星，無私地將光芒與溫暖分享給所有人。", match: "深海幽藍" }
+        };
+
+        // 狀態變數
+        let currentQuestionIndex = 0;
+        let scores = { I: 0, E: 0, T: 0, F: 0, P: 0, J: 0 };
+
+        // DOM 元素
+        const viewStart = document.getElementById('view-start');
+        const viewQuiz = document.getElementById('view-quiz');
+        const viewLoading = document.getElementById('view-loading');
+        const viewResult = document.getElementById('view-result');
+
+        function switchView(hideEl, showEl) {
+            hideEl.classList.remove('fade-enter-active');
+            setTimeout(() => {
+                hideEl.classList.add('hidden');
+                showEl.classList.remove('hidden');
+                // 觸發重繪以播放動畫
+                void showEl.offsetWidth;
+                showEl.classList.add('fade-enter-active');
+            }, 300); // 配合 CSS transition 延遲
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            scores = { I: 0, E: 0, T: 0, F: 0, P: 0, J: 0 };
+            renderQuestion();
+            switchView(viewStart, viewQuiz);
+        }
+
+        function renderQuestion() {
+            const q = questions[currentQuestionIndex];
+            document.getElementById('question-counter').innerText = `Q${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById('question-text').innerText = q.text;
+            document.getElementById('progress-bar').style.width = `${((currentQuestionIndex) / questions.length) * 100}%`;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl glass-panel hover:bg-white/20 transition-all duration-200 border border-transparent hover:border-white/30 text-sm md:text-base";
+                btn.innerText = opt.text;
+                btn.onclick = () => handleAnswer(opt.score);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(score) {
+            // 累加分數
+            for (let key in score) {
+                scores[key] += score[key];
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                document.getElementById('progress-bar').style.width = '100%';
+                setTimeout(() => calculateResult(), 300);
+            }
+        }
+
+        function calculateResult() {
+            switchView(viewQuiz, viewLoading);
+
+            // 決定人格類型字串
+            const typeI_E = scores.I >= scores.E ? "I" : "E";
+            const typeT_F = scores.T >= scores.F ? "T" : "F";
+            const typeP_J = scores.P >= scores.J ? "P" : "J";
+            const finalType = typeI_E + typeT_F + typeP_J;
+
+            // 獲取結果，若無匹配(理論上不會)則給預設值
+            const resultData = results[finalType] || results["ETP"];
+
+            setTimeout(() => {
+                renderResult(resultData);
+                switchView(viewLoading, viewResult);
+            }, 2000); // 模擬計算 2 秒，增加儀式感
+        }
+
+        function renderResult(data) {
+            const card = document.getElementById('result-card');
+            // 清除舊的漸層 class
+            card.className = `rounded-2xl p-6 bg-gradient-to-br ${data.gradient} text-white shadow-2xl relative overflow-hidden bg-animate`;
+
+            document.getElementById('result-title').innerText = data.title;
+            document.getElementById('result-desc').innerText = data.desc;
+            document.getElementById('result-match').innerText = data.match;
+
+            const tagsContainer = document.getElementById('result-tags');
+            tagsContainer.innerHTML = data.tags.map(tag => `<span class="bg-white/20 px-2 py-1 rounded backdrop-blur-sm shadow-sm">${tag}</span>`).join('');
+        }
+
+        function shareResult() {
+            alert("在 2.0 版本中，這裡將啟動 html2canvas 將卡片截圖並觸發 Web Share API 供使用者直接發布至 Instagram 限時動態！");
+        }
+
+        function resetQuiz() {
+            switchView(viewResult, viewStart);
+        }
+
+        // 初始化視圖狀態
+        setTimeout(() => {
+            viewStart.classList.add('fade-enter-active');
+        }, 100);
+    </script>
+</body>
+
+</html>

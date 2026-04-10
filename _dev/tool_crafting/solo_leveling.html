@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我獨自升級：現實系統 v1.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;700&family=Noto+Sans+TC:wght@300;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a0a0f;
+            color: #e0e0e0;
+            font-family: 'Exo 2', 'Noto Sans TC', sans-serif;
+            background-image: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0a0a0f 100%);
+            min-height: 100vh;
+        }
+
+        .status-card {
+            background: rgba(15, 15, 25, 0.8);
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .xp-bar-inner {
+            transition: width 0.5s ease-out;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            box-shadow: 0 0 10px #3b82f6;
+        }
+
+        .btn-stat {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            transition: all 0.2s;
+        }
+
+        .btn-stat:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.3);
+            transform: scale(1.1);
+        }
+
+        .quest-item {
+            border-left: 4px solid #3b82f6;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .level-up-anim {
+            animation: levelup 1s ease-out;
+        }
+
+        @keyframes levelup {
+            0% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+                filter: brightness(2);
+                box-shadow: 0 0 50px #3b82f6;
+            }
+
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .system-font {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #3b82f6;
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold system-font mb-2 tracking-widest">SYSTEM : STATUS WINDOW</h1>
+            <p class="text-gray-400 text-sm">【 只有你才能看見的升級系統 】</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <div class="md:col-span-1 space-y-6">
+                <div class="status-card p-6 rounded-lg">
+                    <div class="text-center mb-4">
+                        <div class="text-5xl font-bold text-white mb-1" id="display-level">01</div>
+                        <div class="text-xs text-blue-400 uppercase tracking-tighter">Level</div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span>姓名: <span class="text-white">成振宇 (用戶)</span></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>職業: <span class="text-blue-400 font-bold">人類 (尚未覺醒)</span></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>稱號: <span class="text-yellow-500 text-xs">新手玩家</span></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span>經驗值 (XP)</span>
+                            <span id="display-xp-text">0 / 100</span>
+                        </div>
+                        <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden">
+                            <div id="xp-bar" class="xp-bar-inner h-full w-0"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-card p-6 rounded-lg">
+                    <h3 class="system-font text-sm mb-4 border-b border-blue-900 pb-2">能力數值 (Stats)</h3>
+                    <div class="text-xs text-blue-300 mb-4 font-bold">可用點數: <span id="display-points">0</span></div>
+                    <div class="space-y-4" id="stats-container">
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 space-y-6">
+                <div class="status-card p-6 rounded-lg">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="system-font text-xl">每日任務 (Daily Quests)</h3>
+                        <span class="text-xs bg-blue-900 text-blue-200 px-2 py-1 rounded">更新中</span>
+                    </div>
+
+                    <div id="quest-list" class="space-y-4">
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-800">
+                        <h4 class="text-sm font-bold mb-4 text-blue-400">新增自定義任務</h4>
+                        <div class="flex gap-2">
+                            <input type="text" id="custom-quest-input" placeholder="輸入任務目標..."
+                                class="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+                            <button onclick="addCustomQuest()"
+                                class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm transition font-bold">
+                                接受任務
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-card p-4 rounded-lg text-xs font-mono h-32 overflow-y-auto" id="log-container">
+                    <div class="text-blue-500">[系統] 歡迎回來，獵人。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="fixed inset-0 bg-black bg-opacity-80 z-50 hidden flex items-center justify-center backdrop-blur-sm transition-opacity">
+        <div class="status-card p-6 md:p-8 rounded-lg max-w-2xl mx-4 w-full relative border border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
+            <button onclick="toggleInfoMenu()" class="absolute top-4 right-4 text-gray-400 hover:text-white w-8 h-8 flex justify-center items-center rounded-full border border-gray-600 hover:border-blue-500 transition-colors font-bold z-10">
+                ✕
+            </button>
+            <h2 class="text-2xl font-bold system-font mb-4 border-b border-blue-900 pb-2">「系統」設計藍圖</h2>
+            <div class="space-y-4 text-sm text-gray-300 overflow-y-auto max-h-[70vh] pr-2 custom-scrollbar">
+                <p class="text-blue-100 font-medium">這是一個關於「自我進化」與「遊戲化成長」的終極命題。在那個世界裡，主角成振宇透過一套「系統」將現實生活轉化為 RPG 任務。我們現在要做的，就是將這套系統帶入現實。</p>
+                
+                <h3 class="text-lg font-bold text-blue-400 mt-4 border-l-4 border-blue-500 pl-2">1. [遊戲化個人成長] 市場分析與策略報告</h3>
+                <div class="bg-blue-900 bg-opacity-20 p-3 rounded">
+                    <p><strong class="text-white">領域分析與角色切換 (Persona Shift)</strong><br>
+                    <span class="text-blue-300">領域：</span> 生產力科技 (Productivity Tech) / 遊戲化自我提升 (Gamification Self-Improvement)。<br>
+                    <span class="text-blue-300">角色切換：</span> 我現在是 「暗影君王系統架構師」。我專精於利用多巴胺迴路將枯燥的日常轉化為令人上癮的升級體驗。</p>
+                </div>
+
+                <h3 class="text-lg font-bold text-blue-400 mt-4 border-l-4 border-blue-500 pl-2">設計藍圖</h3>
+                <ul class="list-disc pl-5 space-y-3">
+                    <li><strong class="text-white">目標受眾 (Target Persona)：</strong>想要擺脫拖延症、追求卓越，且對《我獨自升級》或 RPG 遊戲機制有強烈共鳴的數位遊牧民族與學生。</li>
+                    <li><strong class="text-white">最佳案例概念 (The "Best Case" Concept)：</strong>「現實狀態欄」(IRL Status Window)。不同於傳統的 To-Do List，這個工具將任務定義為「每日任務」，並提供可分配的「能力點數 (Stat Points)」，讓用戶在完成現實工作時，感受到數值成長的快感。</li>
+                    <li><strong class="text-white">解決了什麼 (Problem Solved)：</strong>解決了現實成長「反饋週期過長」的問題。透過即時的 XP 條增長與升級音效，將長期的自我提升拆解為短期的數值回饋。</li>
+                    <li><strong class="text-white">如何實作 (Implementation Logic)：</strong>
+                        <ul class="list-circle pl-5 mt-1 text-gray-400 space-y-1">
+                            <li><span class="text-blue-300">XP 系統：</span> 任務完成獲得 XP，XP 滿額後 Level Up。</li>
+                            <li><span class="text-blue-300">能力分配：</span> 每次升級獲得 3 點能力值，可自由分配於「力量 (體能)」、「智力 (學習)」、「敏捷 (效率)」等。</li>
+                            <li><span class="text-blue-300">持久化：</span> 使用瀏覽器 LocalStorage 儲存數據，關閉分頁進度也不會消失。</li>
+                        </ul>
+                    </li>
+                    <li><strong class="text-white">下一步規劃 (Future Roadmap)：</strong>
+                        <ul class="list-decimal pl-5 mt-1 text-gray-400 space-y-1">
+                            <li><strong class="text-blue-300">轉職系統：</strong> 達到 10 級後，根據分配最多的屬性觸發專屬職業（如：程式開發者、健身達人）。</li>
+                            <li><strong class="text-blue-300">暗影提取：</strong> 完成困難任務後，可「提取」該任務為勳章，建立自己的影子軍團。</li>
+                            <li><strong class="text-blue-300">地圖系統：</strong> 根據地理位置設定「地下城任務」。</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button onclick="toggleInfoMenu()" class="fixed bottom-6 right-6 w-12 h-12 bg-blue-900 hover:bg-blue-600 text-blue-200 hover:text-white rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] flex items-center justify-center text-2xl font-serif italic font-bold transition-all hover:scale-110 z-40 border-2 border-blue-500 hover:shadow-[0_0_25px_rgba(59,130,246,0.9)]">
+        i
+    </button>
+
+    <script>
+        // --- System State ---
+        let state = {
+            level: 1,
+            xp: 0,
+            xpToNext: 100,
+            points: 0,
+            stats: {
+                力量: 10,
+                敏捷: 10,
+                體力: 10,
+                智力: 10,
+                感官: 10
+            },
+            quests: [
+                { id: 1, text: "基礎體能訓練 (伏地挺身 100 次)", xp: 30, completed: false },
+                { id: 2, text: "知識碎片獲取 (閱讀 30 分鐘)", xp: 20, completed: false },
+                { id: 3, text: "生命源泉補充 (飲水 2000ml)", xp: 10, completed: false }
+            ]
+        };
+
+        // --- Core Logic ---
+        function toggleInfoMenu() {
+            const modal = document.getElementById('info-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        function init() {
+            const saved = localStorage.getItem('soloLevelingState');
+            if (saved) state = JSON.parse(saved);
+            render();
+            addLog("系統已啟動。進度已加載。");
+        }
+
+        function save() {
+            localStorage.setItem('soloLevelingState', JSON.stringify(state));
+        }
+
+        function addLog(msg) {
+            const container = document.getElementById('log-container');
+            const time = new Date().toLocaleTimeString();
+            container.innerHTML += `<div class="mb-1"><span class="text-gray-500">[${time}]</span> ${msg}</div>`;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function completeQuest(id) {
+            const quest = state.quests.find(q => q.id === id);
+            if (quest && !quest.completed) {
+                quest.completed = true;
+                gainXP(quest.xp);
+                addLog(`任務達成：${quest.text} (獲得 ${quest.xp} XP)`);
+                render();
+                save();
+            }
+        }
+
+        function gainXP(amount) {
+            state.xp += amount;
+            while (state.xp >= state.xpToNext) {
+                state.xp -= state.xpToNext;
+                levelUp();
+            }
+        }
+
+        function levelUp() {
+            state.level++;
+            state.points += 3;
+            state.xpToNext = Math.floor(100 * Math.pow(1.2, state.level - 1));
+            addLog(`<span class="text-yellow-400 font-bold">【 等級提升！】目前的等級是 ${state.level}。獲得了 3 個屬性點。</span>`);
+            document.body.classList.add('level-up-anim');
+            setTimeout(() => document.body.classList.remove('level-up-anim'), 1000);
+        }
+
+        function upgradeStat(statName) {
+            if (state.points > 0) {
+                state.stats[statName]++;
+                state.points--;
+                addLog(`屬性提升：${statName} 現在是 ${state.stats[statName]}。`);
+                render();
+                save();
+            }
+        }
+
+        function addCustomQuest() {
+            const input = document.getElementById('custom-quest-input');
+            if (input.value.trim()) {
+                const newQuest = {
+                    id: Date.now(),
+                    text: input.value,
+                    xp: 25,
+                    completed: false
+                };
+                state.quests.push(newQuest);
+                input.value = '';
+                addLog(`新任務：${newQuest.text} 已加入系統。`);
+                render();
+                save();
+            }
+        }
+
+        // --- UI Rendering ---
+        function render() {
+            document.getElementById('display-level').innerText = state.level.toString().padStart(2, '0');
+            document.getElementById('display-xp-text').innerText = `${state.xp} / ${state.xpToNext}`;
+            document.getElementById('display-points').innerText = state.points;
+
+            const xpPercent = (state.xp / state.xpToNext) * 100;
+            document.getElementById('xp-bar').style.width = `${xpPercent}%`;
+
+            // Render Stats
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = '';
+            for (const [key, value] of Object.entries(state.stats)) {
+                statsContainer.innerHTML += `
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-400">${key}</span>
+                        <div class="flex items-center gap-4">
+                            <span class="text-white font-bold">${value}</span>
+                            <button onclick="upgradeStat('${key}')" ${state.points <= 0 ? 'disabled' : ''} class="btn-stat w-6 h-6 flex items-center justify-center rounded text-blue-400 disabled:opacity-20">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Render Quests
+            const questList = document.getElementById('quest-list');
+            questList.innerHTML = '';
+            state.quests.forEach(q => {
+                questList.innerHTML += `
+                    <div class="quest-item p-4 rounded flex justify-between items-center ${q.completed ? 'opacity-40 grayscale' : ''}">
+                        <div>
+                            <p class="text-sm ${q.completed ? 'line-through text-gray-500' : 'text-white'} font-medium">${q.text}</p>
+                            <p class="text-[10px] text-blue-400 mt-1">報酬：${q.xp} XP / 隨機寶箱(無)</p>
+                        </div>
+                        <button onclick="completeQuest(${q.id})" ${q.completed ? 'disabled' : ''} class="px-4 py-1 rounded text-xs font-bold ${q.completed ? 'bg-gray-700 text-gray-500' : 'bg-blue-600 hover:bg-blue-400 text-white shadow-lg shadow-blue-900'} transition">
+                            ${q.completed ? '已完成' : '執行'}
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
