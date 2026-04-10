@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>AI 動漫角色設計應用深度分析 | KLIO.</title>
+    <meta name="description" content="深度解析 AI 圖像生成技術在動漫角色設計領域的應用：從 Midjourney --cref 到 Stable Diffusion ControlNet，涵蓋遊戲 AI NPC 與 VTuber 自動化直播系統。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: #0c0a1a; color: #e2e8f0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 16px; line-height: 1.8;
+        }
+
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #1a1530; z-index: 100; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #a78bfa, #60a5fa); width: 0%; transition: width 0.1s ease-out; }
+
+        .top-nav {
+            position: fixed; top: 3px; left: 0; width: 100%; z-index: 90;
+            background: rgba(12,10,26,0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .top-nav a, .top-nav button { text-decoration: none; border: none; background: none; cursor: pointer; }
+
+        .article-body { padding: 80px 20px 60px; max-width: 640px; margin: 0 auto; }
+
+        .cover { width: calc(100% + 40px); margin: 0 -20px; position: relative; overflow: hidden; border-radius: 0 0 20px 20px; }
+        .cover img { width: 100%; display: block; }
+
+        .tldr {
+            background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.2);
+            border-radius: 16px; padding: 22px; margin: 32px 0;
+        }
+        .tldr h3 { font-size: 0.85rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .tldr ul { list-style: none; }
+        .tldr li { padding: 8px 0; font-size: 1rem; line-height: 1.7; color: #c8d5e3; display: flex; gap: 10px; }
+        .tldr li::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: #a78bfa; margin-top: 10px; flex-shrink: 0; }
+        .tldr li strong { color: #fff; }
+
+        h1 { font-size: 1.75rem; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 14px; }
+        h2 { font-size: 1.35rem; font-weight: 700; color: #fff; margin: 40px 0 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        p { margin-bottom: 1.5rem; color: #b0bdd0; font-size: 1.02rem; line-height: 1.8; }
+        strong { color: #e2e8f0; }
+        code { background: rgba(139,92,246,0.15); color: #c4b5fd; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+
+        .meta { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #7a8da6; margin-bottom: 28px; font-weight: 500; }
+        .divider { height: 1px; background: rgba(255,255,255,0.08); margin: 36px 0; }
+
+        .info-card {
+            background: rgba(30,27,75,0.6); border: 1px solid rgba(139,92,246,0.2);
+            border-radius: 14px; padding: 20px; margin-bottom: 14px;
+        }
+        .info-card .label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .info-card h4 { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .info-card p { font-size: 0.95rem; margin-bottom: 0; color: #b0bdd0; }
+
+        .step-card {
+            background: rgba(30,27,75,0.5); border: 1px solid rgba(139,92,246,0.15);
+            border-radius: 14px; padding: 18px 18px 18px 52px; margin-bottom: 10px; position: relative;
+        }
+        .step-card .step-num {
+            position: absolute; left: 14px; top: 18px;
+            width: 28px; height: 28px; background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: #fff; font-weight: 800; font-size: 0.8rem;
+            display: flex; align-items: center; justify-content: center; border-radius: 8px;
+        }
+        .step-card h4 { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .step-card p { font-size: 0.92rem; margin-bottom: 0; color: #b0bdd0; }
+
+        .callout {
+            border-radius: 14px; padding: 18px; margin-bottom: 22px; border: 1px solid;
+            display: flex; gap: 12px;
+        }
+        .callout.purple { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.25); }
+        .callout.pink { background: rgba(236,72,153,0.1); border-color: rgba(236,72,153,0.25); }
+        .callout.info { background: rgba(96,165,250,0.08); border-color: rgba(96,165,250,0.18); }
+        .callout .ic { font-size: 1.3rem; flex-shrink: 0; }
+        .callout p { font-size: 0.95rem; margin: 0; line-height: 1.85; color: #e2e8f0; }
+
+        .img-block { margin: 24px -20px; border-radius: 0; overflow: hidden; }
+        .img-block img { width: 100%; display: block; }
+        .img-block .cap {
+            padding: 12px 20px; font-size: 0.8rem; color: #7a8da6; font-style: italic;
+            background: rgba(30,27,75,0.6); border-top: 1px solid rgba(139,92,246,0.1);
+        }
+
+        .use-card {
+            border-radius: 16px; padding: 22px; margin-bottom: 16px; position: relative; overflow: hidden;
+        }
+        .use-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        }
+        .use-card.game {
+            background: rgba(30,27,75,0.6); border: 1px solid rgba(139,92,246,0.2);
+        }
+        .use-card.game::before { background: linear-gradient(90deg, #8b5cf6, #3b82f6); }
+        .use-card.vtuber {
+            background: rgba(75,20,50,0.4); border: 1px solid rgba(236,72,153,0.2);
+        }
+        .use-card.vtuber::before { background: linear-gradient(90deg, #ec4899, #f97316); }
+        .use-card .uc-tag {
+            display: inline-block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.08em; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px;
+        }
+        .use-card.game .uc-tag { color: #a78bfa; background: rgba(139,92,246,0.15); }
+        .use-card.vtuber .uc-tag { color: #f472b6; background: rgba(236,72,153,0.15); }
+        .use-card h4 { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+        .use-card p { font-size: 0.95rem; margin-bottom: 0; color: #b0bdd0; line-height: 1.8; }
+
+        .highlight-box {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 14px 16px; margin-top: 14px;
+            font-size: 0.9rem; color: #c8d5e3; line-height: 1.7;
+        }
+
+        .conclusion-box {
+            background: linear-gradient(135deg, rgba(30,27,75,0.9), rgba(49,46,129,0.8));
+            border: 1px solid rgba(139,92,246,0.3); border-radius: 20px;
+            padding: 28px 24px; margin: 32px 0; text-align: center;
+        }
+        .conclusion-box .quote-text { font-size: 1.12rem; font-weight: 800; color: #fff; margin-bottom: 12px; line-height: 1.5; }
+        .conclusion-box p { font-size: 0.92rem; color: #c7d2fe; margin-bottom: 0; line-height: 1.8; text-align: left; }
+
+        .ref-list { list-style: none; margin: 16px 0; }
+        .ref-list li {
+            padding: 10px 0; font-size: 0.85rem; color: #7a8da6;
+            border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; align-items: flex-start;
+        }
+        .ref-list li:last-child { border-bottom: none; }
+        .ref-num {
+            flex-shrink: 0; font-weight: 700; color: #a78bfa; font-size: 0.75rem;
+            background: rgba(139,92,246,0.15); padding: 2px 8px; border-radius: 4px; margin-top: 2px;
+        }
+
+        .bottom-safe { height: 40px; }
+    </style>
+</head>
+<body class="scrollbar-hide">
+
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+
+    <nav class="top-nav">
+        <a href="../index.html" style="padding:8px;margin:-8px;color:#b0bdd0;">
+            <i class="ph-bold ph-arrow-left" style="font-size:20px;"></i>
+        </a>
+        <div style="font-size:0.8rem;font-weight:700;color:#b0bdd0;letter-spacing:0.05em;">KLIO.</div>
+        <button onclick="shareArticle()" style="padding:8px;margin:-8px;color:#b0bdd0;">
+            <i class="ph-bold ph-share-network" style="font-size:20px;"></i>
+        </button>
+    </nav>
+
+    <div class="article-body">
+
+        <div class="cover">
+            <img src="anime_cyberpunk_female_sheet.png" alt="AI 動漫角色設計" loading="eager">
+        </div>
+
+        <div style="margin-top:20px;position:relative;z-index:2;">
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#a78bfa;border:1px solid rgba(139,92,246,0.3);padding:5px 14px;border-radius:6px;margin-bottom:12px;">🎨 AI × 動漫角色設計</span>
+            <h1>動漫角色設定由<br><span style="background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">AI 生成圖片</span>之應用深度分析</h1>
+            <p style="font-size:1rem;color:#8599b3;margin-bottom:16px;line-height:1.65;">從靈感產生器到輔助美術管線工具 — 解析 Midjourney、Stable Diffusion 在角色設計、遊戲開發與 VTuber 產業的實戰應用。</p>
+            <div class="meta">
+                <span>By KLIO x AI</span>
+                <span style="color:#1e3a5f;">•</span>
+                <span>Apr 7, 2026</span>
+                <span style="color:#1e3a5f;">•</span>
+                <span>8 min read</span>
+            </div>
+        </div>
+
+        <!-- TL;DR -->
+        <div class="tldr">
+            <h3><i class="ph-fill ph-lightning" style="color:#a78bfa;font-size:16px;"></i> 核心發現</h3>
+            <ul>
+                <li><strong>典範轉移：</strong>AI 從「隨機抽卡」進入「工程化控制」階段</li>
+                <li><strong>Midjourney --cref：</strong>鎖定角色五官、髮型與服裝，維持跨場景一致性</li>
+                <li><strong>Stable Diffusion：</strong>LoRA + ControlNet 實現業界頂級精準控制</li>
+                <li><strong>遊戲開發：</strong>結合 LLM 打造具記憶與情緒的 AI NPC</li>
+                <li><strong>VTuber 革命：</strong>AI 生成分層設定圖 + 24hr 全自動直播系統</li>
+            </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Section 1 -->
+        <h2>01 / 執行摘要</h2>
+
+        <p>本報告分析了生成式 AI 圖像技術在動漫角色設計與設定領域的具體應用現況。研究發現，AI 已經從單純的「靈感產生器」轉變為具備高度一致性控制與實戰價值的<strong>「輔助美術管線工具」</strong>。</p>
+
+        <p>透過 Midjourney 的角色參考功能（<code>--cref</code>）與 Stable Diffusion 的精準控制（ControlNet），創作者能高效率地產出角色三視圖、分層設定圖等。其核心應用領域已深入到<strong>獨立遊戲開發</strong>以及<strong>虛擬主播（VTuber）自動化直播系統</strong>。</p>
+
+        <div class="divider"></div>
+
+        <!-- Section 2 -->
+        <h2>02 / 研究範疇與方法</h2>
+
+        <div class="info-card" style="border-left:3px solid #a78bfa;">
+            <div class="label" style="color:#a78bfa;">🔬 研究範疇</div>
+            <p>AI 生成動漫角色的標準化工作流程、主流工具的角色一致性技術、遊戲開發與 VTuber 產業的商業與實踐案例。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #60a5fa;">
+            <div class="label" style="color:#60a5fa;">🔍 研究方法</div>
+            <p>核心關鍵字探索、設計師社群深度實務萃取、實務測試：透過 AI 模型實際產出角色三視設定圖與 VTuber 素材拆解圖。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Section 3 -->
+        <h2>03 / 角色設計流程的典範轉移</h2>
+
+        <p>傳統的動漫角色設計需要歷經「腦暴會議 → 概念草圖 → 決定服裝與色指定 → 繪製三視圖」。這個過程不僅耗時，若中期更改風格，重工成本極高。</p>
+
+        <p>現代的 AI 整合流程則轉換為<strong>疊代式</strong>：</p>
+
+        <div class="step-card">
+            <div class="step-num">1</div>
+            <h4>文案轉圖像快速打樣</h4>
+            <p>直接透過 Prompt 將模糊的文字設定視覺化。</p>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">2</div>
+            <h4>三視圖與設定集生成</h4>
+            <p>利用 <code>character sheet, multiple poses</code> 關鍵詞，一次性產生多維度參考基準。</p>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">3</div>
+            <h4>特徵錨定與局部修復</h4>
+            <p>以滿意草圖作為參考圖，透過 Inpainting 修復穿幫結構。</p>
+        </div>
+
+        <div class="img-block">
+            <img src="anime_cyberpunk_female_sheet.png" alt="賽博龐克風格角色三視圖" loading="lazy">
+            <div class="cap">▲ AI 自動生成之動漫角色三視設定圖（賽博龐克風格）</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Section 4 -->
+        <h2>04 / 角色一致性的核心技術</h2>
+
+        <div class="info-card" style="border-left:3px solid #a78bfa;">
+            <div class="label" style="color:#a78bfa;">🎨 Midjourney --cref</div>
+            <h4>Character Reference 參數</h4>
+            <p>自 v6 與 Niji 6 推出後，只需加入 <code>--cref [URL] --cw 100</code>，AI 即可鎖定角色五官、髮型與服裝特徵，無縫套入各種動作中。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #60a5fa;">
+            <div class="label" style="color:#60a5fa;">⚙️ Stable Diffusion</div>
+            <h4>LoRA & ControlNet</h4>
+            <p>透過 15~20 張同角色圖片訓練專屬 LoRA，並輔以 ControlNet OpenPose 提取人體骨架，實現極高端精確控制。目前遊戲從業者最青睞的做法。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Section 5 -->
+        <h2>05 / 核心應用領域</h2>
+
+        <div class="use-card game">
+            <div class="uc-tag">🎮 領域一</div>
+            <h4>新世代 AI NPC 與遊戲開發</h4>
+            <p>遊戲美術管線正大量引入 AI。透過 NVIDIA GANverse3D 技術輔助轉建 3D 模組，省去前端美術發想的空白期。</p>
+            <div class="highlight-box">
+                💡 更進一步：將 AI 外觀加上「LLM 大腦」成為數位人類。玩家面對的不再是定型對話樹，而是具備記憶、情緒與自治行為的智慧化角色。
+            </div>
+        </div>
+
+        <div class="use-card vtuber">
+            <div class="uc-tag">🎤 領域二</div>
+            <h4>全自動 VTuber 與 Live2D 拆圖</h4>
+            <p>過去成為 VTuber 需花費台幣破萬元請繪師繪製分層圖面。現在可直接用 AI 產出「圖層分離、乾淨白底、表情差分」的立繪，匯入 Live2D Cubism 綁定。</p>
+            <div class="highlight-box">
+                🔗 進階開發者更串接了 ElevenLabs + OpenAI，創造 24 小時無間斷自主直播對話的完整 AI VTuber 體系。
+            </div>
+        </div>
+
+        <div class="img-block">
+            <img src="vtuber_anime_design.png" alt="VTuber 分層概念設定圖" loading="lazy">
+            <div class="cap">▲ 適用於 VTuber 建模之 AI 分層概念設定圖（粉彩哥德風）</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Conclusion -->
+        <h2>06 / 總結與前瞻洞察</h2>
+
+        <p>AI 圖像生成在動漫人物設定上，已經跨越了最初的「隨機抽卡」階段，進入到<strong>「工程化控制」</strong>階段。它大幅降低了創意落地的門檻，賦予小型獨立團隊產出 3A 級角色美術的能力。</p>
+
+        <p>然而，當前仍需高度仰賴人類繪師進行打平（Polish）、重繪細微破綻以及綁定骨架。</p>
+
+        <div class="conclusion-box">
+            <div class="quote-text">🔮 前瞻洞察</div>
+            <p>未來的動漫角色設計將逐漸演變為「人類設計底層邏輯與修飾，AI 負責生成多視角、多表情並即時運算輸出」的混合模式。解決資料來源的版權問題，並結合原生 3D 生成模型（Text-to-3D），將會是下一個爆發點。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- References -->
+        <h2>07 / 參考文獻</h2>
+        <ul class="ref-list">
+            <li><span class="ref-num">1</span>Adobe — AI 生成角色設計流程與架構指南</li>
+            <li><span class="ref-num">4</span>Promptomania — Midjourney Niji 角色設定圖與 --cref 實戰手冊</li>
+            <li><span class="ref-num">7</span>NVIDIA ACE — 數位人類技術與遊戲應用白皮書</li>
+            <li><span class="ref-num">8</span>Inworld AI — 遊戲 NPC 大腦與行為系統構建開發平台</li>
+            <li><span class="ref-num">10</span>VTuber 開發社群 — AI 生成角色至 Live2D 實作對接指南</li>
+        </ul>
+
+        <div class="bottom-safe"></div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        });
+        function shareArticle() {
+            const data = { title: 'AI 動漫角色設計應用深度分析報告', url: window.location.href };
+            if (navigator.share) { navigator.share(data); }
+            else { navigator.clipboard.writeText(data.url).then(() => alert('連結已複製！')); }
+        }
+    </script>
+</body>
+</html>
