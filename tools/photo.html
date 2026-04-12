@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>兩吋證件照拍攝器</title>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
             display: flex;
@@ -12,17 +13,24 @@
             align-items: center;
             background-color: #f0f2f5;
             padding: 20px;
+            min-height: 100vh;
         }
+        h2 {
+            margin-bottom: 12px;
+            font-size: 22px;
+        }
+
+        /* === 桌機預設 === */
         .camera-container {
             position: relative;
-            /* 兩吋照片比例 3.5 : 4.5 (即 7:9) */
-            width: 350px; 
+            /* 兩吋照片比例 7:9 */
+            width: 350px;
             height: 450px;
             background-color: #000;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         video, img, canvas {
             position: absolute;
@@ -34,7 +42,7 @@
         }
         #overlay {
             z-index: 10;
-            pointer-events: none; /* 讓點擊事件穿透 */
+            pointer-events: none;
         }
         #result-image {
             z-index: 5;
@@ -42,7 +50,7 @@
         }
         .controls {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -50,7 +58,7 @@
             padding: 10px 20px;
             font-size: 16px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             background-color: #007bff;
             color: white;
@@ -66,14 +74,15 @@
         .hidden {
             display: none !important;
         }
+
         /* 切換鏡頭按鈕 */
         #btn-switch {
             position: absolute;
             top: 10px;
             right: 10px;
             z-index: 20;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             padding: 0;
             border-radius: 50%;
             background-color: rgba(0, 0, 0, 0.5);
@@ -87,15 +96,56 @@
         #btn-switch:hover {
             background-color: rgba(0, 0, 0, 0.7);
         }
+
         /* 前鏡頭鏡像 */
         video.mirror {
             transform: scaleX(-1);
+        }
+
+        /* === 平板 (481px ~ 768px) === */
+        @media (max-width: 768px) {
+            body { padding: 16px 8px; }
+            h2 { font-size: 20px; margin-bottom: 10px; }
+            .camera-container {
+                width: 70vw;
+                height: calc(70vw * 9 / 7);
+            }
+            button {
+                padding: 12px 22px;
+                font-size: 16px;
+            }
+        }
+
+        /* === 手機 (≤480px) === */
+        @media (max-width: 480px) {
+            body { padding: 10px 4px; }
+            h2 { font-size: 18px; margin-bottom: 8px; }
+            .camera-container {
+                width: 92vw;
+                height: calc(92vw * 9 / 7);
+                border-radius: 10px;
+            }
+            .controls {
+                gap: 10px;
+                width: 92vw;
+            }
+            button {
+                flex: 1 1 auto;
+                padding: 14px 10px;
+                font-size: 17px;
+                border-radius: 10px;
+            }
+            #btn-switch {
+                width: 48px;
+                height: 48px;
+                font-size: 22px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h2>兩吋證件照拍攝器</h2>
+    <h2>📷 兩吋證件照拍攝器</h2>
 
     <div class="camera-container">
         <video id="camera-stream" autoplay playsinline></video>
@@ -124,6 +174,18 @@
         let stream = null;
         let currentFacingMode = 'user'; // 'user' = 前鏡頭, 'environment' = 後鏡頭
 
+        // 動態調整 overlay canvas 尺寸以匹配容器實際像素
+        function resizeOverlay() {
+            const container = document.querySelector('.camera-container');
+            const rect = container.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            overlay.width = Math.round(rect.width * dpr);
+            overlay.height = Math.round(rect.height * dpr);
+            overlay.style.width = rect.width + 'px';
+            overlay.style.height = rect.height + 'px';
+            drawOverlay();
+        }
+
         // 繪製人像輔助線
         function drawOverlay() {
             const ctx = overlay.getContext('2d');
@@ -133,8 +195,6 @@
             // 清空畫布
             ctx.clearRect(0, 0, width, height);
 
-            // 畫半透明遮罩 (如果需要周圍變暗可以在這裡加)
-            
             // 繪製頭部輪廓 (橢圓)
             // 標準：頭部佔畫面高度約 71% ~ 80%
             const headCenterY = height * 0.45;
@@ -143,7 +203,7 @@
 
             ctx.beginPath();
             ctx.ellipse(width / 2, headCenterY, headRadiusX, headRadiusY, 0, 0, 2 * Math.PI);
-            
+
             // 繪製肩膀輪廓
             ctx.moveTo(width / 2 - headRadiusX * 0.8, headCenterY + headRadiusY * 0.8);
             ctx.quadraticCurveTo(width * 0.1, height * 0.85, 0, height);
@@ -151,20 +211,22 @@
             ctx.quadraticCurveTo(width * 0.9, height * 0.85, width / 2 + headRadiusX * 0.8, headCenterY + headRadiusY * 0.8);
 
             // 設定線條樣式
-            ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)'; // 螢光綠色輔助線
-            ctx.lineWidth = 3;
-            ctx.setLineDash([10, 5]); // 虛線
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+            ctx.lineWidth = Math.max(2, width * 0.008);
+            ctx.setLineDash([width * 0.03, width * 0.015]);
             ctx.stroke();
 
             // 加入文字提示
             ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
-            ctx.font = '16px "PingFang TC", sans-serif';
+            const fontSize = Math.max(14, Math.round(width * 0.045));
+            ctx.font = fontSize + 'px "PingFang TC", sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('請將頭部與肩膀對準虛線', width / 2, 30);
+            ctx.fillText('請將頭部與肩膀對準虛線', width / 2, fontSize * 2);
         }
 
-        // 初始化輔助線
-        drawOverlay();
+        // 初始化 & 監聽視窗變化
+        resizeOverlay();
+        window.addEventListener('resize', resizeOverlay);
 
         // 啟動指定鏡頭
         async function startCamera(facingMode) {
