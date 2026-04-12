@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBTI 64型全維度認知光譜分析儀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a;
+            /* Slate 900 */
+            color: #e2e8f0;
+            /* Slate 200 */
+        }
+
+        /* Custom Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #38bdf8;
+            /* Light blue */
+            cursor: pointer;
+            margin-top: -10px;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+            transition: transform 0.1s;
+        }
+
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #334155;
+            /* Slate 700 */
+            border-radius: 2px;
+        }
+
+        input[type=range]:focus {
+            outline: none;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-3xl glass-panel rounded-2xl shadow-2xl p-8 relative overflow-hidden fade-in"
+        id="app-container">
+        <header class="text-center mb-10">
+            <h1
+                class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-3">
+                DCNH 認知光譜分析儀
+            </h1>
+            <p class="text-slate-400 text-sm md:text-base">超越 16 型標籤，探索您大腦神經迴路的真實亞型變體</p>
+        </header>
+
+        <div id="welcome-screen" class="text-center transition-all duration-300">
+            <p class="text-slate-300 mb-8 leading-relaxed text-left md:text-center">
+                傳統 MBTI 測驗常迫使您在極端中做出選擇。本測驗採用「情境光譜滑桿」，透過 4 道核心認知衝突題，探測您在處理資訊與壓力時的真實神經傾向，為您精準定位 64 型系統中的專屬亞型（主導、創造、規範、和諧）。
+            </p>
+            <button onclick="startTest()"
+                class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:-translate-y-1">
+                開始深度掃描
+            </button>
+        </div>
+
+        <div id="question-screen" class="hidden transition-all duration-300">
+            <div class="mb-4 flex justify-between items-center text-sm text-slate-400">
+                <span id="progress-text" class="font-medium">Question 1 / 4</span>
+                <div class="w-1/2 bg-slate-700 rounded-full h-1.5">
+                    <div id="progress-bar" class="bg-cyan-500 h-1.5 rounded-full" style="width: 25%"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-8 shadow-inner">
+                <h2 id="q-title" class="text-xl font-bold text-cyan-300 mb-4 border-b border-slate-700 pb-2"></h2>
+                <p id="q-desc" class="text-slate-300 mb-8 leading-relaxed"></p>
+
+                <div class="space-y-6">
+                    <div class="flex justify-between text-sm md:text-base text-slate-200">
+                        <div class="w-5/12 text-left bg-slate-700/50 p-3 rounded-lg border border-slate-600" id="opt-a">
+                        </div>
+                        <div class="w-5/12 text-right bg-slate-700/50 p-3 rounded-lg border border-slate-600"
+                            id="opt-b"></div>
+                    </div>
+
+                    <div class="relative pt-4 pb-2">
+                        <input type="range" id="slider" min="0" max="100" value="50" oninput="updateSliderColor()">
+                        <div class="flex justify-between text-xs text-slate-500 mt-2">
+                            <span>強烈偏向左側</span>
+                            <span>保持平衡</span>
+                            <span>強烈偏向右側</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button onclick="nextQuestion()"
+                    class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-6 rounded-lg transition duration-200 flex items-center">
+                    下一題 <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="hidden text-center transition-all duration-300 fade-in">
+            <div class="inline-block p-4 rounded-full bg-slate-800 mb-4 border border-slate-700">
+                <svg class="w-12 h-12 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                    </path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold text-white mb-2">神經輪廓解析完成</h2>
+            <h3 id="result-type"
+                class="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400 font-extrabold mb-4">
+            </h3>
+
+            <div class="text-left bg-slate-800 rounded-xl p-6 border border-slate-700 mb-6 relative">
+                <div class="absolute top-0 left-0 w-1 h-full bg-cyan-500 rounded-l-xl"></div>
+                <h4 class="text-lg font-bold text-cyan-300 mb-2">認知動態解構</h4>
+                <p id="result-desc" class="text-slate-300 text-sm md:text-base leading-relaxed"></p>
+            </div>
+
+            <div class="text-left bg-slate-800 rounded-xl p-6 border border-slate-700 mb-8 relative">
+                <div class="absolute top-0 left-0 w-1 h-full bg-rose-500 rounded-l-xl"></div>
+                <h4 class="text-lg font-bold text-rose-400 mb-2">壓力管理與盲點預警</h4>
+                <p id="result-warning" class="text-slate-300 text-sm md:text-base leading-relaxed"></p>
+            </div>
+
+            <button onclick="location.reload()"
+                class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-6 rounded-lg transition duration-200">
+                重新測試
+            </button>
+        </div>
+    </main>
+
+    <script>
+        const questions = [
+            {
+                title: "【決策推進機制】",
+                desc: "當團隊在專案中陷入意見僵局時，你內心最真實的傾向是：",
+                optA: "強制採用目前勝算最高、最快能產出結果的方法，即使理論不完美。(Te 外部效能)",
+                optB: "抽絲剝繭地找出事物背後最根本的運作原理，直到所有邏輯矛盾被消除。(Ti 內部精確)"
+            },
+            {
+                title: "【人際價值衝突】",
+                desc: "當你內心堅信的核心信念與所屬群體的共識產生嚴重分歧時：",
+                optA: "為了維持群體的凝聚力與情感連結，我願意在表面上尋求最大公約數。(Fe 群體和諧)",
+                optB: "即使面臨被徹底孤立的風險，我也絕對不會違背自己內心的真實感受。(Fi 內在真實)"
+            },
+            {
+                title: "【靈感生成軌跡】",
+                desc: "在進行需要高度原創性的創意工作時，你的點子通常來自：",
+                optA: "與外界互動、腦力激盪，享受將不同領域概念隨機碰撞與無限延伸。(Ne 發散直覺)",
+                optB: "切斷外界干擾進入沉思，讓潛意識自動將繁雜資訊收斂成清晰的終極願景。(Ni 收斂直覺)"
+            },
+            {
+                title: "【極端壓力崩潰】",
+                desc: "當長期處於極端壓力下，防禦機制瓦解時，你最可能出現的失控行為是：",
+                optA: "變得暴飲暴食、過度消費，沉溺於感官刺激以麻痺大腦的思考能力。(劣勢 Se 反撲)",
+                optB: "變得極度偏執與多疑，強迫症般地整理環境，制定嚴苛不合理的微觀計畫。(劣勢 Ne/Te 焦慮)"
+            }
+        ];
+
+        const profiles = {
+            dominant: {
+                title: "主導型變體 (Dominant Subtype - D型)",
+                desc: "您的大腦神經迴路呈現強烈的『雙重分析狀態』。您極度側重於外部判斷功能（Te/Fe），具備強大的行動力、資源調度能力與征服欲。面對危機時反應極快，能瞬間排除無效資訊制定止血方案。在組織中，您是天生的推動者。",
+                warning: "在極端壓力下，您容易出現暴君傾向與微觀管理。必須學會刻意的『戰術性後退』，允許團隊提出不完美的方案，並將他人情感需求納入考量，避免人才流失。"
+            },
+            creative: {
+                title: "創造型變體 (Creative Subtype - C型)",
+                desc: "您的認知功能呈現『感知分析、判斷整體』的靈活交錯。您高度強化了發散感知（Ne/Se），渴望打破既有框架。您擅長將工作與個人熱情深度融合，擁有極佳的創新爆發力，思維跳躍且具備不拘一格的個人主義色彩。",
+                warning: "您容易在龐大的創意構想中迷失，難以收斂專案。壓力下容易出現衝動或短暫享樂主義。建議尋找具備『收斂與執行』能力的夥伴協助您建立外部約束機制。"
+            },
+            normalizing: {
+                title: "規範型變體 (Normalizing Subtype - N型)",
+                desc: "您的大腦展現了『內部功能（Ti/Fi）的深度強化』。您是社會秩序與真理的守護者，重視準確性與系統的長期穩定。您具備優異的記憶力與專注力，能日復一日地將抽象概念轉化為具體的結構，思維嚴謹且細節導向。",
+                warning: "對『不可預測的變化』抱有深層恐懼。極端壓力下會變得極度僵化，拒絕新資訊。建議在日常中進行『微型混亂暴露療法』，刻意引入微小的失序以降低神經焦慮。"
+            },
+            harmonizing: {
+                title: "和諧型變體 (Harmonizing Subtype - H型)",
+                desc: "您將『內部感知（Ni/Si）』開發到了極致。您的大腦處於深度的『雙重整體狀態』，幾乎屏蔽了世俗功利，轉向內心探索生命意義。您追求內在極致平靜，擁有強大同理心與哲學思維，能將苦難昇華為普世智慧。",
+                warning: "行動力相對較低，且神經系統對環境物理刺激極度脆弱。當被打擾時容易徹底切斷聯繫。您必須建立嚴格的『社交邊界與電池管理系統』，保留絕對獨處時間以修復能量。"
+            }
+        };
+
+        let currentStep = 0;
+        let scores = { D: 0, C: 0, N: 0, H: 0 };
+
+        function updateSliderColor() {
+            const slider = document.getElementById('slider');
+            const val = slider.value;
+            // Add subtle glow based on position
+            if (val < 40) slider.style.filter = "drop-shadow(0 0 5px rgba(56, 189, 248, 0.8))";
+            else if (val > 60) slider.style.filter = "drop-shadow(0 0 5px rgba(167, 139, 250, 0.8))";
+            else slider.style.filter = "none";
+        }
+
+        function startTest() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('question-screen').classList.remove('hidden');
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[currentStep];
+            document.getElementById('q-title').innerText = q.title;
+            document.getElementById('q-desc').innerText = q.desc;
+            document.getElementById('opt-a').innerText = q.optA;
+            document.getElementById('opt-b').innerText = q.optB;
+            document.getElementById('slider').value = 50;
+            updateSliderColor();
+
+            const progress = ((currentStep) / questions.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').innerText = `Question ${currentStep + 1} / ${questions.length}`;
+        }
+
+        function nextQuestion() {
+            const val = parseInt(document.getElementById('slider').value);
+
+            // Simplified Scoring Algorithm for Demo based on MBTI DCNH logic
+            if (currentStep === 0) { // Te vs Ti
+                if (val < 50) scores.D += (50 - val);
+                else scores.N += (val - 50);
+            } else if (currentStep === 1) { // Fe vs Fi
+                if (val < 50) { scores.H += (50 - val); scores.D += (50 - val) * 0.5; }
+                else scores.N += (val - 50);
+            } else if (currentStep === 2) { // Ne vs Ni
+                if (val < 50) scores.C += (50 - val);
+                else { scores.H += (val - 50); scores.D += (val - 50) * 0.5; }
+            } else if (currentStep === 3) { // Se Grip vs Ne/Te Grip
+                if (val < 50) { scores.D += (50 - val); scores.C += (50 - val); }
+                else { scores.N += (val - 50); scores.H += (val - 50); }
+            }
+
+            currentStep++;
+            if (currentStep < questions.length) {
+                // Fade effect
+                const qScreen = document.getElementById('question-screen');
+                qScreen.style.opacity = 0;
+                setTimeout(() => {
+                    renderQuestion();
+                    qScreen.style.opacity = 1;
+                }, 200);
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('question-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            // Determine highest score
+            let maxType = 'D';
+            let maxVal = scores.D;
+            if (scores.C > maxVal) { maxVal = scores.C; maxType = 'C'; }
+            if (scores.N > maxVal) { maxVal = scores.N; maxType = 'N'; }
+            if (scores.H > maxVal) { maxVal = scores.H; maxType = 'H'; }
+
+            let resultObj = profiles.dominant;
+            if (maxType === 'C') resultObj = profiles.creative;
+            if (maxType === 'N') resultObj = profiles.normalizing;
+            if (maxType === 'H') resultObj = profiles.harmonizing;
+
+            // Handle middle-ground / indecisive clicks
+            if (maxVal === 0) resultObj = profiles.normalizing;
+
+            document.getElementById('result-type').innerText = resultObj.title;
+            document.getElementById('result-desc').innerText = resultObj.desc;
+            document.getElementById('result-warning').innerText = resultObj.warning;
+        }
+    </script>
+</body>
+
+</html>
