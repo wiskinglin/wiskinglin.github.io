@@ -169,6 +169,13 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
 
+        /* 快門列 */
+        .shutter-row {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
         /* 拍照快門鈕 */
         .shutter-ring {
             width: 72px;
@@ -192,6 +199,56 @@
         }
         .shutter-ring:active { transform: scale(0.95); }
         .shutter-ring:active::after { transform: scale(0.9); }
+
+        /* 倒數計時按鈕 */
+        .timer-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(6px);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s, background 0.2s;
+            letter-spacing: 0.02em;
+        }
+        .timer-btn:active { transform: scale(0.9); }
+        .timer-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* 倒數大字 overlay */
+        .countdown-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+        .countdown-num {
+            font-size: 8rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: scale(1.5);
+            animation: countPop 0.9s ease-out forwards;
+        }
+        @keyframes countPop {
+            0%   { opacity: 0; transform: scale(2); }
+            20%  { opacity: 1; transform: scale(1); }
+            80%  { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
 
         /* 操作按鈕列 (重拍 / 下載) */
         .action-row {
@@ -315,10 +372,18 @@
     <!-- 鏡頭切換 -->
     <button id="btn-switch" class="hidden" title="切換鏡頭">🔄</button>
 
+    <!-- 倒數顯示 -->
+    <div class="countdown-overlay hidden" id="countdown-overlay">
+        <span class="countdown-num" id="countdown-num"></span>
+    </div>
+
     <!-- 底部控制 -->
     <div class="bottom-ui" id="bottom-ui" style="display:none">
         <p class="hint-text" id="hint-text">請將頭部與肩膀對準框線</p>
-        <button class="shutter-ring" id="btn-capture" title="拍照"></button>
+        <div class="shutter-row" id="shutter-row">
+            <button class="timer-btn" id="btn-timer" title="倒數 5 秒拍照">5s</button>
+            <button class="shutter-ring" id="btn-capture" title="拍照"></button>
+        </div>
         <div class="action-row hidden" id="action-row">
             <button class="action-btn btn-retake" id="btn-retake">重拍</button>
             <button class="action-btn btn-download" id="btn-download">下載照片</button>
@@ -335,15 +400,20 @@
     const btnRetake = document.getElementById('btn-retake');
     const btnDownload = document.getElementById('btn-download');
     const btnSwitch = document.getElementById('btn-switch');
+    const btnTimer = document.getElementById('btn-timer');
     const startOverlay = document.getElementById('start-overlay');
     const topBar = document.getElementById('top-bar');
     const bottomUI = document.getElementById('bottom-ui');
     const hintText = document.getElementById('hint-text');
     const actionRow = document.getElementById('action-row');
+    const shutterRow = document.getElementById('shutter-row');
     const viewfinder = document.getElementById('viewfinder');
+    const countdownOverlay = document.getElementById('countdown-overlay');
+    const countdownNum = document.getElementById('countdown-num');
 
     let stream = null;
     let currentFacingMode = 'user';
+    let countdownTimer = null;
 
     // 動態調整 overlay canvas 尺寸以匹配容器實際像素
     function resizeOverlay() {
@@ -444,8 +514,8 @@
         await startCamera(newMode);
     });
 
-    // 拍照
-    btnCapture.addEventListener('click', () => {
+    // 共用拍照邏輯
+    function doCapture() {
         // 高解析度擷取 canvas（7:9 比例，至少 600x750）
         const CAPTURE_W = 1050;
         const CAPTURE_H = 1350;
@@ -454,29 +524,66 @@
         canvas.height = CAPTURE_H;
         const ctx = canvas.getContext('2d');
 
-        // 確保畫面按比例裁切填滿
-        const videoRatio = video.videoWidth / video.videoHeight;
-        const targetRatio = canvas.width / canvas.height;
-        let drawWidth = canvas.width;
-        let drawHeight = canvas.height;
-        let offsetX = 0;
-        let offsetY = 0;
+        // --- 計算 object-fit:cover 下 video 的顯示幾何 ---
+        const app = document.querySelector('.app');
+        const appRect = app.getBoundingClientRect();
+        const vfRect = viewfinder.getBoundingClientRect();
 
-        if (videoRatio > targetRatio) {
-            drawWidth = canvas.height * videoRatio;
-            offsetX = (canvas.width - drawWidth) / 2;
+        const vidW = video.videoWidth;   // 原始影片像素寬
+        const vidH = video.videoHeight;  // 原始影片像素高
+        const cw = appRect.width;        // 容器寬
+        const ch = appRect.height;       // 容器高
+
+        const videoRatio = vidW / vidH;
+        const containerRatio = cw / ch;
+
+        // object-fit:cover 的實際顯示尺寸與偏移量
+        let displayW, displayH, displayX, displayY;
+        if (videoRatio > containerRatio) {
+            // 影片較寬 → 高度填滿，左右被裁
+            displayH = ch;
+            displayW = ch * videoRatio;
+            displayX = (cw - displayW) / 2;
+            displayY = 0;
         } else {
-            drawHeight = canvas.width / videoRatio;
-            offsetY = (canvas.height - drawHeight) / 2;
+            // 影片較高 → 寬度填滿，上下被裁
+            displayW = cw;
+            displayH = cw / videoRatio;
+            displayX = 0;
+            displayY = (ch - displayH) / 2;
         }
 
-        // 前鏡頭需要鏡像反轉，後鏡頭不需要
+        // --- 取景框在容器內的位置 ---
+        const vfLeft   = vfRect.left - appRect.left;
+        const vfTop    = vfRect.top  - appRect.top;
+        const vfWidth  = vfRect.width;
+        const vfHeight = vfRect.height;
+
+        // --- 映射到原始影片座標 ---
+        let srcX, srcY, srcW, srcH;
+
+        srcY = ((vfTop - displayY) / displayH) * vidH;
+        srcH = (vfHeight / displayH) * vidH;
+        srcW = (vfWidth / displayW) * vidW;
+
         if (currentFacingMode === 'user') {
+            // CSS scaleX(-1) 鏡像：視覺 X 對應到原始影片的反向 X
+            srcX = ((cw - vfLeft - vfWidth - displayX) / displayW) * vidW;
+            // 輸出也做鏡像以符合使用者視覺
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
+        } else {
+            srcX = ((vfLeft - displayX) / displayW) * vidW;
         }
 
-        ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
+        // 安全夾緊，防止超出影片邊界
+        srcX = Math.max(0, srcX);
+        srcY = Math.max(0, srcY);
+        srcW = Math.min(srcW, vidW - srcX);
+        srcH = Math.min(srcH, vidH - srcY);
+
+        // 從原始影片裁切取景框範圍，繪製到輸出 canvas
+        ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, CAPTURE_W, CAPTURE_H);
 
         // 顯示結果（JPG 高品質，確保 >500KB）
         resultImage.src = canvas.toDataURL('image/jpeg', 0.95);
@@ -486,12 +593,48 @@
         overlay.style.display = 'none';
         video.style.opacity = '0';
         viewfinder.style.display = 'none';
+        countdownOverlay.classList.add('hidden');
 
         // 切換按鈕狀態
-        btnCapture.classList.add('hidden');
+        shutterRow.classList.add('hidden');
         btnSwitch.classList.add('hidden');
         actionRow.classList.remove('hidden');
         hintText.textContent = '預覽照片';
+    }
+
+    // 即時拍照
+    btnCapture.addEventListener('click', () => doCapture());
+
+    // 倒數 5 秒拍照
+    btnTimer.addEventListener('click', () => {
+        let remaining = 5;
+        // 禁用按鈕
+        btnCapture.disabled = true;
+        btnTimer.disabled = true;
+        btnSwitch.disabled = true;
+        countdownOverlay.classList.remove('hidden');
+        hintText.textContent = '準備拍攝…';
+
+        function tick() {
+            countdownNum.style.animation = 'none';
+            // force reflow to restart animation
+            void countdownNum.offsetWidth;
+            countdownNum.textContent = remaining;
+            countdownNum.style.animation = 'countPop 0.9s ease-out forwards';
+
+            if (remaining <= 0) {
+                clearInterval(countdownTimer);
+                btnCapture.disabled = false;
+                btnTimer.disabled = false;
+                btnSwitch.disabled = false;
+                doCapture();
+                return;
+            }
+            remaining--;
+        }
+
+        tick();
+        countdownTimer = setInterval(tick, 1000);
     });
 
     // 重拍
@@ -501,7 +644,7 @@
         video.style.opacity = '1';
         viewfinder.style.display = '';
 
-        btnCapture.classList.remove('hidden');
+        shutterRow.classList.remove('hidden');
         btnSwitch.classList.remove('hidden');
         actionRow.classList.add('hidden');
         hintText.textContent = '請將頭部與肩膀對準框線';
