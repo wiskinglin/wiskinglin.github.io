@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>兩吋證件照拍攝器</title>
+    <style>
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+        .camera-container {
+            position: relative;
+            /* 兩吋照片比例 3.5 : 4.5 (即 7:9) */
+            width: 350px; 
+            height: 450px;
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 20px;
+        }
+        video, img, canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #overlay {
+            z-index: 10;
+            pointer-events: none; /* 讓點擊事件穿透 */
+        }
+        #result-image {
+            z-index: 5;
+            display: none;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>兩吋證件照拍攝器</h2>
+
+    <div class="camera-container">
+        <video id="camera-stream" autoplay playsinline></video>
+        <img id="result-image" alt="拍攝結果">
+        <canvas id="overlay" width="350" height="450"></canvas>
+    </div>
+
+    <div class="controls">
+        <button id="btn-start">開啟相機</button>
+        <button id="btn-capture" disabled>拍照</button>
+        <button id="btn-retake" class="hidden">重拍</button>
+        <button id="btn-download" class="hidden">下載照片</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('camera-stream');
+        const overlay = document.getElementById('overlay');
+        const resultImage = document.getElementById('result-image');
+        const btnStart = document.getElementById('btn-start');
+        const btnCapture = document.getElementById('btn-capture');
+        const btnRetake = document.getElementById('btn-retake');
+        const btnDownload = document.getElementById('btn-download');
+
+        let stream = null;
+
+        // 繪製人像輔助線
+        function drawOverlay() {
+            const ctx = overlay.getContext('2d');
+            const width = overlay.width;
+            const height = overlay.height;
+
+            // 清空畫布
+            ctx.clearRect(0, 0, width, height);
+
+            // 畫半透明遮罩 (如果需要周圍變暗可以在這裡加)
+            
+            // 繪製頭部輪廓 (橢圓)
+            // 標準：頭部佔畫面高度約 71% ~ 80%
+            const headCenterY = height * 0.45;
+            const headRadiusX = width * 0.3;
+            const headRadiusY = height * 0.35;
+
+            ctx.beginPath();
+            ctx.ellipse(width / 2, headCenterY, headRadiusX, headRadiusY, 0, 0, 2 * Math.PI);
+            
+            // 繪製肩膀輪廓
+            ctx.moveTo(width / 2 - headRadiusX * 0.8, headCenterY + headRadiusY * 0.8);
+            ctx.quadraticCurveTo(width * 0.1, height * 0.85, 0, height);
+            ctx.lineTo(width, height);
+            ctx.quadraticCurveTo(width * 0.9, height * 0.85, width / 2 + headRadiusX * 0.8, headCenterY + headRadiusY * 0.8);
+
+            // 設定線條樣式
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)'; // 螢光綠色輔助線
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 5]); // 虛線
+            ctx.stroke();
+
+            // 加入文字提示
+            ctx.fillStyle = 'rgba(0, 255, 0, 0.8)';
+            ctx.font = '16px "PingFang TC", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('請將頭部與肩膀對準虛線', width / 2, 30);
+        }
+
+        // 初始化輔助線
+        drawOverlay();
+
+        // 開啟相機
+        btnStart.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' }, // 優先使用前鏡頭
+                    audio: false 
+                });
+                video.srcObject = stream;
+                btnStart.classList.add('hidden');
+                btnCapture.disabled = false;
+            } catch (err) {
+                alert('無法存取相機，請確認瀏覽器權限設定。');
+                console.error(err);
+            }
+        });
+
+        // 拍照
+        btnCapture.addEventListener('click', () => {
+            // 創建一個隱藏的 canvas 來擷取當下畫面
+            const canvas = document.createElement('canvas');
+            canvas.width = overlay.width;
+            canvas.height = overlay.height;
+            const ctx = canvas.getContext('2d');
+
+            // 確保畫面按比例裁切填滿
+            const videoRatio = video.videoWidth / video.videoHeight;
+            const targetRatio = canvas.width / canvas.height;
+            let drawWidth = canvas.width;
+            let drawHeight = canvas.height;
+            let offsetX = 0;
+            let offsetY = 0;
+
+            if (videoRatio > targetRatio) {
+                drawWidth = canvas.height * videoRatio;
+                offsetX = (canvas.width - drawWidth) / 2;
+            } else {
+                drawHeight = canvas.width / videoRatio;
+                offsetY = (canvas.height - drawHeight) / 2;
+            }
+
+            // 處理鏡像反轉 (因為前鏡頭通常是鏡像)
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+
+            ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
+
+            // 顯示結果
+            resultImage.src = canvas.toDataURL('image/png');
+            resultImage.style.display = 'block';
+            
+            // 隱藏輔助線與相機
+            overlay.style.display = 'none';
+            video.style.opacity = '0';
+
+            // 切換按鈕狀態
+            btnCapture.classList.add('hidden');
+            btnRetake.classList.remove('hidden');
+            btnDownload.classList.remove('hidden');
+        });
+
+        // 重拍
+        btnRetake.addEventListener('click', () => {
+            resultImage.style.display = 'none';
+            overlay.style.display = 'block';
+            video.style.opacity = '1';
+
+            btnCapture.classList.remove('hidden');
+            btnRetake.classList.add('hidden');
+            btnDownload.classList.add('hidden');
+        });
+
+        // 下載照片
+        btnDownload.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = '2inch_photo.png';
+            link.href = resultImage.src;
+            link.click();
+        });
+    </script>
+</body>
+</html>
