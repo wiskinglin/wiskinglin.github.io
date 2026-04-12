@@ -43,6 +43,8 @@
         .controls {
             display: flex;
             gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         button {
             padding: 10px 20px;
@@ -64,6 +66,31 @@
         .hidden {
             display: none !important;
         }
+        /* 切換鏡頭按鈕 */
+        #btn-switch {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 20;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        #btn-switch:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        /* 前鏡頭鏡像 */
+        video.mirror {
+            transform: scaleX(-1);
+        }
     </style>
 </head>
 <body>
@@ -74,6 +101,7 @@
         <video id="camera-stream" autoplay playsinline></video>
         <img id="result-image" alt="拍攝結果">
         <canvas id="overlay" width="350" height="450"></canvas>
+        <button id="btn-switch" class="hidden" title="切換鏡頭">🔄</button>
     </div>
 
     <div class="controls">
@@ -91,8 +119,10 @@
         const btnCapture = document.getElementById('btn-capture');
         const btnRetake = document.getElementById('btn-retake');
         const btnDownload = document.getElementById('btn-download');
+        const btnSwitch = document.getElementById('btn-switch');
 
         let stream = null;
+        let currentFacingMode = 'user'; // 'user' = 前鏡頭, 'environment' = 後鏡頭
 
         // 繪製人像輔助線
         function drawOverlay() {
@@ -136,20 +166,44 @@
         // 初始化輔助線
         drawOverlay();
 
-        // 開啟相機
-        btnStart.addEventListener('click', async () => {
+        // 啟動指定鏡頭
+        async function startCamera(facingMode) {
+            // 先停掉舊的 stream
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+            }
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: 'user' }, // 優先使用前鏡頭
-                    audio: false 
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: facingMode },
+                    audio: false
                 });
                 video.srcObject = stream;
-                btnStart.classList.add('hidden');
-                btnCapture.disabled = false;
+                currentFacingMode = facingMode;
+
+                // 前鏡頭鏡像預覽，後鏡頭正常
+                if (facingMode === 'user') {
+                    video.classList.add('mirror');
+                } else {
+                    video.classList.remove('mirror');
+                }
             } catch (err) {
                 alert('無法存取相機，請確認瀏覽器權限設定。');
                 console.error(err);
             }
+        }
+
+        // 開啟相機
+        btnStart.addEventListener('click', async () => {
+            await startCamera(currentFacingMode);
+            btnStart.classList.add('hidden');
+            btnCapture.disabled = false;
+            btnSwitch.classList.remove('hidden');
+        });
+
+        // 切換鏡頭
+        btnSwitch.addEventListener('click', async () => {
+            const newMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            await startCamera(newMode);
         });
 
         // 拍照
@@ -176,9 +230,11 @@
                 offsetY = (canvas.height - drawHeight) / 2;
             }
 
-            // 處理鏡像反轉 (因為前鏡頭通常是鏡像)
-            ctx.translate(canvas.width, 0);
-            ctx.scale(-1, 1);
+            // 前鏡頭需要鏡像反轉，後鏡頭不需要
+            if (currentFacingMode === 'user') {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
 
             ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
 
@@ -192,6 +248,7 @@
 
             // 切換按鈕狀態
             btnCapture.classList.add('hidden');
+            btnSwitch.classList.add('hidden');
             btnRetake.classList.remove('hidden');
             btnDownload.classList.remove('hidden');
         });
@@ -203,6 +260,7 @@
             video.style.opacity = '1';
 
             btnCapture.classList.remove('hidden');
+            btnSwitch.classList.remove('hidden');
             btnRetake.classList.add('hidden');
             btnDownload.classList.add('hidden');
         });
