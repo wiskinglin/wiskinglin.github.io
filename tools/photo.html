@@ -174,7 +174,11 @@
             }
             try {
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode },
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1920 }
+                    },
                     audio: false
                 });
                 video.srcObject = stream;
@@ -208,10 +212,12 @@
 
         // 拍照
         btnCapture.addEventListener('click', () => {
-            // 創建一個隱藏的 canvas 來擷取當下畫面
+            // 高解析度擷取 canvas（7:9 比例，至少 600x750）
+            const CAPTURE_W = 1050;
+            const CAPTURE_H = 1350;
             const canvas = document.createElement('canvas');
-            canvas.width = overlay.width;
-            canvas.height = overlay.height;
+            canvas.width = CAPTURE_W;
+            canvas.height = CAPTURE_H;
             const ctx = canvas.getContext('2d');
 
             // 確保畫面按比例裁切填滿
@@ -238,8 +244,8 @@
 
             ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
 
-            // 顯示結果
-            resultImage.src = canvas.toDataURL('image/png');
+            // 顯示結果（JPG 高品質，確保 >500KB）
+            resultImage.src = canvas.toDataURL('image/jpeg', 0.95);
             resultImage.style.display = 'block';
             
             // 隱藏輔助線與相機
@@ -268,7 +274,7 @@
         // 下載照片
         btnDownload.addEventListener('click', () => {
             const link = document.createElement('a');
-            link.download = '2inch_photo.png';
+            link.download = '2inch_photo.jpg';
             link.href = resultImage.src;
             link.click();
         });
