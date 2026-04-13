@@ -483,7 +483,7 @@
             <h1>🖼️ 本地端 AI 秒速去背神器</h1>
             <p>基於 RMBG-1.4 模型，所有運算皆在您的瀏覽器內完成，確保最高隱私且不消耗任何伺服器資源。</p>
             <div class="badge-row">
-                <span class="badge gpu" id="device-badge">⚡ 偵測硬體中...</span>
+                <span class="badge gpu" id="device-badge">⏳ 載入中...</span>
                 <span class="badge privacy">🔒 完全離線處理</span>
                 <span class="badge">📦 ~170MB 模型</span>
             </div>
@@ -589,33 +589,39 @@
             statusText.textContent = text;
         }
 
-        // ── 1. 載入模型 (WebGPU → WASM 降級，搭配完整錯誤處理) ──
+        // ── 1. 載入模型 (WASM，搭配下載進度與完整錯誤處理) ──
         async function loadModel() {
             progressTrack.classList.add('active');
+            progressFill.classList.remove('indeterminate');
+            progressFill.style.width = '0%';
+            deviceBadge.textContent = '🔧 CPU (WASM)';
+
+            // 進度回呼：顯示模型下載百分比
+            function progressCallback(progress) {
+                if (progress.status === 'download' || progress.status === 'progress') {
+                    const pct = Math.round(progress.progress || 0);
+                    progressFill.style.width = `${pct}%`;
+                    setStatus('loading', `模型下載中… ${pct}% (${progress.file || ''})`);
+                } else if (progress.status === 'init' || progress.status === 'ready') {
+                    progressFill.style.width = '100%';
+                    setStatus('loading', '模型初始化中…');
+                }
+            }
 
             try {
-                segmenter = await pipeline('image-segmentation', 'Xenova/rmbg-1.4', { device: 'webgpu' });
-                deviceBadge.textContent = '⚡ WebGPU 加速';
+                segmenter = await pipeline('image-segmentation', 'Xenova/rmbg-1.4', {
+                    progress_callback: progressCallback,
+                });
                 setStatus('success', '模型載入完成！請上傳圖片進行去背。');
-            } catch (gpuError) {
-                console.warn('WebGPU 不可用，嘗試 WASM 降級:', gpuError);
-                setStatus('warning', 'WebGPU 不可用，正在以 CPU 模式載入模型...');
-                deviceBadge.textContent = '🔧 CPU (WASM)';
+                deviceBadge.textContent = '✅ WASM 就緒';
+            } catch (error) {
+                console.error('模型載入失敗:', error);
+                setStatus('error', `模型載入失敗：${error.message || '請使用最新版 Chrome 或 Edge。'}`);
+                deviceBadge.textContent = '❌ 載入失敗';
                 deviceBadge.classList.remove('gpu');
-
-                try {
-                    segmenter = await pipeline('image-segmentation', 'Xenova/rmbg-1.4');
-                    setStatus('success', '模型載入完成 (WASM 模式)！請上傳圖片進行去背。');
-                } catch (wasmError) {
-                    console.error('WASM 也載入失敗:', wasmError);
-                    setStatus('error', '模型載入失敗：您的瀏覽器可能不支援此功能。請使用最新版 Chrome 或 Edge。');
-                    deviceBadge.textContent = '❌ 不支援';
-                    deviceBadge.classList.remove('gpu');
-                    return; // 中止，不允許後續操作
-                }
+                return;
             } finally {
                 progressTrack.classList.remove('active');
-                progressFill.classList.remove('indeterminate');
             }
 
             // 模型已就緒，若此時已有圖片則啟用按鈕
