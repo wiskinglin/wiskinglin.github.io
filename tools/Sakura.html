@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌸 Sakura Chat — P2P 私密聊天</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ── Variables & Reset ── */
+        :root {
+            --sakura-50: #FFF0F5;
+            --sakura-100: #FFE0EC;
+            --sakura-200: #FFB8D0;
+            --sakura-300: #FF8FB4;
+            --sakura-400: #FF6B9D;
+            --sakura-500: #FF4081;
+            --sakura-600: #E91E6C;
+            --sakura-700: #C2185B;
+            --sakura-800: #8E1248;
+            --sakura-grad: linear-gradient(135deg, #FF6B9D, #FF8FB4, #C2185B);
+            --sakura-grad-soft: linear-gradient(135deg, #FFB8D0, #FF8FB4);
+            --shadow-sm: 0 1px 4px rgba(194, 24, 91, 0.10);
+            --shadow-md: 0 4px 16px rgba(194, 24, 91, 0.12);
+            --shadow-lg: 0 8px 32px rgba(194, 24, 91, 0.18);
+            --radius: 18px;
+            --radius-sm: 12px;
+            --font: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font);
+            background: var(--sakura-50);
+            color: #3a2030;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ── Falling Sakura Petals ── */
+        #petals-container {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            top: -20px;
+            border-radius: 150% 0 150% 0;
+            background: linear-gradient(135deg, rgba(255, 183, 197, 0.7), rgba(255, 105, 157, 0.35));
+            animation: petalFall linear infinite;
+            filter: blur(0.5px);
+        }
+
+        @keyframes petalFall {
+            0% {
+                transform: translateY(-10vh) translateX(0) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+
+            8% {
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(50vh) translateX(60px) rotate(360deg) scale(0.9);
+            }
+
+            92% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateY(110vh) translateX(-30px) rotate(720deg) scale(0.7);
+                opacity: 0;
+            }
+        }
+
+        /* ── App Shell ── */
+        #app {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 0 40px rgba(194, 24, 91, 0.08);
+        }
+
+        @media (min-width: 521px) {
+            #app {
+                border-left: 1px solid var(--sakura-100);
+                border-right: 1px solid var(--sakura-100);
+            }
+        }
+
+        /* ── Header ── */
+        #header {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--sakura-grad);
+            color: #fff;
+            flex-shrink: 0;
+            gap: 10px;
+            box-shadow: 0 2px 12px rgba(194, 24, 91, 0.25);
+            position: relative;
+            z-index: 5;
+        }
+
+        #header .logo {
+            font-size: 26px;
+            line-height: 1;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+        }
+
+        #header .title-area {
+            flex: 1;
+        }
+
+        #header .title-area h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        #header .title-area .subtitle {
+            font-size: 11px;
+            opacity: 0.85;
+            font-weight: 300;
+        }
+
+        #header .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+
+        #header .status-dot.connected {
+            background: #76FF03;
+            box-shadow: 0 0 6px #76FF03;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                box-shadow: 0 0 4px #76FF03;
+            }
+
+            50% {
+                box-shadow: 0 0 12px #76FF03;
+            }
+        }
+
+        #connect-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1.5px solid rgba(255, 255, 255, 0.5);
+            color: #fff;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-family: var(--font);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        #connect-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        /* ── Chat Area ── */
+        #chat-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 16px 12px 8px;
+            background-color: var(--sakura-50);
+            background-image:
+                radial-gradient(circle at 15% 30%, rgba(255, 183, 208, 0.15) 0%, transparent 45%),
+                radial-gradient(circle at 85% 70%, rgba(255, 143, 180, 0.10) 0%, transparent 40%),
+                radial-gradient(circle at 50% 95%, rgba(255, 224, 236, 0.2) 0%, transparent 35%);
+            scroll-behavior: smooth;
+        }
+
+        #chat-area::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #chat-area::-webkit-scrollbar-thumb {
+            background: var(--sakura-200);
+            border-radius: 4px;
+        }
+
+        /* ── Messages ── */
+        .msg {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: flex-end;
+            gap: 6px;
+            animation: msgIn 0.3s ease-out;
+        }
+
+        .msg-sent {
+            justify-content: flex-end;
+        }
+
+        .msg-received {
+            justify-content: flex-start;
+        }
+
+        .msg-system {
+            justify-content: center;
+        }
+
+        .msg-system span {
+            background: rgba(194, 24, 91, 0.08);
+            color: var(--sakura-700);
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 400;
+        }
+
+        .msg-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--sakura-grad);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+            align-self: flex-start;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .msg-content {
+            display: flex;
+            flex-direction: column;
+            max-width: 72%;
+            min-width: 0;
+        }
+
+        .msg-name {
+            font-size: 11px;
+            color: var(--sakura-600);
+            margin-bottom: 2px;
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+        .bubble {
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            line-height: 1.55;
+            word-break: break-word;
+            white-space: pre-wrap;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .msg-sent .bubble {
+            background: var(--sakura-grad-soft);
+            color: #5a1035;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-received .bubble {
+            background: #fff;
+            color: #3a2030;
+            border: 1px solid var(--sakura-100);
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-time {
+            font-size: 10px;
+            color: #b0849a;
+            white-space: nowrap;
+            flex-shrink: 0;
+            align-self: flex-end;
+            margin-bottom: 2px;
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Emoji Picker ── */
+        #emoji-picker {
+            flex-shrink: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fff;
+            border-top: 1px solid var(--sakura-100);
+        }
+
+        #emoji-picker.open {
+            max-height: 260px;
+        }
+
+        .emoji-tabs {
+            display: flex;
+            padding: 6px 8px 0;
+            gap: 2px;
+            border-bottom: 1px solid var(--sakura-50);
+        }
+
+        .emoji-tab {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 6px 0;
+            font-size: 18px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .emoji-tab:hover {
+            background: var(--sakura-50);
+        }
+
+        .emoji-tab.active {
+            border-bottom-color: var(--sakura-400);
+            background: var(--sakura-50);
+        }
+
+        .emoji-grid-wrap {
+            height: 210px;
+            overflow-y: auto;
+            padding: 6px;
+        }
+
+        .emoji-grid-wrap::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .emoji-grid-wrap::-webkit-scrollbar-thumb {
+            background: var(--sakura-200);
+            border-radius: 3px;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+        }
+
+        .emoji-grid button {
+            background: none;
+            border: none;
+            font-size: 22px;
+            padding: 6px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.15s, transform 0.15s;
+            line-height: 1;
+        }
+
+        .emoji-grid button:hover {
+            background: var(--sakura-50);
+            transform: scale(1.2);
+        }
+
+        .emoji-grid button:active {
+            transform: scale(0.95);
+        }
+
+        /* ── Input Bar ── */
+        #input-bar {
+            display: flex;
+            align-items: flex-end;
+            padding: 8px 10px;
+            gap: 8px;
+            background: #fff;
+            border-top: 1px solid var(--sakura-100);
+            flex-shrink: 0;
+        }
+
+        #emoji-toggle {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        #emoji-toggle:hover {
+            background: var(--sakura-50);
+        }
+
+        #emoji-toggle.active {
+            background: var(--sakura-100);
+        }
+
+        #msg-input {
+            flex: 1;
+            border: 1.5px solid var(--sakura-200);
+            border-radius: 20px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-family: var(--font);
+            resize: none;
+            outline: none;
+            min-height: 40px;
+            max-height: 100px;
+            line-height: 1.4;
+            overflow-y: auto;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #msg-input:focus {
+            border-color: var(--sakura-400);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.12);
+        }
+
+        #msg-input::placeholder {
+            color: #caa0b5;
+        }
+
+        #send-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: var(--sakura-grad);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #send-btn:disabled {
+            background: var(--sakura-100);
+            color: #d4a0b8;
+            box-shadow: none;
+            cursor: default;
+        }
+
+        #send-btn:not(:disabled):hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+
+        #send-btn:not(:disabled):active {
+            transform: scale(0.95);
+        }
+
+        #send-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ── Connection Modal ── */
+        #modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(60, 15, 35, 0.45);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: opacity 0.35s ease;
+        }
+
+        #modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #modal {
+            background: #fff;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg), 0 0 60px rgba(255, 107, 157, 0.15);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            scrollbar-width: thin;
+            scrollbar-color: var(--sakura-200) transparent;
+        }
+
+        #modal::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #modal::-webkit-scrollbar-thumb {
+            background: var(--sakura-200);
+            border-radius: 4px;
+        }
+
+        #modal-overlay.hidden #modal {
+            transform: translateY(30px) scale(0.95);
+        }
+
+        .modal-header {
+            text-align: center;
+            padding: 30px 24px 10px;
+        }
+
+        .modal-header .icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 2px 4px rgba(194, 24, 91, 0.2));
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--sakura-grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-header p {
+            font-size: 13px;
+            color: #b0849a;
+            margin-top: 4px;
+        }
+
+        .modal-body {
+            padding: 16px 24px 28px;
+        }
+
+        .modal-body label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--sakura-700);
+            margin-bottom: 6px;
+        }
+
+        .modal-body input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--sakura-200);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: var(--font);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-body input[type="text"]:focus {
+            border-color: var(--sakura-400);
+            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.12);
+        }
+
+        .modal-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .choice-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            border: 1.5px solid var(--sakura-100);
+            border-radius: var(--radius);
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font);
+            text-align: left;
+        }
+
+        .choice-btn:hover {
+            border-color: var(--sakura-300);
+            background: var(--sakura-50);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .choice-btn .choice-icon {
+            font-size: 28px;
+        }
+
+        .choice-btn .choice-text h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--sakura-800);
+        }
+
+        .choice-btn .choice-text p {
+            font-size: 12px;
+            color: #b0849a;
+            margin-top: 2px;
+        }
+
+        /* Modal steps view */
+        .modal-steps {
+            display: none;
+        }
+
+        .modal-steps.active {
+            display: block;
+        }
+
+        .step-back {
+            background: none;
+            border: none;
+            font-size: 14px;
+            color: var(--sakura-500);
+            cursor: pointer;
+            padding: 4px 0;
+            font-family: var(--font);
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .step-back:hover {
+            color: var(--sakura-700);
+        }
+
+        .step-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--sakura-800);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--sakura-600);
+            margin-bottom: 8px;
+        }
+
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--sakura-grad);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .sdp-box {
+            width: 100%;
+            height: 80px;
+            border: 1.5px solid var(--sakura-200);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            font-size: 11px;
+            font-family: monospace;
+            resize: none;
+            outline: none;
+            background: var(--sakura-50);
+            color: #6a3050;
+            transition: border-color 0.2s;
+        }
+
+        .sdp-box:focus {
+            border-color: var(--sakura-400);
+        }
+
+        .sdp-box[readonly] {
+            cursor: default;
+            background: var(--sakura-50);
+        }
+
+        .step-action {
+            margin-top: 8px;
+            margin-bottom: 18px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: var(--sakura-grad);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: default;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .step-hint {
+            font-size: 11px;
+            color: #b0849a;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .step-divider {
+            height: 1px;
+            background: var(--sakura-100);
+            margin: 4px 0;
+        }
+
+        .waiting-text {
+            text-align: center;
+            color: var(--sakura-500);
+            font-size: 13px;
+            padding: 8px 0;
+            animation: pulse-text 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-text {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ── Toast ── */
+        #toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            z-index: 200;
+            background: rgba(60, 15, 35, 0.88);
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-family: var(--font);
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ── Welcome overlay ── */
+        .welcome-msg {
+            text-align: center;
+            padding: 40px 20px;
+            color: #c0a0b0;
+        }
+
+        .welcome-msg .welcome-icon {
+            font-size: 56px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .welcome-msg h3 {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--sakura-600);
+            margin-bottom: 6px;
+        }
+
+        .welcome-msg p {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Falling Sakura Petals -->
+    <div id="petals-container"></div>
+
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+
+    <!-- App Shell -->
+    <div id="app">
+        <!-- Header -->
+        <header id="header">
+            <span class="logo">🌸</span>
+            <div class="title-area">
+                <h1>Sakura Chat</h1>
+                <div class="subtitle" id="header-subtitle">P2P 端對端私密聊天</div>
+            </div>
+            <div class="status-dot" id="status-dot" title="連線狀態"></div>
+            <button id="connect-btn" onclick="openModal()">🔗 連線</button>
+        </header>
+
+        <!-- Chat Messages -->
+        <div id="chat-area">
+            <div class="welcome-msg" id="welcome">
+                <span class="welcome-icon">🌸</span>
+                <h3>歡迎來到 Sakura Chat</h3>
+                <p>這是端對端加密的 P2P 聊天室<br>點擊右上角「🔗 連線」開始</p>
+            </div>
+        </div>
+
+        <!-- Emoji Picker -->
+        <div id="emoji-picker">
+            <div class="emoji-tabs" id="emoji-tabs"></div>
+            <div class="emoji-grid-wrap">
+                <div class="emoji-grid" id="emoji-grid"></div>
+            </div>
+        </div>
+
+        <!-- Input Bar -->
+        <footer id="input-bar">
+            <button id="emoji-toggle" title="Emoji" onclick="toggleEmoji()">😊</button>
+            <textarea id="msg-input" rows="1" placeholder="輸入訊息..."></textarea>
+            <button id="send-btn" disabled onclick="sendMessage()" title="送出">
+                <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor" />
+                </svg>
+            </button>
+        </footer>
+    </div>
+
+    <!-- Connection Modal -->
+    <div id="modal-overlay" class="hidden">
+        <div id="modal">
+            <!-- Initial View -->
+            <div id="modal-initial">
+                <div class="modal-header">
+                    <span class="icon">🌸</span>
+                    <h2>建立 P2P 連線</h2>
+                    <p>無需伺服器，直接端對端加密聊天</p>
+                </div>
+                <div class="modal-body">
+                    <label for="nickname-input">你的暱稱</label>
+                    <input type="text" id="nickname-input" placeholder="輸入暱稱..." maxlength="20">
+                    <div class="modal-choices">
+                        <button class="choice-btn" onclick="startCreate()">
+                            <span class="choice-icon">🏠</span>
+                            <div class="choice-text">
+                                <h3>建立房間</h3>
+                                <p>產生邀請碼，邀請朋友加入</p>
+                            </div>
+                        </button>
+                        <button class="choice-btn" onclick="startJoin()">
+                            <span class="choice-icon">🚪</span>
+                            <div class="choice-text">
+                                <h3>加入房間</h3>
+                                <p>輸入朋友傳來的邀請碼</p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Room Steps -->
+            <div id="modal-create" class="modal-steps">
+                <div class="modal-body">
+                    <button class="step-back" onclick="backToInitial()">← 返回</button>
+                    <div class="step-title">🏠 建立房間</div>
+
+                    <div class="step-label"><span class="step-num">1</span> 複製邀請碼傳給對方</div>
+                    <textarea class="sdp-box" id="create-sdp-out" readonly placeholder="產生中..."></textarea>
+                    <div class="step-action">
+                        <button class="btn-primary" id="create-copy-btn" disabled onclick="copyField('create-sdp-out', '邀請碼已複製！')">
+                            📋 複製邀請碼
+                        </button>
+                    </div>
+                    <p class="step-hint">📱 透過 LINE、Email 或任何方式傳給對方</p>
+
+                    <div class="step-divider"></div>
+
+                    <div class="step-label"><span class="step-num">2</span> 貼上對方的回覆碼</div>
+                    <textarea class="sdp-box" id="create-sdp-in" placeholder="在此貼上對方傳來的回覆碼..."></textarea>
+                    <div class="step-action">
+                        <button class="btn-primary" id="create-connect-btn" onclick="applyAnswer()">
+                            🔗 建立連線
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Join Room Steps -->
+            <div id="modal-join" class="modal-steps">
+                <div class="modal-body">
+                    <button class="step-back" onclick="backToInitial()">← 返回</button>
+                    <div class="step-title">🚪 加入房間</div>
+
+                    <div class="step-label"><span class="step-num">1</span> 貼上收到的邀請碼</div>
+                    <textarea class="sdp-box" id="join-sdp-in" placeholder="在此貼上收到的邀請碼..."></textarea>
+                    <div class="step-action">
+                        <button class="btn-primary" id="join-confirm-btn" onclick="joinRoom()">
+                            🌸 確認加入
+                        </button>
+                    </div>
+
+                    <div id="join-step2" style="display:none">
+                        <div class="step-divider"></div>
+                        <div class="step-label"><span class="step-num">2</span> 複製回覆碼傳回給對方</div>
+                        <textarea class="sdp-box" id="join-sdp-out" readonly></textarea>
+                        <div class="step-action">
+                            <button class="btn-primary" onclick="copyField('join-sdp-out', '回覆碼已複製！')">
+                                📋 複製回覆碼
+                            </button>
+                        </div>
+                        <p class="step-hint">📱 將回覆碼傳回給對方即可完成連線</p>
+                        <div class="waiting-text">⏳ 等待對方連線中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── State ───
+        let nickname = '';
+        let peerName = '對方';
+        let dataChannel = null;
+        let db = null;
+        let emojiOpen = false;
+        let isConnected = false;
+
+        // ─── WebRTC Setup ───
+        const pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        });
+
+        function waitForICE() {
+            return new Promise(resolve => {
+                if (pc.iceGatheringState === 'complete') { resolve(); return; }
+                const timer = setTimeout(resolve, 4000);
+                pc.addEventListener('icegatheringstatechange', function handler() {
+                    if (pc.iceGatheringState === 'complete') {
+                        clearTimeout(timer);
+                        pc.removeEventListener('icegatheringstatechange', handler);
+                        resolve();
+                    }
+                });
+            });
+        }
+
+        function setupDataChannel(channel) {
+            dataChannel = channel;
+            channel.onopen = () => {
+                isConnected = true;
+                updateConnectionUI(true);
+                // Send nickname handshake
+                channel.send(JSON.stringify({ type: 'nickname', name: nickname }));
+                closeModal();
+                appendSystemMsg('🌸 已建立 P2P 連線！開始聊天吧～');
+            };
+            channel.onclose = () => {
+                isConnected = false;
+                updateConnectionUI(false);
+                appendSystemMsg('⚠️ 連線已斷開');
+            };
+            channel.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'nickname') {
+                        peerName = data.name || '對方';
+                        document.getElementById('header-subtitle').textContent = `與 ${peerName} 聊天中`;
+                        return;
+                    }
+                    if (data.type === 'msg') {
+                        appendMessage(data.text, 'peer', new Date(data.time), peerName);
+                        return;
+                    }
+                } catch { }
+                // Fallback for plain text
+                appendMessage(e.data, 'peer', new Date(), peerName);
+            };
+        }
+
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+                isConnected = false;
+                updateConnectionUI(false);
+            }
+        };
+
+        // ─── Connection Modal Logic ───
+        function openModal() {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
+
+        function backToInitial() {
+            document.getElementById('modal-initial').style.display = '';
+            document.getElementById('modal-create').classList.remove('active');
+            document.getElementById('modal-join').classList.remove('active');
+        }
+
+        function ensureNickname() {
+            const input = document.getElementById('nickname-input');
+            nickname = input.value.trim() || '櫻花使用者';
+            input.value = nickname;
+        }
+
+        async function startCreate() {
+            ensureNickname();
+            document.getElementById('modal-initial').style.display = 'none';
+            document.getElementById('modal-create').classList.add('active');
+            const outBox = document.getElementById('create-sdp-out');
+            const copyBtn = document.getElementById('create-copy-btn');
+            outBox.value = '';
+            copyBtn.disabled = true;
+            copyBtn.innerHTML = '<span class="spinner"></span> 產生中...';
+
+            try {
+                dataChannel = pc.createDataChannel('sakura-chat');
+                setupDataChannel(dataChannel);
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                await waitForICE();
+                const sdp = JSON.stringify(pc.localDescription);
+                outBox.value = sdp;
+                copyBtn.disabled = false;
+                copyBtn.innerHTML = '📋 複製邀請碼';
+                // Auto copy
+                await navigator.clipboard.writeText(sdp).catch(() => { });
+                showToast('✅ 邀請碼已自動複製到剪貼簿！');
+            } catch (err) {
+                outBox.value = '❌ 產生失敗：' + err.message;
+                copyBtn.innerHTML = '📋 複製邀請碼';
+                copyBtn.disabled = true;
+            }
+        }
+
+        function startJoin() {
+            ensureNickname();
+            document.getElementById('modal-initial').style.display = 'none';
+            document.getElementById('modal-join').classList.add('active');
+            document.getElementById('join-step2').style.display = 'none';
+        }
+
+        async function joinRoom() {
+            const inBox = document.getElementById('join-sdp-in');
+            const btn = document.getElementById('join-confirm-btn');
+            if (!inBox.value.trim()) { showToast('請先貼上邀請碼'); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> 處理中...';
+
+            try {
+                pc.ondatachannel = (e) => setupDataChannel(e.channel);
+                const offer = JSON.parse(inBox.value.trim());
+                await pc.setRemoteDescription(offer);
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                await waitForICE();
+                const sdp = JSON.stringify(pc.localDescription);
+                document.getElementById('join-sdp-out').value = sdp;
+                document.getElementById('join-step2').style.display = '';
+                btn.innerHTML = '✅ 已加入';
+                // Auto copy answer
+                await navigator.clipboard.writeText(sdp).catch(() => { });
+                showToast('✅ 回覆碼已自動複製！請傳回給對方');
+            } catch (err) {
+                showToast('❌ 邀請碼格式錯誤');
+                btn.disabled = false;
+                btn.innerHTML = '🌸 確認加入';
+            }
+        }
+
+        async function applyAnswer() {
+            const inBox = document.getElementById('create-sdp-in');
+            const btn = document.getElementById('create-connect-btn');
+            if (!inBox.value.trim()) { showToast('請先貼上回覆碼'); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> 連線中...';
+
+            try {
+                const answer = JSON.parse(inBox.value.trim());
+                await pc.setRemoteDescription(answer);
+                showToast('🔗 正在建立連線...');
+            } catch (err) {
+                showToast('❌ 回覆碼格式錯誤');
+                btn.disabled = false;
+                btn.innerHTML = '🔗 建立連線';
+            }
+        }
+
+        function updateConnectionUI(connected) {
+            const dot = document.getElementById('status-dot');
+            const btn = document.getElementById('connect-btn');
+            const sendBtn = document.getElementById('send-btn');
+            if (connected) {
+                dot.classList.add('connected');
+                btn.textContent = '✅ 已連線';
+                btn.onclick = null;
+                sendBtn.disabled = false;
+            } else {
+                dot.classList.remove('connected');
+                btn.textContent = '🔗 連線';
+                btn.onclick = openModal;
+                sendBtn.disabled = true;
+                document.getElementById('header-subtitle').textContent = 'P2P 端對端私密聊天';
+            }
+        }
+
+        async function copyField(id, message) {
+            const text = document.getElementById(id).value;
+            if (!text) return;
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast(message);
+            } catch {
+                // Fallback: select the text
+                const el = document.getElementById(id);
+                el.select();
+                document.execCommand('copy');
+                showToast(message);
+            }
+        }
+
+        // ─── Chat Functions ───
+        function formatTime(date) {
+            const h = date.getHours();
+            const m = String(date.getMinutes()).padStart(2, '0');
+            const period = h >= 12 ? '下午' : '上午';
+            const h12 = h % 12 || 12;
+            return `${period} ${h12}:${m}`;
+        }
+
+        function appendMessage(text, type, time, name, save = true) {
+            const area = document.getElementById('chat-area');
+            const welcome = document.getElementById('welcome');
+            if (welcome) welcome.remove();
+
+            const div = document.createElement('div');
+            div.className = `msg msg-${type === 'self' ? 'sent' : 'received'}`;
+            const timeStr = formatTime(time || new Date());
+
+            if (type === 'self') {
+                div.innerHTML = `
+                    <span class="msg-time">${timeStr}</span>
+                    <div class="bubble">${escapeHTML(text)}</div>`;
+            } else {
+                const initial = (name || peerName || '?').charAt(0);
+                div.innerHTML = `
+                    <div class="msg-avatar">${initial}</div>
+                    <div class="msg-content">
+                        <div class="msg-name">${escapeHTML(name || peerName)}</div>
+                        <div class="bubble">${escapeHTML(text)}</div>
+                    </div>
+                    <span class="msg-time">${timeStr}</span>`;
+            }
+
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
+
+            if (save) saveToDB({ type, text, time: (time || new Date()).getTime(), name: name || '' });
+        }
+
+        function appendSystemMsg(text, save = true) {
+            const area = document.getElementById('chat-area');
+            const welcome = document.getElementById('welcome');
+            if (welcome) welcome.remove();
+
+            const div = document.createElement('div');
+            div.className = 'msg msg-system';
+            div.innerHTML = `<span>${text}</span>`;
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
+
+            if (save) saveToDB({ type: 'system', text, time: Date.now(), name: '' });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if (!text || !dataChannel || dataChannel.readyState !== 'open') return;
+
+            const now = new Date();
+            appendMessage(text, 'self', now);
+            dataChannel.send(JSON.stringify({ type: 'msg', text, time: now.getTime() }));
+            input.value = '';
+            input.style.height = 'auto';
+            updateSendBtn();
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // ─── Input Handling ───
+        const msgInput = document.getElementById('msg-input');
+
+        msgInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        msgInput.addEventListener('input', () => {
+            msgInput.style.height = 'auto';
+            msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
+            updateSendBtn();
+        });
+
+        function updateSendBtn() {
+            const btn = document.getElementById('send-btn');
+            btn.disabled = !msgInput.value.trim() || !isConnected;
+        }
+
+        // ─── Emoji Picker ───
+        const emojiData = {
+            '😊': ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤗', '🤭', '🤫', '🤔', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '😌', '😔', '😪', '😴', '🥱', '😵', '🤯', '🥳', '😎', '🤓', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😢', '😭', '😱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️'],
+            '👋': ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '👀', '👅', '👄', '💋', '🫶'],
+            '❤️': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥️'],
+            '🌸': ['🌸', '🌺', '🌹', '🌷', '🌻', '🌼', '💐', '🍀', '🍁', '🍂', '🌿', '🌱', '🌲', '🌳', '🌴', '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🦋', '🐝', '🐌', '🐞', '🐬', '🐳'],
+            '🍔': ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🥭', '🍍', '🍞', '🧀', '🥚', '🍳', '🌭', '🍔', '🍟', '🍕', '🍝', '🍜', '🍣', '🍱', '🥟', '🍡', '🍧', '🍨', '🍦', '🧁', '🍰', '🎂', '🍭', '🍬', '🍫', '🍩', '🍪', '☕', '🍵', '🧋', '🍺', '🥂', '🍷'],
+            '🎉': ['⚽', '🏀', '🎾', '🏐', '🎱', '🏓', '⛳', '🎯', '🎳', '🎮', '🧩', '🏆', '🥇', '🎪', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎸', '🎻', '🎆', '🎇', '🎉', '🎊', '🎈', '🎁', '🎀']
+        };
+
+        const emojiCategories = Object.keys(emojiData);
+        let activeEmojiCat = emojiCategories[0];
+
+        function initEmojiPicker() {
+            const tabs = document.getElementById('emoji-tabs');
+            emojiCategories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'emoji-tab' + (cat === activeEmojiCat ? ' active' : '');
+                btn.textContent = cat;
+                btn.onclick = () => switchEmojiCategory(cat);
+                tabs.appendChild(btn);
+            });
+            renderEmojiGrid(activeEmojiCat);
+        }
+
+        function switchEmojiCategory(cat) {
+            activeEmojiCat = cat;
+            document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.emoji-tab').forEach(t => {
+                if (t.textContent === cat) t.classList.add('active');
+            });
+            renderEmojiGrid(cat);
+        }
+
+        function renderEmojiGrid(cat) {
+            const grid = document.getElementById('emoji-grid');
+            grid.innerHTML = '';
+            emojiData[cat].forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.textContent = emoji;
+                btn.onclick = () => insertEmoji(emoji);
+                grid.appendChild(btn);
+            });
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('msg-input');
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            input.value = input.value.substring(0, start) + emoji + input.value.substring(end);
+            input.selectionStart = input.selectionEnd = start + emoji.length;
+            input.focus();
+            updateSendBtn();
+        }
+
+        function toggleEmoji() {
+            const picker = document.getElementById('emoji-picker');
+            const btn = document.getElementById('emoji-toggle');
+            emojiOpen = !emojiOpen;
+            picker.classList.toggle('open', emojiOpen);
+            btn.classList.toggle('active', emojiOpen);
+        }
+
+        // ─── IndexedDB ───
+        function initDB() {
+            return new Promise((resolve) => {
+                const req = indexedDB.open('SakuraChatDB', 1);
+                req.onupgradeneeded = (e) => {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains('messages')) {
+                        const store = d.createObjectStore('messages', { autoIncrement: true });
+                        store.createIndex('time', 'time');
+                    }
+                };
+                req.onsuccess = (e) => { db = e.target.result; resolve(); };
+                req.onerror = () => resolve();
+            });
+        }
+
+        function saveToDB(record) {
+            if (!db) return;
+            try {
+                const tx = db.transaction('messages', 'readwrite');
+                tx.objectStore('messages').add(record);
+            } catch { }
+        }
+
+        async function loadChatHistory() {
+            if (!db) return;
+            return new Promise(resolve => {
+                const tx = db.transaction('messages', 'readonly');
+                const store = tx.objectStore('messages');
+                const req = store.getAll();
+                req.onsuccess = () => {
+                    const msgs = req.result || [];
+                    // Load last 100 messages
+                    const recent = msgs.slice(-100);
+                    if (recent.length > 0) {
+                        const welcome = document.getElementById('welcome');
+                        if (welcome) welcome.remove();
+                        appendSystemMsg('── 歷史訊息 ──', false);
+                    }
+                    recent.forEach(m => {
+                        if (m.type === 'system') {
+                            appendSystemMsg(m.text, false);
+                        } else {
+                            appendMessage(m.text, m.type, new Date(m.time), m.name, false);
+                        }
+                    });
+                    resolve();
+                };
+                req.onerror = () => resolve();
+            });
+        }
+
+        // ─── Toast ───
+        let toastTimer;
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            clearTimeout(toastTimer);
+            el.textContent = msg;
+            el.classList.add('show');
+            toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+        }
+
+        // ─── Sakura Petals ───
+        function createPetals() {
+            const container = document.getElementById('petals-container');
+            for (let i = 0; i < 18; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                const size = 7 + Math.random() * 9;
+                petal.style.width = size + 'px';
+                petal.style.height = size + 'px';
+                petal.style.left = Math.random() * 100 + '%';
+                petal.style.animationDuration = (12 + Math.random() * 14) + 's';
+                petal.style.animationDelay = Math.random() * 16 + 's';
+                petal.style.opacity = 0.25 + Math.random() * 0.35;
+                container.appendChild(petal);
+            }
+        }
+
+        // ─── Visual Viewport (mobile keyboard) ───
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                document.getElementById('app').style.height = window.visualViewport.height + 'px';
+            });
+        }
+
+        // ─── Init ───
+        (async function init() {
+            createPetals();
+            initEmojiPicker();
+            await initDB();
+            await loadChatHistory();
+        })();
+    </script>
+</body>
+
+</html>
