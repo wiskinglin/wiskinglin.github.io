@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>本地端 AI 秒速去背神器</title>
+    <meta name="description" content="基於 RMBG-1.4 模型的本地端 AI 去背工具，所有運算在瀏覽器內完成，零伺服器、最高隱私。">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -121,11 +122,17 @@
             border: 1px solid var(--border-subtle);
             background: var(--bg-card);
             color: var(--text-secondary);
+            transition: var(--transition);
         }
 
         .badge.gpu {
             border-color: rgba(52, 211, 153, 0.3);
             color: var(--success);
+        }
+
+        .badge.webgpu {
+            border-color: rgba(139, 92, 246, 0.3);
+            color: #8b5cf6;
         }
 
         .badge.privacy {
@@ -259,6 +266,13 @@
             margin-bottom: 12px;
             display: block;
             filter: grayscale(0.3);
+            transition: var(--transition);
+        }
+
+        .upload-area:hover .upload-icon,
+        .upload-area.drag-over .upload-icon {
+            filter: grayscale(0);
+            transform: scale(1.1);
         }
 
         .upload-area .main-text {
@@ -285,6 +299,32 @@
             font-family: inherit;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        /* Image info chip */
+        .image-info {
+            display: none;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .image-info.visible {
+            display: flex;
+        }
+
+        .info-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
             color: var(--text-secondary);
         }
 
@@ -324,6 +364,10 @@
             box-shadow: 0 8px 30px var(--accent-glow);
         }
 
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
         .btn-primary:disabled {
             opacity: 0.35;
             cursor: not-allowed;
@@ -343,9 +387,25 @@
             transform: translateY(-2px);
         }
 
+        .btn-secondary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
         .btn-secondary:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: var(--bg-card);
+            color: var(--danger);
+            border: 1px solid rgba(248, 113, 113, 0.2);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            border-color: rgba(248, 113, 113, 0.5);
+            background: var(--danger-bg);
+            transform: translateY(-2px);
         }
 
         /* Preview Container */
@@ -362,6 +422,11 @@
             border-radius: var(--radius);
             overflow: hidden;
             backdrop-filter: blur(12px);
+            transition: border-color var(--transition);
+        }
+
+        .image-box:hover {
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .image-box-header {
@@ -372,7 +437,20 @@
             border-bottom: 1px solid var(--border-subtle);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 6px;
+        }
+
+        .image-box-header .timer {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--accent);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .image-box-header .timer.visible {
+            opacity: 1;
         }
 
         .image-box-body {
@@ -381,6 +459,7 @@
             align-items: center;
             justify-content: center;
             min-height: 180px;
+            position: relative;
         }
 
         .image-box-body .placeholder {
@@ -436,6 +515,107 @@
             border-width: 3px;
         }
 
+        .processing-overlay .timer-live {
+            font-size: 11px;
+            font-variant-numeric: tabular-nums;
+            color: var(--text-secondary);
+        }
+
+        /* Comparison Slider */
+        .comparison-wrapper {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .comparison-wrapper.visible {
+            display: block;
+        }
+
+        .comparison-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .comparison-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-subtle);
+            background: var(--bg-card);
+            cursor: ew-resize;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .comparison-container img,
+        .comparison-container canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .comparison-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+        }
+
+        .comparison-overlay canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .comparison-divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #fff;
+            cursor: ew-resize;
+            z-index: 5;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .comparison-divider::after {
+            content: '⟨⟩';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--bg-primary);
+            font-weight: 700;
+            letter-spacing: -2px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .comparison-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
         /* Footer */
         .footer {
             margin-top: 24px;
@@ -443,6 +623,26 @@
             font-size: 12px;
             color: var(--text-secondary);
             opacity: 0.5;
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        /* Pulse animation for success */
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+            50% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.1); }
+        }
+
+        .status-box.success {
+            animation: pulse 2s ease-in-out;
         }
 
         /* RWD */
@@ -471,6 +671,15 @@
             .btn {
                 justify-content: center;
             }
+
+            .image-info {
+                gap: 8px;
+            }
+
+            .info-chip {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
         }
     </style>
 </head>
@@ -485,14 +694,14 @@
             <div class="badge-row">
                 <span class="badge gpu" id="device-badge">⏳ 載入中...</span>
                 <span class="badge privacy">🔒 完全離線處理</span>
-                <span class="badge">📦 ~170MB 模型</span>
+                <span class="badge">📦 ~176MB 模型</span>
             </div>
         </div>
 
         <!-- Status -->
         <div id="status" class="status-box loading">
             <div class="spinner"></div>
-            <span id="status-text">模型載入中，首次載入約需下載 170MB，之後將自動快取...</span>
+            <span id="status-text">模型載入中，首次載入約需下載 176MB，之後將自動快取...</span>
         </div>
         <div class="progress-track" id="progress-track">
             <div class="progress-fill indeterminate" id="progress-fill"></div>
@@ -501,9 +710,16 @@
         <!-- Upload Area -->
         <div class="upload-area" id="upload-box">
             <span class="upload-icon">📁</span>
-            <p class="main-text">點擊、拖曳圖片或直接貼上</p>
+            <p class="main-text" id="upload-main-text">點擊、拖曳圖片或直接貼上</p>
             <p class="sub-text">支援 JPG / PNG / WEBP｜也可以 <kbd>Ctrl</kbd>+<kbd>V</kbd> 貼上螢幕截圖</p>
             <input type="file" id="file-input" accept="image/*" style="display: none;">
+        </div>
+
+        <!-- Image Info -->
+        <div class="image-info" id="image-info">
+            <span class="info-chip" id="info-name">📄 —</span>
+            <span class="info-chip" id="info-size">💾 —</span>
+            <span class="info-chip" id="info-dims">📐 —</span>
         </div>
 
         <!-- Action Buttons -->
@@ -515,6 +731,10 @@
             <button id="download-btn" class="btn btn-secondary" disabled>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 下載去背結果
+            </button>
+            <button id="clear-btn" class="btn btn-danger" disabled style="display:none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                清除
             </button>
         </div>
 
@@ -528,7 +748,10 @@
                 </div>
             </div>
             <div class="image-box" style="position: relative;">
-                <div class="image-box-header">✨ 去背結果</div>
+                <div class="image-box-header">
+                    <span>✨ 去背結果</span>
+                    <span class="timer" id="process-timer"></span>
+                </div>
                 <div class="image-box-body checkerboard" id="result-box">
                     <p class="placeholder" id="result-placeholder">等待處理</p>
                     <canvas id="result-canvas" style="display: none;"></canvas>
@@ -537,7 +760,24 @@
                 <div class="processing-overlay" id="processing-overlay">
                     <div class="spinner"></div>
                     <span>AI 正在萃取主體...</span>
+                    <span class="timer-live" id="timer-live">0.0s</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Comparison Slider -->
+        <div class="comparison-wrapper" id="comparison-wrapper">
+            <div class="comparison-header">🔍 Before / After 比較</div>
+            <div class="comparison-container" id="comparison-container">
+                <img id="comparison-original" alt="原始" style="display:block;width:100%;">
+                <div class="comparison-overlay" id="comparison-overlay">
+                    <canvas id="comparison-result"></canvas>
+                </div>
+                <div class="comparison-divider" id="comparison-divider"></div>
+            </div>
+            <div class="comparison-labels">
+                <span>◀ 原始圖片</span>
+                <span>去背結果 ▶</span>
             </div>
         </div>
 
@@ -547,7 +787,7 @@
     </div>
 
     <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
 
         env.allowLocalModels = false;
 
@@ -556,6 +796,8 @@
         let currentImageURL = null;   // Blob URL (需手動 revoke)
         let currentFile = null;       // 保留 File 物件供 pipeline 使用
         let hasResult = false;
+        let isProcessing = false;
+        let timerInterval = null;
 
         // ── DOM References ──
         const statusEl = document.getElementById('status');
@@ -565,13 +807,27 @@
         const deviceBadge = document.getElementById('device-badge');
         const fileInput = document.getElementById('file-input');
         const uploadBox = document.getElementById('upload-box');
+        const uploadMainText = document.getElementById('upload-main-text');
         const processBtn = document.getElementById('process-btn');
         const downloadBtn = document.getElementById('download-btn');
+        const clearBtn = document.getElementById('clear-btn');
         const originalImg = document.getElementById('original-img');
         const originalPlaceholder = document.getElementById('original-placeholder');
         const resultCanvas = document.getElementById('result-canvas');
         const resultPlaceholder = document.getElementById('result-placeholder');
         const processingOverlay = document.getElementById('processing-overlay');
+        const processTimer = document.getElementById('process-timer');
+        const timerLive = document.getElementById('timer-live');
+        const imageInfoEl = document.getElementById('image-info');
+        const infoName = document.getElementById('info-name');
+        const infoSize = document.getElementById('info-size');
+        const infoDims = document.getElementById('info-dims');
+        const comparisonWrapper = document.getElementById('comparison-wrapper');
+        const comparisonContainer = document.getElementById('comparison-container');
+        const comparisonOriginal = document.getElementById('comparison-original');
+        const comparisonResult = document.getElementById('comparison-result');
+        const comparisonOverlay = document.getElementById('comparison-overlay');
+        const comparisonDivider = document.getElementById('comparison-divider');
         const ctx = resultCanvas.getContext('2d');
 
         // ── Helpers ──
@@ -589,12 +845,56 @@
             statusText.textContent = text;
         }
 
-        // ── 1. 載入模型 (WASM，搭配下載進度與完整錯誤處理) ──
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function startTimer() {
+            const startTime = performance.now();
+            timerLive.textContent = '0.0s';
+            timerInterval = setInterval(() => {
+                const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+                timerLive.textContent = `${elapsed}s`;
+            }, 100);
+            return startTime;
+        }
+
+        function stopTimer(startTime) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
+            processTimer.textContent = `⏱ ${elapsed}s`;
+            processTimer.classList.add('visible');
+            return elapsed;
+        }
+
+        // ── 1. 載入模型 (自動偵測 WebGPU 支援) ──
         async function loadModel() {
             progressTrack.classList.add('active');
             progressFill.classList.remove('indeterminate');
             progressFill.style.width = '0%';
-            deviceBadge.textContent = '🔧 CPU (WASM)';
+
+            // 偵測 WebGPU 支援
+            let useWebGPU = false;
+            try {
+                if (navigator.gpu) {
+                    const adapter = await navigator.gpu.requestAdapter();
+                    if (adapter) {
+                        useWebGPU = true;
+                    }
+                }
+            } catch (e) {
+                // WebGPU 不可用，使用 WASM 即可
+            }
+
+            const deviceLabel = useWebGPU ? '🚀 WebGPU' : '🔧 CPU (WASM)';
+            deviceBadge.textContent = deviceLabel;
+            if (useWebGPU) {
+                deviceBadge.classList.add('webgpu');
+                deviceBadge.classList.remove('gpu');
+            }
 
             // 進度回呼：顯示模型下載百分比
             function progressCallback(progress) {
@@ -609,17 +909,50 @@
             }
 
             try {
-                segmenter = await pipeline('image-segmentation', 'Xenova/rmbg-1.4', {
+                const modelOptions = {
                     progress_callback: progressCallback,
-                });
-                setStatus('success', '模型載入完成！請上傳圖片進行去背。');
-                deviceBadge.textContent = '✅ WASM 就緒';
+                };
+
+                // 如支援 WebGPU，啟用；否則回退 WASM
+                if (useWebGPU) {
+                    modelOptions.device = 'webgpu';
+                    modelOptions.dtype = 'fp32';
+                }
+
+                segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', modelOptions);
+
+                const deviceName = useWebGPU ? 'WebGPU' : 'WASM';
+                setStatus('success', `模型載入完成（${deviceName}）！請上傳圖片進行去背。`);
+                deviceBadge.textContent = `✅ ${deviceName} 就緒`;
             } catch (error) {
                 console.error('模型載入失敗:', error);
-                setStatus('error', `模型載入失敗：${error.message || '請使用最新版 Chrome 或 Edge。'}`);
-                deviceBadge.textContent = '❌ 載入失敗';
-                deviceBadge.classList.remove('gpu');
-                return;
+
+                // 若 WebGPU 失敗，嘗試回退到 WASM
+                if (useWebGPU) {
+                    console.warn('WebGPU 失敗，嘗試使用 WASM...');
+                    setStatus('warning', 'WebGPU 不可用，正在改用 CPU (WASM) 模式...');
+                    deviceBadge.textContent = '🔧 CPU (WASM)';
+                    deviceBadge.classList.remove('webgpu');
+
+                    try {
+                        segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', {
+                            progress_callback: progressCallback,
+                        });
+                        setStatus('success', '模型載入完成（WASM）！請上傳圖片進行去背。');
+                        deviceBadge.textContent = '✅ WASM 就緒';
+                    } catch (fallbackError) {
+                        console.error('WASM 回退也失敗:', fallbackError);
+                        setStatus('error', `模型載入失敗：${fallbackError.message || '請使用最新版 Chrome 或 Edge。'}`);
+                        deviceBadge.textContent = '❌ 載入失敗';
+                        deviceBadge.classList.remove('gpu');
+                        return;
+                    }
+                } else {
+                    setStatus('error', `模型載入失敗：${error.message || '請使用最新版 Chrome 或 Edge。'}`);
+                    deviceBadge.textContent = '❌ 載入失敗';
+                    deviceBadge.classList.remove('gpu');
+                    return;
+                }
             } finally {
                 progressTrack.classList.remove('active');
             }
@@ -643,14 +976,66 @@
             originalImg.style.display = 'block';
             originalPlaceholder.style.display = 'none';
 
+            // 顯示圖片資訊
+            infoName.textContent = `📄 ${file.name || 'clipboard.png'}`;
+            infoSize.textContent = `💾 ${formatFileSize(file.size)}`;
+            imageInfoEl.classList.add('visible');
+
+            // 取得圖片尺寸
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                infoDims.textContent = `📐 ${tempImg.width} × ${tempImg.height}`;
+            };
+            tempImg.src = currentImageURL;
+
             // 重置去背結果
             resultCanvas.style.display = 'none';
             resultPlaceholder.style.display = 'block';
             resultPlaceholder.textContent = '等待處理';
             downloadBtn.disabled = true;
             hasResult = false;
+            processTimer.classList.remove('visible');
+
+            // 隱藏比較器
+            comparisonWrapper.classList.remove('visible');
+
+            // 顯示 clear 按鈕
+            clearBtn.style.display = 'inline-flex';
+            clearBtn.disabled = false;
 
             if (segmenter) processBtn.disabled = false;
+        }
+
+        // ── 清除功能 ──
+        function clearAll() {
+            if (currentImageURL) {
+                URL.revokeObjectURL(currentImageURL);
+                currentImageURL = null;
+            }
+            currentFile = null;
+            hasResult = false;
+
+            originalImg.style.display = 'none';
+            originalImg.src = '';
+            originalPlaceholder.style.display = 'block';
+
+            resultCanvas.style.display = 'none';
+            resultPlaceholder.style.display = 'block';
+            resultPlaceholder.textContent = '等待處理';
+
+            processBtn.disabled = true;
+            downloadBtn.disabled = true;
+            clearBtn.style.display = 'none';
+
+            imageInfoEl.classList.remove('visible');
+            processTimer.classList.remove('visible');
+            comparisonWrapper.classList.remove('visible');
+
+            fileInput.value = '';
+
+            if (segmenter) {
+                setStatus('success', '已清除。請重新上傳圖片進行去背。');
+            }
         }
 
         // ── 2a. Click 上傳 ──
@@ -663,16 +1048,19 @@
         uploadBox.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadBox.classList.add('drag-over');
+            uploadMainText.textContent = '放開以上傳圖片';
         });
 
         uploadBox.addEventListener('dragleave', (e) => {
             e.preventDefault();
             uploadBox.classList.remove('drag-over');
+            uploadMainText.textContent = '點擊、拖曳圖片或直接貼上';
         });
 
         uploadBox.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadBox.classList.remove('drag-over');
+            uploadMainText.textContent = '點擊、拖曳圖片或直接貼上';
             const file = e.dataTransfer.files[0];
             handleImageFile(file);
         });
@@ -691,14 +1079,21 @@
             }
         });
 
+        // ── 清除按鈕 ──
+        clearBtn.addEventListener('click', clearAll);
+
         // ── 3. 執行 AI 去背 ──
         processBtn.addEventListener('click', async () => {
-            if (!currentImageURL || !segmenter) return;
+            if (!currentImageURL || !segmenter || isProcessing) return;
 
+            isProcessing = true;
             processBtn.disabled = true;
             downloadBtn.disabled = true;
             setStatus('loading', 'AI 正在萃取主體，請稍候...');
             processingOverlay.classList.add('active');
+            processTimer.classList.remove('visible');
+
+            const startTime = startTimer();
 
             try {
                 // 執行推論，取得遮罩 (Mask)
@@ -725,16 +1120,24 @@
 
                 // 將遮罩套用到原圖上 (compositing)
                 ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(maskData, 0, 0);
+                ctx.drawImage(maskData, 0, 0, img.width, img.height);
                 ctx.globalCompositeOperation = 'source-over';
 
                 hasResult = true;
                 downloadBtn.disabled = false;
-                setStatus('success', '去背完成！可點擊「下載去背結果」按鈕儲存圖片。');
+
+                const elapsed = stopTimer(startTime);
+                setStatus('success', `去背完成！耗時 ${elapsed} 秒。可點擊「下載去背結果」按鈕儲存圖片。`);
+
+                // 建立比較圖
+                setupComparison(img);
+
             } catch (error) {
                 console.error('去背處理失敗:', error);
-                setStatus('error', '處理失敗，請查看開發者控制台取得詳細錯誤資訊。');
+                stopTimer(startTime);
+                setStatus('error', `處理失敗：${error.message || '請查看開發者控制台取得詳細錯誤資訊。'}`);
             } finally {
+                isProcessing = false;
                 processBtn.disabled = false;
                 processingOverlay.classList.remove('active');
             }
@@ -761,7 +1164,90 @@
             }, 'image/png');
         });
 
-        // ── 5. 啟動時自動載入模型 ──
+        // ── 5. Before / After 比較滑桿 ──
+        function setupComparison(originalImage) {
+            comparisonOriginal.src = currentImageURL;
+            comparisonWrapper.classList.add('visible');
+            comparisonWrapper.classList.add('fade-in');
+
+            comparisonOriginal.onload = () => {
+                // 將結果 canvas 繪製到比較用的 canvas
+                const cmpCanvas = comparisonResult;
+                cmpCanvas.width = resultCanvas.width;
+                cmpCanvas.height = resultCanvas.height;
+                const cmpCtx = cmpCanvas.getContext('2d');
+                cmpCtx.drawImage(resultCanvas, 0, 0);
+
+                // 初始化分割線在 50%
+                const containerWidth = comparisonContainer.offsetWidth;
+                setDividerPosition(containerWidth / 2);
+            };
+        }
+
+        function setDividerPosition(x) {
+            const containerRect = comparisonContainer.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            const clampedX = Math.max(0, Math.min(x, containerWidth));
+            const pct = (clampedX / containerWidth) * 100;
+
+            comparisonDivider.style.left = `${pct}%`;
+            comparisonOverlay.style.clipPath = `inset(0 0 0 ${pct}%)`;
+        }
+
+        // 滑鼠拖動
+        let isDragging = false;
+        comparisonContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const rect = comparisonContainer.getBoundingClientRect();
+            setDividerPosition(e.clientX - rect.left);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = comparisonContainer.getBoundingClientRect();
+            setDividerPosition(e.clientX - rect.left);
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // 觸控拖動
+        comparisonContainer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            const rect = comparisonContainer.getBoundingClientRect();
+            setDividerPosition(e.touches[0].clientX - rect.left);
+        }, { passive: true });
+
+        comparisonContainer.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const rect = comparisonContainer.getBoundingClientRect();
+            setDividerPosition(e.touches[0].clientX - rect.left);
+        }, { passive: true });
+
+        comparisonContainer.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // ── 6. 鍵盤快捷鍵 ──
+        document.addEventListener('keydown', (e) => {
+            // Enter 觸發去背
+            if (e.key === 'Enter' && !processBtn.disabled && !isProcessing) {
+                e.preventDefault();
+                processBtn.click();
+            }
+
+            // Delete / Backspace 清除
+            if ((e.key === 'Delete' || e.key === 'Backspace') && currentImageURL && !isProcessing) {
+                // 只在沒有 focus 在 input 時才觸發
+                if (document.activeElement === document.body) {
+                    e.preventDefault();
+                    clearAll();
+                }
+            }
+        });
+
+        // ── 7. 啟動時自動載入模型 ──
         loadModel();
     </script>
 
