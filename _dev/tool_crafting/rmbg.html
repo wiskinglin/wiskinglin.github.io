@@ -547,7 +547,7 @@
     </div>
 
     <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/dist/transformers.min.js';
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
 
         env.allowLocalModels = false;
 
@@ -594,7 +594,7 @@
             progressTrack.classList.add('active');
 
             try {
-                segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', { device: 'webgpu' });
+                segmenter = await pipeline('image-segmentation', 'Xenova/rmbg-1.4', { device: 'webgpu' });
                 deviceBadge.textContent = '⚡ WebGPU 加速';
                 setStatus('success', '模型載入完成！請上傳圖片進行去背。');
             } catch (gpuError) {
@@ -604,7 +604,7 @@
                 deviceBadge.classList.remove('gpu');
 
                 try {
-                    segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', { device: 'wasm' });
+                    segmenter = await pipeline('image-segmentation', 'Xenova/rmbg-1.4');
                     setStatus('success', '模型載入完成 (WASM 模式)！請上傳圖片進行去背。');
                 } catch (wasmError) {
                     console.error('WASM 也載入失敗:', wasmError);
