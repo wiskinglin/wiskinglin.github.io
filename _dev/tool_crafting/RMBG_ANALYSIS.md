@@ -24,8 +24,12 @@
 
 ### 1.3 目前的限制與待改善項
 - **拖曳上傳支援不完整**：雖然 UI 上寫有「點擊或拖曳圖片至此處上傳」，但 JavaScript 中僅實作了 Click 事件，尚缺 `dragover`, `dragleave`, `drop` 相關的事件監聽。
+- **缺少剪貼簿貼上支援 (Clipboard Paste)**：影像處理工具中，使用者常透過 `Ctrl+V` 直接貼上螢幕截圖，這是極為常見的工作流，但目前完全沒有實作 `paste` 事件監聽。
 - **儲存體驗依賴原生行為**：目前需依賴使用者手動對圖片點擊「右鍵 -> 另存圖片」，缺乏直覺的「下載」按鈕。
+- **WASM 降級缺少二層錯誤處理**：`loadModel()` 的 `catch` 中嘗試以 WASM 載入，但若 WASM 也失敗（例如記憶體不足或瀏覽器不支援），會造成未被捕獲的例外 (Unhandled Promise Rejection)，使用者只會看到永遠停留的「載入中」訊息，沒有任何錯誤回饋。
 - **主執行緒阻塞風險**：模型推論 (`await segmenter(...)`) 此刻是在主執行緒執行，雖然 WebGPU 具備非同步特性，但在較舊的設備或降級至 CPU 模式時，去背運算可能會造成網頁 UI 凍結 (UI Blocking)。
+- **`readAsDataURL` 記憶體隱患**：目前使用 `FileReader.readAsDataURL()` 將圖片轉為 Base64 字串存入變數，對於大圖（如 10MB+ 的高解析度照片）會產生比原檔更大的字串長期佔用記憶體。應改用 `URL.createObjectURL()` 建立 Blob URL，處理效率更高且可透過 `URL.revokeObjectURL()` 主動釋放記憶體。
+- **RWD 響應式設計不足**：`.preview-container` 使用 `display: flex` 並排顯示兩張圖片，但完全沒有 `@media` breakpoint，在手機上兩欄會被過度擠壓，影響觀看體驗。
 
 ---
 
@@ -34,11 +38,15 @@
 針對此本地端去背神器，未來可依據短、中、長期規劃進行迭代升級，使其成為功能完善且比肩商業產品的 Web App。
 
 ### 🚨 第一階段：基礎體驗補強（Quick Wins）
-1. **補齊拖曳上傳 (Drag & Drop) 功能**：實作完整的拖曳事件監聽，提升上傳圖片的流暢度。
-2. **新增「下載結果」按鈕**：添加一個專屬的 Download 按鈕，點擊後透過 `canvas.toDataURL("image/png")` 和動態建立 `<a href>` 的方式自動下載圖片，避免使用者需手動右鍵。
-3. **優化 UI 狀態與防呆機制**：
+1. **補齊拖曳上傳 (Drag & Drop) 功能**：實作完整的拖曳事件監聽 (`dragover`, `dragleave`, `drop`)，提升上傳圖片的流暢度。
+2. **新增剪貼簿貼上 (Clipboard Paste) 支援**：監聽 `paste` 事件，讓使用者可以直接 `Ctrl+V` 貼上螢幕截圖。
+3. **新增「下載結果」按鈕**：添加一個專屬的 Download 按鈕，點擊後透過 `canvas.toDataURL("image/png")` 和動態建立 `<a href>` 的方式自動下載圖片，避免使用者需手動右鍵。
+4. **修正 WASM 降級的錯誤處理**：在 `catch` 內的 WASM 初始化再包一層 `try/catch`，若 WASM 也失敗則顯示明確的「您的瀏覽器不支援此功能」訊息。
+5. **將 `readAsDataURL` 改為 `URL.createObjectURL`**：減少大圖片的記憶體佔用。
+6. **優化 UI 狀態與防呆機制**：
    - 增加處理中的 Loading 動畫 (Spinner)。
    - 當未上傳圖片時，清楚提示錯誤，而非單純禁用按鈕。
+   - 補充 RWD 響應式斷點，確保手機端預覽區塊改為垂直堆疊排列。
 
 ### 🛠️ 第二階段：效能與架構優化（Performance & Architecture）
 1. **導入 Web Worker**：
@@ -46,8 +54,12 @@
    - 目的：完全解放 UI 主執行緒，確保在 CPU 環境下執行複雜影像分割時，網頁動畫和按鈕仍能滑順響應。
 2. **圖像尺寸壓縮策略**：
    - 使用者可能上傳 4K 以上的超大圖檔，這會導致模型記憶體爆炸。應在將圖片送入 AI 模型前，先於前端 Resize 到合理寬高（例如限制長邊上限為 1024px 或 2048px），以保證處理速度並避免崩潰。
-3. **更聰明的快取機制 (Caching)**：
-   - 結合 IndexedDB 與 Cache API 管理模型快取，避免重複下載。
+3. **模型快取管理 UI (Cache Management)**：
+   - Transformers.js 已內建使用瀏覽器 Cache API 自動快取模型，無需額外實作快取邏輯。
+   - 但應新增快取管理介面：顯示目前已快取的模型大小，並提供「清除模型快取」按鈕，方便使用者在需要時釋放磁碟空間。
+4. **評估升級至 RMBG-2.0 模型**：
+   - BriaAI 已發佈 RMBG-2.0，在邊緣細節（毛髮、半透明物件）的分割品質有顯著提升。
+   - 需評估新模型在 Transformers.js 上的支援度、體積差異以及 WebGPU/WASM 的效能表現。
 
 ### 🚀 第三階段：進階影像編輯功能（Advanced Features）
 1. **背景替換功能 (Background Replacement)**：
