@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地端 AI 秒速去背神器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        .container {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        p.desc {
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .status-box {
+            padding: 12px;
+            border-radius: 6px;
+            background-color: #e8f8f5;
+            color: #16a085;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border: 1px solid #d1f2eb;
+        }
+
+        .upload-area {
+            border: 2px dashed #bdc3c7;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #3498db;
+            background-color: #f0f8ff;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .image-box {
+            flex: 1;
+            text-align: center;
+        }
+
+        .image-box img,
+        .image-box canvas {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/ENAEg/RkMAwzgGEYhAGBZIA/EAAAv1kEFx8hGxgAAAAASUVORK5CYII=') repeat;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>🖼️ 本地端 AI 秒速去背神器</h1>
+        <p class="desc">基於 RMBG-1.4 模型，所有運算皆在您的瀏覽器內完成，確保最高隱私且不消耗任何伺服器資源。</p>
+
+        <div id="status" class="status-box">⏳ 模型載入中 (首次載入約需下載 170MB，之後將自動快取)...</div>
+
+        <div class="upload-area" id="upload-box">
+            <p>點擊或拖曳圖片至此處上傳</p>
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+        </div>
+
+        <div style="text-align: center;">
+            <button id="process-btn" class="btn" disabled>開始 AI 去背</button>
+        </div>
+
+        <div class="preview-container">
+            <div class="image-box">
+                <h3>原始圖片</h3>
+                <img id="original-img" style="display: none;">
+            </div>
+            <div class="image-box">
+                <h3>去背結果</h3>
+                <canvas id="result-canvas" style="display: none;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/dist/transformers.min.js';
+
+        env.allowLocalModels = false;
+
+        let segmenter = null;
+        let currentImageURL = null;
+
+        const statusEl = document.getElementById('status');
+        const fileInput = document.getElementById('file-input');
+        const uploadBox = document.getElementById('upload-box');
+        const processBtn = document.getElementById('process-btn');
+        const originalImg = document.getElementById('original-img');
+        const resultCanvas = document.getElementById('result-canvas');
+        const ctx = resultCanvas.getContext('2d');
+
+        // 1. 載入模型 (自動呼叫 WebGPU)
+        async function loadModel() {
+            try {
+                segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', { device: 'webgpu' });
+                statusEl.innerText = '✅ 模型載入完成！請上傳圖片進行去背。';
+                statusEl.style.backgroundColor = '#e8f8f5';
+                statusEl.style.color = '#16a085';
+            } catch (error) {
+                statusEl.innerText = '⚠️ WebGPU 載入失敗，將自動降級為 CPU 運算。模型下載中...';
+                segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', { device: 'wasm' });
+                statusEl.innerText = '✅ 模型載入完成 (WASM 模式)！';
+            }
+        }
+
+        // 2. 處理圖片上傳
+        uploadBox.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentImageURL = event.target.result;
+                originalImg.src = currentImageURL;
+                originalImg.style.display = 'inline-block';
+                resultCanvas.style.display = 'none';
+                if (segmenter) processBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 3. 執行 AI 去背與 Canvas 繪圖
+        processBtn.addEventListener('click', async () => {
+            if (!currentImageURL || !segmenter) return;
+
+            processBtn.disabled = true;
+            processBtn.innerText = '處理中...';
+            statusEl.innerText = '🔄 AI 正在萃取主體...';
+
+            try {
+                // 執行推論，取得遮罩 (Mask)
+                const result = await segmenter(currentImageURL);
+
+                // 準備原始圖片以繪製到 Canvas
+                const img = new Image();
+                img.src = currentImageURL;
+                await new Promise(r => img.onload = r);
+
+                resultCanvas.width = img.width;
+                resultCanvas.height = img.height;
+                resultCanvas.style.display = 'inline-block';
+
+                // 畫上原圖
+                ctx.drawImage(img, 0, 0);
+
+                // 取得去背遮罩 (此模型回傳的格式包含帶透明通道的圖像)
+                const maskData = await result[0].mask.toCanvas();
+
+                // 將遮罩套用到原圖上 (使用 compositing)
+                ctx.globalCompositeOperation = 'destination-in';
+                ctx.drawImage(maskData, 0, 0);
+                ctx.globalCompositeOperation = 'source-over'; // 恢復預設
+
+                statusEl.innerText = '✅ 去背完成！您可以對圖片點擊右鍵「另存圖片」。';
+            } catch (error) {
+                console.error(error);
+                statusEl.innerText = '❌ 處理失敗，請查看開發者控制台。';
+            } finally {
+                processBtn.innerText = '開始 AI 去背';
+                processBtn.disabled = false;
+            }
+        });
+
+        // 啟動時自動載入模型
+        loadModel();
+    </script>
+
+</body>
+
+</html>
