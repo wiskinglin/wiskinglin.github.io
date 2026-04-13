@@ -37,16 +37,18 @@
 
 針對此本地端去背神器，未來可依據短、中、長期規劃進行迭代升級，使其成為功能完善且比肩商業產品的 Web App。
 
-### 🚨 第一階段：基礎體驗補強（Quick Wins）
-1. **補齊拖曳上傳 (Drag & Drop) 功能**：實作完整的拖曳事件監聽 (`dragover`, `dragleave`, `drop`)，提升上傳圖片的流暢度。
-2. **新增剪貼簿貼上 (Clipboard Paste) 支援**：監聽 `paste` 事件，讓使用者可以直接 `Ctrl+V` 貼上螢幕截圖。
-3. **新增「下載結果」按鈕**：添加一個專屬的 Download 按鈕，點擊後透過 `canvas.toDataURL("image/png")` 和動態建立 `<a href>` 的方式自動下載圖片，避免使用者需手動右鍵。
-4. **修正 WASM 降級的錯誤處理**：在 `catch` 內的 WASM 初始化再包一層 `try/catch`，若 WASM 也失敗則顯示明確的「您的瀏覽器不支援此功能」訊息。
-5. **將 `readAsDataURL` 改為 `URL.createObjectURL`**：減少大圖片的記憶體佔用。
-6. **優化 UI 狀態與防呆機制**：
-   - 增加處理中的 Loading 動畫 (Spinner)。
-   - 當未上傳圖片時，清楚提示錯誤，而非單純禁用按鈕。
-   - 補充 RWD 響應式斷點，確保手機端預覽區塊改為垂直堆疊排列。
+### ✅ 第一階段：基礎體驗補強（Quick Wins）— 已完成
+1. ~~**補齊拖曳上傳 (Drag & Drop) 功能**~~ ✅ 已實作 `dragover`, `dragleave`, `drop` 完整事件監聽。
+2. ~~**新增剪貼簿貼上 (Clipboard Paste) 支援**~~ ✅ 已實作 `paste` 事件監聽，支援 `Ctrl+V` 貼上螢幕截圖。
+3. ~~**新增「下載結果」按鈕**~~ ✅ 已新增獨立的 Download 按鈕，使用 `canvas.toBlob()` + `URL.createObjectURL` 實作下載，檔名自動帶上 `_rmbg.png` 後綴。
+4. ~~**修正 WASM 降級的錯誤處理**~~ ✅ 已實作二層 `try/catch`，WASM 也失敗時顯示明確的錯誤訊息。
+5. ~~**將 `readAsDataURL` 改為 `URL.createObjectURL`**~~ ✅ 已改用 Blob URL 並在切換圖片時主動呼叫 `URL.revokeObjectURL()` 釋放記憶體。
+6. ~~**優化 UI 狀態與防呆機制**~~ ✅ 已全面升級：
+   - 新增處理中 Processing Overlay 與 Spinner 動畫。
+   - 新增 indeterminate progress bar 顯示模型載入進度。
+   - 預覽區塊加入 placeholder 提示文字。
+   - 補充 `@media (max-width: 640px)` RWD，手機端預覽區改為垂直堆疊。
+   - 全面升級為深色玻璃態 (Glassmorphism) 設計，搭配 Inter 字體與狀態色彩系統。
 
 ### 🛠️ 第二階段：效能與架構優化（Performance & Architecture）
 1. **導入 Web Worker**：
