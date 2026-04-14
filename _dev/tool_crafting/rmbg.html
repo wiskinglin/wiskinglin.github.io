@@ -787,13 +787,13 @@
     </div>
 
     <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
-        // import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+        import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
     
         env.allowLocalModels = false;
 
         // ── State ──
-        let segmenter = null;
+        let model = null;
+        let processor = null;
         let currentImageURL = null;   // Blob URL (需手動 revoke)
         let currentFile = null;       // 保留 File 物件供 pipeline 使用
         let hasResult = false;
@@ -911,16 +911,31 @@
 
             try {
                 const modelOptions = {
+                    config: { model_type: 'custom' },
                     progress_callback: progressCallback,
                 };
 
-                // 如支援 WebGPU，啟用；否則回退 WASM
+                // 如支援 WebGPU，啟用 fp32；否則回退 WASM（預設載入量化版 44.4MB）
                 if (useWebGPU) {
                     modelOptions.device = 'webgpu';
                     modelOptions.dtype = 'fp32';
                 }
 
-                segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', modelOptions);
+                model = await AutoModel.from_pretrained('briaai/RMBG-1.4', modelOptions);
+                processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4', {
+                    config: {
+                        do_normalize: true,
+                        do_pad: false,
+                        do_rescale: true,
+                        do_resize: true,
+                        image_mean: [0.5, 0.5, 0.5],
+                        feature_extractor_type: 'ImageFeatureExtractor',
+                        image_std: [1, 1, 1],
+                        resample: 2,
+                        rescale_factor: 0.00392156862745098,
+                        size: { width: 1024, height: 1024 }
+                    }
+                });
 
                 const deviceName = useWebGPU ? 'WebGPU' : 'WASM';
                 setStatus('success', `模型載入完成（${deviceName}）！請上傳圖片進行去背。`);
@@ -936,8 +951,23 @@
                     deviceBadge.classList.remove('webgpu');
 
                     try {
-                        segmenter = await pipeline('image-segmentation', 'briaai/RMBG-1.4', {
+                        model = await AutoModel.from_pretrained('briaai/RMBG-1.4', {
+                            config: { model_type: 'custom' },
                             progress_callback: progressCallback,
+                        });
+                        processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4', {
+                            config: {
+                                do_normalize: true,
+                                do_pad: false,
+                                do_rescale: true,
+                                do_resize: true,
+                                image_mean: [0.5, 0.5, 0.5],
+                                feature_extractor_type: 'ImageFeatureExtractor',
+                                image_std: [1, 1, 1],
+                                resample: 2,
+                                rescale_factor: 0.00392156862745098,
+                                size: { width: 1024, height: 1024 }
+                            }
                         });
                         setStatus('success', '模型載入完成（WASM）！請上傳圖片進行去背。');
                         deviceBadge.textContent = '✅ WASM 就緒';
@@ -1004,7 +1034,7 @@
             clearBtn.style.display = 'inline-flex';
             clearBtn.disabled = false;
 
-            if (segmenter) processBtn.disabled = false;
+            if (model && processor) processBtn.disabled = false;
         }
 
         // ── 清除功能 ──
@@ -1034,7 +1064,7 @@
 
             fileInput.value = '';
 
-            if (segmenter) {
+            if (model && processor) {
                 setStatus('success', '已清除。請重新上傳圖片進行去背。');
             }
         }
@@ -1085,7 +1115,7 @@
 
         // ── 3. 執行 AI 去背 ──
         processBtn.addEventListener('click', async () => {
-            if (!currentImageURL || !segmenter || isProcessing) return;
+            if (!currentImageURL || !model || !processor || isProcessing) return;
 
             isProcessing = true;
             processBtn.disabled = true;
@@ -1097,8 +1127,15 @@
             const startTime = startTimer();
 
             try {
-                // 執行推論，取得遮罩 (Mask)
-                const result = await segmenter(currentImageURL);
+                // 將圖片轉為 RawImage，再經 Processor 轉為模型張量
+                const image = await RawImage.fromBlob(currentFile);
+                const { pixel_values } = await processor(image);
+
+                // 執行推論，取得遮罩張量
+                const { output } = await model({ input: pixel_values });
+
+                // 後處理：張量 (0~1) → 像素 (0~255)，並 Resize 回原圖尺寸
+                const mask = await RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(image.width, image.height);
 
                 // 準備原始圖片以繪製到 Canvas
                 const img = new Image();
@@ -1113,16 +1150,17 @@
                 resultCanvas.style.display = 'block';
                 resultPlaceholder.style.display = 'none';
 
-                // 畫上原圖
+                // 畫上原圖並取得像素陣列
                 ctx.drawImage(img, 0, 0);
+                const pixelData = ctx.getImageData(0, 0, img.width, img.height);
 
-                // 取得去背遮罩
-                const maskData = await result[0].mask.toCanvas();
+                // 將遮罩亮度值寫入原圖的 Alpha 通道 [R,G,B,A, R,G,B,A, ...]
+                for (let i = 0; i < mask.data.length; ++i) {
+                    pixelData.data[4 * i + 3] = mask.data[i];
+                }
 
-                // 將遮罩套用到原圖上 (compositing)
-                ctx.globalCompositeOperation = 'destination-in';
-                ctx.drawImage(maskData, 0, 0, img.width, img.height);
-                ctx.globalCompositeOperation = 'source-over';
+                // 輸出最終帶透明通道的影像
+                ctx.putImageData(pixelData, 0, 0);
 
                 hasResult = true;
                 downloadBtn.disabled = false;
@@ -1172,11 +1210,14 @@
             comparisonWrapper.classList.add('fade-in');
 
             comparisonOriginal.onload = () => {
-                // 將結果 canvas 繪製到比較用的 canvas
+                // 將結果 canvas 繪製到比較用的 canvas（加白底避免透明穿透）
                 const cmpCanvas = comparisonResult;
                 cmpCanvas.width = resultCanvas.width;
                 cmpCanvas.height = resultCanvas.height;
                 const cmpCtx = cmpCanvas.getContext('2d');
+                // 先填白底，否則透明區域會穿透顯示底下的原圖
+                cmpCtx.fillStyle = '#ffffff';
+                cmpCtx.fillRect(0, 0, cmpCanvas.width, cmpCanvas.height);
                 cmpCtx.drawImage(resultCanvas, 0, 0);
 
                 // 初始化分割線在 50%
