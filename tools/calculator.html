@@ -800,11 +800,23 @@ rates.currency = {
         const now = new Date();
         timeEl.textContent = `即時匯率 · ${now.toLocaleDateString('zh-TW')} ${now.toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit'})} 更新`;
       }
+      // Re-trigger currency conversion with updated rates
+      const currFirst = document.querySelector('.converter-input[data-type="currency"]');
+      if (currFirst && currFirst.value) currFirst.dispatchEvent(new Event('input'));
     }
   } catch(e) {
     console.warn('匯率 API 請求失敗，使用預設匯率', e);
   }
 })();
+
+// --- Set default values (1000) for all converter first fields ---
+['length', 'area', 'weight', 'time', 'currency'].forEach(type => {
+  const firstInput = document.querySelector(`.converter-input[data-type="${type}"]`);
+  if (firstInput) {
+    firstInput.value = 1000;
+    firstInput.dispatchEvent(new Event('input'));
+  }
+});
 </script>
 </body>
 </html>
