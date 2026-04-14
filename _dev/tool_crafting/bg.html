@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 網頁離線去背工具 (Transformers.js)</title>
+  <style>
+    /* 現代化、乾淨的 UI 設計 */
+    :root {
+      --primary: #3b82f6;
+      --bg: #f8fafc;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      margin: 0;
+      color: #334155;
+    }
+
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    #dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 1.5rem 0;
+      background: #fafafa;
+    }
+
+    #dropzone:hover,
+    #dropzone.dragover {
+      border-color: var(--primary);
+      background: #eff6ff;
+    }
+
+    #status {
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    /* 使用透明棋盤格背景，讓去背後的透明區域更明顯 */
+    canvas {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 1rem;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="10" height="10" fill="%23e5e7eb"/><rect x="10" y="10" width="10" height="10" fill="%23e5e7eb"/></svg>');
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>✨ AI 離線去背</h2>
+    <p style="font-size: 0.9rem; color: #64748b;">基於 Transformers.js 與開源模型 RMBG-1.4<br>運算完全在你設備的瀏覽器中進行，不消耗伺服器資源。</p>
+
+    <div id="dropzone">
+      <div id="upload-text">點擊此處 或 將圖片拖曳進來</div>
+      <input type="file" id="file-input" accept="image/*" style="display: none;">
+    </div>
+
+    <div id="status">⏳ 正在載入模型資源 (初次載入約需下載 170MB，請稍候)...</div>
+    <canvas id="canvas" style="display: none;"></canvas>
+  </div>
+
+  <script type="module">
+    // 直接透過 CDN 引入 Transformers.js
+    //import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+    import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
+
+    // 禁用尋找本地端檔案路徑，強制從 Hugging Face 雲端拉取開源模型
+    env.allowLocalModels = false;
+
+    const dropzone = document.getElementById('dropzone');
+    const fileInput = document.getElementById('file-input');
+    const statusEl = document.getElementById('status');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const uploadText = document.getElementById('upload-text');
+
+    let model, processor;
+
+    // 1. 載入模型 (briaai/RMBG-1.4)
+    async function init() {
+      try {
+        // 設定 custom model type 避免尋找不必要的設定檔
+        model = await AutoModel.from_pretrained('briaai/RMBG-1.4', { config: { model_type: 'custom' } });
+
+        // 帶入前置處理器 (Processor) 的設定，確保圖片縮放與標準化正確
+        processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4', {
+          config: {
+            do_normalize: true,
+            do_pad: false,
+            do_rescale: true,
+            do_resize: true,
+            image_mean: [0.5, 0.5, 0.5],
+            feature_extractor_type: 'ImageFeatureExtractor',
+            image_std: [1, 1, 1],
+            resample: 2,
+            rescale_factor: 0.00392156862745098,
+            size: { width: 1024, height: 1024 }
+          }
+        });
+        statusEl.innerText = '✅ 模型載入完成！隨時可以上傳圖片。';
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = '❌ 模型載入失敗，請檢查網路或打開開發者工具 (F12) 查看。';
+      }
+    }
+
+    init();
+
+    // 2. 介面互動綁定 (點擊與拖曳功能)
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) processImage(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) processImage(e.target.files[0]);
+    });
+
+    // 3. 核心：處理圖片與模型推論
+    async function processImage(file) {
+      if (!model || !processor) {
+        alert('模型還在載入中，請稍候片刻！');
+        return;
+      }
+
+      statusEl.innerText = '🧠 模型推論中... (根據你的裝置效能，可能需要幾秒鐘)';
+      canvas.style.display = 'none';
+      uploadText.style.display = 'none';
+
+      try {
+        // 將上傳的檔案轉換為 Transformers.js 看得懂的 RawImage 格式
+        const image = await RawImage.fromBlob(file);
+
+        // 預處理：將圖片轉換為 tensor 張量 (pixel_values)
+        const { pixel_values } = await processor(image);
+
+        // 推論：把 tensor 餵給模型，取得去背用的遮罩 (mask)
+        const { output } = await model({ input: pixel_values });
+
+        // 後處理：將模型輸出的純數值張量轉回 0~255 的圖片像素，並把長寬縮放回原本圖片的大小
+        const mask = await RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(image.width, image.height);
+
+        // 準備 Canvas 準備繪製結果
+        canvas.width = image.width;
+        canvas.height = image.height;
+
+        // 先在背景繪製原始圖片
+        const imgCanvas = document.createElement('canvas');
+        imgCanvas.width = image.width;
+        imgCanvas.height = image.height;
+        const imgCtx = imgCanvas.getContext('2d');
+        const bitmap = await createImageBitmap(file);
+        imgCtx.drawImage(bitmap, 0, 0);
+
+        // 取得原圖的像素陣列資料
+        const pixelData = imgCtx.getImageData(0, 0, image.width, image.height);
+
+        // 將模型產生的遮罩套用到原圖的 Alpha (透明度) 通道上
+        // ImageData 陣列排序為 [R, G, B, A, R, G, B, A ...]，所以 4*i+3 就是 Alpha 通道
+        for (let i = 0; i < mask.data.length; ++i) {
+          pixelData.data[4 * i + 3] = mask.data[i];
+        }
+
+        // 把最終帶有透明通道的影像輸出回主 Canvas
+        ctx.putImageData(pixelData, 0, 0);
+        canvas.style.display = 'block';
+        statusEl.innerText = '✨ 處理完成！你可以對圖片點擊「右鍵」->「另存影像」。';
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = '❌ 處理圖片時發生錯誤。';
+        uploadText.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+
+</html>
