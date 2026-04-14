@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformers.js PWA 深度研究報告</title>
+    
+    <!-- 引入 Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 Google Fonts: Inter & Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind 自定義配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        tech: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
+                        'float': '0 25px 50px -12px rgba(100, 116, 133, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 核心排版與列印 CSS -->
+    <style>
+        /* 基礎全域設定 */
+        body {
+            background-color: #f1f5f9;
+            -webkit-font-smoothing: antialiased;
+            color: #334155;
+        }
+
+        /* A4 橫式頁面容器 */
+        .a4-page {
+            width: 297mm;
+            min-height: 210mm;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+            /* 橫向滿版佈局核心：使內部區塊可彈性延展 */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 15mm; 
+            overflow: hidden;
+            position: relative;
+            /* 斷頁防護 */
+            page-break-after: always;
+            break-inside: avoid;
+        }
+
+        /* 裝飾性微型元素 */
+        .gradient-divider {
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6 0%, rgba(59,130,246,0) 100%);
+            width: 100px;
+            margin: 1.5rem 0;
+            border-radius: 99px;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* 編輯模式視覺反饋 (防呆) */
+        [contenteditable="true"] {
+            outline: 3px dashed rgba(59, 130, 246, 0.6);
+            outline-offset: 4px;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            background-color: rgba(59, 130, 246, 0.02);
+            cursor: text;
+        }
+        [contenteditable="true"]:hover {
+            outline-color: rgba(59, 130, 246, 1);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        /* 列印引擎強制對應規範 */
+        @media print {
+            body { background-color: #ffffff; }
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            .a4-page {
+                margin: 0;
+                box-shadow: none;
+                border-radius: 0;
+                width: 297mm;
+                height: 210mm;
+                /* 強制避免斷頁 */
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            /* 強制背景色與陰影無損輸出 */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                /* 停用動畫 */
+                transition: none !important;
+                animation: none !important;
+            }
+            /* 列印時隱藏控制面板 */
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="font-sans pb-20">
+
+    <!-- 控制面板 Control Panel -->
+    <div id="control-panel" class="no-print fixed top-6 right-8 glass-panel shadow-float rounded-2xl p-2 z-50 flex gap-2 transition-all duration-300">
+        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-tech-50 rounded-xl transition-colors">
+            ✏️ <span id="edit-text">編輯內容</span>
+        </button>
+        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-tech-50 rounded-xl transition-colors">
+            ⬇️ 儲存網頁
+        </button>
+        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-tech-600 hover:bg-tech-800 rounded-xl transition-colors shadow-lg shadow-tech-500/30">
+            🖨️ 輸出 PDF
+        </button>
+    </div>
+
+    <!-- 主文件容器 Document Wrapper -->
+    <div id="document-wrapper" class="w-full">
+
+        <!-- 第 1 頁：封面 Hero 滿版 -->
+        <section class="a4-page bg-slate-900 text-white relative">
+            <!-- 背景裝飾 -->
+            <div class="absolute top-0 right-0 w-3/4 h-full bg-gradient-to-l from-tech-800/40 to-transparent pointer-events-none"></div>
+            <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-tech-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 pointer-events-none"></div>
+
+            <div class="flex-1 flex flex-col justify-center relative z-10 w-4/5">
+                <span class="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-wider text-tech-100 bg-tech-800/80 rounded-full backdrop-blur-sm border border-tech-500/30 w-max">
+                    2026 前瞻技術研究報告
+                </span>
+                <h1 class="text-5xl font-black leading-tight mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white to-tech-100">
+                    基於 Transformers.js 與 PWA 的<br>離線 Web AI 架構與前瞻應用
+                </h1>
+                <p class="text-xl text-slate-300 leading-relaxed font-light mt-4 w-5/6">
+                    隨著 WebAssembly 與 WebGPU 標準成熟，大型語言模型正經歷從雲端向邊緣客戶端遷移的典範轉移。本報告深度剖析結合 Hugging Face 生態與 PWA 架構，實現「零延遲、高隱私、免伺服器成本」的下一代基礎設施。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-6 mt-12 relative z-10">
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
+                    <div class="text-3xl mb-2">⚡</div>
+                    <h3 class="text-lg font-bold text-white mb-1">零延遲推論</h3>
+                    <p class="text-sm text-slate-400">消弭網路傳輸瓶頸，毫秒級回應使用者意圖</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
+                    <div class="text-3xl mb-2">🔒</div>
+                    <h3 class="text-lg font-bold text-white mb-1">極致數據隱私</h3>
+                    <p class="text-sm text-slate-400">敏感數據永不離端，完美符合高規格合規要求</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
+                    <div class="text-3xl mb-2">💰</div>
+                    <h3 class="text-lg font-bold text-white mb-1">重塑成本結構</h3>
+                    <p class="text-sm text-slate-400">轉嫁算力至終端，徹底消除雲端 API Token 費用</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 2 頁：底層架構 - 存儲機制 (Bento Box) -->
+        <section class="a4-page">
+            <header>
+                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Chapter 1</div>
+                <h2 class="text-3xl font-bold text-slate-800">底層架構：大容量模型檔存儲對比</h2>
+                <div class="gradient-divider"></div>
+                <p class="text-slate-600 mb-6">動輒數 GB 的 AI 模型對傳統存儲機制提出極端挑戰。以下為主流客戶端存儲方案優劣分析：</p>
+            </header>
+
+            <div class="flex-1 grid grid-cols-3 gap-6">
+                <!-- Cache API -->
+                <div class="bg-red-50 p-6 rounded-2xl border border-red-100 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold">1</div>
+                        <h3 class="text-xl font-bold text-slate-800">Cache API</h3>
+                    </div>
+                    <div class="mb-4">
+                        <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md">適用: 靜態資源</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed flex-1">
+                        設計用於 HTTP 請求快取。處理大容量模型時，整體存入會導致嚴重的磁碟膨脹 (Disk Bloat)，且每次讀取需將完整物件載入記憶體，極易觸發 V8 引擎 OOM 崩潰。
+                    </p>
+                </div>
+
+                <!-- IndexedDB -->
+                <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold">2</div>
+                        <h3 class="text-xl font-bold text-slate-800">IndexedDB</h3>
+                    </div>
+                    <div class="mb-4">
+                        <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-md">適用: 結構化資料</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed flex-1">
+                        基於 LevelDB/SQLite 的 NoSQL 資料庫。支援高達磁碟空間 80% 的配額，但處理數 GB 單一檔案時，其交易序列化與反序列化過程仍會產生不可忽視的效能開銷。
+                    </p>
+                </div>
+
+                <!-- OPFS -->
+                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">最佳實踐</div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">3</div>
+                        <h3 class="text-xl font-bold text-slate-800">OPFS</h3>
+                    </div>
+                    <div class="mb-4">
+                        <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-md">適用: 巨量二進制檔</span>
+                    </div>
+                    <p class="text-sm text-slate-700 leading-relaxed flex-1">
+                        Origin Private File System。提供位元組級 (Byte-by-Byte) 存取，支援就地讀寫與零序列化開銷。在 Web Worker 中調用同步方法，I/O 速度可達 IndexedDB 數倍。
+                    </p>
+                </div>
+            </div>
+
+            <!-- Conclusion Bar -->
+            <div class="mt-6 bg-slate-800 text-white p-5 rounded-2xl shadow-float flex items-center gap-4">
+                <div class="bg-tech-500 p-2 rounded-lg">💡</div>
+                <div>
+                    <h4 class="font-bold text-lg mb-1">架構建議：雙層快取架構 (Two-tier Cache)</h4>
+                    <p class="text-sm text-slate-300">強烈建議以 IndexedDB 存儲輕量詮釋資料 (Metadata)、分詞器設定檔，並將龐大的二進制模型權重直接寫入 OPFS。確保極致載入速度與優雅降級機制。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 3 頁：關鍵技術矩陣 (Grid Layout) -->
+        <section class="a4-page">
+            <header>
+                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Technology Matrix</div>
+                <h2 class="text-3xl font-bold text-slate-800">底層架構：100 項關鍵技術提煉</h2>
+                <div class="gradient-divider"></div>
+            </header>
+
+            <div class="grid grid-cols-2 gap-x-8 gap-y-6 mt-4 flex-1">
+                
+                <!-- Pillar 1 -->
+                <div class="border-t-[4px] border-tech-500 bg-white p-6 rounded-b-2xl shadow-soft">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">⚙️</span> 核心推理引擎
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-tech-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">WebGPU C++ Runtime & WGSL</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">引入 C++ 重寫的 v4 執行階段，利用計算著色器將矩陣乘法分發至 GPU 數萬個執行緒並發執行。</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-tech-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">MLA 與 MoE 混合專家架構支援</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">支援 DeepSeek-v3 MLA 大幅壓縮 KV Cache，並透過稀疏門控網路降低 VRAM 消耗。</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pillar 2 -->
+                <div class="border-t-[4px] border-emerald-500 bg-white p-6 rounded-b-2xl shadow-soft">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">💾</span> PWA 離線與存儲
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">Background Fetch 巨量下載</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">將數 GB 模型下載任務移交 OS 層，應用關閉也能持續；結合 Persistent Storage 避免被當作暫存清除。</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">OPFS 同步存取控制與寫入鎖</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">Web Worker 獨占調用 AccessHandle 實現無阻塞 I/O，搭配 Promise 寫入鎖杜絕檔案損壞風險。</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pillar 3 -->
+                <div class="border-t-[4px] border-purple-500 bg-white p-6 rounded-b-2xl shadow-soft">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">🔄</span> 資料預處理技術
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-purple-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">多模態交錯輸入與 Chat Template</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">前端動態將視覺張量與文字 Token 融合；內建 Jinja 模板將對話陣列精準編譯為模型專屬 Prompt。</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-purple-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">WebAudio 與 VAD 端點偵測</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">前端重取樣為 16kHz 並即時計算音量包絡線，切除無聲片段後再送入 Whisper，節省推論算力。</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pillar 4 -->
+                <div class="border-t-[4px] border-amber-500 bg-white p-6 rounded-b-2xl shadow-soft">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">🚀</span> 效能調優適配
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-amber-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">量化策略與記憶體池化</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">應用 q8/q4 量化突破頻寬瓶頸；重複利用 Float32Array 迴避 V8 引擎高頻 GC 造成的主線程停頓。</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-amber-500 mt-1">✦</span>
+                            <div>
+                                <strong class="text-slate-800 block text-sm">推測解碼 (Speculative Decoding)</strong>
+                                <span class="text-slate-600 text-xs leading-relaxed">前端並行草稿模型與目標大模型，透過草稿猜測並由大模型批量驗證，成倍提升生成速度。</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 第 4 頁：應用場景 - 生產力與創意 (Card Grid) -->
+        <section class="a4-page">
+            <header>
+                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Chapter 2</div>
+                <h2 class="text-3xl font-bold text-slate-800">應用場景深度發掘</h2>
+                <div class="gradient-divider"></div>
+                <p class="text-slate-600 mb-4">結合 PWA 斷網執行特性，將 100 個潛力應用聚焦於隱私、低延遲與高可用性。</p>
+            </header>
+
+            <div class="flex-1 flex flex-col gap-6">
+                <!-- 生產力模組 -->
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-3 border-l-4 border-tech-500 pl-3">純離線生產力工具 (Data Privacy First)</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-tech-600">⚖️</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">合約風險分析器</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">載入 1B 級別量化 LLM，離線抽取違約金條款，商業機密零外洩。</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-tech-600">📚</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">無伺服器本地 RAG</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">整合 Voyager WASM 與 Embedding 模型，建構個人筆記語義檢索。</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-tech-600">🩺</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">醫療病歷摘要</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">Whisper 轉錄問診再由 LLM 結構化 SOAP，符合 HIPAA 規範。</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-tech-600">🎧</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">無痕會議記錄</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">耳機端即時分析情緒輔助話術；或離線轉錄董事會機密。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 創意模組 -->
+                <div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-3 border-l-4 border-emerald-500 pl-3">邊緣運算創意應用 (Zero-Latency Immerse)</h3>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-emerald-600">🎬</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">即時去背與 VR</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">RMBG-2.0 處理 video 幀，實現瀏覽器高解析度直播背景替換。</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-emerald-600">🎙️</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">離線 Podcast 生成</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">Kokoro TTS 生成語音融合配樂，批量製作無版權廣播節目。</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-emerald-600">🕹️</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">姿態體感控制器</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">相機結合 MediaPipe 骨架追蹤，免硬體感測器玩網頁遊戲。</p>
+                        </div>
+                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div class="text-2xl mb-2 text-emerald-600">👁️</div>
+                            <h4 class="font-bold text-sm text-slate-800 mb-1">視障環境導航</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">物件偵測持續將路況轉為語音；或唇語識別吵雜環境語意。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第 5 頁：商業變現與防禦策略 (Cards Layout) -->
+        <section class="a4-page bg-slate-50">
+            <header>
+                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Chapter 3</div>
+                <h2 class="text-3xl font-bold text-slate-800">商業變現與資安防禦策略</h2>
+                <div class="gradient-divider"></div>
+                <p class="text-slate-600 mb-6">邊緣推論改變了傳統 AI SaaS 成本結構，並引發針對白盒攻擊的新一代防禦挑戰。</p>
+            </header>
+
+            <div class="flex-1 flex gap-8">
+                
+                <!-- 變現模式 -->
+                <div class="flex-1 flex flex-col">
+                    <div class="bg-white rounded-2xl shadow-soft p-6 border border-gray-100 flex-1">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <span class="bg-tech-100 text-tech-600 p-1.5 rounded-lg">💎</span> 變現模式創新
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
+                                <strong class="text-sm text-slate-800">結果導向任務計費 (Outcome Pricing)</strong>
+                                <p class="text-xs text-slate-500 mt-1">放棄 Token 計費，依照用戶端「成功完成的業務動作」於背景扣款。</p>
+                            </li>
+                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
+                                <strong class="text-sm text-slate-800">雲端/邊緣混合定價 (Hybrid Tiering)</strong>
+                                <p class="text-xs text-slate-500 mt-1">前端草稿免費，判定複雜任務時無縫切換 70B 雲端模型並觸發計費。</p>
+                            </li>
+                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
+                                <strong class="text-sm text-slate-800">隱私合規保證溢價 (Privacy Premium)</strong>
+                                <p class="text-xs text-slate-500 mt-1">為金融/醫療販售「100% 離線合規認證」，賺取絕對不上雲的溢價。</p>
+                            </li>
+                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
+                                <strong class="text-sm text-slate-800">自攜算力折扣 (BYOD Discount)</strong>
+                                <p class="text-xs text-slate-500 mt-1">讓使用者的設備買單，同意調用終端 WebGPU 即給予授權費折扣。</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 防禦策略 -->
+                <div class="flex-1 flex flex-col">
+                    <div class="bg-slate-800 rounded-2xl shadow-float p-6 border border-slate-700 text-white flex-1 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🛡️</div>
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 relative z-10">
+                            <span class="bg-slate-700 p-1.5 rounded-lg">🛡️</span> 白盒逆向工程防禦
+                        </h3>
+                        <p class="text-xs text-slate-300 mb-5 relative z-10">模型存於前端構成白盒攻擊環境，需導入終極防禦：</p>
+                        
+                        <div class="space-y-4 relative z-10">
+                            <div>
+                                <h4 class="text-sm font-bold text-tech-400">01. 白盒密碼學與混淆</h4>
+                                <p class="text-xs text-slate-400 mt-1">將權重編碼至複雜查詢表，不進行明文矩陣乘法，使惡意方無法透過記憶體還原浮點數。</p>
+                            </div>
+                            <hr class="border-slate-700">
+                            <div>
+                                <h4 class="text-sm font-bold text-emerald-400">02. WASM 指令虛擬化</h4>
+                                <p class="text-xs text-slate-400 mt-1">將演算法轉為自訂位元組碼並置於 WASM 內微型 VM 直譯。偵測到 DevTools 斷點立即觸發自毀污染記憶體。</p>
+                            </div>
+                            <hr class="border-slate-700">
+                            <div>
+                                <h4 class="text-sm font-bold text-purple-400">03. 神經網路白盒浮水印</h4>
+                                <p class="text-xs text-slate-400 mt-1">微調階段透過 Auxiliary Loss 植入專屬印記，即使遭實體竊取也能在法庭上提出無法篡改的鑑識鐵證。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- 互動邏輯腳本 JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnEdit = document.getElementById('btn-edit');
+            const btnSave = document.getElementById('btn-save');
+            const btnPrint = document.getElementById('btn-print');
+            const wrapper = document.getElementById('document-wrapper');
+            const editText = document.getElementById('edit-text');
+            
+            let isEditing = false;
+
+            // 功能 1：編輯模式切換
+            btnEdit.addEventListener('click', () => {
+                isEditing = !isEditing;
+                if (isEditing) {
+                    wrapper.setAttribute('contenteditable', 'true');
+                    editText.textContent = '💾 結束編輯';
+                    btnEdit.classList.remove('text-gray-700', 'hover:bg-tech-50');
+                    btnEdit.classList.add('text-tech-600', 'bg-tech-50', 'border', 'border-tech-200');
+                } else {
+                    wrapper.removeAttribute('contenteditable');
+                    editText.textContent = '編輯內容';
+                    btnEdit.classList.add('text-gray-700', 'hover:bg-tech-50');
+                    btnEdit.classList.remove('text-tech-600', 'bg-tech-50', 'border', 'border-tech-200');
+                }
+            });
+
+            // 功能 2：儲存網頁 (匯出 HTML)
+            btnSave.addEventListener('click', () => {
+                // 確保儲存時不在編輯狀態
+                if (isEditing) {
+                    btnEdit.click(); // 自動關閉編輯
+                }
+                
+                const htmlContent = document.documentElement.outerHTML;
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                // 取得當前日期 YYYYMMDD
+                const today = new Date();
+                const dateStr = today.getFullYear() + 
+                                String(today.getMonth() + 1).padStart(2, '0') + 
+                                String(today.getDate()).padStart(2, '0');
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Report_${dateStr}.html`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // 清理
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            });
+
+            // 功能 3：輸出 PDF (呼叫列印引擎)
+            btnPrint.addEventListener('click', () => {
+                if (isEditing) {
+                    btnEdit.click(); // 列印前強制關閉編輯，避免虛線外框被印出
+                }
+                window.print();
+            });
+        });
+    </script>
+</body>
+</html>

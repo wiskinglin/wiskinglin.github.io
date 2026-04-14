@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Transformers.js PWA 離線 Web AI 深度研究 | KLIO.</title>
+    <meta name="description" content="基於 WebGPU/WASM 與 PWA 的離線推論架構深度研究報告">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: #0a0a0a; color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 16px; line-height: 1.75;
+        }
+
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #1a1a1a; z-index: 100; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #06b6d4, #3b82f6); width: 0%; transition: width 0.1s ease-out; }
+
+        .top-nav {
+            position: fixed; top: 3px; left: 0; width: 100%; z-index: 90;
+            background: rgba(10,10,10,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .top-nav a, .top-nav button { text-decoration: none; border: none; background: none; cursor: pointer; }
+
+        .article-body { padding: 80px 20px 60px; max-width: 640px; margin: 0 auto; }
+
+        .cover { width: calc(100% + 40px); margin: 0 -20px; position: relative; aspect-ratio: 16/9; overflow: hidden; }
+        .cover img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .cover-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, #0a0a0a, transparent); }
+
+        .tldr {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px; margin: 32px 0;
+        }
+        .tldr h3 { font-size: 0.8rem; font-weight: 700; color: #06b6d4; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .tldr ul { list-style: none; }
+        .tldr li { padding: 8px 0; font-size: 0.9rem; line-height: 1.65; color: #9ca3af; display: flex; gap: 10px; }
+        .tldr li::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: #06b6d4; margin-top: 8px; flex-shrink: 0; }
+        .tldr li strong { color: #e5e7eb; }
+
+        h1 { font-size: 1.65rem; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 12px; }
+        h2 { font-size: 1.25rem; font-weight: 700; color: #fff; margin: 40px 0 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        p { margin-bottom: 1.5rem; color: #9ca3af; font-size: 0.95rem; line-height: 1.75; }
+        strong { color: #e5e7eb; }
+
+        .meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #6b7280; margin-bottom: 28px; font-weight: 500; }
+        .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 36px 0; }
+
+        .info-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 18px; margin-bottom: 14px;
+        }
+        .info-card .label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .info-card h4 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .info-card p { font-size: 0.85rem; margin-bottom: 0; }
+
+        .stat-card {
+            background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.2);
+            border-radius: 16px; padding: 20px; margin-bottom: 14px; text-align: center;
+        }
+        .stat-card .stat-num { font-size: 2.2rem; font-weight: 900; color: #06b6d4; letter-spacing: -0.02em; }
+        .stat-card .stat-label { font-size: 0.7rem; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 4px; }
+
+        .dark-card {
+            background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px; margin-bottom: 14px;
+        }
+        .dark-card h4 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .dark-card p { font-size: 0.85rem; margin-bottom: 0; }
+
+        .quote-box {
+            background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(59,130,246,0.06));
+            border: 1px solid rgba(6,182,212,0.15); border-radius: 20px;
+            padding: 28px 24px; margin: 40px 0; text-align: center;
+        }
+        .quote-box .quote-text { font-size: 1.3rem; font-weight: 900; color: #fff; font-style: italic; margin-bottom: 8px; }
+        .quote-box .quote-attr { font-size: 0.75rem; color: #6b7280; font-weight: 500; }
+
+        .compare-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .compare-item { text-align: center; padding: 14px 8px; border-radius: 12px; }
+        .compare-item .emoji { font-size: 1.5rem; margin-bottom: 6px; }
+        .compare-item h5 { font-size: 0.75rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .compare-item p { font-size: 0.7rem; margin-bottom: 0; line-height: 1.4; }
+
+        .bottom-safe { height: 40px; }
+    </style>
+</head>
+<body class="scrollbar-hide">
+
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+
+    <nav class="top-nav">
+        <a href="../index.html" style="padding:8px;margin:-8px;color:#9ca3af;">
+            <i class="ph-bold ph-arrow-left" style="font-size:20px;"></i>
+        </a>
+        <div style="font-size:0.8rem;font-weight:700;color:#9ca3af;letter-spacing:0.05em;">KLIO.</div>
+        <button onclick="shareArticle()" style="padding:8px;margin:-8px;color:#9ca3af;">
+            <i class="ph-bold ph-share-network" style="font-size:20px;"></i>
+        </button>
+    </nav>
+
+    <div class="article-body">
+
+        <div class="cover">
+            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop" alt="Cover" loading="eager">
+            <div class="cover-fade"></div>
+        </div>
+
+        <div style="margin-top:-20px;position:relative;z-index:2;">
+            <span style="display:inline-block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#06b6d4;border:1px solid rgba(6,182,212,0.3);padding:4px 10px;border-radius:6px;margin-bottom:12px;">前瞻技術研究 2026</span>
+            <h1>Transformers.js PWA<br><span style="background:linear-gradient(90deg,#06b6d4,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">離線 Web AI 深度研究</span></h1>
+            <p style="font-size:0.95rem;color:#6b7280;margin-bottom:16px;line-height:1.6;">基於 WebGPU/WASM 與 PWA 的離線推論架構，實現零延遲、高隱私、免伺服器成本的下一代 AI 基礎設施。</p>
+            <div class="meta">
+                <span>By KLIO x AI</span>
+                <span style="color:#374151;">•</span>
+                <span>Apr 14, 2026</span>
+                <span style="color:#374151;">•</span>
+                <span>12 min read</span>
+            </div>
+        </div>
+
+        <!-- TL;DR -->
+        <div class="tldr">
+            <h3><i class="ph-fill ph-lightning" style="color:#06b6d4;font-size:16px;"></i> 核心摘要 TL;DR</h3>
+            <ul>
+                <li><strong>零延遲推論：</strong>WebGPU + WASM 消弭網路傳輸瓶頸，毫秒級回應使用者意圖。</li>
+                <li><strong>極致數據隱私：</strong>敏感數據永不離端，完美符合 HIPAA、GDPR 等高規格合規要求。</li>
+                <li><strong>重塑成本結構：</strong>轉嫁算力至終端，徹底消除雲端 API Token 費用。</li>
+                <li><strong>OPFS 最佳實踐：</strong>Origin Private File System 以位元組級存取處理巨量模型檔，速度為 IndexedDB 數倍。</li>
+            </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Chapter 1 -->
+        <h2>01 / 底層架構：大容量模型存儲對比</h2>
+
+        <p>動輒數 GB 的 AI 模型對傳統存儲機制提出極端挑戰。以下為主流客戶端存儲方案優劣分析：</p>
+
+        <div class="compare-grid">
+            <div class="compare-item" style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.15);">
+                <div class="emoji">⚡</div>
+                <h5>Cache API</h5>
+                <p style="color:#f87171;">靜態資源用<br>大檔易 OOM</p>
+            </div>
+            <div class="compare-item" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.15);">
+                <div class="emoji">💾</div>
+                <h5>IndexedDB</h5>
+                <p style="color:#fbbf24;">結構化資料<br>序列化開銷</p>
+            </div>
+            <div class="compare-item" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);">
+                <div class="emoji">🏆</div>
+                <h5>OPFS</h5>
+                <p style="color:#34d399;">最佳實踐<br>零序列化</p>
+            </div>
+        </div>
+
+        <div class="dark-card" style="border-left:3px solid #10b981;">
+            <h4>架構建議：雙層快取架構</h4>
+            <p>以 IndexedDB 存儲輕量詮釋資料 (Metadata)、分詞器設定檔，將龐大的二進制模型權重直接寫入 <strong>OPFS</strong>，確保極致載入速度與優雅降級機制。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Chapter 2 -->
+        <h2>02 / 關鍵技術矩陣</h2>
+
+        <div class="info-card" style="border-left:3px solid #06b6d4;">
+            <div class="label" style="color:#06b6d4;">核心推理引擎</div>
+            <h4>WebGPU C++ Runtime & WGSL</h4>
+            <p>引入 C++ 重寫的 v4 執行階段，利用計算著色器將矩陣乘法分發至 GPU 數萬個執行緒並發執行。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #10b981;">
+            <div class="label" style="color:#10b981;">PWA 離線與存儲</div>
+            <h4>Background Fetch 巨量下載</h4>
+            <p>將數 GB 模型下載任務移交 OS 層，應用關閉也能持續；結合 <strong>Persistent Storage</strong> 避免被當作暫存清除。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #8b5cf6;">
+            <div class="label" style="color:#8b5cf6;">資料預處理</div>
+            <h4>多模態交錯輸入與 Chat Template</h4>
+            <p>前端動態將視覺張量與文字 Token 融合；內建 Jinja 模板將對話陣列精準編譯為模型專屬 Prompt。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #f59e0b;">
+            <div class="label" style="color:#f59e0b;">效能調優</div>
+            <h4>推測解碼 (Speculative Decoding)</h4>
+            <p>前端並行草稿模型與目標大模型，透過草稿猜測並由大模型批量驗證，成倍提升生成速度。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Chapter 3 -->
+        <h2>03 / 應用場景深度發掘</h2>
+
+        <p>結合 PWA 斷網執行特性，以下為隱私、低延遲與高可用性的代表性應用：</p>
+
+        <div class="dark-card" style="border-left:3px solid #3b82f6;">
+            <h4>⚖️ 合約風險分析器</h4>
+            <p>載入 1B 級別量化 LLM，離線抽取違約金條款，<strong>商業機密零外洩</strong>。</p>
+        </div>
+
+        <div class="dark-card" style="border-left:3px solid #8b5cf6;">
+            <h4>📚 無伺服器本地 RAG</h4>
+            <p>整合 Voyager WASM 與 Embedding 模型，建構個人筆記語義檢索系統。</p>
+        </div>
+
+        <div class="dark-card" style="border-left:3px solid #10b981;">
+            <h4>🎬 即時去背與 VR</h4>
+            <p>RMBG-2.0 處理 video 幀，實現瀏覽器高解析度直播背景替換。</p>
+        </div>
+
+        <div class="dark-card" style="border-left:3px solid #06b6d4;">
+            <h4>🩺 醫療病歷摘要</h4>
+            <p>Whisper 轉錄問診再由 LLM 結構化 SOAP，符合 <strong>HIPAA</strong> 規範。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Chapter 4 -->
+        <h2>04 / 商業變現與資安防禦</h2>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+            <div class="stat-card">
+                <div class="stat-num">$0</div>
+                <div class="stat-label">AI 推論成本</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">100%</div>
+                <div class="stat-label">離線合規</div>
+            </div>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #06b6d4;">
+            <h4>結果導向任務計費</h4>
+            <p>放棄 Token 計費，依照用戶端「<strong>成功完成的業務動作</strong>」於背景扣款。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #3b82f6;">
+            <h4>雲端/邊緣混合定價</h4>
+            <p>前端草稿免費，判定複雜任務時無縫切換 70B 雲端模型並觸發計費。</p>
+        </div>
+
+        <div class="dark-card" style="background:rgba(15,23,42,0.8);border-left:3px solid #ef4444;">
+            <div style="font-size:0.7rem;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">🛡️ 白盒逆向工程防禦</div>
+            <h4>WASM 指令虛擬化</h4>
+            <p>將演算法轉為自訂位元組碼並置於 WASM 內微型 VM 直譯。偵測到 DevTools 斷點立即觸發<strong>自毀污染記憶體</strong>。</p>
+        </div>
+
+        <!-- Final Quote -->
+        <div class="quote-box">
+            <div style="font-size:0.65rem;font-weight:800;color:#06b6d4;letter-spacing:0.3em;text-transform:uppercase;margin-bottom:12px;">Final Perspective</div>
+            <div class="quote-text">"The browser is the new OS."</div>
+            <div class="quote-attr">— 邊緣推論重塑 AI 時代的基礎設施經濟學</div>
+        </div>
+
+        <div class="bottom-safe"></div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        });
+        function shareArticle() {
+            const data = { title: 'Transformers.js PWA 離線 Web AI 深度研究', url: window.location.href };
+            if (navigator.share) { navigator.share(data); }
+            else { navigator.clipboard.writeText(data.url).then(() => alert('連結已複製！')); }
+        }
+    </script>
+</body>
+</html>

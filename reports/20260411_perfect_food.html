@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨境健康機能食品市場深度趨勢解析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=DM+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-blue: #2563eb;
+            --brand-light-blue: #eff6ff;
+            --bg-gray: #eef0f5;
+            --accent-1: #2563eb;
+            --accent-2: #38bdf8;
+            --accent-3: #818cf8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-gray);
+            background-image: radial-gradient(circle at 20% 50%, rgba(37,99,235,0.04) 0%, transparent 60%),
+                              radial-gradient(circle at 80% 20%, rgba(56,189,248,0.04) 0%, transparent 50%);
+            color: #374151;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* A4 橫版滿版容器設定 */
+        .page-a4-landscape {
+            width: 100%;
+            max-width: 297mm;
+            min-height: 210mm;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px -10px rgba(37,99,235,0.12), 0 8px 24px -4px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            page-break-after: always;
+            break-inside: avoid;
+            padding: 14mm 18mm;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 頂部漸層裝飾條 */
+        .page-a4-landscape::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 5px;
+            background: linear-gradient(90deg, #2563eb 0%, #38bdf8 50%, #818cf8 100%);
+            z-index: 10;
+        }
+
+        /* 右下角裝飾圓 */
+        .page-a4-landscape::after {
+            content: "";
+            position: absolute;
+            bottom: -60px; right: -60px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* 列印引導強制對頁 */
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            body { background: none; margin: 0; padding: 0; }
+            .page-a4-landscape {
+                margin: 0;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                width: 297mm;
+                height: 210mm;
+                page-break-after: always;
+                break-inside: avoid;
+            }
+            .page-a4-landscape::before { display: none; }
+            .no-print { display: none !important; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            position: fixed;
+            top: 24px; right: 24px;
+            z-index: 100;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.5);
+            padding: 10px 14px;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px -5px rgba(37,99,235,0.18);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 0.65rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.01em;
+        }
+        .btn-edit { background: #eff6ff; color: #2563eb; }
+        .btn-edit:hover { background: #dbeafe; transform: translateY(-1px); }
+        .btn-save { background: #ecfdf5; color: #059669; }
+        .btn-save:hover { background: #d1fae5; transform: translateY(-1px); }
+        .btn-print { background: #fef2f2; color: #dc2626; }
+        .btn-print:hover { background: #fee2e2; transform: translateY(-1px); }
+
+        /* 編輯模式視覺回饋 */
+        [contenteditable="true"] {
+            outline: 2px dashed var(--brand-blue);
+            outline-offset: 3px;
+            border-radius: 8px;
+            background-color: rgba(59,130,246,0.02);
+            transition: all 0.25s ease;
+            cursor: text;
+        }
+        [contenteditable="true"]:focus {
+            outline: 2px solid var(--brand-blue);
+            background-color: transparent;
+        }
+
+        /* 玻璃卡片 */
+        .glass-card {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 16px -4px rgba(226,232,240,0.8);
+        }
+
+        /* 標題樣式 */
+        .section-title {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+        }
+
+        /* 數據標籤動畫 */
+        .stat-badge {
+            background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        /* 市場卡片hover */
+        .market-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .market-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px -8px rgba(37,99,235,0.15);
+        }
+
+        /* 頁碼 */
+        .page-num {
+            position: absolute;
+            bottom: 12px;
+            right: 20px;
+            font-size: 0.65rem;
+            color: #cbd5e1;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+        }
+
+        /* 項目符號 */
+        .bullet-blue { color: #2563eb; font-weight: 800; }
+        .bullet-rose { color: #e11d48; font-weight: 800; }
+        .bullet-emerald { color: #059669; font-weight: 800; }
+    </style>
+</head>
+
+<body>
+
+    <div class="control-panel no-print">
+        <button id="btn-edit" class="btn btn-edit" onclick="toggleEdit()">✏️ 編輯內容</button>
+        <button class="btn btn-save" onclick="saveHTML()">⬇️ 儲存網頁</button>
+        <button class="btn btn-print" onclick="printDoc()">🖨️ 輸出 PDF</button>
+    </div>
+
+    <div id="document-wrapper">
+
+        <!-- ===== PAGE 1：封面總覽 ===== -->
+        <section class="page-a4-landscape">
+            <div class="flex flex-col h-full justify-between">
+                <div class="mb-6">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 font-bold text-xs mb-5 tracking-widest uppercase">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                        FMCG Market Analysis 2026
+                    </div>
+                    <h1 class="section-title text-4xl leading-tight mb-4">
+                        跨境快消食品深度分析<br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-400">台灣・日本・美國</span>
+                    </h1>
+                    <h2 class="text-xl text-slate-600 font-bold border-l-4 border-blue-500 pl-4 py-1">
+                        健康功能性、低熱量食品全面趨勢解析
+                    </h2>
+                </div>
+
+                <div class="bg-gradient-to-r from-slate-50 to-blue-50/30 rounded-2xl p-6 mb-6 border border-slate-100">
+                    <p class="text-gray-700 leading-relaxed text-base mb-2 font-medium">
+                        2026年的全球快速消費品行業中，健康功能性、低熱量食品版圖已完成了根本性的結構轉移。這股力量已全面滲透至主流便利商店、高級超市、藥妝店以及大型綜合電商平台。
+                    </p>
+                    <p class="text-gray-600 leading-relaxed text-sm">
+                        此次轉型的核心驅動力，在於全球人口對預防醫學的覺醒，以及食品科學在風味遮蔽、質地改良等三大突破。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-5 flex-grow">
+                    <!-- 美國市場 -->
+                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between market-card">
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-2xl">🇺🇸</span>
+                                <h3 class="text-lg font-black text-slate-800">美國市場</h3>
+                            </div>
+                            <div class="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold mb-4">「分子組工程」思維</div>
+                            <ul class="space-y-2.5">
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-blue mt-0.5">▸</span> 積極運用前沿食品科技，將宏量營養素徹底重新工程化
+                                </li>
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-blue mt-0.5">▸</span> 運用超濾、微濾等技術改造乳清蛋白，創造無數可能性
+                                </li>
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-blue mt-0.5">▸</span> 消費者對數據（如淨碳水、蛋白質數）極度敏感
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 日本市場 -->
+                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between market-card">
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-2xl">🇯🇵</span>
+                                <h3 class="text-lg font-black text-slate-800">日本市場</h3>
+                            </div>
+                            <div class="inline-block px-3 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold mb-4">「與日常無縫接軌」哲學</div>
+                            <ul class="space-y-2.5">
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-rose mt-0.5">▸</span> 全球首創一系列食品科技，將GABA等機能性成分融入傳統食品中
+                                </li>
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-rose mt-0.5">▸</span> 完美嵌入拉麵、巧克力、米飯、優格中
+                                </li>
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-rose mt-0.5">▸</span> 讓消費者在不改變既有飲食習慣下獲得健康效益
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 台灣市場 -->
+                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between market-card">
+                        <div>
+                            <div class="flex items-center gap-3 mb-4">
+                                <span class="text-2xl">🇹🇼</span>
+                                <h3 class="text-lg font-black text-slate-800">台灣市場</h3>
+                            </div>
+                            <div class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mb-4">「混血在地化」特色</div>
+                            <ul class="space-y-2.5">
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-emerald mt-0.5">▸</span> 迅速吸納美日最新趨勢並本土化
+                                </li>
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-emerald mt-0.5">▸</span> 與本土深根的茶飲、大豆蛋白、漢方食療傳統深度結合
+                                </li>
+                                <li class="text-xs text-gray-600 flex items-start gap-2">
+                                    <span class="bullet-emerald mt-0.5">▸</span> 打造出如機能性茶飲、漢方補品、機能飲等具高度在地適應性產品
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span class="page-num">01 / 05</span>
+        </section>
+
+        <!-- ===== PAGE 2：蛋白質 & 低卡 ===== -->
+        <section class="page-a4-landscape">
+            <div class="flex flex-col h-full">
+                <div class="mb-5">
+                    <h2 class="section-title text-2xl border-b border-gray-100 pb-3">
+                        熱門類別深析：蛋白質補充與低熱量無負擔
+                    </h2>
+                </div>
+
+                <div class="grid grid-rows-2 gap-5 flex-grow">
+                    <!-- 蛋白質強化產品 -->
+                    <div class="glass-card rounded-2xl p-5 flex gap-5">
+                        <div class="w-1/3 border-r border-gray-100 pr-5">
+                            <h3 class="text-base font-bold text-blue-700 mb-2">1. 蛋白質強化產品</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed mb-3">
+                                蛋白質板塊已從傳統運動後肌肉修復，正式進化為「全天候日常營養基礎」。將高蛋白隱藏於傳統高熱量零食中，是目前技術難度最高的競技場。
+                            </p>
+                            <div class="bg-blue-50 rounded-lg p-3">
+                                <span class="text-xs font-bold text-blue-800 uppercase tracking-wide block mb-1">技術試煉場</span>
+                                <span class="text-xs text-blue-600">美國廠商使用赤藻糖醇、水溶性米糠纖維製作高蛋白冰淇淋</span>
+                            </div>
+                        </div>
+                        <div class="w-2/3 grid grid-cols-3 gap-4">
+                            <div class="bg-white rounded-xl p-3.5 shadow-sm border border-gray-100">
+                                <div class="font-bold text-slate-800 mb-2 text-sm">固體零食</div>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>▸ <strong class="text-gray-800">台灣大成：</strong>香嫩雞胸肉每包僅88大卡，蛋白質20.4g</li>
+                                    <li>▸ <strong class="text-gray-800">日本7-Eleven：</strong>サラダチキン（沙拉雞胸）奠定便利店減脂食品標竿</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white rounded-xl p-3.5 shadow-sm border border-gray-100">
+                                <div class="font-bold text-slate-800 mb-2 text-sm">飲品</div>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>▸ <strong class="text-gray-800">美國Fairlife：</strong>採用超微濾技術去除乳糖、大幅提升蛋白比例</li>
+                                    <li>▸ <strong class="text-gray-800">台灣統一：</strong>低糖無糖黑豆漿穩居機能飲品暢銷榜</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white rounded-xl p-3.5 shadow-sm border border-gray-100">
+                                <div class="font-bold text-slate-800 mb-2 text-sm">甜點冰品</div>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>▸ <strong class="text-gray-800">美國Halo Top：</strong>將整桶冰淇淋熱量壓制在90大卡左右</li>
+                                    <li>▸ <strong class="text-gray-800">Quest Nutrition：</strong>以非油炸蛋白洋芋片顛覆鹹味零食市場</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 零卡/低卡 -->
+                    <div class="glass-card rounded-2xl p-5 flex gap-5">
+                        <div class="w-1/3 border-r border-gray-100 pr-5">
+                            <h3 class="text-base font-bold text-emerald-700 mb-2">2. 零卡/低卡無負擔食品</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed mb-3">
+                                競爭焦點已轉移至「零後味」美感。消費者要求極低熱量，且拒絕人工甜味劑的化學後味。巧克力是低卡技術難度最高的品類。
+                            </p>
+                            <div class="bg-emerald-50 rounded-lg p-3">
+                                <span class="text-xs font-bold text-emerald-800 uppercase tracking-wide block mb-1">工藝對決</span>
+                                <span class="text-xs text-emerald-600">糖醇與阿洛酮糖決定巧克力結晶質地與延展性</span>
+                            </div>
+                        </div>
+                        <div class="w-2/3 grid grid-cols-3 gap-4">
+                            <div class="bg-white rounded-xl p-3.5 shadow-sm border border-gray-100">
+                                <div class="font-bold text-slate-800 mb-2 text-sm">飲品</div>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>▸ <strong class="text-gray-800">美國Zevia：</strong>以「清淨標籤」為武器，全面採用甜菊糖，推出零卡汽水</li>
+                                    <li>▸ <strong class="text-gray-800">台日市場：</strong>無糖茶飲（伊藤園、綾鷹）是市場主流</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white rounded-xl p-3.5 shadow-sm border border-gray-100">
+                                <div class="font-bold text-slate-800 mb-2 text-sm">點心類（蒟蒻系）</div>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>▸ <strong class="text-gray-800">美國Miracle Noodle：</strong>將蒟蒻麵推入「Shirataki Pasta」中高端市場</li>
+                                    <li>▸ <strong class="text-gray-800">台灣廠商：</strong>運用蒟蒻低熱量特性推出零熱量果凍</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white rounded-xl p-3.5 shadow-sm border border-gray-100">
+                                <div class="font-bold text-slate-800 mb-2 text-sm">嘴饞代替品</div>
+                                <ul class="text-xs text-gray-600 space-y-1.5">
+                                    <li>▸ <strong class="text-gray-800">美國SmartSweets：</strong>使用天然甜味劑，大幅壓低軟糖糖分</li>
+                                    <li>▸ <strong class="text-gray-800">日本Saraya：</strong>推出首款使用羅漢果的零卡糖</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span class="page-num">02 / 05</span>
+        </section>
+
+        <!-- ===== PAGE 3：紓壓助眠 & 飽足感 ===== -->
+        <section class="page-a4-landscape">
+            <div class="flex flex-col h-full">
+                <div class="mb-5">
+                    <h2 class="section-title text-2xl border-b border-gray-100 pb-3">
+                        機能用途深析：紓壓助眠・系統性代餐
+                    </h2>
+                </div>
+
+                <div class="flex gap-5 flex-grow">
+                    <!-- 左：紓壓/助眠 -->
+                    <div class="w-1/2 flex flex-col gap-4">
+                        <div class="bg-indigo-600 text-white rounded-t-2xl p-4">
+                            <h3 class="text-lg font-bold">3. 紓壓／助眠食品</h3>
+                            <p class="text-indigo-100 text-xs mt-1">法規套利與在地轉譯的經典案例</p>
+                        </div>
+                        <div class="glass-card rounded-b-2xl p-5 flex-grow">
+                            <p class="text-xs text-gray-700 leading-relaxed mb-5">
+                                現代社會高壓形成龐大市場，各地法規差異為企業提供了巨大套利空間。
+                            </p>
+                            <div class="space-y-3">
+                                <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-400">
+                                    <h4 class="font-bold text-slate-800 text-sm">🇺🇸 美國：褪黑激素大爆發</h4>
+                                    <p class="text-xs text-gray-600 mt-1.5">褪黑激素被FDA歸類為膳食補充品，不受嚴格藥品管制。大廠（如Olly）推出含褪黑激素加多種草本的助眠軟糖。</p>
+                                </div>
+                                <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-400">
+                                    <h4 class="font-bold text-slate-800 text-sm">🇯🇵 日本：GABA與乳酸菌</h4>
+                                    <p class="text-xs text-gray-600 mt-1.5">日本規範將GABA列為食品原料。Glico推出GABA巧克力幫助深層放鬆；Yakult 1000以獨家乳酸菌改善腸道-神經軸線。</p>
+                                </div>
+                                <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-indigo-400">
+                                    <h4 class="font-bold text-slate-800 text-sm">🇹🇼 台灣：在地轉譯策略</h4>
+                                    <p class="text-xs text-gray-600 mt-1.5">
+                                        雀巢善寧利用「睡前一杯熱牛奶助眠」的深層文化認知，推出添加芝麻素EX精華的安睡奶粉，成為熱售商品。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右：飽足感 -->
+                    <div class="w-1/2 flex flex-col gap-4">
+                        <div class="bg-amber-500 text-white rounded-t-2xl p-4">
+                            <h3 class="text-lg font-bold">4. 高飽足感食品</h3>
+                            <p class="text-amber-50 text-xs mt-1">從熱量控制進化到「全面營養管控」系統性工程</p>
+                        </div>
+                        <div class="glass-card rounded-b-2xl p-5 flex-grow">
+                            <div class="space-y-5">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold">棒類・餅乾</span>
+                                        <h4 class="font-bold text-slate-800 text-xs">極致宏量營養素微縮工程</h4>
+                                    </div>
+                                    <p class="text-xs text-gray-600">美國廠商展現出在營養學上長期累積的功力：在塞入大量蛋白質並去除苦澀感方面，MET-Rx的極致密度運動棒，和Quest的口感出眾高蛋白棒已顛覆傳統糖果棒市場。</p>
+                                </div>
+                                <hr class="border-gray-100">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold">沖泡／飲品</span>
+                                        <h4 class="font-bold text-slate-800 text-xs">液態營養革命谷底命</h4>
+                                    </div>
+                                    <p class="text-xs text-gray-600">Soylent與Huel顛覆了代餐概念。Huel的飲品奶昔主打400大卡含5大類營養素；Soylent以超低成本將營養攝取轉化為日常習慣。</p>
+                                </div>
+                                <hr class="border-gray-100">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-bold">日本特色</span>
+                                        <h4 class="font-bold text-slate-800 text-xs">日本「完全營養」主食革命</h4>
+                                    </div>
+                                    <p class="text-xs text-gray-600">日本消費者執著於「完整均衡」。Base Food開發的「Base Bread」將高達33種營養素注入傳統麵包中，成功將食品科技普及化至一般麵包消費。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span class="page-num">03 / 05</span>
+        </section>
+
+        <!-- ===== PAGE 4：運動機能 & 腸道美容 ===== -->
+        <section class="page-a4-landscape">
+            <div class="flex flex-col h-full">
+                <div class="mb-5">
+                    <h2 class="section-title text-2xl border-b border-gray-100 pb-3">
+                        極速補給・內外養顏・腸道養護
+                    </h2>
+                </div>
+
+                <div class="grid grid-rows-2 gap-5 flex-grow">
+                    <!-- 運動機能補給 -->
+                    <div class="glass-card rounded-2xl p-5 flex gap-5">
+                        <div class="w-1/3 border-r border-gray-100 pr-5">
+                            <h3 class="text-base font-bold text-orange-600 mb-2">5. 運動機能補給產品</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                技術壁壘在於能量供給曲線平穩度。極端顆粒化所帶來的「即溶即吸收無腸胃不適」，成為新一代競技場。
+                            </p>
+                        </div>
+                        <div class="w-2/3 grid grid-cols-2 gap-5">
+                            <div>
+                                <h4 class="font-bold text-slate-800 mb-2 text-sm border-b-2 border-orange-200 pb-1">運動中補給</h4>
+                                <ul class="text-xs text-gray-600 space-y-1.5 mt-2">
+                                    <li>▸ <strong class="text-gray-800">美國GU能量膠：</strong>技術在麥芽糖精準比例混合加入BCAA以減少乳酸堆積</li>
+                                    <li>▸ <strong class="text-gray-800">Maurten：</strong>採用創新水凝膠技術，低滲透壓設計有效降低腸胃不適</li>
+                                    <li>▸ <strong class="text-gray-800">台灣UP Sports：</strong>配方對應台灣氣候，推出紫蘇梅、海鹽口味極具亞洲特色</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 mb-2 text-sm border-b-2 border-orange-200 pb-1">日常能量飲品</h4>
+                                <ul class="text-xs text-gray-600 space-y-1.5 mt-2">
+                                    <li>▸ <strong class="text-gray-800">美國Zevia：</strong>推出零卡天然咖啡因能量飲品，搶奪白領客群</li>
+                                    <li>▸ <strong class="text-gray-800">日本市場：</strong>勤務族的最愛——Asahi與MINTIA將高濃度咖啡因精縮於小錠中，滿足隱蔽補充需求</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 腸道/美容 -->
+                    <div class="glass-card rounded-2xl p-5 flex gap-5">
+                        <div class="w-1/3 border-r border-gray-100 pr-5">
+                            <h3 class="text-base font-bold text-pink-600 mb-2">6. 腸道健康與美顏機能</h3>
+                            <p class="text-xs text-gray-600 leading-relaxed">
+                                「由內養外」的「腸腦軸線」科學實證，將此類產品推至品類新高度，顯示東西方健康概念的深度融合。
+                            </p>
+                        </div>
+                        <div class="w-2/3 grid grid-cols-2 gap-5">
+                            <div>
+                                <h4 class="font-bold text-slate-800 mb-2 text-sm border-b-2 border-pink-200 pb-1">養顏美容</h4>
+                                <ul class="text-xs text-gray-600 space-y-1.5 mt-2">
+                                    <li>▸ <strong class="text-gray-800">日本資生堂：</strong>以專利小分子膠原蛋白技術制定亞洲美容飲品的行業標準</li>
+                                    <li>▸ <strong class="text-gray-800">台灣廠商：</strong>將膠原蛋白、玻尿酸融入零食與飲品中形成複合機能</li>
+                                    <li>▸ <strong class="text-gray-800">美國新創：</strong>從產後護理切入節點健康發展，如Needed主打修復孕產婦體況</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 mb-2 text-sm border-b-2 border-pink-200 pb-1">腸道健康（益生元）</h4>
+                                <ul class="text-xs text-gray-600 space-y-1.5 mt-2">
+                                    <li>▸ <strong class="text-gray-800">日本CAC：</strong>採用多醣類複方搭配特定益生菌，改善腸道微環境</li>
+                                    <li>▸ <strong class="text-gray-800">韓國Foodology：</strong>將難消化麥芽糊精等益生元打造兼顧便秘改善與體重管理的產品</li>
+                                    <li>▸ <strong class="text-gray-800">美國Olipop：</strong>將膳食纖維注入碳酸飲料，創造「機能性汽水」新品類</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span class="page-num">04 / 05</span>
+        </section>
+
+        <!-- ===== PAGE 5：策略總結 ===== -->
+        <section class="page-a4-landscape">
+            <div class="flex flex-col h-full">
+                <div class="mb-6 text-center">
+                    <h2 class="section-title text-2xl inline-block border-b-4 border-blue-500 pb-2">
+                        策略總結與未來產業方向
+                    </h2>
+                    <p class="text-gray-500 mt-4 text-sm max-w-3xl mx-auto leading-relaxed">
+                        綜覽六大趨勢分析，快消產業演進軌跡已清晰浮現。品牌若欲在跨境市場突圍，須實踐以下三大核心策略。
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6 flex-grow">
+                    <!-- 策略1 -->
+                    <div class="bg-white rounded-2xl p-7 shadow-lg shadow-blue-100/40 border border-gray-100 flex flex-col items-center text-center market-card">
+                        <div class="w-14 h-14 bg-gradient-to-br from-blue-100 to-blue-200 text-blue-600 rounded-2xl flex items-center justify-center text-xl font-black mb-5 shadow-md shadow-blue-100">
+                            1
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 mb-3">法規套利與精準在地轉譯</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed text-left w-full">
+                            善用各市場法規對成分的定性差異。具備跨境能力的FMCG企業，必須擁有「成分轉譯」能力：迅速找到具有等同臨床實證的市場溝通替代方案（如以GABA代替褪黑激素），以規避法規障礙，把握先發優勢。
+                        </p>
+                    </div>
+
+                    <!-- 策略2（突出） -->
+                    <div class="bg-gradient-to-b from-white to-emerald-50/30 rounded-2xl p-7 shadow-xl shadow-emerald-100/50 border-2 border-emerald-200 flex flex-col items-center text-center relative market-card">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                            <span class="bg-gradient-to-r from-emerald-500 to-teal-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow">核心策略</span>
+                        </div>
+                        <div class="w-14 h-14 bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600 rounded-2xl flex items-center justify-center text-xl font-black mb-5 shadow-md shadow-emerald-100 mt-2">
+                            2
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 mb-3">機能成分隱藏進極致「零食化」</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed text-left w-full">
+                            現代消費者渴望健康，但不願妥協於乾燥、難以入口的保健品體驗。食品工程學應善用微膠囊、乳化等前沿技術，將高效機能成分的苦澀與異味隱藏於巧克力、糖果等傳統的「縱情享受食品」中。
+                        </p>
+                    </div>
+
+                    <!-- 策略3 -->
+                    <div class="bg-white rounded-2xl p-7 shadow-lg shadow-rose-100/40 border border-gray-100 flex flex-col items-center text-center market-card">
+                        <div class="w-14 h-14 bg-gradient-to-br from-rose-100 to-rose-200 text-rose-600 rounded-2xl flex items-center justify-center text-xl font-black mb-5 shadow-md shadow-rose-100">
+                            3
+                        </div>
+                        <h3 class="text-base font-bold text-slate-800 mb-3">從單一消除罪惡感到全面正向機能</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed text-left w-full">
+                            「低卡／零糖」已淪為基礎配備。下一波競爭在於「吃了什麼好事會發生」的正向機能敘事：如吃了促進腸道蠕動、改善睡眠品質、提升膠原蛋白合成。這個敘事框架的轉換，是品牌溢價與消費者黏著度的核心戰場。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 底部總結欄 -->
+                <div class="mt-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-4 text-white flex items-center gap-4">
+                    <div class="text-2xl shrink-0">💡</div>
+                    <p class="text-xs leading-relaxed opacity-90">
+                        <strong>總結洞察：</strong>未來五年，跨境健康食品市場的制高點將由「技術護城河 × 在地文化轉譯 × 正向機能敘事」三者合力決定。單一維度的競爭者將面臨快速同質化壓力，而能同時掌握這三個維度的品牌，方能在台、日、美市場建立可持續的競爭優勢。
+                    </p>
+                </div>
+            </div>
+            <span class="page-num">05 / 05</span>
+        </section>
+
+    </div><!-- /#document-wrapper -->
+
+    <script>
+        let editMode = false;
+
+        function toggleEdit() {
+            editMode = !editMode;
+            const btn = document.getElementById('btn-edit');
+            const editables = document.querySelectorAll('#document-wrapper p, #document-wrapper h1, #document-wrapper h2, #document-wrapper h3, #document-wrapper h4, #document-wrapper li, #document-wrapper span:not(.page-num):not(.stat-badge)');
+
+            editables.forEach(el => {
+                el.contentEditable = editMode ? 'true' : 'false';
+            });
+
+            if (editMode) {
+                btn.innerHTML = '💾 結束編輯';
+                btn.style.background = '#dbeafe';
+            } else {
+                btn.innerHTML = '✏️ 編輯內容';
+                btn.style.background = '#eff6ff';
+            }
+        }
+
+        function saveHTML() {
+            const clone = document.documentElement.cloneNode(true);
+            // Remove control panel from saved file
+            const cp = clone.querySelector('.control-panel');
+            if (cp) cp.remove();
+
+            const blob = new Blob(['<!DOCTYPE html>' + clone.outerHTML], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '跨境健康機能食品市場分析_2026.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function printDoc() {
+            window.print();
+        }
+    </script>
+
+</body>
+</html>

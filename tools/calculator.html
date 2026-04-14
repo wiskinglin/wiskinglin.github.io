@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CALCUKLIO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Base Styles adopted from top50/11.html */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;
+  --text:#ffffff;--text-muted:rgba(255,255,255,0.7);--text-dim:rgba(255,255,255,0.4);
+  --glass-bg:rgba(255,255,255,0.08);
+  --glass-border:rgba(255,255,255,0.15);
+  --glass-highlight:rgba(255,255,255,0.3);
+  --accent-1:#6366f1;--accent-2:#ec4899;--accent-3:#06b6d4;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;
+  padding-bottom:100px;overflow-x:hidden;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(99,102,241,0.25) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(236,72,153,0.3) 0%, transparent 40%),
+    radial-gradient(circle at 50% 80%, rgba(6,182,212,0.2) 0%, transparent 50%);
+  background-attachment:fixed;
+}
+
+/* Fluid blobs behind everything */
+.blob{
+  position:fixed;border-radius:50%;filter:blur(80px);z-index:-1;
+  opacity:0.6;animation:blob-float 20s infinite alternate ease-in-out;
+}
+.blob-1{top:10%;left:20%;width:400px;height:400px;background:var(--accent-1);animation-delay:0s;}
+.blob-2{top:40%;right:10%;width:500px;height:500px;background:var(--accent-2);animation-delay:-5s;}
+.blob-3{bottom:-10%;left:40%;width:600px;height:600px;background:var(--accent-3);animation-delay:-10s;}
+@keyframes blob-float{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(50px,50px) scale(1.1)}
+  100%{transform:translate(-50px,20px) scale(0.9)}
+}
+
+/* Glassmorphism Panel Mixin */
+.glass-panel{
+  background:var(--glass-bg);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--glass-border);
+  box-shadow:0 8px 32px 0 rgba(0,0,0,0.3), inset 0 1px 1px var(--glass-highlight);
+  border-radius:24px;
+}
+
+/* History Panel - Fixed Height prevents layout shift */
+.history-panel { 
+  max-width:900px; margin:30px auto 20px; padding:20px 24px; position:relative; 
+  display:flex; flex-direction:column; gap: 12px;
+  height: 150px; /* FIXED height */
+  box-sizing: border-box;
+}
+.history-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;}
+.clear-history-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-muted); padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all .2s; font-family: 'Inter', 'Noto Sans TC', sans-serif;}
+.clear-history-btn:hover { background: rgba(236, 72, 153, 0.2); color: var(--accent-2); border-color: var(--accent-2); }
+.history-list { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; padding-right: 8px;}
+.history-item { display: flex; justify-content: space-between; padding: 6px 12px; background: rgba(0,0,0,0.2); border-radius: 8px; font-family: monospace; font-size: 1.1rem; animation: slideInX .3s ease;}
+.history-equation { color: var(--text-muted); }
+.history-result { color: var(--text); font-weight: 600; letter-spacing: 0.5px;}
+.history-empty { text-align: center; color: var(--text-dim); font-size: 0.9rem; padding: 10px 0; }
+@keyframes slideInX { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Layout */
+.demo{ max-width:1000px;margin:0 auto;padding:0 20px 40px;display:flex;justify-content:center; }
+.app-container{
+  width:100%;max-width:900px;padding:32px;display:grid;gap:24px;
+  grid-template-columns:280px 1fr;
+}
+
+/* Sidebar Info Card */
+.sidebar{display:flex;flex-direction:column;gap:20px}
+.credit-card{
+  padding:24px;display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+  position:relative;overflow:hidden;
+  transition:transform .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.credit-card:hover{transform:translateY(-4px) scale(1.02)}
+.credit-card::before{
+  content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform:skewX(-20deg);animation:shine 6s infinite;
+}
+@keyframes shine{
+  0%,20%{left:-100%} 40%,100%{left:200%}
+}
+.cc-top{display:flex;justify-content:space-between;align-items:center}
+.cc-chip{width:36px;height:24px;border-radius:6px;background:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;color:#000; transition: all 0.3s ease;}
+.cc-logo{font-weight:800;font-style:italic;letter-spacing:1px}
+.cc-desc{font-size: 0.95rem; font-weight:400; opacity: 0.9; margin-top: 16px; margin-bottom: 20px; line-height: 1.6; min-height: 48px; color: var(--text-muted); transition: opacity 0.3s ease;}
+.cc-bot{display:flex;justify-content:space-between;font-size:.7rem;text-transform:uppercase;color:var(--text-muted)}
+
+/* Quick Actions (Tabs) */
+.quick-actions{ display:grid;grid-template-columns:repeat(2,1fr);gap:16px; }
+.action-btn{
+  padding:16px 12px;text-align:center;cursor:pointer;
+  transition:all .3s ease; border: 1px solid var(--glass-border);
+}
+.action-btn:last-child:nth-child(odd) { grid-column: span 2; }
+.action-btn:hover{ background:rgba(255,255,255,0.15);transform:translateY(-4px); }
+.action-btn.active{ 
+  background:rgba(255,255,255,0.2); border-color:var(--accent-1); 
+  box-shadow: 0 0 15px rgba(99,102,241,0.3);
+}
+.action-icon{
+  width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.1);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 10px;
+  border:1px solid var(--glass-border); transition:all .3s ease; color: var(--text-muted);
+}
+.action-btn.active .action-icon { background: var(--accent-1); border-color:transparent; color: #fff;}
+.action-text{font-size:.75rem;font-weight:500}
+
+/* Panels */
+.main-content {
+  display:flex;
+  flex-direction:column;
+  height: 550px; /* <--- UNIFIED HEIGHT FOR ALL PANELS ---> */
+}
+.panel { display: none; flex-direction: column; gap: 0; padding: 0; overflow: hidden; height: 100%; border: 1px solid var(--glass-border); border-radius: 24px; background:var(--glass-bg); backdrop-filter:blur(24px); }
+.panel.active { display: flex; animation: fadeInd .4s ease; }
+@keyframes fadeInd { from {opacity:0; transform: translateY(15px);} to {opacity:1; transform: translateY(0);} }
+
+/* Calculator Specific Styles */
+.calc-display { padding: 30px; text-align: right; background: rgba(0,0,0,0.15); border-bottom: 1px solid var(--glass-border); flex-shrink:0;}
+.calc-history-view { height: 20px; font-size: 1rem; color: var(--text-muted); margin-bottom: 8px; font-family: monospace; }
+.calc-current { font-size: 3rem; font-weight: 700; letter-spacing: -1px; word-break: break-all; }
+
+.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(255,255,255,0.1); flex: 1; }
+.calc-btn {
+  background: var(--glass-bg); border: none; font-size: 1.3rem; height: 100%;
+  color: var(--text); cursor: pointer; transition: background .2s;
+  font-family: 'Inter', sans-serif; display:flex; align-items:center; justify-content:center;
+}
+.calc-btn:hover { background: rgba(255,255,255,0.15); }
+.calc-btn:active { background: rgba(255,255,255,0.25); }
+.calc-btn.op-btn { color: var(--accent-3); font-weight: 600; font-size: 1.5rem; }
+.calc-btn.op-c { color: var(--accent-2); font-weight: 600; }
+.calc-btn.op-del { color: var(--accent-2); }
+.calc-btn.eq-btn { background: rgba(6, 182, 212, 0.2); color: var(--accent-3); font-weight: 700; font-size:1.8rem; }
+.calc-btn.eq-btn:hover { background: rgba(6, 182, 212, 0.4); }
+.calc-btn.zero { grid-column: span 1; } 
+
+/* Converter Specific Styles */
+.panel-header { padding: 20px 24px 8px; font-size: .85rem; color: var(--accent-3); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 8px;}
+.tx-list { padding: 0 24px; overflow-y:auto; flex: 1; margin-bottom: 24px; display:flex; flex-direction:column;}
+.tx-item {
+  display:flex;align-items:center;gap:16px;padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.tx-item:last-child { border-bottom: none; }
+.tx-icon {
+  width:40px;height:40px;border-radius:12px; flex-shrink: 0;
+  background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;
+  font-size: 0.95rem; font-weight: 600; font-family: 'Inter', monospace;
+  border:1px solid var(--glass-border); color: var(--accent-3);
+  letter-spacing: -0.5px;
+}
+.tx-info { flex:1; }
+.tx-name { font-size:.9rem;font-weight:600;margin-bottom:2px; display:flex; align-items:center; gap:6px;}
+.tx-date { font-size:.7rem;color:var(--text-muted); }
+
+.converter-input {
+  background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
+  border-radius: 8px; color: var(--text); padding: 8px 12px; width: 140px;
+  font-size: 1.1rem; text-align: right; outline: none; transition: border .3s, box-shadow .3s;
+  font-family: monospace;
+}
+.converter-input:focus { border-color: var(--accent-1); box-shadow: 0 0 10px rgba(99,102,241,0.2); }
+
+/* Scrollbars & Spinners */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance:textfield; }
+
+@media(max-width:768px){
+  .app-container{grid-template-columns:1fr;padding:20px;}
+  .main-content{ height: auto; min-height: 550px;} 
+}
+
+/* Animations */
+@keyframes slideUpFade{ from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+.slide-up{animation:slideUpFade .8s cubic-bezier(0.16,1,0.3,1) both}
+.d-1{animation-delay:0.1s}.d-2{animation-delay:0.2s}.d-3{animation-delay:0.3s}.d-4{animation-delay:0.4s}
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<header class="history-panel glass-panel slide-up d-1">
+  <div class="history-header">
+    <div style="font-weight: 600; color: var(--accent-3); display: flex; align-items: center; gap: 8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+      計算歷史紀錄
+    </div>
+    <button onclick="clearHistory()" class="clear-history-btn">清除紀錄</button>
+  </div>
+  <div class="history-list" id="history-list">
+    <div class="history-empty">目前沒有計算紀錄</div>
+  </div>
+</header>
+
+<main class="demo">
+  <div class="app-container glass-panel slide-up d-2">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="credit-card glass-panel slide-up d-3">
+        <div class="cc-top">
+          <div class="cc-chip" id="cc-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="cc-logo">CALCUKLIO</div>
+        </div>
+        <div class="cc-desc" id="cc-desc">
+          提供加減乘除與百分比運算，支援完整鍵盤快捷操作。
+        </div>
+        <div class="cc-bot">
+          <div>
+            <div style="opacity:0.6;font-size:0.6rem">CURRENT MODE</div>
+            <div id="klio-mode-label" style="font-weight:600; font-size: 0.9rem;">基本計算</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions slide-up d-4">
+        <div class="action-btn glass-panel active" data-target="math" data-label="基本計算">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+          </div>
+          <div class="action-text">基本計算</div>
+        </div>
+        <div class="action-btn glass-panel" data-target="length" data-label="長度轉換">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>
+          </div>
+          <div class="action-text">長度轉換</div>
+        </div>
+        <div class="action-btn glass-panel" data-target="area" data-label="面積轉換">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+          </div>
+          <div class="action-text">面積轉換</div>
+        </div>
+        <div class="action-btn glass-panel" data-target="weight" data-label="重量轉換">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z"/></svg>
+          </div>
+          <div class="action-text">重量轉換</div>
+        </div>
+        <div class="action-btn glass-panel" data-target="time" data-label="時間計算">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="action-text">時間計算</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content slide-up d-3">
+      <!-- 1. Math Panel -->
+      <div id="math-panel" class="panel active">
+        <div class="calc-display">
+          <div id="calc-history-view" class="calc-history-view"></div>
+          <div id="calc-current" class="calc-current">0</div>
+        </div>
+        <div class="calc-grid">
+          <button class="calc-btn op-c" onclick="calcAction('C')">C</button>
+          <button class="calc-btn op-del" onclick="calcAction('DEL')">⌫</button>
+          <button class="calc-btn op-btn" onclick="calcAction('%')">%</button>
+          <button class="calc-btn op-btn" onclick="calcAction('/')">÷</button>
+          
+          <button class="calc-btn num" onclick="calcAction('7')">7</button>
+          <button class="calc-btn num" onclick="calcAction('8')">8</button>
+          <button class="calc-btn num" onclick="calcAction('9')">9</button>
+          <button class="calc-btn op-btn" onclick="calcAction('*')">×</button>
+          
+          <button class="calc-btn num" onclick="calcAction('4')">4</button>
+          <button class="calc-btn num" onclick="calcAction('5')">5</button>
+          <button class="calc-btn num" onclick="calcAction('6')">6</button>
+          <button class="calc-btn op-btn" onclick="calcAction('-')">−</button>
+          
+          <button class="calc-btn num" onclick="calcAction('1')">1</button>
+          <button class="calc-btn num" onclick="calcAction('2')">2</button>
+          <button class="calc-btn num" onclick="calcAction('3')">3</button>
+          <button class="calc-btn op-btn" onclick="calcAction('+')">+</button>
+          
+          <button class="calc-btn num zero" onclick="calcAction('0')">0</button>
+          <button class="calc-btn num" onclick="calcAction('00')">00</button>
+          <button class="calc-btn num" onclick="calcAction('.')">.</button>
+          <button class="calc-btn eq-btn" onclick="calcAction('=')">=</button>
+        </div>
+      </div>
+
+      <!-- 2. Length Panel -->
+      <div id="length-panel" class="panel">
+        <div class="panel-header">Length / 距離與長度</div>
+        <div class="tx-list">
+          <div class="tx-item">
+            <div class="tx-icon">mm</div>
+            <div class="tx-info"><div class="tx-name">毫米 (mm)</div><div class="tx-date">Millimeter</div></div>
+            <input class="converter-input" data-unit="mm" data-type="length" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">cm</div>
+            <div class="tx-info"><div class="tx-name">公分 (cm)</div><div class="tx-date">Centimeter</div></div>
+            <input class="converter-input" data-unit="cm" data-type="length" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">m</div>
+            <div class="tx-info"><div class="tx-name">公尺 (m)</div><div class="tx-date">Meter</div></div>
+            <input class="converter-input" data-unit="m" data-type="length" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">km</div>
+            <div class="tx-info"><div class="tx-name">公里 (km)</div><div class="tx-date">Kilometer</div></div>
+            <input class="converter-input" data-unit="km" data-type="length" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">in</div>
+            <div class="tx-info"><div class="tx-name">英吋 (in)</div><div class="tx-date">Inch</div></div>
+            <input class="converter-input" data-unit="in" data-type="length" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">ft</div>
+            <div class="tx-info"><div class="tx-name">英呎 (ft)</div><div class="tx-date">Foot</div></div>
+            <input class="converter-input" data-unit="ft" data-type="length" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">mi</div>
+            <div class="tx-info"><div class="tx-name">英哩 (mi)</div><div class="tx-date">Mile</div></div>
+            <input class="converter-input" data-unit="mi" data-type="length" type="number" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Area Panel -->
+      <div id="area-panel" class="panel">
+        <div class="panel-header">Space / 面積與空間</div>
+        <div class="tx-list">
+          <div class="tx-item">
+            <div class="tx-icon">m²</div>
+            <div class="tx-info"><div class="tx-name">平方公尺 (m²)</div><div class="tx-date">Square Meter</div></div>
+            <input class="converter-input" data-unit="m2" data-type="area" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-family:'Noto Sans TC'">坪</div>
+            <div class="tx-info"><div class="tx-name">坪 (ping)</div><div class="tx-date">Taiwanese Ping</div></div>
+            <input class="converter-input" data-unit="ping" data-type="area" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-family:'Noto Sans TC'">榻</div>
+            <div class="tx-info"><div class="tx-name">榻榻米 (tatami)</div><div class="tx-date">Tatami (~0.5 ping)</div></div>
+            <input class="converter-input" data-unit="tatami" data-type="area" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-family:'Noto Sans TC'">甲</div>
+            <div class="tx-info"><div class="tx-name">甲 (jia)</div><div class="tx-date">Taiwanese Jia</div></div>
+            <input class="converter-input" data-unit="jia" data-type="area" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">ha</div>
+            <div class="tx-info"><div class="tx-name">公頃 (ha)</div><div class="tx-date">Hectare</div></div>
+            <input class="converter-input" data-unit="ha" data-type="area" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">ft²</div>
+            <div class="tx-info"><div class="tx-name">平方英呎 (sq ft)</div><div class="tx-date">Square Foot</div></div>
+            <input class="converter-input" data-unit="sqft" data-type="area" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">ac</div>
+            <div class="tx-info"><div class="tx-name">英畝 (acre)</div><div class="tx-date">Acre</div></div>
+            <input class="converter-input" data-unit="acre" data-type="area" type="number" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Weight Panel -->
+      <div id="weight-panel" class="panel">
+        <div class="panel-header">Weight / 重量與質量</div>
+        <div class="tx-list">
+          <div class="tx-item">
+            <div class="tx-icon">mg</div>
+            <div class="tx-info"><div class="tx-name">毫克 (mg)</div><div class="tx-date">Milligram</div></div>
+            <input class="converter-input" data-unit="mg" data-type="weight" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">g</div>
+            <div class="tx-info"><div class="tx-name">公克 (g)</div><div class="tx-date">Gram</div></div>
+            <input class="converter-input" data-unit="g" data-type="weight" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">kg</div>
+            <div class="tx-info"><div class="tx-name">公斤 (kg)</div><div class="tx-date">Kilogram</div></div>
+            <input class="converter-input" data-unit="kg" data-type="weight" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">t</div>
+            <div class="tx-info"><div class="tx-name">公噸 (t)</div><div class="tx-date">Tonne</div></div>
+            <input class="converter-input" data-unit="t" data-type="weight" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-family:'Noto Sans TC'">斤</div>
+            <div class="tx-info"><div class="tx-name">台斤 (jin)</div><div class="tx-date">Taiwanese Jin</div></div>
+            <input class="converter-input" data-unit="jin" data-type="weight" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">oz</div>
+            <div class="tx-info"><div class="tx-name">盎司 (oz)</div><div class="tx-date">Ounce</div></div>
+            <input class="converter-input" data-unit="oz" data-type="weight" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">lb</div>
+            <div class="tx-info"><div class="tx-name">磅 (lb)</div><div class="tx-date">Pound</div></div>
+            <input class="converter-input" data-unit="lb" data-type="weight" type="number" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Time Panel -->
+      <div id="time-panel" class="panel">
+        <div class="panel-header">Time / 時間單位</div>
+        <div class="tx-list">
+          <div class="tx-item">
+            <div class="tx-icon">sec</div>
+            <div class="tx-info"><div class="tx-name">秒 (sec)</div><div class="tx-date">Second</div></div>
+            <input class="converter-input" data-unit="sec" data-type="time" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">min</div>
+            <div class="tx-info"><div class="tx-name">分 (min)</div><div class="tx-date">Minute</div></div>
+            <input class="converter-input" data-unit="min" data-type="time" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">hr</div>
+            <div class="tx-info"><div class="tx-name">時 (hr)</div><div class="tx-date">Hour</div></div>
+            <input class="converter-input" data-unit="hr" data-type="time" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">day</div>
+            <div class="tx-info"><div class="tx-name">天 (day)</div><div class="tx-date">Day</div></div>
+            <input class="converter-input" data-unit="day" data-type="time" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">wk</div>
+            <div class="tx-info"><div class="tx-name">周 (wk)</div><div class="tx-date">Week</div></div>
+            <input class="converter-input" data-unit="week" data-type="time" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">mo</div>
+            <div class="tx-info"><div class="tx-name">月 (mo)</div><div class="tx-date">Month (approx. 30 days)</div></div>
+            <input class="converter-input" data-unit="month" data-type="time" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon">yr</div>
+            <div class="tx-info"><div class="tx-name">年 (yr)</div><div class="tx-date">Year (365 days)</div></div>
+            <input class="converter-input" data-unit="year" data-type="time" type="number" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script>
+// Logic and Interactivity
+const svgs = {
+    math: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>',
+    length: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>',
+    area: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>',
+    weight: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z"/></svg>',
+    time: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+};
+
+const modeMeta = {
+  'math': { icon: svgs.math, desc: '提供基本加、減、乘、除與百分比運算，支援完整鍵盤快捷操作。' },
+  'length': { icon: svgs.length, desc: '包含毫米、公分、公尺、公里、英吋、英呎與英哩，即時互換無縫對接。' },
+  'area': { icon: svgs.area, desc: '平方公尺、坪、榻榻米、甲、公頃、平方英呎與英畝，輕鬆掌握各種空間大小。' },
+  'weight': { icon: svgs.weight, desc: '毫克、公克、公斤、公噸、台斤、盎司與磅數換算，精準達到測量與生活應用需求。' },
+  'time': { icon: svgs.time, desc: '涵蓋秒、分、時、天、周、月、年全面即時交叉換算與對比。' }
+};
+
+// Ambient cursor light effect
+const container = document.querySelector('.app-container');
+if(container){
+  container.addEventListener('mousemove', (e) => {
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    container.style.background = `
+      radial-gradient(circle 500px at ${x}px ${y}px, rgba(255,255,255,0.06), transparent 60%),
+      var(--glass-bg)
+    `;
+  });
+  container.addEventListener('mouseleave', () => {
+    container.style.background = 'var(--glass-bg)';
+  });
+}
+
+// Tab Switching
+document.querySelectorAll('.action-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.action-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    const target = btn.dataset.target;
+    document.getElementById('klio-mode-label').innerText = btn.dataset.label;
+    
+    const iconEl = document.getElementById('cc-icon');
+    const descEl = document.getElementById('cc-desc');
+    
+    descEl.style.opacity = '0';
+    iconEl.style.opacity = '0';
+    setTimeout(() => {
+        iconEl.innerHTML = modeMeta[target].icon;
+        descEl.innerText = modeMeta[target].desc;
+        descEl.style.opacity = '0.9';
+        iconEl.style.opacity = '1';
+    }, 200);
+    
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(target + '-panel').classList.add('active');
+  });
+});
+
+// --- Dynamic Keyboard Support ---
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    
+    const key = e.key;
+    if (key >= '0' && key <= '9') {
+        calcAction(key);
+    } else if (key === '.') {
+        calcAction('.');
+    } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+        calcAction(key);
+    } else if (key === 'Enter' || key === '=') {
+        e.preventDefault();
+        calcAction('=');
+    } else if (key === 'Backspace') {
+        calcAction('DEL');
+    } else if (key === 'Escape' || key.toUpperCase() === 'C') {
+        calcAction('C');
+    } else if (key === '%') {
+        calcAction('%');
+    }
+});
+
+// --- Math Calculator Logic ---
+let currentInput = "0";
+let previousInput = "";
+let operator = null;
+
+function updateDisplay() {
+  document.getElementById('calc-current').innerText = currentInput;
+  document.getElementById('calc-history-view').innerText = previousInput + (operator ? " " + operator : "");
+}
+
+function calculate(a, op, b) {
+    a = parseFloat(a); b = parseFloat(b);
+    if(op === '+') return a+b;
+    if(op === '-') return a-b;
+    if(op === '×') return a*b;
+    if(op === '÷') return a/b;
+    return b;
+}
+
+function addHistory(eq, res) {
+    const list = document.getElementById('history-list');
+    const empty = list.querySelector('.history-empty');
+    if(empty) empty.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<div class="history-equation">${eq} =</div><div class="history-result">${res}</div>`;
+    list.prepend(div);
+}
+
+window.clearHistory = function() {
+    document.getElementById('history-list').innerHTML = '<div class="history-empty">目前沒有計算紀錄</div>';
+};
+
+window.calcAction = function(val) {
+  if (val === 'C') {
+    currentInput = "0"; previousInput = ""; operator = null;
+  } else if (val === 'DEL') {
+    if(currentInput === "Error" || currentInput === "NaN" || currentInput === "Infinity") {
+      currentInput = "0";
+    } else if (currentInput.length > 1) {
+      currentInput = currentInput.slice(0, -1);
+    } else {
+      currentInput = "0";
+    }
+  } else if (val === '%') {
+    const prior = currentInput;
+    currentInput = (parseFloat(currentInput) / 100).toString();
+    addHistory(`${prior} %`, currentInput);
+  } else if (['+', '-', '*', '/'].includes(val)) {
+    let displayOp = val === '*' ? '×' : (val === '/' ? '÷' : val);
+    if (operator && currentInput === "0" && previousInput !== "") {
+      operator = displayOp;
+    } else {
+        if(previousInput !== "") {
+          const eqStr = `${previousInput} ${operator} ${currentInput}`;
+          currentInput = parseFloat(calculate(previousInput, operator, currentInput).toPrecision(12)).toString();
+          addHistory(eqStr, currentInput);
+        }
+        previousInput = currentInput;
+        currentInput = "0";
+        operator = displayOp;
+    }
+  } else if (val === '=') {
+    if (operator && previousInput !== "") {
+      const eqStr = `${previousInput} ${operator} ${currentInput}`;
+      currentInput = parseFloat(calculate(previousInput, operator, currentInput).toPrecision(12)).toString();
+      addHistory(eqStr, currentInput);
+      previousInput = "";
+      operator = null;
+    }
+  } else if (val === '.') {
+    if (!currentInput.includes('.')) currentInput += '.';
+  } else {
+    if (currentInput === "0") currentInput = val;
+    else currentInput += val;
+  }
+  updateDisplay();
+};
+
+// --- Multi-Converter Logic ---
+const rates = {
+  length: {
+    mm: 0.001,
+    cm: 0.01,
+    m: 1,
+    km: 1000,
+    in: 0.0254,
+    ft: 0.3048,
+    mi: 1609.344
+  },
+  area: {
+    m2: 1,
+    ping: 3.305785123966942,
+    tatami: 1.652892561983471,
+    jia: 9699.173553719008,
+    ha: 10000,
+    sqft: 0.09290304,
+    acre: 4046.8564224
+  },
+  weight: {
+    mg: 0.001,
+    g: 1,
+    kg: 1000,
+    t: 1000000,
+    jin: 600,
+    oz: 28.349523125,
+    lb: 453.59237
+  },
+  time: {
+    sec: 1,
+    min: 60,
+    hr: 3600,
+    day: 86400,
+    week: 604800,
+    month: 2592000,
+    year: 31536000
+  }
+};
+
+document.querySelectorAll('.converter-input').forEach(input => {
+    input.addEventListener('input', function() {
+        const val = parseFloat(this.value);
+        const unit = this.dataset.unit;
+        const type = this.dataset.type;
+        
+        if (isNaN(val)) {
+            document.querySelectorAll(`.converter-input[data-type="${type}"]`).forEach(el => {
+                if (el !== this) el.value = '';
+            });
+            return;
+        }
+        
+        const rate = rates[type][unit];
+        const baseVal = val * rate;
+        
+        document.querySelectorAll(`.converter-input[data-type="${type}"]`).forEach(el => {
+            if (el !== this) {
+                const targetUnit = el.dataset.unit;
+                const targetRate = rates[type][targetUnit];
+                let outVal = baseVal / targetRate;
+                outVal = Math.round(outVal * 1000000) / 1000000;
+                el.value = outVal;
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

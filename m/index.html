@@ -47,12 +47,6 @@
         }
         .btn-read:active { transform: scale(0.97); }
 
-        /* 標籤膠囊 */
-        .tag {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-        }
-
         /* 分享按鈕 */
         .share-btn {
             backdrop-filter: blur(12px);
@@ -74,6 +68,53 @@
         .delay-1 { animation-delay: 0.1s; opacity: 0; }
         .delay-2 { animation-delay: 0.2s; opacity: 0; }
         .delay-3 { animation-delay: 0.35s; opacity: 0; }
+
+        /* ========== Shine Effect for Tagline ========== */
+        .shine-text {
+            position: relative;
+            display: inline-block;
+            background: linear-gradient(180deg, #ffffff 0%, #a1a1aa 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            overflow: hidden;
+        }
+
+        .shine-text::after {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -120%;
+            width: 60%;
+            height: 140%;
+            background: linear-gradient(
+                105deg,
+                transparent 30%,
+                rgba(255, 255, 255, 0.05) 38%,
+                rgba(255, 255, 255, 0.35) 44%,
+                rgba(255, 255, 255, 0.6) 50%,
+                rgba(255, 255, 255, 0.35) 56%,
+                rgba(255, 255, 255, 0.05) 62%,
+                transparent 70%
+            );
+            transform: skewX(-20deg);
+            animation: shineSwipe 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shineSwipe {
+            0%   { left: -120%; }
+            40%  { left: 140%; }
+            100% { left: 140%; }
+        }
+
+        /* 卡片底部的漸層標籤條 */
+        .card-accent-bar {
+            height: 3px;
+            border-radius: 2px;
+            width: 48px;
+            margin-bottom: 16px;
+        }
     </style>
 
     <!-- PWA & Mobile Web App Icons -->
@@ -90,11 +131,15 @@
 
 <body>
 
-    <!-- 頂部浮動 Logo -->
-    <div style="position:fixed;top:0;left:0;width:100%;z-index:50;padding:20px 24px;pointer-events:none;">
+    <!-- 頂部浮動 Logo + Tagline -->
+    <div style="position:fixed;top:0;left:0;width:100%;z-index:50;padding:16px 20px;pointer-events:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div style="font-size:1.5rem;font-weight:900;letter-spacing:-0.05em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.5);">KLIO.</div>
-            <a href="../index.html" style="pointer-events:auto;font-size:0.7rem;font-weight:600;color:rgba(255,255,255,0.5);text-decoration:none;padding:6px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:100px;backdrop-filter:blur(8px);background:rgba(0,0,0,0.3);">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="font-size:1.4rem;font-weight:900;letter-spacing:-0.05em;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,0.5);">KLIO.</div>
+                <span style="width:1px;height:16px;background:rgba(255,255,255,0.2);"></span>
+                <span class="shine-text" style="font-size:0.65rem;font-weight:600;letter-spacing:0.04em;">Think Smart. Look Amazing.</span>
+            </div>
+            <a href="../index.html" style="pointer-events:auto;font-size:0.65rem;font-weight:600;color:rgba(255,255,255,0.5);text-decoration:none;padding:5px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:100px;backdrop-filter:blur(8px);background:rgba(0,0,0,0.3);">
                 PC 版
             </a>
         </div>
@@ -110,7 +155,112 @@
     <main id="feed-view" class="snap-y-mandatory scrollbar-hide"
         style="height:100dvh;width:100%;overflow-y:auto;background:#000;position:relative;z-index:10;">
 
-        <!-- ========== Card 0: Node.js 深度研究 (NEW) ========== -->
+        <!-- ========== Card: Transformers.js PWA 深度研究 (NEWEST) ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#030d1a;">
+            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop"
+                alt="Transformers.js PWA 深度研究" loading="eager"
+                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.6;">
+            <div class="card-gradient" style="position:absolute;inset:0;"></div>
+
+            <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#06b6d4,#22d3ee);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#06b6d4;">
+                        前瞻技術研究 2026
+                    </span>
+                    <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
+                        onclick="shareArticle('Transformers.js PWA 離線 Web AI 深度研究報告')">
+                        <i class="ph ph-share-network" style="font-size:20px;"></i>
+                    </button>
+                </div>
+
+                <h2 class="animate-in delay-2" style="font-size:1.75rem;font-weight:800;line-height:1.25;margin-bottom:12px;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+                    Transformers.js PWA<br>離線 Web AI 深度研究
+                </h2>
+
+                <p class="animate-in delay-2" style="color:rgba(209,213,219,0.9);font-size:0.85rem;line-height:1.6;margin-bottom:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-clamp:2;overflow:hidden;">
+                    基於 WebGPU/WASM 與 PWA 的離線推論架構，實現零延遲、高隱私、免伺服器成本的下一代 AI 基礎設施。
+                </p>
+
+                <a href="reports/20260414_localPWA.html" class="btn-read"
+                    style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;background:#fff;color:#000;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;">
+                    閱讀深度解析 <i class="ph-bold ph-book-open" style="margin-left:8px;font-size:18px;"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- ========== Card: AI 輔助微型創業跨國研究 ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#0c1629;">
+            <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop"
+                alt="AI 輔助微型創業跨國研究" loading="eager"
+                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.6;">
+            <div class="card-gradient" style="position:absolute;inset:0;"></div>
+
+            <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#2563eb,#3b82f6);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#3b82f6;">
+                        Micro-SaaS AI 2026
+                    </span>
+                    <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
+                        onclick="shareArticle('AI 輔助微型創業跨國研究報告')">
+                        <i class="ph ph-share-network" style="font-size:20px;"></i>
+                    </button>
+                </div>
+
+                <h2 class="animate-in delay-2" style="font-size:1.75rem;font-weight:800;line-height:1.25;margin-bottom:12px;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+                    AI 輔助微型創業<br>跨國研究報告
+                </h2>
+
+                <p class="animate-in delay-2" style="color:rgba(209,213,219,0.9);font-size:0.85rem;line-height:1.6;margin-bottom:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-clamp:2;overflow:hidden;">
+                    瀏覽器原生 AI 微型創業趨勢與跨國訂閱經濟實戰，從技術架構到首月損益平衡推演。
+                </p>
+
+                <a href="reports/20260411_theonecompany.html" class="btn-read"
+                    style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;background:#fff;color:#000;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;">
+                    閱讀深度解析 <i class="ph-bold ph-book-open" style="margin-left:8px;font-size:18px;"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- ========== Card: 跨境健康機能食品市場趨勢 ========== -->
+        <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#050d21;">
+            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop"
+                alt="FMCG Market Analysis 2026" loading="eager"
+                style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.65;">
+            <div class="card-gradient" style="position:absolute;inset:0;"></div>
+
+            <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#3b82f6;">
+                        FMCG Analysis 2026
+                    </span>
+                    <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
+                        onclick="shareArticle('跨境健康機能食品市場趨勢深度解析')">
+                        <i class="ph ph-share-network" style="font-size:20px;"></i>
+                    </button>
+                </div>
+
+                <h2 class="animate-in delay-2" style="font-size:1.75rem;font-weight:800;line-height:1.25;margin-bottom:12px;color:#fff;text-shadow:0 2px 20px rgba(0,0,0,0.5);">
+                    跨境健康機能食品<br>市場趨勢深度解析
+                </h2>
+
+                <p class="animate-in delay-2" style="color:rgba(209,213,219,0.9);font-size:0.85rem;line-height:1.6;margin-bottom:24px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-clamp:2;overflow:hidden;">
+                    深度解析全球健康功能性食品趨勢，涵蓋美、日、台市場的蛋白質強化與機能性轉型。
+                </p>
+
+                <a href="reports/20260411_perfect_food.html" class="btn-read"
+                    style="display:flex;align-items:center;justify-content:center;width:100%;padding:16px;background:#fff;color:#000;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;border:none;cursor:pointer;">
+                    閱讀深度解析 <i class="ph-bold ph-book-open" style="margin-left:8px;font-size:18px;"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- ========== Card: Node.js 深度研究 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#050a0f;">
             <img src="https://images.unsplash.com/photo-1537498425277-c283d32ef9db?q=80&w=800&auto=format&fit=crop"
                 alt="Node.js Deep Research 2026" loading="eager"
@@ -118,8 +268,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#10b981,#34d399);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#10b981;">
                         Deep Research 2026
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -143,7 +295,7 @@
             </div>
         </article>
 
-        <!-- ========== Card 1: 全球作業系統市場格局 (NEW) ========== -->
+        <!-- ========== Card: 全球作業系統市場格局 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
             <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop"
                 alt="OS Market Strategy 2026" loading="eager"
@@ -151,8 +303,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(99,102,241,0.15);color:#818cf8;border:1px solid rgba(99,102,241,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#6366f1,#818cf8);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#818cf8;">
                         OS Market Strategy
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -176,7 +330,7 @@
             </div>
         </article>
 
-        <!-- ========== Card 2: 2026 美伊衝突後全球經濟衝擊 (NEW) ========== -->
+        <!-- ========== Card: 2026 美伊衝突後全球經濟衝擊 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#0a192f;">
             <img src="https://images.unsplash.com/photo-1579532537598-459ecdaf39cc?q=80&w=800&auto=format&fit=crop"
                 alt="US-Iran War Economic Impact" loading="lazy"
@@ -184,8 +338,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(244,63,94,0.15);color:#fb7185;border:1px solid rgba(244,63,94,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#f43f5e,#fb7185);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fb7185;">
                         Geopolitics & Macro
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -209,7 +365,7 @@
             </div>
         </article>
 
-        <!-- ========== Card: AI 動漫角色設定深度分析 (NEW) ========== -->
+        <!-- ========== Card: AI 動漫角色設定深度分析 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#0c0a1a;">
             <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800&auto=format&fit=crop"
                 alt="AI Anime Character Design" loading="lazy"
@@ -217,8 +373,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a78bfa;">
                         AI × Character Design
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -242,7 +400,7 @@
             </div>
         </article>
 
-        <!-- ========== Card 3: 信用卡優化與富士山企劃 ========== -->
+        <!-- ========== Card: 信用卡優化與富士山企劃 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
             <img src="https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?q=80&w=800&auto=format&fit=crop"
                 alt="Credit Card & Japan Trip" loading="eager"
@@ -250,8 +408,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#38bdf8,#7dd3fc);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#38bdf8;">
                         Financial Planning
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -275,7 +435,7 @@
             </div>
         </article>
 
-        <!-- ========== Card 2: 台灣汽車日系品牌戰略 ========== -->
+        <!-- ========== Card: 台灣汽車日系品牌戰略 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
             <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop"
                 alt="Taiwan Cars 2026" loading="lazy"
@@ -283,8 +443,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#fbbf24,#fcd34d);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fbbf24;">
                         Automotive Strategy
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -308,7 +470,7 @@
             </div>
         </article>
 
-        <!-- ========== Card 3: AI Agentic 產品團隊協作矩陣 ========== -->
+        <!-- ========== Card: AI Agentic 產品團隊協作矩陣 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
             <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop"
                 alt="AI Agentic Team Matrix" loading="lazy"
@@ -316,8 +478,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(45,212,191,0.15);color:#2dd4bf;border:1px solid rgba(45,212,191,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#2dd4bf,#5eead4);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#2dd4bf;">
                         Framework 2.0
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -341,7 +505,7 @@
             </div>
         </article>
 
-        <!-- ========== Card 4: GTC 2026 NVIDIA ========== -->
+        <!-- ========== Card: GTC 2026 NVIDIA ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#111;">
             <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=800&auto=format&fit=crop"
                 alt="AI Infrastructure" loading="lazy"
@@ -349,8 +513,10 @@
             <div class="card-gradient" style="position:absolute;inset:0;"></div>
 
             <div style="position:absolute;bottom:0;left:0;width:100%;padding:24px 24px 48px;">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;">
-                    <span class="tag animate-in delay-1" style="display:inline-block;padding:6px 14px;background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.25);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;border-radius:100px;">
+                <div class="card-accent-bar" style="background:linear-gradient(90deg,#34d399,#6ee7b7);"></div>
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;">
+                    <span class="animate-in delay-1" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#34d399;">
                         AI Infrastructure
                     </span>
                     <button class="share-btn" style="padding:10px;background:rgba(255,255,255,0.1);border-radius:50%;border:none;color:#fff;cursor:pointer;"
@@ -374,7 +540,7 @@
             </div>
         </article>
 
-        <!-- ========== Card 5: 更多報告即將上線 ========== -->
+        <!-- ========== Card: 更多報告即將上線 ========== -->
         <article class="snap-start" style="position:relative;width:100%;height:100dvh;overflow:hidden;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;">
             <div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:24px;">
                 <i class="ph ph-sparkle" style="font-size:32px;color:rgba(255,255,255,0.3);"></i>
