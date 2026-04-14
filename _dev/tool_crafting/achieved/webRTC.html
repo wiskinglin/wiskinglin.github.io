@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2P 本地 AI 聊天室</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .box {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        #chat-log {
+            height: 200px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>1. 載入本地 AI 模型 (WebGPU / WASM + IndexedDB 快取)</h2>
+    <div class="box">
+        <button id="load-ai-btn">載入情緒分析模型</button>
+        <span id="ai-status" style="margin-left: 10px; color: #666;">尚未載入</span>
+    </div>
+
+    <h2>2. 建立 P2P 連線 (WebRTC)</h2>
+    <div class="box">
+        <button id="create-offer">建立 Offer (發起方)</button>
+        <button id="create-answer">建立 Answer (接收方)</button>
+        <textarea id="sdp-io" placeholder="在此貼上 Offer 或 Answer 進行手動信令交換..."></textarea>
+        <button id="apply-sdp">套用 SDP</button>
+        <div id="webrtc-status" style="margin-top: 10px; font-weight: bold; color: red;">連線狀態：未連線</div>
+    </div>
+
+    <h2>3. 聊天與 AI 分析 (WebRTC 傳輸 + IndexedDB 儲存)</h2>
+    <div class="box">
+        <div id="chat-log"></div>
+        <input type="text" id="chat-input" placeholder="輸入英文訊息測試..." style="width: 70%; padding: 5px;">
+        <button id="send-btn" disabled>發送訊息</button>
+    </div>
+
+    <script type="module">
+        // 匯入 Transformers.js (v3 支援 WebGPU)
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0/dist/transformers.min.js';
+
+        // 確保啟用本地端 IndexedDB 快取模型
+        env.allowLocalModels = false;
+
+        let aiPipeline = null;
+        let dataChannel = null;
+        const pc = new RTCPeerConnection();
+
+        // --- 1. AI 模型載入與推論 (WebGPU / WASM) ---
+        document.getElementById('load-ai-btn').addEventListener('click', async () => {
+            const statusEl = document.getElementById('ai-status');
+            statusEl.innerText = '模型下載/載入中...請查看開發者工具 Network 標籤';
+            try {
+                // 指定 device: 'webgpu'，若硬體不支援會自動退回 'wasm'
+                aiPipeline = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english', { device: 'webgpu' });
+                statusEl.innerText = '✅ 模型載入完成 (支援離線推論)';
+            } catch (err) {
+                statusEl.innerText = '❌ 載入失敗：' + err.message;
+            }
+        });
+
+        // --- 2. WebRTC 信令交換 (手動複製貼上模擬無伺服器環境) ---
+        pc.onicecandidate = e => {
+            if (e.candidate) document.getElementById('sdp-io').value = JSON.stringify(pc.localDescription);
+        };
+
+        const setupDataChannel = (channel) => {
+            channel.onopen = () => {
+                document.getElementById('webrtc-status').innerText = '連線狀態：✅ 已連線';
+                document.getElementById('webrtc-status').style.color = 'green';
+                document.getElementById('send-btn').disabled = false;
+            };
+            channel.onmessage = async (e) => {
+                let aiResult = "（AI 未載入）";
+                if (aiPipeline) {
+                    const result = await aiPipeline(e.data);
+                    aiResult = `（AI 分析：${result[0].label}, 信心度 ${(result[0].score * 100).toFixed(1)}%）`;
+                }
+                appendChat(`對方: ${e.data} ${aiResult}`);
+            };
+        };
+
+        document.getElementById('create-offer').onclick = async () => {
+            dataChannel = pc.createDataChannel('chat');
+            setupDataChannel(dataChannel);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+        };
+
+        document.getElementById('create-answer').onclick = async () => {
+            pc.ondatachannel = e => { dataChannel = e.channel; setupDataChannel(dataChannel); };
+            const offerInfo = JSON.parse(document.getElementById('sdp-io').value);
+            await pc.setRemoteDescription(offerInfo);
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+        };
+
+        document.getElementById('apply-sdp').onclick = async () => {
+            const answerInfo = JSON.parse(document.getElementById('sdp-io').value);
+            await pc.setRemoteDescription(answerInfo);
+        };
+
+        // --- 3. IndexedDB 原生資料庫 (儲存聊天紀錄) ---
+        let db;
+        const request = indexedDB.open("ChatHistoryDB", 1);
+        request.onupgradeneeded = (e) => {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains('messages')) {
+                db.createObjectStore('messages', { autoIncrement: true });
+            }
+        };
+        request.onsuccess = (e) => { db = e.target.result; };
+
+        const saveToDB = (msg) => {
+            if (!db) return;
+            const tx = db.transaction('messages', 'readwrite');
+            tx.objectStore('messages').add({ text: msg, timestamp: new Date() });
+        };
+
+        const appendChat = (msg) => {
+            const log = document.getElementById('chat-log');
+            log.innerHTML += `<div>${msg}</div>`;
+            log.scrollTop = log.scrollHeight;
+            saveToDB(msg);
+        };
+
+        document.getElementById('send-btn').onclick = () => {
+            const input = document.getElementById('chat-input');
+            const text = input.value;
+            if (!text || !dataChannel) return;
+            appendChat(`我: ${text}`);
+            dataChannel.send(text);
+            input.value = '';
+        };
+    </script>
+</body>
+
+</html>

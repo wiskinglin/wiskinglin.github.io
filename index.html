@@ -101,6 +101,9 @@
 
 <body class="antialiased selection:bg-blue-500 selection:text-white">
 
+    <!-- Particle Canvas Background -->
+    <canvas id="bg-canvas" class="fixed inset-0 w-full h-full pointer-events-none -z-20 opacity-40 mix-blend-screen"></canvas>
+
     <!-- 頂部毛玻璃導覽列 (Immersive Style) -->
     <nav
         class="fixed top-0 w-full px-4 md:px-6 py-4 bg-black/70 backdrop-blur-xl border-b border-white/10 z-50 transition-all">
@@ -112,9 +115,10 @@
                 <a href="top50/index.html" class="font-bold text-yellow-400 hover:text-yellow-300 transition-colors"
                     style="text-shadow: 0 0 8px rgba(250,204,21,0.3);">Top Style</a>
                 <a href="theme-switcher-demo.html" class="hover:text-white transition-colors">Themes</a>
-                <a href="#showcase" class="hover:text-white transition-colors">Insights</a>
+                <a href="tools/photo.html" class="hover:text-white transition-colors">Photo</a>
+                <a href="tools/Sakura.html" class="hover:text-white transition-colors">Sakura</a>
+                <a href="tools/rmbg.html" class="hover:text-white transition-colors">RMBG</a>
                 <a href="tools/pdf.html" class="hover:text-white transition-colors">PDF</a>
-                <a href="tools/color.html" class="hover:text-white transition-colors">Color</a>
                 <a href="tools/ebook.html" class="hover:text-white transition-colors">eBook</a>
                 <a href="editor/index.html" class="hover:text-white transition-colors">ED.</a>
             </div>
@@ -143,9 +147,10 @@
         <div id="mobile-menu" class="hidden md:hidden flex-col gap-4 pt-6 pb-4 px-4 text-center border-t border-white/10 mt-4 bg-zinc-900/95 rounded-2xl shadow-2xl backdrop-blur-xl">
             <a href="top50/index.html" class="font-bold text-yellow-400 hover:text-yellow-300 transition-colors py-2 text-lg">Top Style</a>
             <a href="theme-switcher-demo.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">Themes</a>
-            <a href="#showcase" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">Insights</a>
+            <a href="tools/photo.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">Photo</a>
+            <a href="tools/Sakura.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">Sakura</a>
+            <a href="tools/rmbg.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">RMBG</a>
             <a href="tools/pdf.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">PDF</a>
-            <a href="tools/color.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">Color</a>
             <a href="tools/ebook.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">eBook</a>
             <a href="editor/index.html" class="text-gray-300 hover:text-white transition-colors py-2 text-lg">ED.</a>
             
@@ -170,15 +175,12 @@
         </div>
         <div class="absolute top-1/3 left-1/3 w-[30vw] h-[30vw] bg-purple-900/20 rounded-full blur-[80px] -z-10"></div>
 
-        <h1 class="text-5xl md:text-8xl font-black tracking-tight text-gradient mb-6 animate-float-up opacity-0"
-            style="animation-delay: 0.1s;">
-            Think Smart.<br>Look Amazing.
-        </h1>
-        <p class="text-lg md:text-2xl text-gray-400 font-medium max-w-2xl animate-float-up opacity-0 leading-relaxed"
-            style="animation-delay: 0.3s;">
-            深度解析科技戰略與商業底層邏輯。<br>以極致的視覺閱讀體驗，帶您看透 <span class="text-gray-200">AI 狂潮</span>、<span
-                class="text-gray-200">產品演進</span>與<span class="text-gray-200">市場趨勢</span>。
-        </p>
+        <div class="animate-float-up opacity-0" style="animation-delay: 0.1s;">
+            <h1 class="text-5xl md:text-8xl font-black tracking-tight text-gradient mb-6 flex flex-col items-center gap-4 animate-bounce-slow">
+                <span class="inline-block" style="font-size: 5rem; cursor: pointer; filter: drop-shadow(0 0 20px rgba(255,255,255,0.4));">👻</span>
+                <span>Think Smart.<br>Look Amazing.</span>
+            </h1>
+        </div>
 
         <!-- 向下滾動提示 -->
         <a href="#showcase"
@@ -670,6 +672,93 @@
                 });
             });
         });
+
+        // ==========================================
+        // Particle Engine Background
+        // ==========================================
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        const engineState = {
+            color: '#06b6d4', // category 2 color from top50 index
+            time: 0
+        };
+
+        const particleCount = 100;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 1.2,
+                    vy: (Math.random() - 0.5) * 1.2,
+                    size: Math.random() * 2 + 0.5
+                });
+            }
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 255, g: 255, b: 255 };
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, width, height);
+            engineState.time += 0.01;
+
+            const rgb = hexToRgb(engineState.color);
+            ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8)`;
+
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                p.x += Math.sin(engineState.time + i) * 0.4;
+                p.y += Math.cos(engineState.time + i) * 0.4;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = dx * dx + dy * dy;
+                    if (dist < 15000) {
+                        ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${0.2 * (1 - dist / 15000)})`;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(render);
+        }
+        render();
+
     </script>
 </body>
 

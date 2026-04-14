@@ -73,19 +73,9 @@
                 transform: translateY(-10vh) translateX(0) rotate(0deg) scale(1);
                 opacity: 0;
             }
-
-            8% {
-                opacity: 1;
-            }
-
-            50% {
-                transform: translateY(50vh) translateX(60px) rotate(360deg) scale(0.9);
-            }
-
-            92% {
-                opacity: 0.8;
-            }
-
+            8% { opacity: 1; }
+            50% { transform: translateY(50vh) translateX(60px) rotate(360deg) scale(0.9); }
+            92% { opacity: 0.8; }
             100% {
                 transform: translateY(110vh) translateX(-30px) rotate(720deg) scale(0.7);
                 opacity: 0;
@@ -126,919 +116,327 @@
             z-index: 5;
         }
 
-        #header .logo {
-            font-size: 26px;
-            line-height: 1;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
-        }
-
-        #header .title-area {
-            flex: 1;
-        }
-
-        #header .title-area h1 {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        #header .title-area .subtitle {
-            font-size: 11px;
-            opacity: 0.85;
-            font-weight: 300;
-        }
+        #header .logo { font-size: 26px; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
+        #header .title-area { flex: 1; }
+        #header .title-area h1 { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+        #header .title-area .subtitle { font-size: 11px; opacity: 0.85; font-weight: 300; }
 
         #header .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            transition: background 0.3s;
-            flex-shrink: 0;
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            transition: background 0.3s; flex-shrink: 0;
         }
-
         #header .status-dot.connected {
-            background: #76FF03;
-            box-shadow: 0 0 6px #76FF03;
+            background: #76FF03; box-shadow: 0 0 6px #76FF03;
             animation: pulse-dot 2s infinite;
         }
 
         @keyframes pulse-dot {
-
-            0%,
-            100% {
-                box-shadow: 0 0 4px #76FF03;
-            }
-
-            50% {
-                box-shadow: 0 0 12px #76FF03;
-            }
+            0%, 100% { box-shadow: 0 0 4px #76FF03; }
+            50% { box-shadow: 0 0 12px #76FF03; }
         }
 
         #connect-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1.5px solid rgba(255, 255, 255, 0.5);
-            color: #fff;
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-family: var(--font);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            background: rgba(255,255,255,0.2);
+            border: 1.5px solid rgba(255,255,255,0.5);
+            color: #fff; border-radius: 20px;
+            padding: 6px 14px; font-size: 12px;
+            font-family: var(--font); font-weight: 500;
+            cursor: pointer; transition: all 0.2s; flex-shrink: 0;
         }
-
-        #connect-btn:hover {
-            background: rgba(255, 255, 255, 0.35);
-        }
+        #connect-btn:hover { background: rgba(255,255,255,0.35); }
 
         /* ── Chat Area ── */
         #chat-area {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
+            flex: 1; overflow-y: auto; overflow-x: hidden;
             padding: 16px 12px 8px;
             background-color: var(--sakura-50);
             background-image:
-                radial-gradient(circle at 15% 30%, rgba(255, 183, 208, 0.15) 0%, transparent 45%),
-                radial-gradient(circle at 85% 70%, rgba(255, 143, 180, 0.10) 0%, transparent 40%),
-                radial-gradient(circle at 50% 95%, rgba(255, 224, 236, 0.2) 0%, transparent 35%);
+                radial-gradient(circle at 15% 30%, rgba(255,183,208,0.15) 0%, transparent 45%),
+                radial-gradient(circle at 85% 70%, rgba(255,143,180,0.10) 0%, transparent 40%),
+                radial-gradient(circle at 50% 95%, rgba(255,224,236,0.2) 0%, transparent 35%);
             scroll-behavior: smooth;
         }
-
-        #chat-area::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        #chat-area::-webkit-scrollbar-thumb {
-            background: var(--sakura-200);
-            border-radius: 4px;
-        }
+        #chat-area::-webkit-scrollbar { width: 4px; }
+        #chat-area::-webkit-scrollbar-thumb { background: var(--sakura-200); border-radius: 4px; }
 
         /* ── Messages ── */
-        .msg {
-            display: flex;
-            margin-bottom: 10px;
-            align-items: flex-end;
-            gap: 6px;
-            animation: msgIn 0.3s ease-out;
-        }
-
-        .msg-sent {
-            justify-content: flex-end;
-        }
-
-        .msg-received {
-            justify-content: flex-start;
-        }
-
-        .msg-system {
-            justify-content: center;
-        }
-
+        .msg { display: flex; margin-bottom: 10px; align-items: flex-end; gap: 6px; animation: msgIn 0.3s ease-out; }
+        .msg-sent { justify-content: flex-end; }
+        .msg-received { justify-content: flex-start; }
+        .msg-system { justify-content: center; }
         .msg-system span {
-            background: rgba(194, 24, 91, 0.08);
-            color: var(--sakura-700);
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 400;
+            background: rgba(194,24,91,0.08); color: var(--sakura-700);
+            padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 400;
         }
-
         .msg-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            background: var(--sakura-grad);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-            flex-shrink: 0;
-            align-self: flex-start;
-            box-shadow: var(--shadow-sm);
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--sakura-grad); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; flex-shrink: 0;
+            align-self: flex-start; box-shadow: var(--shadow-sm);
         }
-
-        .msg-content {
-            display: flex;
-            flex-direction: column;
-            max-width: 72%;
-            min-width: 0;
-        }
-
-        .msg-name {
-            font-size: 11px;
-            color: var(--sakura-600);
-            margin-bottom: 2px;
-            margin-left: 4px;
-            font-weight: 500;
-        }
-
+        .msg-content { display: flex; flex-direction: column; max-width: 72%; min-width: 0; }
+        .msg-name { font-size: 11px; color: var(--sakura-600); margin-bottom: 2px; margin-left: 4px; font-weight: 500; }
         .bubble {
-            padding: 10px 14px;
-            border-radius: var(--radius);
-            font-size: 14px;
-            line-height: 1.55;
-            word-break: break-word;
-            white-space: pre-wrap;
-            position: relative;
-            box-shadow: var(--shadow-sm);
+            padding: 10px 14px; border-radius: var(--radius);
+            font-size: 14px; line-height: 1.55; word-break: break-word;
+            white-space: pre-wrap; position: relative; box-shadow: var(--shadow-sm);
         }
-
-        .msg-sent .bubble {
-            background: var(--sakura-grad-soft);
-            color: #5a1035;
-            border-bottom-right-radius: 4px;
-        }
-
-        .msg-received .bubble {
-            background: #fff;
-            color: #3a2030;
-            border: 1px solid var(--sakura-100);
-            border-bottom-left-radius: 4px;
-        }
-
-        .msg-time {
-            font-size: 10px;
-            color: #b0849a;
-            white-space: nowrap;
-            flex-shrink: 0;
-            align-self: flex-end;
-            margin-bottom: 2px;
-        }
+        .msg-sent .bubble { background: var(--sakura-grad-soft); color: #5a1035; border-bottom-right-radius: 4px; }
+        .msg-received .bubble { background: #fff; color: #3a2030; border: 1px solid var(--sakura-100); border-bottom-left-radius: 4px; }
+        .msg-time { font-size: 10px; color: #b0849a; white-space: nowrap; flex-shrink: 0; align-self: flex-end; margin-bottom: 2px; }
 
         @keyframes msgIn {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ── Emoji Picker ── */
         #emoji-picker {
-            flex-shrink: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: #fff;
-            border-top: 1px solid var(--sakura-100);
+            flex-shrink: 0; max-height: 0; overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1);
+            background: #fff; border-top: 1px solid var(--sakura-100);
         }
-
-        #emoji-picker.open {
-            max-height: 260px;
-        }
-
-        .emoji-tabs {
-            display: flex;
-            padding: 6px 8px 0;
-            gap: 2px;
-            border-bottom: 1px solid var(--sakura-50);
-        }
-
+        #emoji-picker.open { max-height: 260px; }
+        .emoji-tabs { display: flex; padding: 6px 8px 0; gap: 2px; border-bottom: 1px solid var(--sakura-50); }
         .emoji-tab {
-            flex: 1;
-            background: none;
-            border: none;
-            padding: 6px 0;
-            font-size: 18px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-            border-radius: 8px 8px 0 0;
+            flex: 1; background: none; border: none; padding: 6px 0;
+            font-size: 18px; cursor: pointer;
+            border-bottom: 2px solid transparent; transition: all 0.2s; border-radius: 8px 8px 0 0;
         }
-
-        .emoji-tab:hover {
-            background: var(--sakura-50);
-        }
-
-        .emoji-tab.active {
-            border-bottom-color: var(--sakura-400);
-            background: var(--sakura-50);
-        }
-
-        .emoji-grid-wrap {
-            height: 210px;
-            overflow-y: auto;
-            padding: 6px;
-        }
-
-        .emoji-grid-wrap::-webkit-scrollbar {
-            width: 3px;
-        }
-
-        .emoji-grid-wrap::-webkit-scrollbar-thumb {
-            background: var(--sakura-200);
-            border-radius: 3px;
-        }
-
-        .emoji-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-        }
-
+        .emoji-tab:hover { background: var(--sakura-50); }
+        .emoji-tab.active { border-bottom-color: var(--sakura-400); background: var(--sakura-50); }
+        .emoji-grid-wrap { height: 210px; overflow-y: auto; padding: 6px; }
+        .emoji-grid-wrap::-webkit-scrollbar { width: 3px; }
+        .emoji-grid-wrap::-webkit-scrollbar-thumb { background: var(--sakura-200); border-radius: 3px; }
+        .emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; }
         .emoji-grid button {
-            background: none;
-            border: none;
-            font-size: 22px;
-            padding: 6px 0;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background 0.15s, transform 0.15s;
-            line-height: 1;
+            background: none; border: none; font-size: 22px; padding: 6px 0;
+            cursor: pointer; border-radius: 8px;
+            transition: background 0.15s, transform 0.15s; line-height: 1;
         }
-
-        .emoji-grid button:hover {
-            background: var(--sakura-50);
-            transform: scale(1.2);
-        }
-
-        .emoji-grid button:active {
-            transform: scale(0.95);
-        }
+        .emoji-grid button:hover { background: var(--sakura-50); transform: scale(1.2); }
+        .emoji-grid button:active { transform: scale(0.95); }
 
         /* ── Input Bar ── */
         #input-bar {
-            display: flex;
-            align-items: flex-end;
-            padding: 8px 10px;
-            gap: 8px;
-            background: #fff;
-            border-top: 1px solid var(--sakura-100);
-            flex-shrink: 0;
+            display: flex; align-items: flex-end; padding: 8px 10px; gap: 8px;
+            background: #fff; border-top: 1px solid var(--sakura-100); flex-shrink: 0;
         }
-
         #emoji-toggle {
-            width: 40px;
-            height: 40px;
-            border: none;
-            background: none;
-            font-size: 24px;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: background 0.2s;
-            flex-shrink: 0;
+            width: 40px; height: 40px; border: none; background: none;
+            font-size: 24px; cursor: pointer; border-radius: 50%;
+            transition: background 0.2s; flex-shrink: 0;
         }
-
-        #emoji-toggle:hover {
-            background: var(--sakura-50);
-        }
-
-        #emoji-toggle.active {
-            background: var(--sakura-100);
-        }
-
+        #emoji-toggle:hover { background: var(--sakura-50); }
+        #emoji-toggle.active { background: var(--sakura-100); }
         #msg-input {
-            flex: 1;
-            border: 1.5px solid var(--sakura-200);
-            border-radius: 20px;
-            padding: 10px 16px;
-            font-size: 14px;
-            font-family: var(--font);
-            resize: none;
-            outline: none;
-            min-height: 40px;
-            max-height: 100px;
-            line-height: 1.4;
-            overflow-y: auto;
+            flex: 1; border: 1.5px solid var(--sakura-200); border-radius: 20px;
+            padding: 10px 16px; font-size: 14px; font-family: var(--font);
+            resize: none; outline: none; min-height: 40px; max-height: 100px;
+            line-height: 1.4; overflow-y: auto;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-
-        #msg-input:focus {
-            border-color: var(--sakura-400);
-            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.12);
-        }
-
-        #msg-input::placeholder {
-            color: #caa0b5;
-        }
-
+        #msg-input:focus { border-color: var(--sakura-400); box-shadow: 0 0 0 3px rgba(255,107,157,0.12); }
+        #msg-input::placeholder { color: #caa0b5; }
         #send-btn {
-            width: 40px;
-            height: 40px;
-            border: none;
-            border-radius: 50%;
-            background: var(--sakura-grad);
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            box-shadow: var(--shadow-sm);
+            width: 40px; height: 40px; border: none; border-radius: 50%;
+            background: var(--sakura-grad); color: #fff; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0; box-shadow: var(--shadow-sm);
         }
-
-        #send-btn:disabled {
-            background: var(--sakura-100);
-            color: #d4a0b8;
-            box-shadow: none;
-            cursor: default;
-        }
-
-        #send-btn:not(:disabled):hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-md);
-        }
-
-        #send-btn:not(:disabled):active {
-            transform: scale(0.95);
-        }
-
-        #send-btn svg {
-            width: 20px;
-            height: 20px;
-        }
+        #send-btn:disabled { background: var(--sakura-100); color: #d4a0b8; box-shadow: none; cursor: default; }
+        #send-btn:not(:disabled):hover { transform: scale(1.1); box-shadow: var(--shadow-md); }
+        #send-btn:not(:disabled):active { transform: scale(0.95); }
+        #send-btn svg { width: 20px; height: 20px; }
 
         /* ── Modal ── */
         #modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            background: rgba(60, 15, 35, 0.45);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            transition: opacity 0.35s ease;
+            position: fixed; inset: 0; z-index: 100;
+            background: rgba(60,15,35,0.45); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; transition: opacity 0.35s ease;
         }
-
-        #modal-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        #modal-overlay.hidden { opacity: 0; pointer-events: none; }
         #modal {
-            background: #fff;
-            border-radius: 24px;
-            width: 100%;
-            max-width: 420px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg), 0 0 60px rgba(255, 107, 157, 0.15);
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            scrollbar-width: thin;
-            scrollbar-color: var(--sakura-200) transparent;
+            background: #fff; border-radius: 24px; width: 100%; max-width: 420px;
+            max-height: 90vh; overflow-y: auto;
+            box-shadow: var(--shadow-lg), 0 0 60px rgba(255,107,157,0.15);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+            scrollbar-width: thin; scrollbar-color: var(--sakura-200) transparent;
         }
+        #modal::-webkit-scrollbar { width: 4px; }
+        #modal::-webkit-scrollbar-thumb { background: var(--sakura-200); border-radius: 4px; }
+        #modal-overlay.hidden #modal { transform: translateY(30px) scale(0.95); }
 
-        #modal::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        #modal::-webkit-scrollbar-thumb {
-            background: var(--sakura-200);
-            border-radius: 4px;
-        }
-
-        #modal-overlay.hidden #modal {
-            transform: translateY(30px) scale(0.95);
-        }
-
-        .modal-header {
-            text-align: center;
-            padding: 30px 24px 10px;
-        }
-
-        .modal-header .icon {
-            font-size: 48px;
-            display: block;
-            margin-bottom: 8px;
-            filter: drop-shadow(0 2px 4px rgba(194, 24, 91, 0.2));
-        }
-
+        .modal-header { text-align: center; padding: 30px 24px 10px; }
+        .modal-header .icon { font-size: 48px; display: block; margin-bottom: 8px; filter: drop-shadow(0 2px 4px rgba(194,24,91,0.2)); }
         .modal-header h2 {
-            font-size: 22px;
-            font-weight: 700;
+            font-size: 22px; font-weight: 700;
             background: var(--sakura-grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
-        .modal-header p {
-            font-size: 13px;
-            color: #b0849a;
-            margin-top: 4px;
-        }
-
-        .modal-body {
-            padding: 16px 24px 28px;
-        }
-
-        .modal-body label {
-            display: block;
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--sakura-700);
-            margin-bottom: 6px;
-        }
-
+        .modal-header p { font-size: 13px; color: #b0849a; margin-top: 4px; }
+        .modal-body { padding: 16px 24px 28px; }
+        .modal-body label { display: block; font-size: 12px; font-weight: 500; color: var(--sakura-700); margin-bottom: 6px; }
         .modal-body input[type="text"] {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1.5px solid var(--sakura-200);
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-family: var(--font);
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--sakura-200);
+            border-radius: var(--radius-sm); font-size: 14px; font-family: var(--font);
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
         }
+        .modal-body input[type="text"]:focus { border-color: var(--sakura-400); box-shadow: 0 0 0 3px rgba(255,107,157,0.12); }
 
-        .modal-body input[type="text"]:focus {
-            border-color: var(--sakura-400);
-            box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.12);
-        }
-
-        .modal-choices {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
+        .modal-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
         .choice-btn {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 16px 18px;
-            border: 1.5px solid var(--sakura-100);
-            border-radius: var(--radius);
-            background: #fff;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: var(--font);
-            text-align: left;
+            display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+            border: 1.5px solid var(--sakura-100); border-radius: var(--radius);
+            background: #fff; cursor: pointer; transition: all 0.2s;
+            font-family: var(--font); text-align: left;
         }
+        .choice-btn:hover { border-color: var(--sakura-300); background: var(--sakura-50); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+        .choice-btn .choice-icon { font-size: 28px; }
+        .choice-btn .choice-text h3 { font-size: 15px; font-weight: 600; color: var(--sakura-800); }
+        .choice-btn .choice-text p { font-size: 12px; color: #b0849a; margin-top: 2px; }
 
-        .choice-btn:hover {
-            border-color: var(--sakura-300);
-            background: var(--sakura-50);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .choice-btn .choice-icon {
-            font-size: 28px;
-        }
-
-        .choice-btn .choice-text h3 {
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--sakura-800);
-        }
-
-        .choice-btn .choice-text p {
-            font-size: 12px;
-            color: #b0849a;
-            margin-top: 2px;
-        }
-
-        .modal-steps {
-            display: none;
-        }
-
-        .modal-steps.active {
-            display: block;
-        }
+        .modal-steps { display: none; }
+        .modal-steps.active { display: block; }
 
         .step-back {
-            background: none;
-            border: none;
-            font-size: 14px;
-            color: var(--sakura-500);
-            cursor: pointer;
-            padding: 4px 0;
-            font-family: var(--font);
-            font-weight: 500;
-            margin-bottom: 12px;
+            background: none; border: none; font-size: 14px; color: var(--sakura-500);
+            cursor: pointer; padding: 4px 0; font-family: var(--font); font-weight: 500; margin-bottom: 12px;
         }
-
-        .step-back:hover {
-            color: var(--sakura-700);
-        }
-
-        .step-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--sakura-800);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .step-label {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--sakura-600);
-            margin-bottom: 8px;
-        }
-
+        .step-back:hover { color: var(--sakura-700); }
+        .step-title { font-size: 17px; font-weight: 700; color: var(--sakura-800); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .step-label { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--sakura-600); margin-bottom: 8px; }
         .step-num {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: var(--sakura-grad);
-            color: #fff;
-            font-size: 12px;
-            font-weight: 700;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: var(--sakura-grad); color: #fff; font-size: 12px; font-weight: 700;
         }
-
         .sdp-box {
-            width: 100%;
-            height: 80px;
-            border: 1.5px solid var(--sakura-200);
-            border-radius: var(--radius-sm);
-            padding: 10px;
-            font-size: 11px;
-            font-family: monospace;
-            resize: none;
-            outline: none;
-            background: var(--sakura-50);
-            color: #6a3050;
-            transition: border-color 0.2s;
+            width: 100%; height: 80px; border: 1.5px solid var(--sakura-200);
+            border-radius: var(--radius-sm); padding: 10px; font-size: 11px;
+            font-family: monospace; resize: none; outline: none;
+            background: var(--sakura-50); color: #6a3050; transition: border-color 0.2s;
         }
-
-        .sdp-box:focus {
-            border-color: var(--sakura-400);
-        }
-
-        .sdp-box[readonly] {
-            cursor: default;
-            background: var(--sakura-50);
-        }
-
-        .step-action {
-            margin-top: 8px;
-            margin-bottom: 18px;
-        }
+        .sdp-box:focus { border-color: var(--sakura-400); }
+        .sdp-box[readonly] { cursor: default; background: var(--sakura-50); }
+        .step-action { margin-top: 8px; margin-bottom: 18px; }
 
         .btn-primary {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: var(--radius-sm);
-            background: var(--sakura-grad);
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: var(--font);
-            cursor: pointer;
-            transition: all 0.2s;
+            width: 100%; padding: 12px; border: none; border-radius: var(--radius-sm);
+            background: var(--sakura-grad); color: #fff; font-size: 14px; font-weight: 600;
+            font-family: var(--font); cursor: pointer; transition: all 0.2s;
             box-shadow: var(--shadow-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
         }
-
-        .btn-primary:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: default;
-            transform: none;
-            box-shadow: none;
-        }
+        .btn-primary:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
 
         .btn-secondary {
-            width: 100%;
-            padding: 12px;
-            border: 1.5px solid var(--sakura-200);
-            border-radius: var(--radius-sm);
-            background: #fff;
-            color: var(--sakura-700);
-            font-size: 14px;
-            font-weight: 600;
-            font-family: var(--font);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+            width: 100%; padding: 12px; border: 1.5px solid var(--sakura-200);
+            border-radius: var(--radius-sm); background: #fff; color: var(--sakura-700);
+            font-size: 14px; font-weight: 600; font-family: var(--font);
+            cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
         }
+        .btn-secondary:hover { background: var(--sakura-50); border-color: var(--sakura-400); }
 
-        .btn-secondary:hover {
-            background: var(--sakura-50);
-            border-color: var(--sakura-400);
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-row .btn-primary,
-        .btn-row .btn-secondary {
-            flex: 1;
-            min-width: 0;
-        }
+        .btn-row { display: flex; gap: 8px; }
+        .btn-row .btn-primary, .btn-row .btn-secondary { flex: 1; min-width: 0; }
 
         .spinner {
-            width: 18px;
-            height: 18px;
-            border: 2.5px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: inline-block;
+            width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: inline-block;
         }
-
         .spinner-dark {
-            width: 18px;
-            height: 18px;
-            border: 2.5px solid rgba(194, 24, 91, 0.2);
-            border-top-color: var(--sakura-500);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: inline-block;
+            width: 18px; height: 18px; border: 2.5px solid rgba(194,24,91,0.2);
+            border-top-color: var(--sakura-500); border-radius: 50%;
+            animation: spin 0.7s linear infinite; display: inline-block;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .step-hint {
-            font-size: 11px;
-            color: #b0849a;
-            margin-top: 6px;
-            line-height: 1.5;
-        }
-
-        .step-divider {
-            height: 1px;
-            background: var(--sakura-100);
-            margin: 4px 0;
-        }
-
-        .waiting-text {
-            text-align: center;
-            color: var(--sakura-500);
-            font-size: 13px;
-            padding: 8px 0;
-            animation: pulse-text 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulse-text {
-
-            0%,
-            100% {
-                opacity: 0.5;
-            }
-
-            50% {
-                opacity: 1;
-            }
-        }
+        .step-hint { font-size: 11px; color: #b0849a; margin-top: 6px; line-height: 1.5; }
+        .step-divider { height: 1px; background: var(--sakura-100); margin: 4px 0; }
+        .waiting-text { text-align: center; color: var(--sakura-500); font-size: 13px; padding: 8px 0; animation: pulse-text 1.5s ease-in-out infinite; }
+        @keyframes pulse-text { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
         /* ── QR Code ── */
         .qr-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            margin: 14px 0;
-            padding: 16px;
-            background: #fff;
-            border: 1.5px solid var(--sakura-100);
-            border-radius: var(--radius);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            margin: 14px 0; padding: 16px;
+            background: #fff; border: 1.5px solid var(--sakura-100); border-radius: var(--radius);
         }
-
-        .qr-container img,
-        .qr-container canvas {
-            border-radius: 8px;
-            box-shadow: var(--shadow-sm);
+        .qr-container img, .qr-container canvas {
+            border-radius: 8px; box-shadow: var(--shadow-sm);
             image-rendering: pixelated;
         }
-
-        .qr-label {
-            font-size: 11px;
-            color: #b0849a;
-            text-align: center;
-        }
+        .qr-label { font-size: 11px; color: #b0849a; text-align: center; }
 
         .flow-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(194, 24, 91, 0.06);
-            color: var(--sakura-700);
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 14px;
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 20px;
+            background: rgba(194,24,91,0.06); color: var(--sakura-700);
+            font-size: 12px; font-weight: 500; margin-bottom: 14px;
         }
-
         .flow-badge .flow-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--sakura-400);
-            animation: pulse-dot 1.5s infinite;
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--sakura-400); animation: pulse-dot 1.5s infinite;
         }
 
-        .fallback-section {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--sakura-100);
-        }
-
+        .fallback-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--sakura-100); }
         .fallback-toggle {
-            background: none;
-            border: none;
-            font-size: 12px;
-            color: var(--sakura-400);
-            cursor: pointer;
-            font-family: var(--font);
-            transition: color 0.2s;
+            background: none; border: none; font-size: 12px; color: var(--sakura-400);
+            cursor: pointer; font-family: var(--font); transition: color 0.2s;
         }
-
-        .fallback-toggle:hover {
-            color: var(--sakura-600);
-        }
-
-        .fallback-content {
-            display: none;
-            margin-top: 10px;
-        }
-
-        .fallback-content.open {
-            display: block;
-        }
+        .fallback-toggle:hover { color: var(--sakura-600); }
+        .fallback-content { display: none; margin-top: 10px; }
+        .fallback-content.open { display: block; }
 
         /* ── Toast ── */
         #toast {
-            position: fixed;
-            top: 24px;
-            left: 50%;
+            position: fixed; top: 24px; left: 50%;
             transform: translateX(-50%) translateY(-80px);
-            z-index: 200;
-            background: rgba(60, 15, 35, 0.88);
-            color: #fff;
-            padding: 10px 22px;
-            border-radius: 24px;
-            font-size: 13px;
-            font-family: var(--font);
-            font-weight: 500;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            white-space: nowrap;
+            z-index: 200; background: rgba(60,15,35,0.88); color: #fff;
+            padding: 10px 22px; border-radius: 24px; font-size: 13px;
+            font-family: var(--font); font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); white-space: nowrap;
         }
-
-        #toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
 
         /* ── Welcome ── */
-        .welcome-msg {
-            text-align: center;
-            padding: 40px 20px;
-            color: #c0a0b0;
-        }
-
-        .welcome-msg .welcome-icon {
-            font-size: 56px;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        .welcome-msg h3 {
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--sakura-600);
-            margin-bottom: 6px;
-        }
-
-        .welcome-msg p {
-            font-size: 12px;
-            line-height: 1.6;
-        }
+        .welcome-msg { text-align: center; padding: 40px 20px; color: #c0a0b0; }
+        .welcome-msg .welcome-icon { font-size: 56px; margin-bottom: 12px; display: block; }
+        .welcome-msg h3 { font-size: 16px; font-weight: 500; color: var(--sakura-600); margin-bottom: 6px; }
+        .welcome-msg p { font-size: 12px; line-height: 1.6; }
 
         /* ── Auto-join full-screen overlay ── */
         #auto-join-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 150;
-            background: rgba(60, 15, 35, 0.5);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            transition: opacity 0.35s;
+            position: fixed; inset: 0; z-index: 150;
+            background: rgba(60,15,35,0.5); backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; transition: opacity 0.35s;
         }
-
-        #auto-join-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        #auto-join-overlay.hidden { opacity: 0; pointer-events: none; }
         .auto-join-card {
-            background: #fff;
-            border-radius: 24px;
-            padding: 32px 28px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
+            background: #fff; border-radius: 24px; padding: 32px 28px;
+            max-width: 400px; width: 100%; text-align: center;
             box-shadow: var(--shadow-lg);
-            max-height: 90vh;
-            overflow-y: auto;
+            max-height: 90vh; overflow-y: auto;
         }
-
-        .auto-join-card .icon {
-            font-size: 56px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
+        .auto-join-card .icon { font-size: 56px; display: block; margin-bottom: 12px; }
         .auto-join-card h2 {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 20px; font-weight: 700;
             background: var(--sakura-grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
             margin-bottom: 8px;
         }
-
-        .auto-join-card p {
-            font-size: 13px;
-            color: #b0849a;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .auto-join-card .auto-status-text {
-            font-size: 13px;
-            color: var(--sakura-600);
-            margin-top: 12px;
-        }
+        .auto-join-card p { font-size: 13px; color: #b0849a; margin-bottom: 20px; line-height: 1.6; }
+        .auto-join-card .auto-status-text { font-size: 13px; color: var(--sakura-600); margin-top: 12px; }
     </style>
 </head>
 
@@ -1134,10 +532,8 @@
 
                     <div class="step-action">
                         <div class="btn-row">
-                            <button class="btn-primary" id="create-copy-url-btn" disabled onclick="copyInviteURL()">📋
-                                複製邀請連結</button>
-                            <button class="btn-secondary" id="create-share-btn" disabled onclick="shareInviteURL()"
-                                style="display:none">📤 分享</button>
+                            <button class="btn-primary" id="create-copy-url-btn" disabled onclick="copyInviteURL()">📋 複製邀請連結</button>
+                            <button class="btn-secondary" id="create-share-btn" disabled onclick="shareInviteURL()" style="display:none">📤 分享</button>
                         </div>
                     </div>
                     <p class="step-hint">📱 對方開啟連結 → 自動產生回覆連結 → 傳回來貼上即可</p>
@@ -1156,8 +552,7 @@
                             <div class="step-label" style="margin-top:10px">📦 原始 SDP</div>
                             <textarea class="sdp-box" id="create-sdp-out" readonly placeholder="產生中..."></textarea>
                             <div class="step-action">
-                                <button class="btn-secondary" onclick="copyField('create-sdp-out','邀請碼已複製！')">📋
-                                    複製原始邀請碼</button>
+                                <button class="btn-secondary" onclick="copyField('create-sdp-out','邀請碼已複製！')">📋 複製原始邀請碼</button>
                             </div>
                         </div>
                     </div>
@@ -1183,10 +578,8 @@
                         <div id="join-qr-wrap" style="display:none"></div>
                         <div class="step-action">
                             <div class="btn-row">
-                                <button class="btn-primary" id="join-copy-url-btn" onclick="copyAnswerURL()">📋
-                                    複製回覆連結</button>
-                                <button class="btn-secondary" id="join-share-btn" onclick="shareAnswerURL()"
-                                    style="display:none">📤 分享</button>
+                                <button class="btn-primary" id="join-copy-url-btn" onclick="copyAnswerURL()">📋 複製回覆連結</button>
+                                <button class="btn-secondary" id="join-share-btn" onclick="shareAnswerURL()" style="display:none">📤 分享</button>
                             </div>
                         </div>
                         <p class="step-hint">📱 將回覆連結傳回給對方，對方開啟後即自動連線</p>
@@ -1196,8 +589,7 @@
                             <div class="fallback-content" id="fallback-join">
                                 <textarea class="sdp-box" id="join-sdp-out" readonly></textarea>
                                 <div class="step-action">
-                                    <button class="btn-secondary" onclick="copyField('join-sdp-out','回覆碼已複製！')">📋
-                                        複製原始回覆碼</button>
+                                    <button class="btn-secondary" onclick="copyField('join-sdp-out','回覆碼已複製！')">📋 複製原始回覆碼</button>
                                 </div>
                             </div>
                         </div>
@@ -1892,12 +1284,12 @@
 
         // ─── Emoji ───
         const emojiData = {
-            '😊': ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤗', '🤭', '🤫', '🤔', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '😌', '😔', '😪', '😴', '🥱', '😵', '🤯', '🥳', '😎', '🤓', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😢', '😭', '😱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️'],
-            '👋': ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '👀', '👅', '👄', '💋', '🫶'],
-            '❤️': ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '♥️'],
-            '🌸': ['🌸', '🌺', '🌹', '🌷', '🌻', '🌼', '💐', '🍀', '🍁', '🍂', '🌿', '🌱', '🌲', '🌳', '🌴', '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🦋', '🐝', '🐌', '🐞', '🐬', '🐳'],
-            '🍔': ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🥭', '🍍', '🍞', '🧀', '🥚', '🍳', '🌭', '🍔', '🍟', '🍕', '🍝', '🍜', '🍣', '🍱', '🥟', '🍡', '🍧', '🍨', '🍦', '🧁', '🍰', '🎂', '🍭', '🍬', '🍫', '🍩', '🍪', '☕', '🍵', '🧋', '🍺', '🥂', '🍷'],
-            '🎉': ['⚽', '🏀', '🎾', '🏐', '🎱', '🏓', '⛳', '🎯', '🎳', '🎮', '🧩', '🏆', '🥇', '🎪', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎸', '🎻', '🎆', '🎇', '🎉', '🎊', '🎈', '🎁', '🎀']
+            '😊': ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','😋','😛','😜','🤪','😝','🤗','🤭','🤫','🤔','😐','😑','😶','😏','😒','🙄','😬','😌','😔','😪','😴','🥱','😵','🤯','🥳','😎','🤓','😕','😟','🙁','😮','😯','😲','😳','🥺','😢','😭','😱','😤','😡','😠','🤬','😈','👿','💀','☠️'],
+            '👋': ['👋','🤚','🖐️','✋','🖖','👌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','💪','👀','👅','👄','💋','🫶'],
+            '❤️': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','♥️'],
+            '🌸': ['🌸','🌺','🌹','🌷','🌻','🌼','💐','🍀','🍁','🍂','🌿','🌱','🌲','🌳','🌴','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🦋','🐝','🐌','🐞','🐬','🐳'],
+            '🍔': ['🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🍒','🍑','🥭','🍍','🍞','🧀','🥚','🍳','🌭','🍔','🍟','🍕','🍝','🍜','🍣','🍱','🥟','🍡','🍧','🍨','🍦','🧁','🍰','🎂','🍭','🍬','🍫','🍩','🍪','☕','🍵','🧋','🍺','🥂','🍷'],
+            '🎉': ['⚽','🏀','🎾','🏐','🎱','🏓','⛳','🎯','🎳','🎮','🧩','🏆','🥇','🎪','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎸','🎻','🎆','🎇','🎉','🎊','🎈','🎁','🎀']
         };
         const emojiCategories = Object.keys(emojiData);
         let activeEmojiCat = emojiCategories[0];

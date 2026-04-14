@@ -5,11 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🌸 Sakura Chat — P2P 私密聊天</title>
-    <meta name="description" content="Sakura Chat — 零伺服器、端對端加密的 P2P 私密聊天工具，透過 URL / QR Code 完成信令交換。">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
-        rel="stylesheet">
-    <!-- QR Code Generator (proven library, ~13KB) -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         /* ── Variables & Reset ── */
         :root {
@@ -498,7 +494,7 @@
             height: 20px;
         }
 
-        /* ── Modal ── */
+        /* ── Connection Modal ── */
         #modal-overlay {
             position: fixed;
             inset: 0;
@@ -522,7 +518,7 @@
             border-radius: 24px;
             width: 100%;
             max-width: 420px;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: var(--shadow-lg), 0 0 60px rgba(255, 107, 157, 0.15);
             transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -642,6 +638,7 @@
             margin-top: 2px;
         }
 
+        /* Modal steps view */
         .modal-steps {
             display: none;
         }
@@ -763,55 +760,11 @@
             box-shadow: none;
         }
 
-        .btn-secondary {
-            width: 100%;
-            padding: 12px;
-            border: 1.5px solid var(--sakura-200);
-            border-radius: var(--radius-sm);
-            background: #fff;
-            color: var(--sakura-700);
-            font-size: 14px;
-            font-weight: 600;
-            font-family: var(--font);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn-secondary:hover {
-            background: var(--sakura-50);
-            border-color: var(--sakura-400);
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-row .btn-primary,
-        .btn-row .btn-secondary {
-            flex: 1;
-            min-width: 0;
-        }
-
         .spinner {
             width: 18px;
             height: 18px;
             border: 2.5px solid rgba(255, 255, 255, 0.3);
             border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: inline-block;
-        }
-
-        .spinner-dark {
-            width: 18px;
-            height: 18px;
-            border: 2.5px solid rgba(194, 24, 91, 0.2);
-            border-top-color: var(--sakura-500);
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
             display: inline-block;
@@ -856,82 +809,6 @@
             }
         }
 
-        /* ── QR Code ── */
-        .qr-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            margin: 14px 0;
-            padding: 16px;
-            background: #fff;
-            border: 1.5px solid var(--sakura-100);
-            border-radius: var(--radius);
-        }
-
-        .qr-container img,
-        .qr-container canvas {
-            border-radius: 8px;
-            box-shadow: var(--shadow-sm);
-            image-rendering: pixelated;
-        }
-
-        .qr-label {
-            font-size: 11px;
-            color: #b0849a;
-            text-align: center;
-        }
-
-        .flow-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(194, 24, 91, 0.06);
-            color: var(--sakura-700);
-            font-size: 12px;
-            font-weight: 500;
-            margin-bottom: 14px;
-        }
-
-        .flow-badge .flow-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--sakura-400);
-            animation: pulse-dot 1.5s infinite;
-        }
-
-        .fallback-section {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--sakura-100);
-        }
-
-        .fallback-toggle {
-            background: none;
-            border: none;
-            font-size: 12px;
-            color: var(--sakura-400);
-            cursor: pointer;
-            font-family: var(--font);
-            transition: color 0.2s;
-        }
-
-        .fallback-toggle:hover {
-            color: var(--sakura-600);
-        }
-
-        .fallback-content {
-            display: none;
-            margin-top: 10px;
-        }
-
-        .fallback-content.open {
-            display: block;
-        }
-
         /* ── Toast ── */
         #toast {
             position: fixed;
@@ -955,7 +832,7 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* ── Welcome ── */
+        /* ── Welcome overlay ── */
         .welcome-msg {
             text-align: center;
             padding: 40px 20px;
@@ -979,66 +856,6 @@
             font-size: 12px;
             line-height: 1.6;
         }
-
-        /* ── Auto-join full-screen overlay ── */
-        #auto-join-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 150;
-            background: rgba(60, 15, 35, 0.5);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            transition: opacity 0.35s;
-        }
-
-        #auto-join-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .auto-join-card {
-            background: #fff;
-            border-radius: 24px;
-            padding: 32px 28px;
-            max-width: 400px;
-            width: 100%;
-            text-align: center;
-            box-shadow: var(--shadow-lg);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .auto-join-card .icon {
-            font-size: 56px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .auto-join-card h2 {
-            font-size: 20px;
-            font-weight: 700;
-            background: var(--sakura-grad);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-        }
-
-        .auto-join-card p {
-            font-size: 13px;
-            color: #b0849a;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .auto-join-card .auto-status-text {
-            font-size: 13px;
-            color: var(--sakura-600);
-            margin-top: 12px;
-        }
     </style>
 </head>
 
@@ -1051,6 +868,7 @@
 
     <!-- App Shell -->
     <div id="app">
+        <!-- Header -->
         <header id="header">
             <span class="logo">🌸</span>
             <div class="title-area">
@@ -1061,16 +879,16 @@
             <button id="connect-btn" onclick="openModal()">🔗 連線</button>
         </header>
 
+        <!-- Chat Messages -->
         <div id="chat-area">
             <div class="welcome-msg" id="welcome">
                 <span class="welcome-icon">🌸</span>
                 <h3>歡迎來到 Sakura Chat</h3>
-                <p>這是端對端加密的 P2P 聊天室<br>點擊右上角「🔗 連線」開始<br><br>
-                    <small style="color:#d4a8c0">💡 支援 URL / QR Code 邀請，無需手動貼碼</small>
-                </p>
+                <p>這是端對端加密的 P2P 聊天室<br>點擊右上角「🔗 連線」開始</p>
             </div>
         </div>
 
+        <!-- Emoji Picker -->
         <div id="emoji-picker">
             <div class="emoji-tabs" id="emoji-tabs"></div>
             <div class="emoji-grid-wrap">
@@ -1078,6 +896,7 @@
             </div>
         </div>
 
+        <!-- Input Bar -->
         <footer id="input-bar">
             <button id="emoji-toggle" title="Emoji" onclick="toggleEmoji()">😊</button>
             <textarea id="msg-input" rows="1" placeholder="輸入訊息..."></textarea>
@@ -1097,120 +916,85 @@
                 <div class="modal-header">
                     <span class="icon">🌸</span>
                     <h2>建立 P2P 連線</h2>
-                    <p>透過 URL / QR Code 邀請，無需伺服器</p>
+                    <p>無需伺服器，直接端對端加密聊天</p>
                 </div>
                 <div class="modal-body">
                     <label for="nickname-input">你的暱稱</label>
                     <input type="text" id="nickname-input" placeholder="輸入暱稱..." maxlength="20">
                     <div class="modal-choices">
-                        <button class="choice-btn" id="choice-create" onclick="startCreate()">
+                        <button class="choice-btn" onclick="startCreate()">
                             <span class="choice-icon">🏠</span>
                             <div class="choice-text">
                                 <h3>建立房間</h3>
-                                <p>產生邀請 URL / QR Code</p>
+                                <p>產生邀請碼，邀請朋友加入</p>
                             </div>
                         </button>
-                        <button class="choice-btn" id="choice-join" onclick="startJoin()">
+                        <button class="choice-btn" onclick="startJoin()">
                             <span class="choice-icon">🚪</span>
                             <div class="choice-text">
                                 <h3>加入房間</h3>
-                                <p>掃描 QR Code 或貼上邀請連結</p>
+                                <p>輸入朋友傳來的邀請碼</p>
                             </div>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Create Room -->
+            <!-- Create Room Steps -->
             <div id="modal-create" class="modal-steps">
                 <div class="modal-body">
                     <button class="step-back" onclick="backToInitial()">← 返回</button>
                     <div class="step-title">🏠 建立房間</div>
 
-                    <div class="step-label"><span class="step-num">1</span> 分享邀請給對方</div>
-                    <div class="flow-badge" id="create-status"><span class="flow-dot"></span> 產生邀請中...</div>
-
-                    <div id="create-qr-wrap" style="display:none"></div>
-
+                    <div class="step-label"><span class="step-num">1</span> 複製邀請碼傳給對方</div>
+                    <textarea class="sdp-box" id="create-sdp-out" readonly placeholder="產生中..."></textarea>
                     <div class="step-action">
-                        <div class="btn-row">
-                            <button class="btn-primary" id="create-copy-url-btn" disabled onclick="copyInviteURL()">📋
-                                複製邀請連結</button>
-                            <button class="btn-secondary" id="create-share-btn" disabled onclick="shareInviteURL()"
-                                style="display:none">📤 分享</button>
-                        </div>
+                        <button class="btn-primary" id="create-copy-btn" disabled onclick="copyField('create-sdp-out', '邀請碼已複製！')">
+                            📋 複製邀請碼
+                        </button>
                     </div>
-                    <p class="step-hint">📱 對方開啟連結 → 自動產生回覆連結 → 傳回來貼上即可</p>
+                    <p class="step-hint">📱 透過 LINE、Email 或任何方式傳給對方</p>
 
                     <div class="step-divider"></div>
 
-                    <div class="step-label"><span class="step-num">2</span> 貼上對方的回覆連結</div>
-                    <textarea class="sdp-box" id="create-answer-input" placeholder="在此貼上對方傳來的回覆連結..."></textarea>
+                    <div class="step-label"><span class="step-num">2</span> 貼上對方的回覆碼</div>
+                    <textarea class="sdp-box" id="create-sdp-in" placeholder="在此貼上對方傳來的回覆碼..."></textarea>
                     <div class="step-action">
-                        <button class="btn-primary" id="create-connect-btn" onclick="applyAnswer()">🔗 建立連線</button>
-                    </div>
-
-                    <div class="fallback-section">
-                        <button class="fallback-toggle" onclick="toggleFallback('create')">🔧 手動模式（進階）</button>
-                        <div class="fallback-content" id="fallback-create">
-                            <div class="step-label" style="margin-top:10px">📦 原始 SDP</div>
-                            <textarea class="sdp-box" id="create-sdp-out" readonly placeholder="產生中..."></textarea>
-                            <div class="step-action">
-                                <button class="btn-secondary" onclick="copyField('create-sdp-out','邀請碼已複製！')">📋
-                                    複製原始邀請碼</button>
-                            </div>
-                        </div>
+                        <button class="btn-primary" id="create-connect-btn" onclick="applyAnswer()">
+                            🔗 建立連線
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Join Room -->
+            <!-- Join Room Steps -->
             <div id="modal-join" class="modal-steps">
                 <div class="modal-body">
                     <button class="step-back" onclick="backToInitial()">← 返回</button>
                     <div class="step-title">🚪 加入房間</div>
 
-                    <div class="step-label"><span class="step-num">1</span> 貼上邀請連結或邀請碼</div>
-                    <textarea class="sdp-box" id="join-input" placeholder="在此貼上邀請連結或邀請碼..."></textarea>
+                    <div class="step-label"><span class="step-num">1</span> 貼上收到的邀請碼</div>
+                    <textarea class="sdp-box" id="join-sdp-in" placeholder="在此貼上收到的邀請碼..."></textarea>
                     <div class="step-action">
-                        <button class="btn-primary" id="join-confirm-btn" onclick="joinRoom()">🌸 確認加入</button>
+                        <button class="btn-primary" id="join-confirm-btn" onclick="joinRoom()">
+                            🌸 確認加入
+                        </button>
                     </div>
 
                     <div id="join-step2" style="display:none">
                         <div class="step-divider"></div>
-                        <div class="step-label"><span class="step-num">2</span> 分享回覆給對方</div>
-                        <div class="flow-badge"><span class="flow-dot"></span> 等待對方連線</div>
-                        <div id="join-qr-wrap" style="display:none"></div>
+                        <div class="step-label"><span class="step-num">2</span> 複製回覆碼傳回給對方</div>
+                        <textarea class="sdp-box" id="join-sdp-out" readonly></textarea>
                         <div class="step-action">
-                            <div class="btn-row">
-                                <button class="btn-primary" id="join-copy-url-btn" onclick="copyAnswerURL()">📋
-                                    複製回覆連結</button>
-                                <button class="btn-secondary" id="join-share-btn" onclick="shareAnswerURL()"
-                                    style="display:none">📤 分享</button>
-                            </div>
+                            <button class="btn-primary" onclick="copyField('join-sdp-out', '回覆碼已複製！')">
+                                📋 複製回覆碼
+                            </button>
                         </div>
-                        <p class="step-hint">📱 將回覆連結傳回給對方，對方開啟後即自動連線</p>
-
-                        <div class="fallback-section">
-                            <button class="fallback-toggle" onclick="toggleFallback('join')">🔧 手動模式（進階）</button>
-                            <div class="fallback-content" id="fallback-join">
-                                <textarea class="sdp-box" id="join-sdp-out" readonly></textarea>
-                                <div class="step-action">
-                                    <button class="btn-secondary" onclick="copyField('join-sdp-out','回覆碼已複製！')">📋
-                                        複製原始回覆碼</button>
-                                </div>
-                            </div>
-                        </div>
+                        <p class="step-hint">📱 將回覆碼傳回給對方即可完成連線</p>
+                        <div class="waiting-text">⏳ 等待對方連線中...</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Auto-join overlay (URL auto-detection) -->
-    <div id="auto-join-overlay" class="hidden">
-        <div class="auto-join-card" id="auto-join-card">
-            <!-- Content injected dynamically -->
         </div>
     </div>
 
@@ -1222,157 +1006,19 @@
         let db = null;
         let emojiOpen = false;
         let isConnected = false;
-        let inviteURL = '';
-        let answerURL = '';
-        let currentRole = '';
 
-        // ─── BroadcastChannel for cross-tab answer relay ───
-        // When A opens answer URL in a new tab, relay it to the original creator tab
-        let broadcastChannel = null;
-        try {
-            broadcastChannel = new BroadcastChannel('sakura-chat-signal');
-        } catch (e) { }
-
-        // ─── SDP Compression (browser-native deflate-raw + Base64URL) ───
-        async function compressSDP(sdpObj) {
-            const json = JSON.stringify(sdpObj);
-            try {
-                if (typeof CompressionStream !== 'undefined') {
-                    const blob = new Blob([json]);
-                    const cs = new CompressionStream('deflate-raw');
-                    const stream = blob.stream().pipeThrough(cs);
-                    const compressed = await new Response(stream).arrayBuffer();
-                    return arrayBufferToBase64URL(compressed);
-                }
-            } catch (e) { }
-            return btoa(unescape(encodeURIComponent(json)))
-                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
-
-        async function decompressSDP(encoded) {
-            try {
-                if (typeof DecompressionStream !== 'undefined') {
-                    const bytes = base64URLToArrayBuffer(encoded);
-                    const blob = new Blob([bytes]);
-                    const ds = new DecompressionStream('deflate-raw');
-                    const stream = blob.stream().pipeThrough(ds);
-                    const text = await new Response(stream).text();
-                    return JSON.parse(text);
-                }
-            } catch (e) { }
-            const padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
-            const json = decodeURIComponent(escape(atob(padded)));
-            return JSON.parse(json);
-        }
-
-        function arrayBufferToBase64URL(buffer) {
-            const bytes = new Uint8Array(buffer);
-            let binary = '';
-            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-            return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-        }
-
-        function base64URLToArrayBuffer(base64url) {
-            const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
-            const padded = base64 + '=='.slice(0, (4 - base64.length % 4) % 4);
-            const binary = atob(padded);
-            const bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-            return bytes.buffer;
-        }
-
-        function stripSDP(desc) {
-            return { type: desc.type, sdp: desc.sdp };
-        }
-
-        function buildInviteURL(encoded) {
-            return location.origin + location.pathname + '#offer=' + encoded;
-        }
-
-        function buildAnswerURL(encoded) {
-            return location.origin + location.pathname + '#answer=' + encoded;
-        }
-
-        function parseURLSignal() {
-            const hash = location.hash.slice(1);
-            if (!hash) return null;
-            if (hash.startsWith('offer=')) return { type: 'offer', data: hash.slice(6) };
-            if (hash.startsWith('answer=')) return { type: 'answer', data: hash.slice(7) };
-            return null;
-        }
-
-        // ─── QR Code Rendering (using qrcode-generator library) ───
-        function renderQR(container, text, sizePixels = 220) {
-            container.innerHTML = '';
-
-            // Determine QR type (version) - auto-select smallest that fits
-            let typeNumber = 0; // 0 = auto
-            const qr = qrcode(typeNumber, 'M');
-            qr.addData(text);
-            qr.make();
-
-            const moduleCount = qr.getModuleCount();
-            const cellSize = Math.floor(sizePixels / moduleCount);
-            const actualSize = cellSize * moduleCount;
-
-            const canvas = document.createElement('canvas');
-            canvas.width = actualSize;
-            canvas.height = actualSize;
-            canvas.style.width = sizePixels + 'px';
-            canvas.style.height = sizePixels + 'px';
-            const ctx = canvas.getContext('2d');
-
-            // White background
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, actualSize, actualSize);
-
-            // Draw modules
-            for (let row = 0; row < moduleCount; row++) {
-                for (let col = 0; col < moduleCount; col++) {
-                    if (qr.isDark(row, col)) {
-                        ctx.fillStyle = '#5a1035';
-                        ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-                    }
-                }
-            }
-
-            const wrap = document.createElement('div');
-            wrap.className = 'qr-container';
-            wrap.appendChild(canvas);
-
-            const label = document.createElement('div');
-            label.className = 'qr-label';
-            label.textContent = '📱 掃描 QR Code 或截圖分享';
-            wrap.appendChild(label);
-
-            container.appendChild(wrap);
-            container.style.display = '';
-        }
-
-        // ─── WebRTC ───
-        let pc = null;
-
-        function createPeerConnection() {
-            if (pc) { try { pc.close(); } catch (e) { } }
-            pc = new RTCPeerConnection({
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
-                ]
-            });
-            pc.onconnectionstatechange = () => {
-                if (['disconnected', 'failed', 'closed'].includes(pc.connectionState)) {
-                    isConnected = false;
-                    updateConnectionUI(false);
-                }
-            };
-            return pc;
-        }
+        // ─── WebRTC Setup ───
+        const pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        });
 
         function waitForICE() {
             return new Promise(resolve => {
                 if (pc.iceGatheringState === 'complete') { resolve(); return; }
-                const timer = setTimeout(resolve, 5000);
+                const timer = setTimeout(resolve, 4000);
                 pc.addEventListener('icegatheringstatechange', function handler() {
                     if (pc.iceGatheringState === 'complete') {
                         clearTimeout(timer);
@@ -1388,10 +1034,9 @@
             channel.onopen = () => {
                 isConnected = true;
                 updateConnectionUI(true);
+                // Send nickname handshake
                 channel.send(JSON.stringify({ type: 'nickname', name: nickname }));
                 closeModal();
-                hideAutoJoinOverlay();
-                history.replaceState(null, '', location.pathname);
                 appendSystemMsg('🌸 已建立 P2P 連線！開始聊天吧～');
             };
             channel.onclose = () => {
@@ -1412,13 +1057,26 @@
                         return;
                     }
                 } catch { }
+                // Fallback for plain text
                 appendMessage(e.data, 'peer', new Date(), peerName);
             };
         }
 
-        // ─── Modal Logic ───
-        function openModal() { document.getElementById('modal-overlay').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+        pc.onconnectionstatechange = () => {
+            if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+                isConnected = false;
+                updateConnectionUI(false);
+            }
+        };
+
+        // ─── Connection Modal Logic ───
+        function openModal() {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
 
         function backToInitial() {
             document.getElementById('modal-initial').style.display = '';
@@ -1426,168 +1084,71 @@
             document.getElementById('modal-join').classList.remove('active');
         }
 
-        function ensureNickname(inputId = 'nickname-input') {
-            const input = document.getElementById(inputId);
-            if (input) {
-                nickname = input.value.trim() || '櫻花使用者';
-                input.value = nickname;
-            } else {
-                nickname = nickname || '櫻花使用者';
-            }
+        function ensureNickname() {
+            const input = document.getElementById('nickname-input');
+            nickname = input.value.trim() || '櫻花使用者';
+            input.value = nickname;
         }
 
-        // ─── Create Room (A) ───
         async function startCreate() {
             ensureNickname();
-            currentRole = 'creator';
             document.getElementById('modal-initial').style.display = 'none';
             document.getElementById('modal-create').classList.add('active');
-
-            const statusEl = document.getElementById('create-status');
-            const copyBtn = document.getElementById('create-copy-url-btn');
-            const shareBtn = document.getElementById('create-share-btn');
-            const qrWrap = document.getElementById('create-qr-wrap');
-            const sdpOut = document.getElementById('create-sdp-out');
-
+            const outBox = document.getElementById('create-sdp-out');
+            const copyBtn = document.getElementById('create-copy-btn');
+            outBox.value = '';
             copyBtn.disabled = true;
-            statusEl.innerHTML = '<span class="flow-dot"></span> 產生邀請中...';
+            copyBtn.innerHTML = '<span class="spinner"></span> 產生中...';
 
             try {
-                createPeerConnection();
-
-                // Listen for answer via BroadcastChannel (cross-tab relay)
-                if (broadcastChannel) {
-                    broadcastChannel.onmessage = async (e) => {
-                        if (e.data && e.data.type === 'answer-relay') {
-                            try {
-                                const answerSDP = e.data.sdp;
-                                await pc.setRemoteDescription(answerSDP);
-                                showToast('🔗 收到回覆，正在建立連線...');
-                            } catch (err) {
-                                console.error('BroadcastChannel answer error:', err);
-                            }
-                        }
-                    };
-                }
-
                 dataChannel = pc.createDataChannel('sakura-chat');
                 setupDataChannel(dataChannel);
-
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
                 await waitForICE();
-
-                const sdpObj = stripSDP(pc.localDescription);
-                const encoded = await compressSDP(sdpObj);
-                inviteURL = buildInviteURL(encoded);
-                sdpOut.value = JSON.stringify(pc.localDescription);
-
-                // Render QR
-                renderQR(qrWrap, inviteURL, 220);
-
+                const sdp = JSON.stringify(pc.localDescription);
+                outBox.value = sdp;
                 copyBtn.disabled = false;
-                statusEl.innerHTML = '<span class="flow-dot"></span> 等待對方加入...';
-
-                if (navigator.share) {
-                    shareBtn.style.display = '';
-                    shareBtn.disabled = false;
-                }
-
-                await navigator.clipboard.writeText(inviteURL).catch(() => { });
-                showToast('✅ 邀請連結已自動複製！');
+                copyBtn.innerHTML = '📋 複製邀請碼';
+                // Auto copy
+                await navigator.clipboard.writeText(sdp).catch(() => { });
+                showToast('✅ 邀請碼已自動複製到剪貼簿！');
             } catch (err) {
-                statusEl.textContent = '❌ 產生失敗：' + err.message;
+                outBox.value = '❌ 產生失敗：' + err.message;
+                copyBtn.innerHTML = '📋 複製邀請碼';
+                copyBtn.disabled = true;
             }
         }
 
-        function copyInviteURL() {
-            navigator.clipboard.writeText(inviteURL).then(() => showToast('✅ 邀請連結已複製！'))
-                .catch(() => { fallbackCopy(inviteURL); showToast('✅ 邀請連結已複製！'); });
-        }
-
-        function shareInviteURL() {
-            if (navigator.share) {
-                navigator.share({ title: '🌸 Sakura Chat 邀請', text: '來加入聊天！', url: inviteURL }).catch(() => { });
-            }
-        }
-
-        // ─── Apply Answer (A receives B's reply) ───
-        async function applyAnswer() {
-            const input = document.getElementById('create-answer-input');
-            const btn = document.getElementById('create-connect-btn');
-            let raw = input.value.trim();
-            if (!raw) { showToast('請先貼上回覆連結'); return; }
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> 連線中...';
-
-            try {
-                let answerSDP;
-                if (raw.includes('#answer=')) {
-                    const encoded = raw.split('#answer=')[1];
-                    answerSDP = await decompressSDP(encoded);
-                } else {
-                    answerSDP = JSON.parse(raw);
-                }
-                await pc.setRemoteDescription(answerSDP);
-                showToast('🔗 正在建立連線...');
-            } catch (err) {
-                showToast('❌ 回覆碼格式錯誤');
-                btn.disabled = false;
-                btn.innerHTML = '🔗 建立連線';
-            }
-        }
-
-        // ─── Join Room (B - manual) ───
         function startJoin() {
             ensureNickname();
-            currentRole = 'joiner';
             document.getElementById('modal-initial').style.display = 'none';
             document.getElementById('modal-join').classList.add('active');
             document.getElementById('join-step2').style.display = 'none';
         }
 
         async function joinRoom() {
-            const input = document.getElementById('join-input');
+            const inBox = document.getElementById('join-sdp-in');
             const btn = document.getElementById('join-confirm-btn');
-            let raw = input.value.trim();
-            if (!raw) { showToast('請先貼上邀請連結或邀請碼'); return; }
+            if (!inBox.value.trim()) { showToast('請先貼上邀請碼'); return; }
 
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner"></span> 處理中...';
 
             try {
-                let offerSDP;
-                if (raw.includes('#offer=')) {
-                    const encoded = raw.split('#offer=')[1];
-                    offerSDP = await decompressSDP(encoded);
-                } else {
-                    offerSDP = JSON.parse(raw);
-                }
-
-                createPeerConnection();
                 pc.ondatachannel = (e) => setupDataChannel(e.channel);
-
-                await pc.setRemoteDescription(offerSDP);
+                const offer = JSON.parse(inBox.value.trim());
+                await pc.setRemoteDescription(offer);
                 const answer = await pc.createAnswer();
                 await pc.setLocalDescription(answer);
                 await waitForICE();
-
-                const sdpObj = stripSDP(pc.localDescription);
-                const encoded = await compressSDP(sdpObj);
-                answerURL = buildAnswerURL(encoded);
-
-                document.getElementById('join-sdp-out').value = JSON.stringify(pc.localDescription);
+                const sdp = JSON.stringify(pc.localDescription);
+                document.getElementById('join-sdp-out').value = sdp;
                 document.getElementById('join-step2').style.display = '';
-
-                renderQR(document.getElementById('join-qr-wrap'), answerURL, 220);
-
-                if (navigator.share) document.getElementById('join-share-btn').style.display = '';
-
-                btn.innerHTML = '✅ 已處理';
-
-                await navigator.clipboard.writeText(answerURL).catch(() => { });
-                showToast('✅ 回覆連結已自動複製！請傳回給對方');
+                btn.innerHTML = '✅ 已加入';
+                // Auto copy answer
+                await navigator.clipboard.writeText(sdp).catch(() => { });
+                showToast('✅ 回覆碼已自動複製！請傳回給對方');
             } catch (err) {
                 showToast('❌ 邀請碼格式錯誤');
                 btn.disabled = false;
@@ -1595,186 +1156,23 @@
             }
         }
 
-        function copyAnswerURL() {
-            navigator.clipboard.writeText(answerURL).then(() => showToast('✅ 回覆連結已複製！'))
-                .catch(() => { fallbackCopy(answerURL); showToast('✅ 回覆連結已複製！'); });
-        }
+        async function applyAnswer() {
+            const inBox = document.getElementById('create-sdp-in');
+            const btn = document.getElementById('create-connect-btn');
+            if (!inBox.value.trim()) { showToast('請先貼上回覆碼'); return; }
 
-        function shareAnswerURL() {
-            if (navigator.share) {
-                navigator.share({ title: '🌸 Sakura Chat 回覆', text: '這是回覆連結', url: answerURL }).catch(() => { });
-            }
-        }
-
-        // ─── Auto-Join via URL ───
-        // B opens invite URL → FULLY AUTOMATIC: process offer, create answer, show QR
-        // A opens answer URL → relay to original tab via BroadcastChannel
-
-        function showAutoJoinOverlay() {
-            document.getElementById('auto-join-overlay').classList.remove('hidden');
-        }
-        function hideAutoJoinOverlay() {
-            document.getElementById('auto-join-overlay').classList.add('hidden');
-        }
-
-        async function autoHandleOffer(encodedOffer) {
-            const card = document.getElementById('auto-join-card');
-            nickname = '櫻花使用者';
-            currentRole = 'joiner';
-
-            // Phase 1: Show "processing" state
-            card.innerHTML = `
-                <span class="icon">🌸</span>
-                <h2>收到聊天邀請！</h2>
-                <p>正在自動處理中...</p>
-                <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:20px 0">
-                    <span class="spinner-dark"></span>
-                    <span class="auto-status-text">建立安全連線中...</span>
-                </div>
-            `;
-            showAutoJoinOverlay();
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> 連線中...';
 
             try {
-                const offerSDP = await decompressSDP(encodedOffer);
-
-                createPeerConnection();
-                pc.ondatachannel = (e) => setupDataChannel(e.channel);
-
-                await pc.setRemoteDescription(offerSDP);
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
-                await waitForICE();
-
-                const sdpObj = stripSDP(pc.localDescription);
-                const encoded = await compressSDP(sdpObj);
-                answerURL = buildAnswerURL(encoded);
-
-                // Phase 2: Show result with QR + copy button
-                card.innerHTML = `
-                    <span class="icon">✅</span>
-                    <h2>準備完成！</h2>
-                    <p>請將下方的回覆連結傳回給對方<br>對方貼上後即可開始聊天</p>
-                    <div id="auto-qr-wrap"></div>
-                    <div style="margin-top:12px">
-                        <button class="btn-primary" onclick="copyAutoAnswer()" style="margin-bottom:8px">📋 複製回覆連結</button>
-                        ${navigator.share ? '<button class="btn-secondary" onclick="shareAutoAnswer()">📤 分享回覆連結</button>' : ''}
-                    </div>
-                    <div class="waiting-text" style="margin-top:16px">⏳ 等待對方完成連線...</div>
-                    <div style="margin-top:16px">
-                        <label for="auto-nickname" style="display:block;font-size:12px;font-weight:500;color:var(--sakura-700);margin-bottom:4px;text-align:left">你的暱稱（可選）</label>
-                        <input type="text" id="auto-nickname" placeholder="櫻花使用者" maxlength="20"
-                            style="width:100%;padding:8px 12px;border:1.5px solid var(--sakura-200);border-radius:10px;font-size:13px;font-family:var(--font);outline:none"
-                            onchange="nickname=this.value.trim()||'櫻花使用者'">
-                    </div>
-                `;
-
-                // Render QR
-                setTimeout(() => {
-                    const qrWrap = document.getElementById('auto-qr-wrap');
-                    if (qrWrap) renderQR(qrWrap, answerURL, 200);
-                }, 50);
-
-                await navigator.clipboard.writeText(answerURL).catch(() => { });
-                showToast('✅ 回覆連結已自動複製！請傳回給對方');
-
+                const answer = JSON.parse(inBox.value.trim());
+                await pc.setRemoteDescription(answer);
+                showToast('🔗 正在建立連線...');
             } catch (err) {
-                card.innerHTML = `
-                    <span class="icon">❌</span>
-                    <h2>邀請連結無效</h2>
-                    <p>可能連結已過期或格式不正確<br><small>${err.message}</small></p>
-                    <button class="btn-primary" onclick="hideAutoJoinOverlay();history.replaceState(null,'',location.pathname)" style="margin-top:16px">關閉</button>
-                `;
+                showToast('❌ 回覆碼格式錯誤');
+                btn.disabled = false;
+                btn.innerHTML = '🔗 建立連線';
             }
-        }
-
-        async function autoHandleAnswer(encodedAnswer) {
-            const card = document.getElementById('auto-join-card');
-
-            // Case 1: This tab is the creator (has local description)
-            if (pc && pc.localDescription && pc.localDescription.type === 'offer') {
-                card.innerHTML = `
-                    <span class="icon">🔗</span>
-                    <h2>收到回覆！</h2>
-                    <p>正在完成連線...</p>
-                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:20px 0">
-                        <span class="spinner-dark"></span>
-                    </div>
-                `;
-                showAutoJoinOverlay();
-
-                try {
-                    const answerSDP = await decompressSDP(encodedAnswer);
-                    await pc.setRemoteDescription(answerSDP);
-                    showToast('🔗 正在建立連線...');
-                } catch (err) {
-                    card.innerHTML = `
-                        <span class="icon">❌</span>
-                        <h2>回覆連結無效</h2>
-                        <p>${err.message}</p>
-                        <button class="btn-primary" onclick="hideAutoJoinOverlay()" style="margin-top:16px">關閉</button>
-                    `;
-                }
-                return;
-            }
-
-            // Case 2: This is a NEW tab — relay answer to original creator tab
-            if (broadcastChannel) {
-                try {
-                    const answerSDP = await decompressSDP(encodedAnswer);
-                    broadcastChannel.postMessage({ type: 'answer-relay', sdp: answerSDP });
-
-                    card.innerHTML = `
-                        <span class="icon">✅</span>
-                        <h2>已傳送至原始分頁</h2>
-                        <p>回覆已自動傳送到你建立房間的分頁<br>連線應該會在幾秒內建立完成</p>
-                        <p style="margin-top:12px;font-size:12px;color:var(--sakura-400)">💡 請切換回原本的 Sakura Chat 分頁</p>
-                        <button class="btn-secondary" onclick="hideAutoJoinOverlay();history.replaceState(null,'',location.pathname)" style="margin-top:16px">關閉此分頁</button>
-                    `;
-                    showAutoJoinOverlay();
-                    showToast('✅ 已傳送至原始分頁！');
-                    return;
-                } catch (e) { }
-            }
-
-            // Case 3: No existing session, no broadcast — show paste instruction
-            card.innerHTML = `
-                <span class="icon">📋</span>
-                <h2>回覆連結</h2>
-                <p>請在建立房間的分頁中，將此連結貼入「回覆連結」欄位</p>
-                <div style="margin-top:16px;padding:12px;background:var(--sakura-50);border-radius:12px;font-size:10px;font-family:monospace;word-break:break-all;max-height:100px;overflow-y:auto;text-align:left">
-                    ${location.href}
-                </div>
-                <button class="btn-primary" onclick="navigator.clipboard.writeText(location.href).then(()=>showToast('已複製！'))" style="margin-top:12px">📋 複製此連結</button>
-                <button class="btn-secondary" onclick="hideAutoJoinOverlay();history.replaceState(null,'',location.pathname)" style="margin-top:8px">關閉</button>
-            `;
-            showAutoJoinOverlay();
-        }
-
-        function copyAutoAnswer() {
-            navigator.clipboard.writeText(answerURL).then(() => showToast('✅ 回覆連結已複製！'))
-                .catch(() => { fallbackCopy(answerURL); showToast('✅ 回覆連結已複製！'); });
-        }
-
-        function shareAutoAnswer() {
-            if (navigator.share) {
-                navigator.share({ title: '🌸 Sakura Chat 回覆', text: '這是回覆連結', url: answerURL }).catch(() => { });
-            }
-        }
-
-        // ─── Helpers ───
-        function toggleFallback(section) {
-            document.getElementById(`fallback-${section}`).classList.toggle('open');
-        }
-
-        function fallbackCopy(text) {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
         }
 
         function updateConnectionUI(connected) {
@@ -1802,6 +1200,7 @@
                 await navigator.clipboard.writeText(text);
                 showToast(message);
             } catch {
+                // Fallback: select the text
                 const el = document.getElementById(id);
                 el.select();
                 document.execCommand('copy');
@@ -1809,12 +1208,13 @@
             }
         }
 
-        // ─── Chat ───
+        // ─── Chat Functions ───
         function formatTime(date) {
             const h = date.getHours();
             const m = String(date.getMinutes()).padStart(2, '0');
             const period = h >= 12 ? '下午' : '上午';
-            return `${period} ${h % 12 || 12}:${m}`;
+            const h12 = h % 12 || 12;
+            return `${period} ${h12}:${m}`;
         }
 
         function appendMessage(text, type, time, name, save = true) {
@@ -1827,7 +1227,9 @@
             const timeStr = formatTime(time || new Date());
 
             if (type === 'self') {
-                div.innerHTML = `<span class="msg-time">${timeStr}</span><div class="bubble">${escapeHTML(text)}</div>`;
+                div.innerHTML = `
+                    <span class="msg-time">${timeStr}</span>
+                    <div class="bubble">${escapeHTML(text)}</div>`;
             } else {
                 const initial = (name || peerName || '?').charAt(0);
                 div.innerHTML = `
@@ -1841,6 +1243,7 @@
 
             area.appendChild(div);
             area.scrollTop = area.scrollHeight;
+
             if (save) saveToDB({ type, text, time: (time || new Date()).getTime(), name: name || '' });
         }
 
@@ -1854,6 +1257,7 @@
             div.innerHTML = `<span>${text}</span>`;
             area.appendChild(div);
             area.scrollTop = area.scrollHeight;
+
             if (save) saveToDB({ type: 'system', text, time: Date.now(), name: '' });
         }
 
@@ -1876,21 +1280,28 @@
             return div.innerHTML;
         }
 
-        // ─── Input ───
+        // ─── Input Handling ───
         const msgInput = document.getElementById('msg-input');
+
         msgInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         });
+
         msgInput.addEventListener('input', () => {
             msgInput.style.height = 'auto';
             msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
             updateSendBtn();
         });
+
         function updateSendBtn() {
-            document.getElementById('send-btn').disabled = !msgInput.value.trim() || !isConnected;
+            const btn = document.getElementById('send-btn');
+            btn.disabled = !msgInput.value.trim() || !isConnected;
         }
 
-        // ─── Emoji ───
+        // ─── Emoji Picker ───
         const emojiData = {
             '😊': ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤗', '🤭', '🤫', '🤔', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '😌', '😔', '😪', '😴', '🥱', '😵', '🤯', '🥳', '😎', '🤓', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😢', '😭', '😱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️'],
             '👋': ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '💪', '👀', '👅', '👄', '💋', '🫶'],
@@ -1899,6 +1310,7 @@
             '🍔': ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🥭', '🍍', '🍞', '🧀', '🥚', '🍳', '🌭', '🍔', '🍟', '🍕', '🍝', '🍜', '🍣', '🍱', '🥟', '🍡', '🍧', '🍨', '🍦', '🧁', '🍰', '🎂', '🍭', '🍬', '🍫', '🍩', '🍪', '☕', '🍵', '🧋', '🍺', '🥂', '🍷'],
             '🎉': ['⚽', '🏀', '🎾', '🏐', '🎱', '🏓', '⛳', '🎯', '🎳', '🎮', '🧩', '🏆', '🥇', '🎪', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁', '🎷', '🎸', '🎻', '🎆', '🎇', '🎉', '🎊', '🎈', '🎁', '🎀']
         };
+
         const emojiCategories = Object.keys(emojiData);
         let activeEmojiCat = emojiCategories[0];
 
@@ -1916,8 +1328,9 @@
 
         function switchEmojiCategory(cat) {
             activeEmojiCat = cat;
+            document.querySelectorAll('.emoji-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.emoji-tab').forEach(t => {
-                t.classList.toggle('active', t.textContent === cat);
+                if (t.textContent === cat) t.classList.add('active');
             });
             renderEmojiGrid(cat);
         }
@@ -1983,6 +1396,7 @@
                 const req = store.getAll();
                 req.onsuccess = () => {
                     const msgs = req.result || [];
+                    // Load last 100 messages
                     const recent = msgs.slice(-100);
                     if (recent.length > 0) {
                         const welcome = document.getElementById('welcome');
@@ -1990,8 +1404,11 @@
                         appendSystemMsg('── 歷史訊息 ──', false);
                     }
                     recent.forEach(m => {
-                        if (m.type === 'system') appendSystemMsg(m.text, false);
-                        else appendMessage(m.text, m.type, new Date(m.time), m.name, false);
+                        if (m.type === 'system') {
+                            appendSystemMsg(m.text, false);
+                        } else {
+                            appendMessage(m.text, m.type, new Date(m.time), m.name, false);
+                        }
                     });
                     resolve();
                 };
@@ -2009,7 +1426,7 @@
             toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
         }
 
-        // ─── Petals ───
+        // ─── Sakura Petals ───
         function createPetals() {
             const container = document.getElementById('petals-container');
             for (let i = 0; i < 18; i++) {
@@ -2026,7 +1443,7 @@
             }
         }
 
-        // ─── Visual Viewport ───
+        // ─── Visual Viewport (mobile keyboard) ───
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', () => {
                 document.getElementById('app').style.height = window.visualViewport.height + 'px';
@@ -2039,18 +1456,6 @@
             initEmojiPicker();
             await initDB();
             await loadChatHistory();
-
-            // Auto-detect URL signal
-            const signal = parseURLSignal();
-            if (signal) {
-                if (signal.type === 'offer') {
-                    // B opens A's invite link → fully automatic!
-                    autoHandleOffer(signal.data);
-                } else if (signal.type === 'answer') {
-                    // A opens B's answer link (or new tab relay)
-                    autoHandleAnswer(signal.data);
-                }
-            }
         })();
     </script>
 </body>
