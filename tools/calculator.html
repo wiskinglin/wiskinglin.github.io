@@ -102,11 +102,15 @@ body{
 
 /* Quick Actions (Tabs) */
 .quick-actions{ display:grid;grid-template-columns:repeat(2,1fr);gap:16px; }
+.currency-status { display:flex; align-items:center; gap:8px; padding:6px 24px; font-size:.7rem; color:var(--text-dim); }
+.currency-status .status-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; animation: pulse-dot 2s infinite; }
+.currency-status .status-dot.live { background:#4ade80; }
+.currency-status .status-dot.offline { background:#f97316; animation:none; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
 .action-btn{
   padding:16px 12px;text-align:center;cursor:pointer;
   transition:all .3s ease; border: 1px solid var(--glass-border);
 }
-.action-btn:last-child:nth-child(odd) { grid-column: span 2; }
 .action-btn:hover{ background:rgba(255,255,255,0.15);transform:translateY(-4px); }
 .action-btn.active{ 
   background:rgba(255,255,255,0.2); border-color:var(--accent-1); 
@@ -124,9 +128,9 @@ body{
 .main-content {
   display:flex;
   flex-direction:column;
-  height: 550px; /* <--- UNIFIED HEIGHT FOR ALL PANELS ---> */
+  min-height: 550px;
 }
-.panel { display: none; flex-direction: column; gap: 0; padding: 0; overflow: hidden; height: 100%; border: 1px solid var(--glass-border); border-radius: 24px; background:var(--glass-bg); backdrop-filter:blur(24px); }
+.panel { display: none; flex-direction: column; gap: 0; padding: 0; overflow: hidden; min-height: 550px; border: 1px solid var(--glass-border); border-radius: 24px; background:var(--glass-bg); backdrop-filter:blur(24px); }
 .panel.active { display: flex; animation: fadeInd .4s ease; }
 @keyframes fadeInd { from {opacity:0; transform: translateY(15px);} to {opacity:1; transform: translateY(0);} }
 
@@ -267,6 +271,12 @@ input[type=number] { -moz-appearance:textfield; }
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
           <div class="action-text">時間計算</div>
+        </div>
+        <div class="action-btn glass-panel" data-target="currency" data-label="匯率換算">
+          <div class="action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div class="action-text">匯率換算</div>
         </div>
       </div>
     </div>
@@ -475,6 +485,52 @@ input[type=number] { -moz-appearance:textfield; }
         </div>
       </div>
 
+      <!-- 6. Currency Panel -->
+      <div id="currency-panel" class="panel">
+        <div class="panel-header">Currency / 匯率換算</div>
+        <div class="currency-status">
+          <span class="status-dot offline" id="currency-dot"></span>
+          <span id="currency-update-time">預設匯率 · 僅供參考</span>
+        </div>
+        <div class="tx-list">
+          <div class="tx-item">
+            <div class="tx-icon" style="font-size:.85rem;letter-spacing:0">🇹🇼</div>
+            <div class="tx-info"><div class="tx-name">新台幣 (TWD)</div><div class="tx-date">Taiwan Dollar</div></div>
+            <input class="converter-input" data-unit="TWD" data-type="currency" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-size:.85rem;letter-spacing:0">🇺🇸</div>
+            <div class="tx-info"><div class="tx-name">美元 (USD)</div><div class="tx-date">US Dollar</div></div>
+            <input class="converter-input" data-unit="USD" data-type="currency" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-size:.85rem;letter-spacing:0">🇯🇵</div>
+            <div class="tx-info"><div class="tx-name">日幣 (JPY)</div><div class="tx-date">Japanese Yen</div></div>
+            <input class="converter-input" data-unit="JPY" data-type="currency" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-size:.85rem;letter-spacing:0">🇰🇷</div>
+            <div class="tx-info"><div class="tx-name">韓元 (KRW)</div><div class="tx-date">Korean Won</div></div>
+            <input class="converter-input" data-unit="KRW" data-type="currency" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-size:.85rem;letter-spacing:0">🇦🇺</div>
+            <div class="tx-info"><div class="tx-name">澳幣 (AUD)</div><div class="tx-date">Australian Dollar</div></div>
+            <input class="converter-input" data-unit="AUD" data-type="currency" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-size:.85rem;letter-spacing:0">🇪🇺</div>
+            <div class="tx-info"><div class="tx-name">歐元 (EUR)</div><div class="tx-date">Euro</div></div>
+            <input class="converter-input" data-unit="EUR" data-type="currency" type="number" placeholder="0">
+          </div>
+          <div class="tx-item">
+            <div class="tx-icon" style="font-size:.85rem;letter-spacing:0">🇬🇧</div>
+            <div class="tx-info"><div class="tx-name">英鎊 (GBP)</div><div class="tx-date">British Pound</div></div>
+            <input class="converter-input" data-unit="GBP" data-type="currency" type="number" placeholder="0">
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </main>
@@ -486,7 +542,8 @@ const svgs = {
     length: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>',
     area: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>',
     weight: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><path d="M6.5 8a2 2 0 0 0-1.905 1.46L2.1 18.5A2 2 0 0 0 4 21h16a2 2 0 0 0 1.925-2.54L19.4 9.5A2 2 0 0 0 17.48 8Z"/></svg>',
-    time: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+    time: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+    currency: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>'
 };
 
 const modeMeta = {
@@ -494,7 +551,8 @@ const modeMeta = {
   'length': { icon: svgs.length, desc: '包含毫米、公分、公尺、公里、英吋、英呎與英哩，即時互換無縫對接。' },
   'area': { icon: svgs.area, desc: '平方公尺、坪、榻榻米、甲、公頃、平方英呎與英畝，輕鬆掌握各種空間大小。' },
   'weight': { icon: svgs.weight, desc: '毫克、公克、公斤、公噸、台斤、盎司與磅數換算，精準達到測量與生活應用需求。' },
-  'time': { icon: svgs.time, desc: '涵蓋秒、分、時、天、周、月、年全面即時交叉換算與對比。' }
+  'time': { icon: svgs.time, desc: '涵蓋秒、分、時、天、周、月、年全面即時交叉換算與對比。' },
+  'currency': { icon: svgs.currency, desc: '台幣、美元、日幣、韓元、澳幣、歐元、英鎊，即時匯率換算一目了然。' }
 };
 
 // Ambient cursor light effect
@@ -697,19 +755,56 @@ document.querySelectorAll('.converter-input').forEach(input => {
         }
         
         const rate = rates[type][unit];
-        const baseVal = val * rate;
+        // Currency rates are "X per 1 USD", so divide to get USD base then multiply for target
+        // Other types: rates are "base-units per 1 of this unit", so multiply to get base then divide
+        const baseVal = (type === 'currency') ? val / rate : val * rate;
         
         document.querySelectorAll(`.converter-input[data-type="${type}"]`).forEach(el => {
             if (el !== this) {
                 const targetUnit = el.dataset.unit;
                 const targetRate = rates[type][targetUnit];
-                let outVal = baseVal / targetRate;
+                let outVal = (type === 'currency') ? baseVal * targetRate : baseVal / targetRate;
                 outVal = Math.round(outVal * 1000000) / 1000000;
                 el.value = outVal;
             }
         });
     });
 });
+
+// --- Currency Converter Logic ---
+// Default fallback rates (relative to USD=1)
+rates.currency = {
+  TWD: 32.2,
+  USD: 1,
+  JPY: 149.5,
+  KRW: 1365,
+  AUD: 1.55,
+  EUR: 0.92,
+  GBP: 0.79
+};
+
+// Try to fetch live rates from open.er-api.com
+(async function fetchLiveRates() {
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    const data = await res.json();
+    if (data && data.result === 'success' && data.rates) {
+      const r = data.rates;
+      ['TWD','USD','JPY','KRW','AUD','EUR','GBP'].forEach(code => {
+        if (r[code] !== undefined) rates.currency[code] = r[code];
+      });
+      const dot = document.getElementById('currency-dot');
+      const timeEl = document.getElementById('currency-update-time');
+      if (dot) { dot.classList.remove('offline'); dot.classList.add('live'); }
+      if (timeEl) {
+        const now = new Date();
+        timeEl.textContent = `即時匯率 · ${now.toLocaleDateString('zh-TW')} ${now.toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit'})} 更新`;
+      }
+    }
+  } catch(e) {
+    console.warn('匯率 API 請求失敗，使用預設匯率', e);
+  }
+})();
 </script>
 </body>
 </html>

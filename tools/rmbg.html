@@ -188,7 +188,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Progress bar */
@@ -220,8 +222,13 @@
         }
 
         @keyframes indeterminate {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(400%); }
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(400%);
+            }
         }
 
         /* Upload Area */
@@ -627,8 +634,15 @@
 
         /* Fade in animation */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .fade-in {
@@ -637,8 +651,15 @@
 
         /* Pulse animation for success */
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
-            50% { box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.1); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.1);
+            }
         }
 
         .status-box.success {
@@ -736,15 +757,29 @@
         <!-- Action Buttons -->
         <div class="action-row">
             <button id="process-btn" class="btn btn-primary" disabled>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
                 開始 AI 去背
             </button>
             <button id="download-btn" class="btn btn-secondary" disabled>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
                 下載去背結果
             </button>
             <button id="clear-btn" class="btn btn-danger" disabled style="display:none;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                </svg>
                 清除
             </button>
         </div>
@@ -787,8 +822,8 @@
                 <div class="comparison-divider" id="comparison-divider"></div>
             </div>
             <div class="comparison-labels">
-                <span>◀ 原始圖片</span>
-                <span>去背結果 ▶</span>
+                <span>◀ 去背結果</span>
+                <span>原始圖片 ▶</span>
             </div>
         </div>
 
@@ -799,7 +834,7 @@
 
     <script type="module">
         import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
-    
+
         env.allowLocalModels = false;
 
         // ── State ──
