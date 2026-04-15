@@ -1,315 +1,232 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>瀑布流本地相簿 (進化版)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
-    <style>
-        :root {
-            --primary: #1a73e8;
-            --surface: #f1f3f4;
-            --bg: #ffffff;
-            --text-main: #202124;
-            --text-sub: #5f6368;
-            --sidebar-width: 250px;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: "Segoe UI", Arial, sans-serif; display: flex; height: 100vh; overflow: hidden; background: var(--bg); color: var(--text-main); }
-        
-        /* 側邊導覽列與收合設計 */
-        aside { width: var(--sidebar-width); background: var(--surface); padding: 20px 10px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #dadce0; transition: transform 0.3s ease; position: relative; z-index: 10; }
-        aside.collapsed { transform: translateX(-100%); position: absolute; height: 100%; }
-        
-        /* 頂部控制區 (包含漢堡選單) */
-        .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 0 10px; }
-        .toggle-btn { background: none; border: none; cursor: pointer; padding: 4px; border-radius: 50%; display: flex; align-items: center; color: var(--text-sub); transition: 0.2s; }
-        .toggle-btn:hover { background: rgba(0,0,0,0.1); }
-        
-        .nav-btn { padding: 12px 16px; border-radius: 24px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; gap: 12px; font-size: 16px; color: var(--text-main); transition: 0.2s; text-align: left; }
-        .nav-btn:hover { background: rgba(0,0,0,0.05); }
-        .nav-btn.active { background: #e8f0fe; color: var(--primary); font-weight: 500; }
-        
-        .folder-btn { margin-top: 20px; width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        .folder-btn:hover { background: #1557b0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>本地瀑布流相簿 (支援資料夾選取)</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #121212;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-        /* 主要內容區 */
-        main { flex: 1; overflow-y: auto; padding: 24px; position: relative; transition: margin-left 0.3s ease; }
-        main.expanded { margin-left: 0; }
-        
-        .header-area { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-        .view-title { font-size: 24px; font-weight: 500; color: var(--text-main); }
-        
-        /* 瀑布流 */
-        .masonry { column-count: 4; column-gap: 16px; margin-bottom: 32px; }
-        @media (max-width: 1200px) { .masonry { column-count: 3; } }
-        @media (max-width: 800px) { .masonry { column-count: 2; } }
-        
-        /* 圖片卡片與鍵盤聚焦樣式 */
-        .photo-card { break-inside: avoid; margin-bottom: 16px; border-radius: 12px; overflow: hidden; position: relative; background: #eee; cursor: zoom-in; transition: transform 0.2s, box-shadow 0.2s; border: 3px solid transparent; }
-        .photo-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .photo-card.focused { border-color: var(--primary); transform: scale(0.98); box-shadow: 0 0 15px rgba(26, 115, 232, 0.5); }
-        .photo-card img { width: 100%; display: block; }
-        
-        /* 燈箱 */
-        .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .lightbox.active { display: flex; }
-        .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 4px; }
-        .lightbox-hint { position: absolute; bottom: 20px; color: white; opacity: 0.7; font-size: 14px; }
-        
-        .system-msg { color: var(--text-sub); text-align: center; margin-top: 50vh; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 16px; }
-    </style>
+    /* 頂部操作區：包含選取按鈕與標籤 */
+    .header-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .upload-btn {
+      align-self: flex-start;
+      background-color: #e60023; /* 類似 Pinterest 的紅色 */
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 24px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .upload-btn:hover { background-color: #ad081b; }
+    
+    /* 隱藏預設的 input 介面 */
+    #folder-input { display: none; }
+
+    .tags-nav {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .tag-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background-color: transparent;
+      color: #888;
+      border: 1px solid #333;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .tag-btn:hover { border-color: #666; }
+    .tag-btn.active { background-color: white; color: black; font-weight: bold; }
+
+    /* 瀑布流容器 */
+    .masonry-grid {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .masonry-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* 圖片卡片 */
+    .image-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: #2a2a2a;
+      width: 100%;
+    }
+
+    /* 真實圖片的樣式設定 */
+    .image-card img {
+      width: 100%;
+      height: auto; /* 讓圖片依比例自動調整高度 */
+      display: block;
+    }
+
+    .image-tag {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      pointer-events: none;
+    }
+
+    /* 提示文字 */
+    .empty-state {
+      text-align: center;
+      color: #666;
+      margin-top: 50px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
 
-    <aside id="sidebar">
-        <div class="top-bar">
-            <button class="toggle-btn" onclick="toggleSidebar()">
-                <span class="material-symbols-outlined">menu</span>
-            </button>
-            <span style="font-weight: bold; color: var(--text-sub); font-size: 18px;">相簿圖庫</span>
-        </div>
+  <div class="header-controls">
+    <label for="folder-input" class="upload-btn">📂 選擇本地圖片資料夾</label>
+    <input type="file" id="folder-input" webkitdirectory directory multiple accept="image/*">
+    
+    <div class="tags-nav" id="nav-container"></div>
+  </div>
+
+  <div class="masonry-grid" id="grid-container">
+    <div class="empty-state">請點擊上方按鈕選擇包含圖片的資料夾</div>
+  </div>
+
+  <script>
+    const CATEGORIES = ['全部', '構圖', '女角色', '食物和飲品', 'MoviePoster'];
+    let MOCK_IMAGES = []; // 初始為空，等使用者選取資料夾
+    let activeCategory = '全部';
+    const columnCount = 4; 
+
+    // 渲染導覽列標籤
+    function renderNav() {
+      const nav = document.getElementById('nav-container');
+      nav.innerHTML = ''; 
+
+      CATEGORIES.forEach(category => {
+        const btn = document.createElement('button');
+        btn.className = `tag-btn ${activeCategory === category ? 'active' : ''}`;
+        btn.textContent = category;
         
-        <button class="nav-btn active" id="btn-timeline" onclick="switchView('timeline')">
-            <span class="material-symbols-outlined">image</span>所有相片
-        </button>
+        btn.onclick = () => {
+          activeCategory = category;
+          renderNav();
+          renderGrid();
+        };
+        nav.appendChild(btn);
+      });
+    }
+
+    // 渲染瀑布流圖片
+    function renderGrid() {
+      const grid = document.getElementById('grid-container');
+      grid.innerHTML = ''; 
+
+      if (MOCK_IMAGES.length === 0) {
+        grid.innerHTML = '<div class="empty-state">資料夾內沒有圖片，請重新選擇</div>';
+        return;
+      }
+
+      const filteredImages = activeCategory === '全部' 
+        ? MOCK_IMAGES 
+        : MOCK_IMAGES.filter(img => img.tag === activeCategory);
+
+      const columns = Array.from({ length: columnCount }, () => []);
+
+      filteredImages.forEach((img, index) => {
+        columns[index % columnCount].push(img);
+      });
+
+      columns.forEach(colData => {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'masonry-column';
         
-        <button class="folder-btn" onclick="openDirectory()">
-            <span class="material-symbols-outlined">folder_open</span>開啟資料夾
-        </button>
-    </aside>
-
-    <div class="lightbox" id="lightbox">
-        <img id="lightbox-img" src="" alt="Full view">
-        <div class="lightbox-hint">按 空白鍵 (Space) 關閉</div>
-    </div>
-
-    <main id="mainContainer">
-        <div class="header-area">
-            <button class="toggle-btn" id="headerMenuBtn" onclick="toggleSidebar()" style="display: none;">
-                <span class="material-symbols-outlined">menu</span>
-            </button>
-            <h1 class="view-title" id="viewTitle">所有相片</h1>
-        </div>
-        <div id="contentArea">
-            <div class="system-msg">
-                <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5;">folder_open</span>
-                <p>正在檢查是否有上次開啟的紀錄...</p>
-            </div>
-        </div>
-    </main>
-
-<script>
-    let state = {
-        photos: [],
-        currentView: 'timeline',
-        focusedIndex: -1, // 鍵盤聚焦索引
-        sidebarOpen: true
-    };
-
-    const DOM = {
-        sidebar: document.getElementById('sidebar'),
-        main: document.getElementById('mainContainer'),
-        headerMenuBtn: document.getElementById('headerMenuBtn'),
-        content: document.getElementById('contentArea'),
-        lightbox: document.getElementById('lightbox'),
-        lightboxImg: document.getElementById('lightbox-img')
-    };
-
-    // ====== 1. IndexedDB 暫存控制代碼邏輯 ======
-    const DB_NAME = 'PhotoAppDB';
-    const STORE_NAME = 'Handles';
-
-    function initDB() {
-        return new Promise((resolve, reject) => {
-            const request = indexedDB.open(DB_NAME, 1);
-            request.onupgradeneeded = (e) => e.target.result.createObjectStore(STORE_NAME);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
+        colData.forEach(img => {
+          const card = document.createElement('div');
+          card.className = 'image-card';
+          
+          // 建立真實圖片標籤
+          const imageEl = document.createElement('img');
+          imageEl.src = img.url; 
+          imageEl.loading = 'lazy'; // 延遲加載效能優化
+          
+          const tagSpan = document.createElement('span');
+          tagSpan.className = 'image-tag';
+          tagSpan.textContent = img.tag;
+          
+          card.appendChild(imageEl);
+          card.appendChild(tagSpan);
+          colDiv.appendChild(card);
         });
+        
+        grid.appendChild(colDiv);
+      });
     }
 
-    async function saveDirectoryHandle(handle) {
-        const db = await initDB();
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        tx.objectStore(STORE_NAME).put(handle, 'lastFolder');
-    }
+    // 處理資料夾選取事件
+    document.getElementById('folder-input').addEventListener('change', (event) => {
+      const files = event.target.files;
+      
+      // 過濾出圖片檔案 (排除資料夾內的 txt 或其他非圖片檔)
+      const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
 
-    async function loadDirectoryHandle() {
-        const db = await initDB();
-        return new Promise((resolve) => {
-            const tx = db.transaction(STORE_NAME, 'readonly');
-            const request = tx.objectStore(STORE_NAME).get('lastFolder');
-            request.onsuccess = () => resolve(request.result);
-        });
-    }
+      if (imageFiles.length === 0) {
+        alert('這個資料夾裡找不到圖片喔！');
+        return;
+      }
 
-    // ====== 2. 檔案系統讀取 (File System Access API) ======
-    async function openDirectory(useCached = false) {
-        try {
-            let dirHandle;
-            
-            if (useCached) {
-                dirHandle = await loadDirectoryHandle();
-                if (!dirHandle) {
-                    showEmptyState();
-                    return;
-                }
-                // 詢問使用者是否允許重用上次的權限
-                const permission = await dirHandle.requestPermission({ mode: 'read' });
-                if (permission !== 'granted') {
-                    showEmptyState();
-                    return;
-                }
-            } else {
-                dirHandle = await window.showDirectoryPicker();
-                await saveDirectoryHandle(dirHandle); // 儲存供下次使用
-            }
+      // 將真實圖片轉換為我們的資料格式
+      MOCK_IMAGES = imageFiles.map((file, index) => {
+        // 為了測試分類功能，這裡隨機指派一個標籤（排除"全部"）
+        const randomCategoryIndex = Math.floor(Math.random() * (CATEGORIES.length - 1)) + 1;
+        const randomTag = CATEGORIES[randomCategoryIndex];
 
-            DOM.content.innerHTML = '<div class="system-msg"><p>正在讀取資料夾圖片...</p></div>';
-            state.photos = [];
-            
-            // 遞迴讀取檔案
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'file' && entry.name.match(/\.(jpg|jpeg|png|webp|gif)$/i)) {
-                    const file = await entry.getFile();
-                    state.photos.push({
-                        id: Math.random().toString(36).substr(2, 9),
-                        file: file,
-                        url: URL.createObjectURL(file),
-                        date: new Date(file.lastModified)
-                    });
-                }
-            }
-            
-            state.photos.sort((a, b) => b.date - a.date);
-            state.focusedIndex = -1;
-            render();
+        return {
+          id: index.toString(),
+          url: URL.createObjectURL(file), // 產生本地端可讀取的暫時網址
+          tag: randomTag
+        };
+      });
 
-        } catch (error) {
-            console.warn("讀取取消或失敗:", error);
-            if (state.photos.length === 0) showEmptyState();
-        }
-    }
-
-    // ====== 3. 介面渲染與操作 ======
-    function showEmptyState() {
-        DOM.content.innerHTML = `
-            <div class="system-msg">
-                <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5;">imagesmode</span>
-                <p>請點擊左側「開啟資料夾」來載入圖片</p>
-            </div>`;
-    }
-
-    function toggleSidebar() {
-        state.sidebarOpen = !state.sidebarOpen;
-        if (state.sidebarOpen) {
-            DOM.sidebar.classList.remove('collapsed');
-            DOM.main.classList.remove('expanded');
-            DOM.headerMenuBtn.style.display = 'none';
-        } else {
-            DOM.sidebar.classList.add('collapsed');
-            DOM.main.classList.add('expanded');
-            DOM.headerMenuBtn.style.display = 'block';
-        }
-    }
-
-    function render() {
-        DOM.content.innerHTML = '';
-        if (state.photos.length === 0) return showEmptyState();
-
-        const masonryDiv = document.createElement('div');
-        masonryDiv.className = 'masonry';
-
-        state.photos.forEach((photo, index) => {
-            const card = document.createElement('div');
-            card.className = 'photo-card';
-            card.dataset.index = index;
-            card.onclick = () => openLightbox(photo.url);
-            
-            card.innerHTML = `<img src="${photo.url}" loading="lazy" alt="photo">`;
-            masonryDiv.appendChild(card);
-        });
-
-        DOM.content.appendChild(masonryDiv);
-        updateFocusUI();
-    }
-
-    // ====== 4. 鍵盤支援與燈箱 ======
-    function updateFocusUI() {
-        document.querySelectorAll('.photo-card').forEach(el => el.classList.remove('focused'));
-        if (state.focusedIndex >= 0 && state.focusedIndex < state.photos.length) {
-            const activeCard = document.querySelector(`.photo-card[data-index="${state.focusedIndex}"]`);
-            if (activeCard) {
-                activeCard.classList.add('focused');
-                activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-    }
-
-    function openLightbox(url) {
-        DOM.lightboxImg.src = url;
-        DOM.lightbox.classList.add('active');
-    }
-
-    function closeLightbox() {
-        DOM.lightbox.classList.remove('active');
-        DOM.lightboxImg.src = '';
-    }
-
-    document.addEventListener('keydown', (e) => {
-        const isLightboxOpen = DOM.lightbox.classList.contains('active');
-
-        // 空白鍵關閉燈箱
-        if (isLightboxOpen && e.code === 'Space') {
-            e.preventDefault();
-            closeLightbox();
-            return;
-        }
-
-        // 如果燈箱沒開，且有圖片，處理方向鍵與 Enter
-        if (!isLightboxOpen && state.photos.length > 0) {
-            const total = state.photos.length;
-            const columns = window.innerWidth <= 800 ? 2 : (window.innerWidth <= 1200 ? 3 : 4);
-            
-            let handled = true;
-
-            switch (e.key) {
-                case 'ArrowRight':
-                    state.focusedIndex = state.focusedIndex < total - 1 ? state.focusedIndex + 1 : 0;
-                    break;
-                case 'ArrowLeft':
-                    state.focusedIndex = state.focusedIndex > 0 ? state.focusedIndex - 1 : total - 1;
-                    break;
-                case 'ArrowDown':
-                    // 簡單模擬網格向下跳躍
-                    state.focusedIndex = Math.min(state.focusedIndex + columns, total - 1);
-                    if(state.focusedIndex < 0) state.focusedIndex = 0;
-                    break;
-                case 'ArrowUp':
-                    state.focusedIndex = Math.max(state.focusedIndex - columns, 0);
-                    break;
-                case 'Enter':
-                    if (state.focusedIndex >= 0) {
-                        openLightbox(state.photos[state.focusedIndex].url);
-                    }
-                    break;
-                default:
-                    handled = false;
-            }
-
-            if (handled) {
-                e.preventDefault(); // 防止網頁預設滾動
-                updateFocusUI();
-            }
-        }
+      // 重置狀態並重新渲染
+      activeCategory = '全部';
+      renderNav();
+      renderGrid();
     });
 
-    // 啟動時檢查快取
-    window.onload = () => {
-        openDirectory(true);
-    };
-
-</script>
+    // 初始只渲染導覽列
+    renderNav();
+  </script>
 </body>
 </html>
