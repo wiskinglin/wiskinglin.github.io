@@ -3,6 +3,63 @@
 > **文件版本**: v2.1 | **最後更新**: 2026-04-15
 > **專案代號**: iTaiwan | **附檔名**: `.itw` / `.itwx`
 
+## 待改善
+我先仔細讀一下附件的範本，再給你完整建議。很好，現在我對三個範本的內容和結構都有清楚的理解了。讓我來給你一個系統性的分析和建議。好的，我已經完整分析了你的需求和三個範本，來給你一個系統性的建議。讀完三個範本後，我的核心結論是：**格式本身不需要大改，但要新增兩個 section，並且重寫 Renderer 層的思路**。以下是詳細建議：
+
+---
+
+## 問題根源分析
+
+看完你的範本之後，現有架構最大的矛盾在於：**三種模式（文件/試算表/簡報）被設計成三個分頁，但 .itw 本質上是一份統一的資料**。Wander Well（DOCX/PDF）讓我看到文件需要有圖文混排的版型能力；Aqua Marketing（PPTX）讓我看到投影片需要有「每張投影片獨立 layout」的能力；Simple Budget（XLSX）的需求相對簡單，CSV 格式已經夠用。
+
+---
+
+## 三個核心改動建議
+
+**改動一：新增 `---SLIDE:N layout=X---` section**
+
+現在用 `---` 分頁的做法太脆弱——投影片和文件正文共用同一個 MD section，導致簡報完全無法做版型。應該把每張投影片變成獨立 section：
+
+```
+---SLIDE:1 layout=title-hero---
+# Aqua Marketing Plan
+副標題文字
+
+---SLIDE:2 layout=two-col---
+## Goals & Strategy
+:left: 左欄 Markdown 內容
+:right: 右欄 Markdown 內容
+```
+
+`layout` 可選值：`title-hero`、`two-col`、`text-image`、`quote-big`、`data-table`、`blank`。這樣每張投影片就能像模塊一樣拖曳排序。
+
+**改動二：新增 `---THEME---` section 控制全局版型**
+
+這是最關鍵的一步。讓 .itw 格式自帶一個版型描述層：
+
+```
+---THEME---
+preset: deck
+accent: #0ea5e9
+font: Inter
+```
+
+`preset` 對應你的四個範本：`minimal`（長文書籍風格）、`grid`（試算表/報表）、`magazine`（圖文混排）、`deck`（投影片）。同一份 MD 內容，切換 preset 就換整個排版語言，這才是「四合一」真正的意義。
+
+**改動三：新建檔案時提供範本選擇介面**
+
+現在 `newFile()` 直接生成一個固定的空白文件。改成彈出範本選單，提供至少四個預設：空白文件、預算試算表（帶 CSV 範例）、行銷簡報（帶幾張 SLIDE section）、旅遊指南（magazine preset）。這也解決了你說的「沒辦法生成預設 .itw 檔案」的問題。
+
+---
+
+## 不建議動的部分
+
+`---JSON---`、`---MD---`、`---CSV:Name---` 這三個 section 的設計是好的，不需要改。Block Engine 的架構也很清晰，只需要讓它能渲染不同 THEME preset 下的樣式即可。真正需要重構的是 **PresentationRenderer** 和 **CSS 版型系統**，這兩塊是現在最薄弱的地方。
+
+---
+
+你希望我先從哪一塊開始實作？建議順序是：① THEME + SLIDE 格式解析 → ② 四種 preset 的 CSS 版型 → ③ 範本選擇介面。
+
 ---
 
 ## 專案願景
