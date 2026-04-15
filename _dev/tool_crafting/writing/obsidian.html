@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Obsidian</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TUI Editor -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/theme/toastui-editor-dark.min.css" />
+    <!-- Vis.js for Graph -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <style>
+        :root {
+            /* Obsidian Modern Dark Theme Profile */
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #181818;
+            --bg-tertiary: #141414;
+            --text-normal: #dcddde;
+            --text-muted: #8b8f94;
+            --text-accent: #a371f7;
+            --interactive-accent: #7c3aed;
+            --interactive-accent-hover: #8b5cf6;
+            --interactive-hover: rgba(255, 255, 255, 0.08);
+            --interactive-active: rgba(255, 255, 255, 0.12);
+            --border-color: #2f3136;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --toolbar-display: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-normal);
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            margin-left: -260px;
+        }
+
+        .nav-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vault-info {
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-normal);
+        }
+
+        .nav-actions button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 15px;
+            padding: 6px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-actions button:hover {
+            color: var(--text-normal);
+            background: var(--interactive-hover);
+        }
+
+        .nav-search {
+            padding: 0 16px 16px;
+        }
+
+        .search-box {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 6px 10px;
+            transition: border-color 0.2s;
+        }
+        
+        .search-box:focus-within {
+            border-color: var(--interactive-accent);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text-normal);
+            outline: none;
+            padding: 4px;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .search-box i {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .nav-files {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 10px 10px;
+        }
+        
+        .nav-files::-webkit-scrollbar { width: 6px; }
+        .nav-files::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        .nav-file {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-muted);
+            transition: background 0.1s;
+            user-select: none;
+            position: relative;
+            margin-bottom: 2px;
+        }
+
+        .nav-file:hover {
+            background: var(--interactive-hover);
+            color: var(--text-normal);
+        }
+
+        .nav-file.active {
+            background: var(--interactive-active);
+            color: var(--interactive-accent);
+            font-weight: 500;
+        }
+
+        .nav-file-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+        }
+
+        .delete-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .delete-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .nav-file:hover .delete-btn {
+            display: block;
+        }
+
+        /* Main Area Styles */
+        .main-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            position: relative;
+            background: var(--bg-primary);
+        }
+
+        .top-bar {
+            height: 44px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            background-color: var(--bg-primary);
+            z-index: 10;
+        }
+
+        .left-actions, .right-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .top-bar button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .top-bar button:hover {
+            background: var(--interactive-hover);
+            color: var(--text-normal);
+        }
+
+        .top-bar button.active {
+            background: var(--interactive-active);
+            color: var(--interactive-accent);
+        }
+
+        .tabs {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            font-size: 14px;
+            color: var(--text-muted);
+            border-radius: 6px;
+            user-select: none;
+            transition: color 0.2s;
+        }
+
+        .tab.active {
+            color: var(--text-normal);
+            font-weight: 500;
+        }
+
+        /* View Container */
+        .view-container {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor-view, .graph-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            transition: opacity 0.2s;
+        }
+
+        .view-hidden {
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Editor Area */
+        .editor-scroll-area {
+            height: 100%;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .editor-scroll-area::-webkit-scrollbar { width: 12px; }
+        .editor-scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .editor-scroll-area::-webkit-scrollbar-thumb { 
+            background: var(--border-color); 
+            border-radius: 10px; 
+            border: 3px solid var(--bg-primary); 
+        }
+
+        .editor-inner-container {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 80px 40px;
+        }
+
+        .inline-title-input {
+            background: transparent;
+            border: none;
+            color: var(--text-normal);
+            font-size: 2.2em;
+            font-weight: 700;
+            font-family: inherit;
+            padding: 0;
+            margin-bottom: 24px;
+            width: 100%;
+            outline: none;
+            line-height: 1.2;
+        }
+        
+        .inline-title-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* TUI Editor Hacks for Obsidian Styling */
+        .toastui-editor-defaultUI {
+            border: none !important;
+            font-family: var(--font-family) !important;
+        }
+        .toastui-editor-defaultUI .toastui-editor-toolbar {
+            display: var(--toolbar-display) !important;
+            background: var(--bg-primary) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+        .toastui-editor-contents p,
+        .toastui-editor-contents li,
+        .toastui-editor-contents span {
+            font-size: 16px !important;
+            line-height: 1.6 !important;
+            color: var(--text-normal) !important;
+        }
+        .toastui-editor-contents h1,
+        .toastui-editor-contents h2,
+        .toastui-editor-contents h3,
+        .toastui-editor-contents h4 {
+            border-bottom: none !important;
+            color: var(--text-normal) !important;
+            font-weight: 600 !important;
+        }
+        .toastui-editor-contents a {
+            color: var(--text-accent) !important;
+            text-decoration: none !important;
+        }
+        .toastui-editor-contents a:hover {
+            text-decoration: underline !important;
+        }
+        .toastui-editor-contents blockquote {
+            border-left: 4px solid var(--interactive-accent) !important;
+            color: var(--text-muted) !important;
+            background: rgba(124, 58, 237, 0.05) !important;
+            padding: 10px 16px !important;
+            border-radius: 0 4px 4px 0 !important;
+        }
+        .toastui-editor-md-preview {
+            background: var(--bg-primary) !important;
+        }
+        .te-preview {
+            background: var(--bg-primary) !important;
+        }
+
+        /* Graph View */
+        #graph-network {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-primary);
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .graph-glass-btn {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            color: var(--text-normal);
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: var(--font-family);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .graph-glass-btn:hover {
+            background: rgba(45, 45, 45, 0.8);
+            border-color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Left Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="nav-header">
+                <div class="vault-info">
+                    <i class="fas fa-cube" style="color: var(--interactive-accent); font-size: 18px;"></i> 
+                    <span>Personal Vault</span>
+                </div>
+                <div class="nav-actions">
+                    <button id="new-note" title="Create New Note"><i class="fas fa-edit"></i></button>
+                </div>
+            </div>
+            <div class="nav-search">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search files..." id="search-input">
+                </div>
+            </div>
+            <div class="nav-files" id="file-list"></div>
+        </div>
+
+        <!-- Main Editor / Graph Area -->
+        <div class="main-area">
+            <div class="top-bar">
+                <div class="left-actions">
+                    <button id="toggle-sidebar" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+                    <button id="toggle-toolbar" title="Toggle Formatting Toolbar"><i class="fas fa-heading"></i></button>
+                </div>
+                <div class="tabs">
+                    <div class="tab active"><i class="fas fa-file-alt"></i> <span id="current-tab-name">Note</span></div>
+                </div>
+                <div class="right-actions">
+                    <button id="toggle-mode" title="Toggle Edit/Preview Mode"><i class="fas fa-code"></i></button>
+                    <button id="toggle-graph" title="Graph View"><i class="fas fa-project-diagram"></i></button>
+                </div>
+            </div>
+
+            <div class="view-container">
+                <!-- Editor Wrapper -->
+                <div class="editor-view" id="editor-view">
+                    <div class="editor-scroll-area">
+                        <div class="editor-inner-container">
+                            <input type="text" id="inline-title" class="inline-title-input" placeholder="Untitled">
+                            <div id="editor"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Graph Wrapper -->
+                <div class="graph-view view-hidden" id="graph-view">
+                    <div style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+                        <button id="close-graph" class="graph-glass-btn">
+                            <i class="fas fa-arrow-left"></i> Return to Editor
+                        </button>
+                    </div>
+                    <div id="graph-network"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TUI Editor Core -->
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script>
+        // Core Data Initialization
+        const DEFAULT_NOTES = [
+            { 
+                id: 'home', 
+                title: 'Welcome to Web Vault', 
+                content: 'This is a web-based, local-first markdown editor heavily inspired by the aesthetics of Obsidian.\n\n### Key Features:\n- **Local Storage**: Everything is saved instantly to your browser.\n- **Wikilinks Context**: Link thoughts seamlessly using `[[brackets]]` syntax. e.g. Navigate to [[Ideas]] or [[Design Notes]]!\n- **Graph View**: Visualize the connection of your knowledge base by clicking the node network icon in the top right.\n- **Distraction Free**: Hide the sidebar and format toolbar for a pure zen writing mode.\n\nEnjoy mapping your thoughts!' 
+            },
+            { 
+                id: 'ideas', 
+                title: 'Ideas', 
+                content: 'Ideas to implement in the future:\n- [x] Functional dynamic Force-Directed Graph\n- [x] Inline title editing overhead\n- [x] WYSIWYG vs Raw Markdown split\n- [ ] Multi-tab support\n- [ ] Actual filesystem sync API\n\nRelated to [[Welcome to Web Vault]]' 
+            },
+            {
+                id: 'design',
+                title: 'Design Notes',
+                content: 'The core aesthetic uses deep grays `var(--bg-primary)` matched with purple accents `var(--interactive-accent)` to mirror modern web app layouts.\n\nI need to remember to check out [[Ideas]] for scaling.'
+            }
+        ];
+
+        let notes = JSON.parse(localStorage.getItem('obsidian_notes')) || DEFAULT_NOTES;
+        let activeNoteId = notes.length > 0 ? notes[0].id : null;
+        let isGraphVisible = false;
+        let isMarkdown = false;
+        let network = null;
+        let saveTimeout;
+
+        // Editor Intialization
+        const editor = new toastui.Editor({
+            el: document.querySelector('#editor'),
+            height: 'auto',
+            initialEditType: 'wysiwyg',
+            previewStyle: 'vertical',
+            theme: 'dark',
+            hideModeSwitch: true,
+            initialValue: '',
+            events: {
+                change: queueSave
+            }
+        });
+
+        // Event Listeners for Saving Data
+        document.getElementById('inline-title').addEventListener('input', queueSave);
+        
+        function saveNotes() {
+            localStorage.setItem('obsidian_notes', JSON.stringify(notes));
+        }
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function extractLinks(content) {
+            const regex = /\[\[(.*?)\]\]/g;
+            const links = [];
+            let match;
+            while ((match = regex.exec(content)) !== null) {
+                links.push(match[1]);
+            }
+            return links;
+        }
+
+        function queueSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                if (!activeNoteId) return;
+                const note = notes.find(n => n.id === activeNoteId);
+                if (note) {
+                    note.title = document.getElementById('inline-title').value;
+                    note.content = editor.getMarkdown();
+                    saveNotes();
+                    
+                    // Soft update DOM elements to reflect title changes without remounting focus
+                    const activeNavNode = document.querySelector('.nav-file.active .nav-file-title');
+                    if (activeNavNode) {
+                        activeNavNode.textContent = note.title || 'Untitled';
+                    }
+                    document.getElementById('current-tab-name').textContent = note.title || 'Untitled';
+                }
+            }, 600);
+        }
+
+        // File Explorer Logic
+        function renderFileList(filter = '') {
+            const fileList = document.getElementById('file-list');
+            fileList.innerHTML = '';
+            
+            const term = filter.toLowerCase();
+            const filteredNotes = notes.filter(n => (n.title || '').toLowerCase().includes(term));
+
+            filteredNotes.forEach(note => {
+                const el = document.createElement('div');
+                el.className = `nav-file ${note.id === activeNoteId ? 'active' : ''}`;
+                el.innerHTML = `<i class="fas fa-file-alt"></i> <span class="nav-file-title">${note.title || 'Untitled'}</span>`;
+                el.onclick = () => switchNote(note.id);
+                
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-btn';
+                delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                delBtn.title = 'Delete Note';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteNote(note.id);
+                };
+                el.appendChild(delBtn);
+                
+                fileList.appendChild(el);
+            });
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            renderFileList(e.target.value);
+        });
+
+        function switchNote(id) {
+            if (activeNoteId === id && !isGraphVisible) return;
+            
+            // Commit any pending saves securely before swapping note memory
+            if (saveTimeout && activeNoteId) {
+                clearTimeout(saveTimeout);
+                const note = notes.find(n => n.id === activeNoteId);
+                if (note) {
+                     note.title = document.getElementById('inline-title').value;
+                     note.content = editor.getMarkdown();
+                }
+            }
+
+            activeNoteId = id;
+            const target = notes.find(n => n.id === id);
+            
+            if (target) {
+                document.getElementById('inline-title').value = target.title;
+                editor.setMarkdown(target.content || '');
+                document.getElementById('current-tab-name').textContent = target.title || 'Untitled';
+            }
+            
+            renderFileList(document.getElementById('search-input').value);
+            
+            if (isGraphVisible) {
+                toggleGraph(false);
+            }
+        }
+
+        function deleteNote(id) {
+            if (confirm('Are you sure you want to move this note to trash?')) {
+                notes = notes.filter(n => n.id !== id);
+                saveNotes();
+                
+                if (activeNoteId === id) {
+                    if (notes.length > 0) {
+                        switchNote(notes[0].id);
+                    } else {
+                        // Vault empty, create an initial stub
+                        document.getElementById('new-note').click();
+                    }
+                } else {
+                    renderFileList(document.getElementById('search-input').value);
+                }
+            }
+        }
+
+        document.getElementById('new-note').addEventListener('click', () => {
+            const newNote = {
+                id: generateId(),
+                title: '',
+                content: ''
+            };
+            notes.unshift(newNote); // prepend to top
+            saveNotes();
+            switchNote(newNote.id);
+            // Autofocus title immediately
+            setTimeout(() => {
+                document.getElementById('inline-title').focus();
+            }, 50);
+        });
+
+        // Graph Interactivity Logic
+        function drawGraph() {
+            const container = document.getElementById('graph-network');
+            
+            const nodeIds = new Set();
+            const nodesData = [];
+            const edgesData = [];
+
+            // Add verified existent files as root nodes
+            notes.forEach(n => {
+                nodeIds.add(n.id);
+                nodesData.push({
+                    id: n.id,
+                    label: n.title || 'Untitled',
+                    color: { 
+                        background: '#7c3aed', 
+                        border: '#a371f7', 
+                        highlight: { background: '#8b5cf6', border: '#fff' } 
+                    },
+                    font: { color: '#dcddde', face: 'Inter', size: 15 },
+                    shape: 'dot',
+                    size: 16
+                });
+            });
+
+            // Parse markdown for [[wikilinks]] and build connections
+            notes.forEach(note => {
+                const links = extractLinks(note.content || '');
+                links.forEach(linkTitle => {
+                    const targetTitleLower = linkTitle.toLowerCase();
+                    const targetNote = notes.find(n => (n.title || '').toLowerCase() === targetTitleLower);
+                    
+                    const targetId = targetNote ? targetNote.id : `ghost-${targetTitleLower}`;
+                    
+                    // Create ghost node if link target doesn't exist yet
+                    if (!nodeIds.has(targetId)) {
+                        nodeIds.add(targetId);
+                        nodesData.push({
+                            id: targetId,
+                            label: linkTitle,
+                            color: { background: '#2d2d2d', border: '#3e3e42' },
+                            font: { color: '#8b8f94', face: 'Inter', size: 13 },
+                            shape: 'dot',
+                            size: 10
+                        });
+                    }
+                    
+                    // Define directional relationship
+                    edgesData.push({
+                        from: note.id,
+                        to: targetId,
+                        color: { color: '#555', highlight: '#7c3aed' },
+                        arrows: 'to',
+                        length: 150
+                    });
+                });
+            });
+
+            const data = {
+                nodes: new vis.DataSet(nodesData),
+                edges: new vis.DataSet(edgesData)
+            };
+            
+            const options = {
+                nodes: { 
+                    borderWidth: 2, 
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.4)', size: 10, x: 0, y: 4 } 
+                },
+                edges: { width: 1.5, smooth: { type: 'continuous' } },
+                physics: {
+                    stabilization: false,
+                    barnesHut: { 
+                        gravitationalConstant: -2500, 
+                        springConstant: 0.03, 
+                        springLength: 200 
+                    }
+                },
+                interaction: { hover: true, tooltipDelay: 200 }
+            };
+
+            if (network) {
+                network.destroy();
+            }
+            network = new vis.Network(container, data, options);
+            
+            // Navigate directly to note from graph click
+            network.on("click", function (params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    if (!nodeId.toString().startsWith('ghost-')) {
+                        switchNote(nodeId);
+                    } else {
+                        // (Optional) Auto-create ghost node
+                        if(confirm('This note doesn\'t exist yet. Create it?')) {
+                            const newTitle = network.body.nodes[nodeId].options.label;
+                            const newGhost = { id: generateId(), title: newTitle, content: '' };
+                            notes.unshift(newGhost);
+                            saveNotes();
+                            switchNote(newGhost.id);
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleGraph(forceState) {
+            isGraphVisible = typeof forceState === 'boolean' ? forceState : !isGraphVisible;
+            
+            const editorView = document.getElementById('editor-view');
+            const graphView = document.getElementById('graph-view');
+            const btn = document.getElementById('toggle-graph');
+            
+            if (isGraphVisible) {
+                editorView.classList.add('view-hidden');
+                graphView.classList.remove('view-hidden');
+                btn.classList.add('active');
+                
+                // Ensure recent editor inputs are parsed before compiling graph nodes
+                if (activeNoteId) {
+                    const note = notes.find(n => n.id === activeNoteId);
+                    if (note) note.content = editor.getMarkdown();
+                }
+                drawGraph();
+            } else {
+                editorView.classList.remove('view-hidden');
+                graphView.classList.add('view-hidden');
+                btn.classList.remove('active');
+            }
+        }
+
+        // Toolbar Interaction Handlers
+        document.getElementById('toggle-graph').addEventListener('click', () => toggleGraph());
+        document.getElementById('close-graph').addEventListener('click', () => toggleGraph(false));
+
+        document.getElementById('toggle-sidebar').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            const btn = document.getElementById('toggle-sidebar');
+            sidebar.classList.toggle('collapsed');
+            btn.classList.toggle('active');
+        });
+
+        document.getElementById('toggle-mode').addEventListener('click', () => {
+            isMarkdown = !isMarkdown;
+            editor.changeMode(isMarkdown ? 'markdown' : 'wysiwyg');
+            const btn = document.getElementById('toggle-mode');
+            btn.innerHTML = isMarkdown ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-code"></i>';
+            btn.classList.toggle('active');
+            btn.title = isMarkdown ? 'Switch to WYSIWYG Mode' : 'Switch to Source Mode';
+        });
+
+        document.getElementById('toggle-toolbar').addEventListener('click', () => {
+            const root = document.documentElement;
+            const currentDisplay = getComputedStyle(root).getPropertyValue('--toolbar-display').trim();
+            const btn = document.getElementById('toggle-toolbar');
+            
+            if (currentDisplay === 'none') {
+                root.style.setProperty('--toolbar-display', 'flex');
+                btn.classList.add('active');
+            } else {
+                root.style.setProperty('--toolbar-display', 'none');
+                btn.classList.remove('active');
+            }
+        });
+
+        // App Boot sequence
+        document.documentElement.style.setProperty('--toolbar-display', 'none'); 
+        renderFileList();
+        
+        if (activeNoteId) {
+            switchNote(activeNoteId);
+        } else { 
+            document.getElementById('new-note').click(); 
+        }
+
+    </script>
+</body>
+</html>

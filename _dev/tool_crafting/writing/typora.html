@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TyporaFX - Zen Markdown Editor</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Toast UI Editor CSS -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/theme/toastui-editor-dark.min.css" />
+    
+    <style>
+        :root {
+            --bg-color: #f7f9fa;
+            --sidebar-bg: rgba(255, 255, 255, 0.75);
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --glass-border: rgba(200, 200, 200, 0.3);
+            --accent: #3182ce;
+            --toolbar-bg: rgba(255, 255, 255, 0.85);
+            --editor-bg: #ffffff;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a202c;
+            --sidebar-bg: rgba(26, 32, 44, 0.85);
+            --text-main: #e2e8f0;
+            --text-muted: #a0aec0;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #63b3ed;
+            --toolbar-bg: rgba(26, 32, 44, 0.85);
+            --editor-bg: #2d3748;
+            --shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            transition: background 0.4s ease, color 0.4s ease;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(49, 130, 206, 0.05) 0%, transparent 40%), 
+                radial-gradient(circle at 100% 100%, rgba(99, 179, 237, 0.05) 0%, transparent 40%);
+        }
+
+        #app {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 10;
+        }
+
+        #sidebar-header {
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand svg {
+            color: var(--accent);
+        }
+
+        .file-list {
+            padding: 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .file-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .file-item:hover {
+            background: rgba(100, 100, 100, 0.05);
+            color: var(--text-main);
+        }
+
+        .file-item.active {
+            background: rgba(49, 130, 206, 0.1);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* Main Content Styles */
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: padding 0.4s ease;
+        }
+
+        #top-bar {
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 5;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+        }
+
+        .file-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        button.icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+        }
+
+        button.icon-btn:hover {
+            color: var(--accent);
+            background: rgba(100, 100, 100, 0.08);
+        }
+
+        /* Editor Wrapper */
+        #editor-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .editor-wrapper {
+            width: 100%;
+            max-width: 860px;
+            background: var(--editor-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            height: fit-content;
+            min-height: calc(100% - 40px);
+        }
+
+        /* Toast UI Editor Customizations */
+        .toastui-editor-defaultUI {
+            border: none !important;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: transparent !important;
+        }
+
+        .toastui-editor-toolbar {
+            border-radius: 16px 16px 0 0 !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+            padding: 8px 16px !important;
+            background: transparent !important;
+        }
+        
+        .toastui-editor-main {
+            background: transparent !important;
+        }
+
+        .toastui-editor-contents {
+            font-family: 'Inter', sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.8 !important;
+            color: var(--text-main) !important;
+            padding: 50px 80px 80px 80px !important;
+        }
+
+        [data-theme="dark"] .toastui-editor-contents {
+            color: #e2e8f0 !important;
+        }
+
+        [data-theme="dark"] .toastui-editor-contents h1,
+        [data-theme="dark"] .toastui-editor-contents h2,
+        [data-theme="dark"] .toastui-editor-contents h3,
+        [data-theme="dark"] .toastui-editor-contents h4,
+        [data-theme="dark"] .toastui-editor-contents h5,
+        [data-theme="dark"] .toastui-editor-contents h6 {
+            color: #f7fafc !important;
+        }
+
+        .toastui-editor-contents h1, 
+        .toastui-editor-contents h2, 
+        .toastui-editor-contents h3, 
+        .toastui-editor-contents h4, 
+        .toastui-editor-contents h5, 
+        .toastui-editor-contents h6 {
+            color: var(--text-main) !important;
+            border-bottom: none !important;
+            margin-top: 1.5em !important;
+        }
+        
+        .toastui-editor-contents pre {
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace !important;
+        }
+
+        /* Zen Mode Enhancements */
+        .zen-mode #sidebar {
+            margin-left: -260px;
+        }
+        .zen-mode #top-bar {
+            transform: translateY(-100%);
+            opacity: 0;
+            position: absolute;
+            width: 100%;
+        }
+        .zen-mode #editor-container {
+            padding: 60px 20px;
+        }
+        
+        .zen-mode .editor-wrapper {
+            box-shadow: none;
+            border: none;
+            background: transparent;
+            max-width: 760px;
+        }
+
+        .zen-mode .toastui-editor-toolbar {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .zen-mode .editor-wrapper:hover .toastui-editor-toolbar {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Floating Zen Exit Button */
+        .zen-toggle-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--toolbar-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: var(--text-muted);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .zen-mode .zen-toggle-float {
+            opacity: 0.3;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+
+        .zen-mode .zen-toggle-float:hover {
+            opacity: 1;
+            color: var(--text-main);
+            transform: scale(1.1);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(150, 150, 150, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(150, 150, 150, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Sidebar -->
+        <aside id="sidebar">
+            <div id="sidebar-header">
+                <div class="brand">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    <span>TyporaFX</span>
+                </div>
+            </div>
+            <div class="file-list">
+                <div class="file-item active">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Untitiled-1.md
+                </div>
+                <div class="file-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Design_Notes.md
+                </div>
+                <div class="file-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Project_Ideas.md
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main id="main-content">
+            <!-- Top Toolbar -->
+            <header id="top-bar">
+                <div class="file-title">Untitled-1.md</div>
+                <div class="actions">
+                    <button class="icon-btn" id="theme-toggle" title="Toggle Theme">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                    <button class="icon-btn" id="zen-toggle" title="Zen Mode">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                    </button>
+                    <button class="icon-btn" title="Export HTML">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Editor Area -->
+            <div id="editor-container">
+                <div class="editor-wrapper">
+                    <div id="editor"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Zen Mode Exit Float -->
+        <div class="zen-toggle-float" id="zen-toggle-exit" title="Exit Zen Mode">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>
+        </div>
+    </div>
+
+    <!-- Toast UI Editor JS -->
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script>
+        const initialContent = `
+# Welcome to TyporaFX
+
+**TyporaFX** gives you a seamless and beautiful Markdown editing experience right in your browser. Just type your markdown naturally, and watch it render beautifully as soon as your cursor hits the screen.
+
+## Why Another Editor?
+
+Sometimes you need a focused, distraction-free environment without giving up the raw power of Markdown syntax. You don't need clunky toolbars dominating your workspace.
+
+### Key Features:
+
+* ✍️ **WYSIWYG Editing:** Real-time rendering exactly like Typora. Write markdown, see rich text instantly!
+* 🧘‍♂️ **Zen Mode:** Click the top-right button to completely isolate yourself and focus solely on your words.
+* 🌒 **Dark Mode:** Elegant thematic adaptation built-in for a comfortable late-night writing session.
+* ⚡ **Fast & Responsive:** Instant feedback and zero lag.
+
+---
+
+### Data Visualization
+
+Tables form a vital part of markdown formatting!
+
+| Framework | Purpose | Popularity |
+| :--- | :--- | :--- |
+| React | UI Library | 🔥 High |
+| Vue | UI Framework | ⭐ Medium |
+| Svelte | Compiler | 🚀 Rising |
+
+> "Simplicity is the ultimate sophistication." — Leonardo da Vinci
+
+### Code Support
+
+It natively supports formatting code blocks with \`JetBrains Mono\`:
+
+\`\`\`javascript
+function calculateSum(a, b) {
+    console.log("Preparing calculation...");
+    return a + b;
+}
+\`\`\`
+
+Enjoy writing in peace!
+`;
+
+        let editorInstance;
+
+        function initEditor(isDarkTheme) {
+            if (editorInstance) {
+                const currentContent = editorInstance.getMarkdown();
+                editorInstance.destroy();
+                createEditor(currentContent, isDarkTheme);
+            } else {
+                createEditor(initialContent.trim(), isDarkTheme);
+            }
+        }
+
+        function createEditor(content, isDarkTheme) {
+            const editorEl = document.querySelector('#editor');
+            const themeClass = isDarkTheme ? 'toastui-editor-dark' : '';
+            
+            // Apply dark theme class to container if needed
+            const wrapper = document.querySelector('.editor-wrapper');
+            if(isDarkTheme) {
+                wrapper.classList.add(themeClass);
+            } else {
+                wrapper.classList.remove('toastui-editor-dark');
+            }
+
+            editorInstance = new toastui.Editor({
+                el: editorEl,
+                height: 'auto',
+                minHeight: '600px',
+                initialEditType: 'wysiwyg',
+                previewStyle: 'vertical',
+                hideModeSwitch: true,
+                theme: isDarkTheme ? 'dark' : 'default',
+                initialValue: content,
+                toolbarItems: [
+                    ['heading', 'bold', 'italic', 'strike'],
+                    ['hr', 'quote'],
+                    ['ul', 'ol', 'task', 'indent', 'outdent'],
+                    ['table', 'image', 'link'],
+                    ['code', 'codeblock']
+                ]
+            });
+        }
+
+        // Theme Toggle Logic
+        const themeToggle = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+        
+        let isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        const moonIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+        const sunIcon = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+
+        function setTheme(dark) {
+            if (dark) {
+                root.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = sunIcon;
+            } else {
+                root.removeAttribute('data-theme');
+                themeToggle.innerHTML = moonIcon;
+            }
+            initEditor(dark);
+        }
+
+        // Initial setup
+        setTheme(isDark);
+
+        themeToggle.addEventListener('click', () => {
+            isDark = !isDark;
+            setTheme(isDark);
+        });
+
+        // Zen Mode Logic
+        const app = document.getElementById('app');
+        const zenToggle = document.getElementById('zen-toggle');
+        const zenToggleExit = document.getElementById('zen-toggle-exit');
+
+        function toggleZenMode() {
+            app.classList.toggle('zen-mode');
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 50); // slight delay for smooth resize
+        }
+
+        zenToggle.addEventListener('click', toggleZenMode);
+        zenToggleExit.addEventListener('click', toggleZenMode);
+        
+        // Listen for escape key to exit Zen mode
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && app.classList.contains('zen-mode')) {
+                toggleZenMode();
+            }
+        });
+    </script>
+</body>
+</html>
