@@ -1,0 +1,155 @@
+<svg width="100%" viewBox="0 0 680 1060" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>iTaiwan TWF 架構重思考</title>
+<style>
+  text { font-family: system-ui, sans-serif; fill: #1e293b; }
+  .th { font-size: 13px; font-weight: 600; }
+  .ts { font-size: 11px; fill: #475569; }
+  .box-blue { fill: #e6f1fb; stroke: #378add; }
+  .box-red { fill: #fcebeb; stroke: #e24b4a; }
+  .box-teal { fill: #e1f5ee; stroke: #1d9e75; }
+  .box-purple { fill: #eeedfe; stroke: #534ab7; }
+  .box-green { fill: #eaf3de; stroke: #639922; }
+  .box-amber { fill: #faeeda; stroke: #ba7517; }
+  .box-coral { fill: #faece7; stroke: #d85a30; }
+  .box-gray { fill: #f1efe8; stroke: #888780; }
+  .arr { stroke: #888780; stroke-width: 1.2; fill: none; }
+  .div { stroke: #cbd5e1; stroke-dasharray: 4 3; }
+  .ok { fill: #1d9e75; font-size: 11px; }
+  .ng { fill: #e24b4a; font-size: 11px; }
+</style>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<text class="th" x="340" y="28" text-anchor="middle" style="font-size:14px">核心矛盾：「格式統一」vs「應用彈性」</text>
+
+<rect x="40" y="42" width="280" height="46" rx="8" class="box-red" stroke-width="0.5"/>
+<text class="th" x="180" y="62" text-anchor="middle">現有做法：三個段落共一檔</text>
+<text class="ts" x="180" y="78" text-anchor="middle">MD + CSV + HTML 硬切成三分頁</text>
+
+<line x1="180" y1="88" x2="180" y2="110" class="arr" marker-end="url(#arrow)"/>
+
+<rect x="40" y="110" width="84" height="52" rx="6" class="box-red" stroke-width="0.5"/>
+<text class="th" x="82" y="130" text-anchor="middle">資料耦合</text>
+<text class="ts" x="82" y="145" text-anchor="middle">簡報引用不了</text>
+<text class="ts" x="82" y="158" text-anchor="middle">試算表數字</text>
+
+<rect x="138" y="110" width="84" height="52" rx="6" class="box-red" stroke-width="0.5"/>
+<text class="th" x="180" y="130" text-anchor="middle">視圖固定</text>
+<text class="ts" x="180" y="145" text-anchor="middle">切換分頁像</text>
+<text class="ts" x="180" y="158" text-anchor="middle">換應用程式</text>
+
+<rect x="236" y="110" width="84" height="52" rx="6" class="box-red" stroke-width="0.5"/>
+<text class="th" x="278" y="130" text-anchor="middle">圖片無解</text>
+<text class="ts" x="278" y="145" text-anchor="middle">純文字格式</text>
+<text class="ts" x="278" y="158" text-anchor="middle">無法存圖</text>
+
+<line x1="40" y1="185" x2="640" y2="185" class="div" stroke-width="0.5"/>
+<text class="ts" x="340" y="202" text-anchor="middle">兩種解法方向</text>
+
+<!-- 方案 A -->
+<rect x="40" y="214" width="278" height="26" rx="6" class="box-gray" stroke-width="0.5"/>
+<text class="th" x="179" y="231" text-anchor="middle">方案 A：.itw 升級為容器格式（ZIP）</text>
+
+<rect x="40" y="248" width="278" height="300" rx="10" class="box-blue" stroke-width="0.5"/>
+<text class="ts" x="56" y="270">document.itw （實為 ZIP 容器）</text>
+
+<rect x="56" y="280" width="244" height="40" rx="6" class="box-teal" stroke-width="0.5"/>
+<text class="th" x="178" y="296" text-anchor="middle">manifest.json</text>
+<text class="ts" x="178" y="311" text-anchor="middle">版本、主題、章節目錄、圖片索引</text>
+
+<rect x="56" y="330" width="244" height="40" rx="6" class="box-teal" stroke-width="0.5"/>
+<text class="th" x="178" y="346" text-anchor="middle">content.md / slides/*.md</text>
+<text class="ts" x="178" y="361" text-anchor="middle">純文字內容，圖片用 ![](img/a.jpg)</text>
+
+<rect x="56" y="380" width="244" height="40" rx="6" class="box-teal" stroke-width="0.5"/>
+<text class="th" x="178" y="396" text-anchor="middle">data/*.csv</text>
+<text class="ts" x="178" y="411" text-anchor="middle">試算表資料，可多張</text>
+
+<rect x="56" y="430" width="244" height="40" rx="6" class="box-teal" stroke-width="0.5"/>
+<text class="th" x="178" y="446" text-anchor="middle">images/ （新增）</text>
+<text class="ts" x="178" y="461" text-anchor="middle">PNG / JPEG / SVG binary</text>
+
+<rect x="56" y="480" width="244" height="30" rx="6" class="box-teal" stroke-width="0.5"/>
+<text class="th" x="178" y="499" text-anchor="middle">theme.css（可選）</text>
+
+<text class="ok" x="56" y="528">✓ 圖片完整支援</text>
+<text class="ok" x="56" y="543">✓ 與 docx/pptx 邏輯一致</text>
+<text class="ng" x="56" y="558">✗ 失去純文字可讀性</text>
+<text class="ng" x="56" y="573">✗ 瀏覽器需 JSZip</text>
+<text class="ng" x="56" y="588">✗ 無法 git diff</text>
+
+<!-- 方案 B -->
+<rect x="362" y="214" width="278" height="26" rx="6" class="box-gray" stroke-width="0.5"/>
+<text class="th" x="501" y="231" text-anchor="middle">方案 B：純文字 + ---IMG--- section</text>
+
+<rect x="362" y="248" width="278" height="300" rx="10" class="box-blue" stroke-width="0.5"/>
+<text class="ts" x="378" y="270">document.itw （純文字，可 git）</text>
+
+<rect x="378" y="280" width="244" height="40" rx="6" class="box-purple" stroke-width="0.5"/>
+<text class="th" x="500" y="296" text-anchor="middle">---JSON---</text>
+<text class="ts" x="500" y="311" text-anchor="middle">元資料 + 圖片清單索引</text>
+
+<rect x="378" y="330" width="244" height="40" rx="6" class="box-purple" stroke-width="0.5"/>
+<text class="th" x="500" y="346" text-anchor="middle">---MD--- / ---SLIDE:N---</text>
+<text class="ts" x="500" y="361" text-anchor="middle">![alt](itw:img-id) 引用內嵌圖</text>
+
+<rect x="378" y="380" width="244" height="40" rx="6" class="box-purple" stroke-width="0.5"/>
+<text class="th" x="500" y="396" text-anchor="middle">---CSV:Name---</text>
+<text class="ts" x="500" y="411" text-anchor="middle">試算表資料</text>
+
+<rect x="378" y="430" width="244" height="40" rx="6" class="box-purple" stroke-width="0.5"/>
+<text class="th" x="500" y="446" text-anchor="middle">---IMG:id--- （新增）</text>
+<text class="ts" x="500" y="461" text-anchor="middle">data:image/png;base64,iVBOR...</text>
+
+<rect x="378" y="480" width="244" height="30" rx="6" class="box-purple" stroke-width="0.5"/>
+<text class="th" x="500" y="499" text-anchor="middle">---THEME---</text>
+
+<text class="ok" x="378" y="528">✓ 保持純文字可讀</text>
+<text class="ok" x="378" y="543">✓ 不需 JSZip，無額外依賴</text>
+<text class="ok" x="378" y="558">✓ 圖片完整內嵌，單檔自包含</text>
+<text class="ng" x="378" y="573">✗ 有圖片時檔案較大</text>
+<text class="ng" x="378" y="588">✗ base64 不適合 git diff</text>
+
+<line x1="40" y1="606" x2="640" y2="606" class="div" stroke-width="0.5"/>
+
+<!-- 應用整合思路 -->
+<text class="th" x="340" y="628" text-anchor="middle" style="font-size:13px">更根本的問題：應用整合的正確思路</text>
+
+<rect x="40" y="642" width="175" height="72" rx="8" class="box-coral" stroke-width="0.5"/>
+<text class="th" x="127" y="662" text-anchor="middle">Word 核心需求</text>
+<text class="ts" x="127" y="678" text-anchor="middle">章節、目次、頁碼</text>
+<text class="ts" x="127" y="692" text-anchor="middle">欄位排版、圖文穿插</text>
+
+<rect x="253" y="642" width="175" height="72" rx="8" class="box-coral" stroke-width="0.5"/>
+<text class="th" x="340" y="662" text-anchor="middle">Excel 核心需求</text>
+<text class="ts" x="340" y="678" text-anchor="middle">公式計算、函數</text>
+<text class="ts" x="340" y="692" text-anchor="middle">圖表視覺化、引用</text>
+
+<rect x="466" y="642" width="175" height="72" rx="8" class="box-coral" stroke-width="0.5"/>
+<text class="th" x="553" y="662" text-anchor="middle">PPT 核心需求</text>
+<text class="ts" x="553" y="678" text-anchor="middle">投影片版型</text>
+<text class="ts" x="553" y="692" text-anchor="middle">動畫、簡報播放</text>
+
+<line x1="127" y1="714" x2="127" y2="736" class="arr" marker-end="url(#arrow)"/>
+<line x1="340" y1="714" x2="340" y2="736" class="arr" marker-end="url(#arrow)"/>
+<line x1="553" y1="714" x2="553" y2="736" class="arr" marker-end="url(#arrow)"/>
+
+<rect x="40" y="736" width="600" height="64" rx="10" class="box-green" stroke-width="0.5"/>
+<text class="th" x="340" y="758" text-anchor="middle">建議：同一份資料，三種「視圖模式」而非三個分頁</text>
+<text class="ts" x="340" y="774" text-anchor="middle">MD/SLIDE/CSV 都是同一份內容的不同呈現層</text>
+<text class="ts" x="340" y="788" text-anchor="middle">文件視圖讀 MD → 試算表讀 CSV → 簡報讀 SLIDE sections</text>
+
+<rect x="40" y="818" width="600" height="52" rx="10" class="box-amber" stroke-width="0.5"/>
+<text class="th" x="340" y="838" text-anchor="middle">圖片方案建議：採方案 B（---IMG:id--- section）</text>
+<text class="ts" x="340" y="854" text-anchor="middle">無圖保持純文字優勢；有圖 base64 內嵌，單檔自包含</text>
+
+<rect x="40" y="882" width="600" height="64" rx="10" class="box-teal" stroke-width="0.5"/>
+<text class="th" x="340" y="902" text-anchor="middle">實作路徑建議</text>
+<text class="ts" x="340" y="920" text-anchor="middle">① 先把三分頁改成同一畫布上的「視圖切換」（加 Tab 鍵或快捷鍵）</text>
+<text class="ts" x="340" y="936" text-anchor="middle">② 加 ---SLIDE:N--- 讓簡報有真正的 layout 彈性</text>
+<text class="ts" x="340" y="952" text-anchor="middle">③ 加 ---IMG:id--- + 拖放上傳，完成圖片支援</text>
+
+</svg>

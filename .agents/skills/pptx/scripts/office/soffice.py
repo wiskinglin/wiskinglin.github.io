@@ -5,10 +5,6 @@ import sys
 # Windows Absolute Path detected during installation
 SOFFICE_PATH = r"C:\Program Files\LibreOffice\program\soffice.exe"
 
-def get_soffice_env() -> dict:
-    """Return the environment for running soffice."""
-    return os.environ.copy()
-
 def run_soffice(args: list[str], **kwargs) -> subprocess.CompletedProcess:
     """
     Run LibreOffice (soffice) on Windows using the absolute path.
