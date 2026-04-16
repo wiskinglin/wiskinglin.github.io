@@ -15,12 +15,14 @@ description: 處理並發佈最新 Markdown 深度報告至現有網站架構，
 
 2. **建立 HTML 報告頁面**
    - 參照網站既有頁面風格或是撰寫自動化轉譯腳本，將 Markdown 內容轉換為首頁合規的單篇 HTML 檔案。
+   - **格式符號轉換**：將 Markdown 內的程式碼區塊（```）、行內程式碼（\`）、數學公式（$$）等特殊符號，完美解析為對應的 HTML 標籤（如 `<pre><code>`，並配置 CSS，或引入 MathJax 腳本），轉換為易於人類閱讀的文字排版，不可遺漏或殘留 Markdown 原始標籤。
    - 將檔案儲存至 `reports/YYYYMMDD_filename.html` （如有行動端特定報告格式，也請同步新增至 `m/reports/` 內或實作 RWD 設計）。
    - 注意：確保新頁面的 `<title>`, `<meta>` SEO 標籤、自定義字體、以及頂部導覽列/底部分隔等全域組件皆完整引用。
 
 3. **整合至 PC 首頁 (`index.html`)**
    - 開啟 `index.html` 的結構，定位到最新月份區塊 `<main id="showcase">` 內的第一個卡片位置。
-   - 插入對應尺寸的 HTML 結構（例如全幅的 `editorial-card` Hero 元件，或半幅雙欄元件）。
+   - **選定風格**：參照網站根目錄的 `top50/index.html`，根據該報告的內容屬性，從 50 種 UX/UI 主流設計風格中挑選最合適的一種（例如 Bento Grid、Data-Dense Clean UI 或 Organic Shapes 等）。
+   - 根據抉擇的風格插入對應尺寸與排版的 HTML 結構（例如全幅的 `editorial-card` Hero 元件，或半幅雙欄元件）。
    - 配置漸層色彩基調（如 `border-red-500/20`）、動效、卡片背景圖片 URL，填寫標題與摘要，最後設定正確的 `href` 以及對應行動端的 `data-mobile` 路徑。
 
 4. **整合至 Mobile 首頁 (`m/index.html`)**
