@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>一人公司的終極型態 | KLIO.</title>
+    <meta name="description" content="深度拆解 Designjoy 單人帝國的底層邏輯。不開會、沒員工，他靠「設計訂閱制」年賺六千萬台幣的瘋狂變現術。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: #0a0a0a; color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 16px; line-height: 1.75;
+        }
+
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #1a1a1a; z-index: 100; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #ff4747, #ff8a00); width: 0%; transition: width 0.1s ease-out; }
+
+        .top-nav {
+            position: fixed; top: 3px; left: 0; width: 100%; z-index: 90;
+            background: rgba(10,10,10,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .top-nav a, .top-nav button { text-decoration: none; border: none; background: none; cursor: pointer; }
+
+        .article-body { padding: 80px 20px 60px; max-width: 640px; margin: 0 auto; }
+
+        .cover { width: calc(100% + 40px); margin: 0 -20px; position: relative; aspect-ratio: 16/9; overflow: hidden; }
+        .cover img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+        .cover-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, #0a0a0a, transparent); }
+
+        .tldr {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px; margin: 32px 0;
+        }
+        .tldr h3 { font-size: 0.8rem; font-weight: 700; color: #ff4747; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .tldr p { font-size: 0.9rem; line-height: 1.65; color: #9ca3af; margin-bottom: 0; }
+        .tldr strong { color: #e5e7eb; }
+
+        h1 { font-size: 1.65rem; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 12px; }
+        h2 { font-size: 1.25rem; font-weight: 700; color: #fff; margin: 40px 0 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        p { margin-bottom: 1.5rem; color: #9ca3af; font-size: 0.95rem; line-height: 1.75; }
+        strong { color: #e5e7eb; }
+
+        .meta { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #6b7280; margin-bottom: 28px; font-weight: 500; }
+        .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 36px 0; }
+
+        .info-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 18px; margin-bottom: 14px;
+        }
+        .info-card .label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+        .info-card h4 { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+        .info-card p { font-size: 0.85rem; margin-bottom: 0; line-height: 1.6; }
+
+        /* 大數字指標 - 取代原先的橫向滑動 Bento */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255,71,71,0.05); border: 1px solid rgba(255,71,71,0.15);
+            border-radius: 16px; padding: 20px 16px; text-align: center;
+        }
+        .stat-card .stat-num { font-size: 2rem; font-weight: 900; color: #ff4747; letter-spacing: -0.02em; font-family: 'Inter', sans-serif; }
+        .stat-card .stat-label { font-size: 0.65rem; color: #9ca3af; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+
+        .bottom-safe { height: 40px; }
+    </style>
+</head>
+<body class="scrollbar-hide">
+
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+
+    <nav class="top-nav">
+        <a href="../index.html" style="padding:8px;margin:-8px;color:#9ca3af;">
+            <i class="ph-bold ph-arrow-left" style="font-size:20px;"></i>
+        </a>
+        <div style="font-size:0.8rem;font-weight:700;color:#9ca3af;letter-spacing:0.05em;">KLIO.</div>
+        <button onclick="shareArticle()" style="padding:8px;margin:-8px;color:#9ca3af;">
+            <i class="ph-bold ph-share-network" style="font-size:20px;"></i>
+        </button>
+    </nav>
+
+    <div class="article-body">
+
+        <div class="cover">
+            <!-- 替換為極簡的設計師桌面情境圖 -->
+            <img src="https://images.unsplash.com/photo-1555421689-d68471e189f2?q=80&w=800&auto=format&fit=crop" alt="Cover" loading="eager">
+            <div class="cover-fade"></div>
+        </div>
+
+        <div style="margin-top:-20px;position:relative;z-index:2;">
+            <span style="display:inline-block;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#ff4747;border:1px solid rgba(255,71,71,0.3);padding:4px 10px;border-radius:6px;margin-bottom:12px;">Solo Enterprise</span>
+            <h1>【一人公司的終極型態】<br><span style="background:linear-gradient(90deg,#ff4747,#ff8a00);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Designjoy 的狂熱變現術</span></h1>
+            <div class="meta">
+                <span>By King Lin</span>
+                <span style="color:#374151;">•</span>
+                <span>Apr 16, 2026</span>
+                <span style="color:#374151;">•</span>
+                <span>8 min read</span>
+            </div>
+        </div>
+
+        <!-- 透過 Stat Grid 來取代原本會被 Cut 掉的 Bento X Scroll -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-num">$2M+</div>
+                <div class="stat-label">Annual Revenue</div>
+            </div>
+            <div class="stat-card" style="background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08);">
+                <div class="stat-num" style="color:#d1d5db;">0</div>
+                <div class="stat-label">Meetings</div>
+            </div>
+            <div class="stat-card" style="background:rgba(255,255,255,0.03); border-color:rgba(255,255,255,0.08);">
+                <div class="stat-num" style="color:#d1d5db;">5<span style="font-size:1rem;">hrs</span></div>
+                <div class="stat-label">Work / Day</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num">48<span style="font-size:1rem;">hrs</span></div>
+                <div class="stat-label">Delivery</div>
+            </div>
+        </div>
+
+        <!-- TL;DR -->
+        <div class="tldr">
+            <h3><i class="ph-fill ph-lightning" style="color:#ff4747;font-size:16px;"></i> 核心摘要 TL;DR</h3>
+            <p>Brett Williams 透過<strong>「產品化服務」</strong>，將沒有固定標準的設計工作包裝成強硬的<strong>月費訂閱制</strong>。憑藉著拒絕開會、極致的非同步溝通與嚴苛的交付紀律，他獨自一人創造了年營收 200 萬美元的商業奇蹟。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Chapter 1 -->
+        <h2>01 / 從週末斜槓到單人帝國</h2>
+        <p>2017 年，Brett 還是全職上班族，他花了一個週末的 24 小時架起 MVP 網站。起初他只能在 Zoom 會議的空檔偷偷接案，當時的月費親民到只要 449 美元。</p>
+        <p>隨著模式跑通，到了今天，Designjoy 已轉為高端訂閱市場，標準方案 <strong>每月達 4,995 美元</strong>。儘管版圖橫跨 UI/UX 到 Webflow 開發，這間公司依舊維持「零外包、零員工」的單人狀態。</p>
+
+        <div class="divider"></div>
+
+        <!-- Chapter 2 -->
+        <h2>02 / 顛覆常理的產品化服務體系</h2>
+        <p>這套模式能成功，是因為他為「無形的服務」設計了最殘酷也最有效的邊界：</p>
+
+        <div class="info-card" style="border-left:3px solid #ff4747;">
+            <div class="label" style="color:#ff4747;">No Meetings</div>
+            <h4>零會議政策</h4>
+            <p>絕對不講電話、不開視訊。所有的需求溝通強制透過 Trello 看版，若說不清楚就錄製 Loom 螢幕影片。省下的閒聊時間 100% 轉化成產能。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #3b82f6;">
+            <div class="label" style="color:#60a5fa;">Workload Control</div>
+            <h4>無限制請求，一次一件</h4>
+            <p>客戶付錢後可以無限制地開票，但他 <strong>一次只會執行一張卡片</strong>。這層機制完美保護了他不被突發的急件海嘯吞沒。</p>
+        </div>
+
+        <div class="info-card" style="border-left:3px solid #10b981;">
+            <div class="label" style="color:#34d399;">High Flexibility</div>
+            <h4>隨時可以暫停</h4>
+            <p>如果客戶剛好這週沒有需求，隨時到後台點擊「Pause」，剩下的天數能無損轉移至未來，完全消除了高昂月費帶來的心理浪費感。</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Chapter 3 -->
+        <h2>03 / 年營收兩百萬，他賣的其實是「待機時間」</h2>
+        <p>同時服務近 35 家企業，在物理上看似不可能。但國外論壇破解了他的核心秘密：<strong>企業內部的審核與回饋速度遠遠不及他的產出速度。</strong></p>
+        
+        <p>正因為「一次只能處理一項任務」，當他光速在 48 小時內交付設計後，客戶往往需要一兩週來跑內部會議確認。而在客戶等待的這些時間裡，Brett 其實是在賺取高昂的「待機轉換費」。藉由極致的流程壓榨，他平均 <strong>一天只需工作 5 小時</strong>。</p>
+
+        <div class="bottom-safe"></div>
+    </div>
+
+    <script>
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+        });
+        function shareArticle() {
+            const data = { title: '一人公司的終極型態 - Designjoy 商業模式', url: window.location.href };
+            if (navigator.share) { navigator.share(data); }
+            else { navigator.clipboard.writeText(data.url).then(() => alert('連結已複製！')); }
+        }
+    </script>
+</body>
+</html>
