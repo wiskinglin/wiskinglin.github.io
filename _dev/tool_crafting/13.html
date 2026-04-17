@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIRE 退休導航員 | 智慧財務規劃系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            box-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-800">FIRE 退休導航員</h1>
+            <p class="text-slate-500">科學化的財務自由與複利增長模擬系統</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 space-y-6">
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <h2 class="text-lg font-semibold mb-4 text-blue-600 border-b pb-2">基本參數</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">當前年齡: <span id="val-age" class="text-blue-600 font-bold">30</span> 歲</label>
+                            <input type="range" id="age" min="18" max="70" value="30" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">月預期開支: <span id="val-expense" class="text-blue-600 font-bold">50,000</span> 元</label>
+                            <input type="range" id="expense" min="10000" max="300000" step="5000" value="50000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                            <p class="text-xs text-gray-400 mt-1">退休後的目標購買力 (不含房貸)</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">現有資產總額: <span id="val-savings" class="text-blue-600 font-bold">1,000,000</span> 元</label>
+                            <input type="range" id="savings" min="0" max="10000000" step="100000" value="1000000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">每月可儲蓄額: <span id="val-monthly-invest" class="text-blue-600 font-bold">20,000</span> 元</label>
+                            <input type="range" id="monthly-invest" min="0" max="200000" step="1000" value="20000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl shadow-sm">
+                    <h2 class="text-lg font-semibold mb-4 text-emerald-600 border-b pb-2">市場預期</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">預期投資投報率: <span id="val-roi" class="text-emerald-600 font-bold">7</span>%</label>
+                            <input type="range" id="roi" min="1" max="15" step="0.5" value="7" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">預期長期通膨率: <span id="val-inflation" class="text-emerald-600 font-bold">2.5</span>%</label>
+                            <input type="range" id="inflation" min="0" max="8" step="0.1" value="2.5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-card p-5 rounded-2xl shadow-sm text-center">
+                        <p class="text-sm text-slate-500">所需退休金 (估算)</p>
+                        <p id="res-target" class="text-2xl font-bold text-slate-800">$0</p>
+                        <p class="text-xs text-slate-400 mt-1">基於 4% 法則</p>
+                    </div>
+                    <div class="glass-card p-5 rounded-2xl shadow-sm text-center border-l-4 border-blue-500">
+                        <p class="text-sm text-slate-500">預計達成年齡</p>
+                        <p id="res-age" class="text-2xl font-bold text-blue-600">-- 歲</p>
+                        <p class="text-xs text-slate-400 mt-1">距離現在約 <span id="res-years">0</span> 年</p>
+                    </div>
+                    <div class="glass-card p-5 rounded-2xl shadow-sm text-center">
+                        <p class="text-sm text-slate-500">退休時月被動收入</p>
+                        <p id="res-passive" class="text-2xl font-bold text-emerald-600">$0</p>
+                        <p class="text-xs text-slate-400 mt-1">抗通膨後的價值</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl shadow-sm h-[400px] relative">
+                    <canvas id="growthChart"></canvas>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-xl text-sm text-blue-800 leading-relaxed">
+                    <strong>💡 架構師筆記：</strong> 該模擬器採用了「實質報酬率」概念（名目投報率 - 通膨率）。
+                    這意味著所有的資產成長數字都已經根據未來的購買力進行了「回算」，讓你看到的百萬金額與現在的百萬金額具備同等價值。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart;
+        const ctx = document.getElementById('growthChart').getContext('2d');
+
+        function initChart() {
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '資產預估規模 (現值)',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: '退休目標門檻',
+                        data: [],
+                        borderColor: '#ef4444',
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { callback: (val) => '$' + (val / 10000).toLocaleString() + '萬' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function calculate() {
+            // Get inputs
+            const startAge = parseInt(document.getElementById('age').value);
+            const monthlyExpense = parseInt(document.getElementById('expense').value);
+            const initialSavings = parseInt(document.getElementById('savings').value);
+            const monthlyInvest = parseInt(document.getElementById('monthly-invest').value);
+            const roi = parseFloat(document.getElementById('roi').value) / 100;
+            const inflation = parseFloat(document.getElementById('inflation').value) / 100;
+
+            // Update Labels
+            document.getElementById('val-age').innerText = startAge;
+            document.getElementById('val-expense').innerText = monthlyExpense.toLocaleString();
+            document.getElementById('val-savings').innerText = initialSavings.toLocaleString();
+            document.getElementById('val-monthly-invest').innerText = monthlyInvest.toLocaleString();
+            document.getElementById('val-roi').innerText = (roi * 100).toFixed(1);
+            document.getElementById('val-inflation').innerText = (inflation * 100).toFixed(1);
+
+            // Logic: 4% Rule says Target = Annual Expense * 25
+            const targetAmount = monthlyExpense * 12 * 25;
+            document.getElementById('res-target').innerText = '$' + (targetAmount / 10000).toLocaleString() + '萬';
+
+            const realRoi = (1 + roi) / (1 + inflation) - 1; // 實質報酬率
+            
+            let labels = [];
+            let dataPoints = [];
+            let targetPoints = [];
+            let currentBalance = initialSavings;
+            let fireAge = null;
+
+            for (let year = 0; year <= 50; year++) {
+                labels.push(startAge + year + '歲');
+                dataPoints.push(currentBalance);
+                targetPoints.push(targetAmount);
+
+                if (currentBalance >= targetAmount && fireAge === null) {
+                    fireAge = startAge + year;
+                }
+
+                // Compound interest calculation
+                currentBalance = (currentBalance * (1 + realRoi)) + (monthlyInvest * 12);
+            }
+
+            // Update Summary
+            if (fireAge) {
+                document.getElementById('res-age').innerText = fireAge + ' 歲';
+                document.getElementById('res-years').innerText = fireAge - startAge;
+            } else {
+                document.getElementById('res-age').innerText = '需更久';
+                document.getElementById('res-years').innerText = '>50';
+            }
+            document.getElementById('res-passive').innerText = '$' + monthlyExpense.toLocaleString();
+
+            // Update Chart
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = dataPoints;
+            chart.data.datasets[1].data = targetPoints;
+            chart.update();
+        }
+
+        // Event Listeners
+        const inputs = ['age', 'expense', 'savings', 'monthly-invest', 'roi', 'inflation'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', calculate);
+        });
+
+        initChart();
+        calculate();
+    </script>
+</body>
+</html>

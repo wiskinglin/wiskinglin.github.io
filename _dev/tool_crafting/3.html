@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeShare | 現代化社交原型</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+
+        .post-card {
+            transition: transform 0.2s;
+        }
+
+        .post-card:hover {
+            transform: translateY(-2px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto">
+        <header class="flex justify-between items-center mb-8 text-white">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight">VibeShare</h1>
+                <p class="opacity-80">捕捉當下的氛圍</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="bg-white/20 hover:bg-white/30 p-2 rounded-full transition">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 border-2 border-white"></div>
+            </div>
+        </header>
+
+        <div class="glass p-6 mb-8 shadow-xl">
+            <div class="flex space-x-4">
+                <div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" class="rounded-full">
+                </div>
+                <div class="flex-1">
+                    <textarea id="postInput" rows="2" class="w-full bg-transparent border-none focus:ring-0 text-gray-700 placeholder-gray-400 text-lg resize-none" placeholder="分享你現在的 Vibe..."></textarea>
+                    <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                        <div class="flex space-x-4 text-gray-500">
+                            <button class="hover:text-indigo-600"><i class="fa-regular fa-image"></i></button>
+                            <button class="hover:text-indigo-600"><i class="fa-solid fa-location-dot"></i></button>
+                            <button class="hover:text-indigo-600"><i class="fa-regular fa-face-smile"></i></button>
+                        </div>
+                        <button onclick="addPost()" class="bg-indigo-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-indigo-700 transition shadow-md">
+                            發佈
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="feed" class="space-y-6">
+            </div>
+    </div>
+
+    <script>
+        const initialPosts = [
+            {
+                id: 1,
+                user: "台北產品人",
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aria",
+                content: "今天在咖啡廳看到超酷的 UI 設計，感覺未來的社交軟體應該要更直覺一點！🚀",
+                time: "2 小時前",
+                likes: 12,
+                comments: 3
+            },
+            {
+                id: 2,
+                user: "設計小學徒",
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Leo",
+                content: "剛完成這週的 Side Project，心情大好！有人想一起 Code Review 嗎？☕️",
+                time: "5 小時前",
+                likes: 24,
+                comments: 8
+            }
+        ];
+
+        function renderPosts() {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = initialPosts.map(post => `
+                <div class="glass p-6 shadow-lg post-card animate-fade-in">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center space-x-3">
+                            <img src="${post.avatar}" class="w-10 h-10 rounded-full bg-gray-100">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">${post.user}</h4>
+                                <p class="text-xs text-gray-400">${post.time}</p>
+                            </div>
+                        </div>
+                        <button class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed mb-4">${post.content}</p>
+                    <div class="flex items-center space-x-6 text-gray-500 text-sm">
+                        <button onclick="likePost(${post.id})" class="flex items-center space-x-2 hover:text-red-500 transition">
+                            <i class="fa-regular fa-heart"></i>
+                            <span>${post.likes}</span>
+                        </button>
+                        <button class="flex items-center space-x-2 hover:text-indigo-600 transition">
+                            <i class="fa-regular fa-comment"></i>
+                            <span>${post.comments}</span>
+                        </button>
+                        <button class="flex items-center space-x-2 hover:text-green-500 transition">
+                            <i class="fa-regular fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addPost() {
+            const input = document.getElementById('postInput');
+            if (!input.value.trim()) return;
+
+            const newPost = {
+                id: Date.now(),
+                user: "你本人",
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+                content: input.value,
+                time: "剛剛",
+                likes: 0,
+                comments: 0
+            };
+
+            initialPosts.unshift(newPost);
+            input.value = '';
+            renderPosts();
+        }
+
+        function likePost(id) {
+            const post = initialPosts.find(p => p.id === id);
+            if (post) {
+                post.likes++;
+                renderPosts();
+            }
+        }
+
+        // Initialize
+        renderPosts();
+    </script>
+</body>
+</html>
