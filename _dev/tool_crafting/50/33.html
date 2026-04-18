@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S.H.I.E.L.D. 英雄適配度評估系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+TC:wght@300;500;700&display=swap');
+
+        body {
+            background-color: #0b1120;
+            color: #e2e8f0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        .header-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+
+        .hero-btn {
+            transition: all 0.3s ease;
+            filter: grayscale(100%);
+        }
+
+        .hero-btn:hover,
+        .hero-btn.active {
+            filter: grayscale(0%);
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        input[type=range] {
+            accent-color: #3b82f6;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-10">
+            <h1
+                class="header-font text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-red-500 mb-2">
+                AVENGERS INITIATIVE
+            </h1>
+            <p class="text-slate-400 tracking-widest uppercase text-sm">S.H.I.E.L.D. 戰略資產評估終端</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <div class="glass-card p-6 flex flex-col gap-6">
+                <h2 class="header-font text-xl border-b border-slate-700 pb-2">自定義特質評估</h2>
+                <div id="sliders" class="space-y-4">
+                </div>
+                <button onclick="calculateMatch()"
+                    class="mt-4 w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg font-bold transition-colors">
+                    開始同步評估
+                </button>
+            </div>
+
+            <div class="glass-card p-6 lg:col-span-2 relative overflow-hidden">
+                <h2 class="header-font text-xl border-b border-slate-700 pb-2 mb-4">數據比對分析</h2>
+                <div class="flex flex-wrap gap-4 mb-6" id="heroSelector">
+                </div>
+
+                <div class="h-80 md:h-[400px]">
+                    <canvas id="radarChart"></canvas>
+                </div>
+
+                <div id="matchResult" class="mt-6 text-center hidden">
+                    <p class="text-slate-400 mb-1">英雄契合度</p>
+                    <div class="text-5xl font-bold header-font text-blue-400" id="matchPercentage">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="heroGrid"></div>
+    </div>
+
+    <script>
+        const traits = [
+            { id: 'str', label: '力量', value: 50 },
+            { id: 'int', label: '智力', value: 50 },
+            { id: 'spd', label: '速度', value: 50 },
+            { id: 'dur', label: '耐力', value: 50 },
+            { id: 'ene', label: '能量射線', value: 50 },
+            { id: 'skl', label: '格鬥技巧', value: 50 }
+        ];
+
+        const heroes = {
+            'Iron Man': { color: '#ef4444', stats: [30, 100, 70, 60, 90, 40], img: 'https://img.icons8.com/color/96/iron-man.png', bio: '天才、億萬富翁、慈善家。' },
+            'Captain America': { color: '#3b82f6', stats: [60, 70, 50, 90, 20, 100], img: 'https://img.icons8.com/color/96/captain-america.png', bio: '復仇者聯盟的靈魂，正義的象徵。' },
+            'Thor': { color: '#fbbf24', stats: [100, 60, 80, 100, 100, 70], img: 'https://img.icons8.com/color/96/thor.png', bio: '奧丁之子，掌控雷霆的真神。' },
+            'Hulk': { color: '#22c55e', stats: [100, 20, 60, 100, 10, 30], img: 'https://img.icons8.com/color/96/hulk.png', bio: '憤怒就是力量，無可阻擋的破壞神。' },
+            'Black Widow': { color: '#f472b6', stats: [30, 80, 60, 40, 20, 100], img: 'https://img.icons8.com/color/96/black-widow.png', bio: '頂尖間諜，格鬥與滲透專家。' },
+            'Hawkeye': { color: '#a855f7', stats: [30, 70, 50, 40, 20, 90], img: 'https://img.icons8.com/color/96/hawkeye.png', bio: '百步穿楊，戰場上的鷹之眼。' }
+        };
+
+        let currentHero = 'Iron Man';
+        let chart;
+
+        // Initialize UI
+        function init() {
+            const sliderContainer = document.getElementById('sliders');
+            traits.forEach(trait => {
+                sliderContainer.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>${trait.label}</span>
+                            <span class="text-blue-400" id="val-${trait.id}">50</span>
+                        </div>
+                        <input type="range" id="${trait.id}" min="0" max="100" value="50" 
+                               oninput="updateVal('${trait.id}')" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                `;
+            });
+
+            const heroGrid = document.getElementById('heroGrid');
+            Object.keys(heroes).forEach(name => {
+                heroGrid.innerHTML += `
+                    <div class="hero-btn glass-card p-4 text-center cursor-pointer ${name === currentHero ? 'active' : ''}" 
+                         onclick="selectHero('${name}')" id="card-${name.replace(' ', '')}">
+                        <img src="${heroes[name].img}" alt="${name}" class="w-16 h-16 mx-auto mb-2">
+                        <div class="text-xs font-bold">${name}</div>
+                    </div>
+                `;
+            });
+
+            initChart();
+        }
+
+        function updateVal(id) {
+            document.getElementById(`val-${id}`).innerText = document.getElementById(id).value;
+        }
+
+        function selectHero(name) {
+            currentHero = name;
+            document.querySelectorAll('.hero-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`card-${name.replace(' ', '')}`).classList.add('active');
+            updateChart();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: traits.map(t => t.label),
+                    datasets: [
+                        {
+                            label: '用戶特質',
+                            data: [50, 50, 50, 50, 50, 50],
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 2
+                        },
+                        {
+                            label: currentHero,
+                            data: heroes[currentHero].stats,
+                            backgroundColor: `${heroes[currentHero].color}33`,
+                            borderColor: heroes[currentHero].color,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#334155' },
+                            grid: { color: '#334155' },
+                            pointLabels: { color: '#94a3b8', font: { size: 14 } },
+                            ticks: { display: false, max: 100, min: 0 }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#e2e8f0' } }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            const userStats = traits.map(t => parseInt(document.getElementById(t.id).value));
+            chart.data.datasets[0].data = userStats;
+            chart.data.datasets[1].label = currentHero;
+            chart.data.datasets[1].data = heroes[currentHero].stats;
+            chart.data.datasets[1].borderColor = heroes[currentHero].color;
+            chart.data.datasets[1].backgroundColor = `${heroes[currentHero].color}33`;
+            chart.update();
+        }
+
+        function calculateMatch() {
+            updateChart();
+            const userStats = traits.map(t => parseInt(document.getElementById(t.id).value));
+            const heroStats = heroes[currentHero].stats;
+
+            let diffSum = 0;
+            userStats.forEach((stat, i) => {
+                diffSum += Math.pow(stat - heroStats[i], 2);
+            });
+
+            const maxDiff = Math.sqrt(6 * Math.pow(100, 2));
+            const currentDiff = Math.sqrt(diffSum);
+            const matchScore = Math.max(0, 100 - (currentDiff / maxDiff * 100));
+
+            const resultDiv = document.getElementById('matchResult');
+            const percentDiv = document.getElementById('matchPercentage');
+            resultDiv.classList.remove('hidden');
+            percentDiv.innerText = `${matchScore.toFixed(1)}%`;
+
+            // Subtle pulse animation
+            percentDiv.style.transform = 'scale(1.2)';
+            setTimeout(() => percentDiv.style.transform = 'scale(1)', 200);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

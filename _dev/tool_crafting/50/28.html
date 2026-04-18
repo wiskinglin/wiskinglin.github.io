@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenAquarium - 數位療癒水族館</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0a192f;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #112240 0%, #0a192f 100%);
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .glass-ui {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-panel {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            padding: 15px 30px;
+            z-index: 100;
+        }
+
+        .status-panel {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            padding: 20px;
+            color: white;
+            z-index: 100;
+        }
+
+        .btn-action {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+        }
+
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="canvas-container">
+        <canvas id="aquariumCanvas"></canvas>
+    </div>
+
+    <div class="status-panel glass-ui">
+        <h1 class="text-xl font-light tracking-widest uppercase">Zen Aquarium</h1>
+        <p class="text-xs opacity-50 mt-1">互動式生態模擬 2.0</p>
+        <div id="fishCount" class="mt-4 text-2xl font-bold text-cyan-400">0</div>
+        <div class="text-[10px] uppercase tracking-tighter opacity-40">當前生物數量</div>
+    </div>
+
+    <div class="control-panel glass-ui">
+        <div onclick="addFish()" class="btn-action px-4 py-2 rounded-lg">添加生物</div>
+        <div onclick="toggleGravity()" id="gravityBtn" class="btn-action px-4 py-2 rounded-lg text-cyan-300">吸引模式: ON
+        </div>
+        <div onclick="clearFish()" class="btn-action px-4 py-2 rounded-lg text-red-400">重置環境</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('aquariumCanvas');
+        const ctx = canvas.getContext('2d');
+        const fishCountDisplay = document.getElementById('fishCount');
+
+        let fishes = [];
+        let foods = [];
+        let width, height;
+        let mouse = { x: -1000, y: -1000, active: false };
+        let attractionMode = true;
+
+        // 配置
+        const CONFIG = {
+            initialFish: 15,
+            maxSpeed: 2.5,
+            perceptionRadius: 50,
+            colors: ['#4fd1c5', '#63b3ed', '#f6ad55', '#fc8181', '#b794f4'],
+            sizeRange: [3, 8]
+        };
+
+        class Fish {
+            constructor(x, y, color) {
+                this.pos = { x: x || Math.random() * width, y: y || Math.random() * height };
+                this.vel = { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 4 };
+                this.acc = { x: 0, y: 0 };
+                this.maxForce = 0.05;
+                this.maxSpeed = CONFIG.maxSpeed + Math.random();
+                this.size = CONFIG.sizeRange[0] + Math.random() * (CONFIG.sizeRange[1] - CONFIG.sizeRange[0]);
+                this.color = color || CONFIG.colors[Math.floor(Math.random() * CONFIG.colors.length)];
+                this.history = [];
+            }
+
+            update() {
+                // 基礎行為
+                this.flock();
+
+                // 滑鼠互動
+                if (mouse.active) {
+                    let d = Math.hypot(this.pos.x - mouse.x, this.pos.y - mouse.y);
+                    if (d < 200) {
+                        let force = { x: (mouse.x - this.pos.x) / d, y: (mouse.y - this.pos.y) / d };
+                        if (!attractionMode) { force.x *= -1; force.y *= -1; }
+                        this.acc.x += force.x * 0.1;
+                        this.acc.y += force.y * 0.1;
+                    }
+                }
+
+                // 更新物理
+                this.vel.x += this.acc.x;
+                this.vel.y += this.acc.y;
+                const speed = Math.hypot(this.vel.x, this.vel.y);
+                if (speed > this.maxSpeed) {
+                    this.vel.x = (this.vel.x / speed) * this.maxSpeed;
+                    this.vel.y = (this.vel.y / speed) * this.maxSpeed;
+                }
+                this.pos.x += this.vel.x;
+                this.pos.y += this.vel.y;
+                this.acc.x = 0;
+                this.acc.y = 0;
+
+                // 邊界處理 (平滑環繞)
+                const margin = 50;
+                if (this.pos.x < -margin) this.pos.x = width + margin;
+                if (this.pos.x > width + margin) this.pos.x = -margin;
+                if (this.pos.y < -margin) this.pos.y = height + margin;
+                if (this.pos.y > height + margin) this.pos.y = -margin;
+
+                // 軌跡紀錄
+                this.history.push({ x: this.pos.x, y: this.pos.y });
+                if (this.history.length > 10) this.history.shift();
+            }
+
+            flock() {
+                let alignment = { x: 0, y: 0 };
+                let cohesion = { x: 0, y: 0 };
+                let separation = { x: 0, y: 0 };
+                let total = 0;
+
+                for (let other of fishes) {
+                    let d = Math.hypot(this.pos.x - other.pos.x, this.pos.y - other.pos.y);
+                    if (other !== this && d < CONFIG.perceptionRadius) {
+                        alignment.x += other.vel.x;
+                        alignment.y += other.vel.y;
+                        cohesion.x += other.pos.x;
+                        cohesion.y += other.pos.y;
+                        separation.x += (this.pos.x - other.pos.x) / d;
+                        separation.y += (this.pos.y - other.pos.y) / d;
+                        total++;
+                    }
+                }
+
+                if (total > 0) {
+                    alignment.x /= total; alignment.y /= total;
+                    cohesion.x /= total; cohesion.y /= total;
+                    cohesion.x = (cohesion.x - this.pos.x) * 0.01;
+                    cohesion.y = (cohesion.y - this.pos.y) * 0.01;
+                    this.acc.x += alignment.x * 0.02 + cohesion.x + separation.x * 0.05;
+                    this.acc.y += alignment.y * 0.02 + cohesion.y + separation.y * 0.05;
+                }
+            }
+
+            draw() {
+                const angle = Math.atan2(this.vel.y, this.vel.x);
+
+                // 繪製軌跡
+                if (this.history.length > 2) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
+                    for (let i = 1; i < this.history.length; i++) {
+                        ctx.lineTo(this.history[i].x, this.history[i].y);
+                    }
+                    ctx.strokeStyle = this.color + '33';
+                    ctx.lineWidth = this.size / 2;
+                    ctx.stroke();
+                }
+
+                // 繪製魚身 (簡約流線型)
+                ctx.save();
+                ctx.translate(this.pos.x, this.pos.y);
+                ctx.rotate(angle);
+
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size * 1.5, this.size / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 魚尾
+                ctx.beginPath();
+                ctx.moveTo(-this.size, 0);
+                ctx.lineTo(-this.size * 2, -this.size / 2);
+                ctx.lineTo(-this.size * 2, this.size / 2);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        function init() {
+            resize();
+            for (let i = 0; i < CONFIG.initialFish; i++) {
+                fishes.push(new Fish());
+            }
+            animate();
+        }
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        function addFish() {
+            for (let i = 0; i < 5; i++) fishes.push(new Fish());
+        }
+
+        function clearFish() {
+            fishes = [];
+        }
+
+        function toggleGravity() {
+            attractionMode = !attractionMode;
+            document.getElementById('gravityBtn').textContent = `吸引模式: ${attractionMode ? 'ON' : 'OFF'}`;
+        }
+
+        function animate() {
+            // 柔和尾跡效果
+            ctx.fillStyle = 'rgba(10, 25, 47, 0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            fishes.forEach(fish => {
+                fish.update();
+                fish.draw();
+            });
+
+            fishCountDisplay.textContent = fishes.length;
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousedown', (e) => { mouse.active = true; mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mouseup', () => { mouse.active = false; });
+        window.addEventListener('touchstart', (e) => { mouse.active = true; mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; });
+        window.addEventListener('touchend', () => { mouse.active = false; });
+
+        init();
+    </script>
+</body>
+
+</html>

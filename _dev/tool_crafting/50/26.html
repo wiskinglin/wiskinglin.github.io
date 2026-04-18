@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenFan Pro - 虛擬極簡電風扇</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --fan-speed: 0s;
+        }
+
+        .fan-blade {
+            transition: animation-duration 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: rotate var(--fan-speed) linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .fan-chassis {
+            box-shadow: inset 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 隱藏原生 Range 樣式並自定義 */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            margin-top: -7px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex items-center justify-center font-sans">
+
+    <div class="max-w-md w-full p-8">
+        <div class="relative flex flex-col items-center">
+            <div
+                class="fan-chassis relative w-64 h-64 bg-white rounded-full border-8 border-slate-200 flex items-center justify-center overflow-hidden">
+                <div class="absolute w-4 h-4 bg-slate-400 rounded-full z-20 shadow-md"></div>
+
+                <div id="fanGroup" class="fan-blade relative w-full h-full flex items-center justify-center">
+                    <div class="absolute w-48 h-12 bg-slate-300 rounded-full opacity-80"
+                        style="transform: rotate(0deg);"></div>
+                    <div class="absolute w-48 h-12 bg-slate-300 rounded-full opacity-80"
+                        style="transform: rotate(60deg);"></div>
+                    <div class="absolute w-48 h-12 bg-slate-300 rounded-full opacity-80"
+                        style="transform: rotate(120deg);"></div>
+                </div>
+
+                <div class="absolute inset-0 border-t border-slate-100 opacity-20 pointer-events-none"></div>
+            </div>
+
+            <div class="w-32 h-24 bg-slate-200 mt-[-20px] rounded-b-3xl -z-10 shadow-lg relative">
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-1">
+                    <div id="statusLed" class="w-2 h-2 bg-slate-400 rounded-full transition-colors duration-300"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card mt-12 p-6 rounded-3xl shadow-2xl space-y-6">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold text-slate-800 tracking-tight">ZenFan Pro</h1>
+                <span id="speedLabel"
+                    class="px-3 py-1 bg-slate-800 text-white text-xs rounded-full font-mono uppercase">Status:
+                    Off</span>
+            </div>
+
+            <div class="space-y-4">
+                <label class="block text-sm font-medium text-slate-600">風速調節 Wind Speed</label>
+                <input type="range" id="speedSlider" min="0" max="3" value="0" class="w-full">
+                <div class="flex justify-between text-xs text-slate-400 px-1">
+                    <span>關閉</span>
+                    <span>微風</span>
+                    <span>清爽</span>
+                    <span>強勁</span>
+                </div>
+            </div>
+
+            <div class="pt-4 flex items-center justify-between">
+                <button id="oscillateBtn"
+                    class="flex items-center space-x-2 text-sm font-medium text-slate-500 hover:text-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span>擺頭模式</span>
+                </button>
+                <div class="text-[10px] text-slate-300 italic text-right">
+                    Designed for Focus & Calm
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const slider = document.getElementById('speedSlider');
+        const fan = document.getElementById('fanGroup');
+        const speedLabel = document.getElementById('speedLabel');
+        const statusLed = document.getElementById('statusLed');
+        const root = document.documentElement;
+
+        // 音訊設定
+        let audioCtx;
+        let whiteNoise;
+        let gainNode;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const bufferSize = 2 * audioCtx.sampleRate;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                whiteNoise = audioCtx.createBufferSource();
+                whiteNoise.buffer = noiseBuffer;
+                whiteNoise.loop = true;
+
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = 0;
+
+                whiteNoise.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                whiteNoise.start();
+            }
+        }
+
+        const speeds = {
+            0: { css: '0s', label: 'Status: Off', led: 'bg-slate-400', volume: 0 },
+            1: { css: '2s', label: 'Status: Low', led: 'bg-green-400', volume: 0.1 },
+            2: { css: '0.8s', label: 'Status: Med', led: 'bg-blue-400', volume: 0.25 },
+            3: { css: '0.2s', label: 'Status: Max', led: 'bg-red-400', volume: 0.5 }
+        };
+
+        slider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const config = speeds[val];
+
+            // 更新視覺
+            root.style.setProperty('--fan-speed', config.css);
+            speedLabel.textContent = config.label;
+            statusLed.className = `w-2 h-2 rounded-full transition-colors duration-300 ${config.led}`;
+
+            if (val > 0) {
+                statusLed.classList.add('animate-pulse');
+            } else {
+                statusLed.classList.remove('animate-pulse');
+            }
+
+            // 更新音訊
+            if (val > 0) initAudio();
+            if (audioCtx) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                gainNode.gain.setTargetAtTime(config.volume, audioCtx.currentTime, 0.2);
+            }
+        });
+
+        // 擺頭動畫切換
+        let isOscillating = false;
+        const oscillateBtn = document.getElementById('oscillateBtn');
+        oscillateBtn.addEventListener('click', () => {
+            isOscillating = !isOscillating;
+            const fanContainer = fan.parentElement;
+            if (isOscillating) {
+                fanContainer.style.transition = "transform 4s ease-in-out infinite alternate";
+                fanContainer.animate([
+                    { transform: 'rotateY(-20deg)' },
+                    { transform: 'rotateY(20deg)' }
+                ], {
+                    duration: 4000,
+                    iterations: Infinity,
+                    direction: 'alternate',
+                    easing: 'ease-in-out'
+                });
+                oscillateBtn.classList.add('text-blue-600');
+            } else {
+                fanContainer.getAnimations().forEach(anim => anim.cancel());
+                oscillateBtn.classList.remove('text-blue-600');
+            }
+        });
+    </script>
+</body>
+
+</html>

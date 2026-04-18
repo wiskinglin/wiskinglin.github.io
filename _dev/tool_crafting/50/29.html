@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FingerScale Pro - 數位壓力感測儀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .scale-area {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease-out;
+        }
+
+        .ring {
+            position: absolute;
+            border: 2px solid #38bdf8;
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        .active-ripple {
+            animation: ripple 1s outset;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
+            FINGER SCALE PRO
+        </h1>
+        <p class="text-slate-400 text-sm mt-2">精密壓力生物回饋系統</p>
+    </div>
+
+    <div class="glass-card p-8 rounded-[40px] shadow-2xl flex flex-col items-center">
+        <div id="dropZone" class="scale-area mb-6">
+            <div id="massDisplay" class="text-6xl font-black text-white">0<span
+                    class="text-xl ml-1 text-blue-400">g</span></div>
+            <div id="rippleContainer" class="absolute inset-0 overflow-hidden rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 w-full">
+            <div class="bg-slate-800/50 p-4 rounded-2xl text-center">
+                <div class="text-xs text-slate-500 uppercase tracking-wider">Peak Max</div>
+                <div id="peakVal" class="text-xl font-bold text-emerald-400">0g</div>
+            </div>
+            <div class="bg-slate-800/50 p-4 rounded-2xl text-center">
+                <div class="text-xs text-slate-500 uppercase tracking-wider">Stability</div>
+                <div id="stabVal" class="text-xl font-bold text-amber-400">100%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 text-slate-500 text-center max-w-xs">
+        <p class="text-xs italic">
+            *註：本工具透過指腹接觸面積模擬重量。請嘗試使用不同力道按壓中心藍色區域。
+        </p>
+        <button onclick="resetStats()"
+            class="mt-4 px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-full text-xs transition-all">
+            重置數據
+        </button>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const massDisplay = document.getElementById('massDisplay');
+        const peakValDisplay = document.getElementById('peakVal');
+        const stabValDisplay = document.getElementById('stabVal');
+        const rippleContainer = document.getElementById('rippleContainer');
+
+        let peakMass = 0;
+        let samples = [];
+        const SENSITIVITY = 120; // 基礎靈敏度
+
+        function updateDisplay(mass) {
+            const roundedMass = Math.round(mass);
+            massDisplay.innerHTML = `${roundedMass}<span class="text-xl ml-1 text-blue-400">g</span>`;
+
+            if (roundedMass > peakMass) {
+                peakMass = roundedMass;
+                peakValDisplay.innerText = `${peakMass}g`;
+            }
+
+            // 計算穩定度 (標準差的反比)
+            if (samples.length > 5) {
+                const avg = samples.reduce((a, b) => a + b) / samples.length;
+                const variance = samples.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / samples.length;
+                const stability = Math.max(0, 100 - (Math.sqrt(variance) * 2));
+                stabValDisplay.innerText = `${Math.round(stability)}%`;
+            }
+        }
+
+        function createRipple(x, y, size) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ring';
+            ripple.style.left = `${x}px`;
+            ripple.style.top = `${y}px`;
+            ripple.style.width = `10px`;
+            ripple.style.height = `10px`;
+            rippleContainer.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.style.transition = 'all 0.5s ease-out';
+                ripple.style.transform = `scale(${size / 2})`;
+                ripple.style.opacity = '0';
+                setTimeout(() => ripple.remove(), 500);
+            }, 10);
+        }
+
+        const handlePressure = (e) => {
+            e.preventDefault();
+            let mass = 0;
+            let pointer = e.touches ? e.touches[0] : e;
+
+            // 核心邏輯：利用 width/height 或 force 模擬重量
+            if (e.pointerType === 'touch' || e.touches) {
+                // 如果是觸控螢幕，利用接觸面積
+                const area = (pointer.radiusX || 1) * (pointer.radiusY || 1);
+                const force = pointer.force || 0;
+
+                if (force > 0) {
+                    mass = force * 500; // 如果硬體支援壓力感應
+                } else {
+                    mass = area * 1.5; // 面積模擬法
+                }
+            } else {
+                // 滑鼠模擬：隨機微震盪模擬真實感
+                mass = 40 + Math.random() * 5;
+            }
+
+            if (mass > 2) {
+                samples.push(mass);
+                if (samples.length > 20) samples.shift();
+
+                updateDisplay(mass);
+
+                // 視覺效果
+                const rect = dropZone.getBoundingClientRect();
+                const relX = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+                const relY = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+                createRipple(relX, relY, mass);
+
+                dropZone.style.transform = `scale(${1 + (mass / 2000)})`;
+            }
+        };
+
+        const stopPressure = () => {
+            massDisplay.innerHTML = `0<span class="text-xl ml-1 text-blue-400">g</span>`;
+            dropZone.style.transform = `scale(1)`;
+            samples = [];
+            stabValDisplay.innerText = `100%`;
+        };
+
+        // Event Listeners
+        dropZone.addEventListener('pointermove', handlePressure);
+        dropZone.addEventListener('pointerdown', handlePressure);
+        dropZone.addEventListener('pointerup', stopPressure);
+        dropZone.addEventListener('pointerleave', stopPressure);
+
+        // Touch events for mobile
+        dropZone.addEventListener('touchstart', handlePressure, { passive: false });
+        dropZone.addEventListener('touchmove', handlePressure, { passive: false });
+        dropZone.addEventListener('touchend', stopPressure);
+
+        function resetStats() {
+            peakMass = 0;
+            peakValDisplay.innerText = `0g`;
+            stabValDisplay.innerText = `100%`;
+            samples = [];
+        }
+    </script>
+</body>
+
+</html>

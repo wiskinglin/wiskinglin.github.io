@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProGolf - 智能擊球數據分析儀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .golf-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #166534 100%);
+        }
+
+        .card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        #targetCanvas {
+            background: #2d5a27;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+
+<body class="pb-10">
+
+    <header class="golf-gradient text-white py-8 px-6 shadow-lg mb-8">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold italic tracking-tighter">ProGolf Analyzer</h1>
+                <p class="opacity-80 text-sm">數據驅動的卓越揮桿</p>
+            </div>
+            <i class="fas fa-golf-ball text-4xl"></i>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="md:col-span-1 space-y-6">
+            <div class="card p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="font-bold text-slate-800 mb-4 flex items-center">
+                    <i class="fas fa-swatchbook mr-2 text-green-600"></i> 選擇球桿
+                </h2>
+                <select id="clubSelect"
+                    class="w-full p-3 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none">
+                    <option value="Driver">1號木桿 (Driver)</option>
+                    <option value="3W">3號木桿 (3W)</option>
+                    <option value="4I">4號鐵桿 (4I)</option>
+                    <option value="7I" selected>7號鐵桿 (7I)</option>
+                    <option value="PW">劈起桿 (PW)</option>
+                    <option value="SW">沙坑桿 (SW)</option>
+                </select>
+
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-slate-600 mb-2">本次擊球距離 (Yards)</label>
+                    <input type="number" id="shotDistance" placeholder="150"
+                        class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-green-500 outline-none mb-4">
+                    <button onclick="recordShot()"
+                        class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-xl transition shadow-md">
+                        紀錄擊球
+                    </button>
+                </div>
+            </div>
+
+            <div class="card p-6 rounded-2xl shadow-sm border border-slate-200 bg-white">
+                <h2 class="font-bold text-slate-800 mb-2">教練建議</h2>
+                <p id="coachTip" class="text-sm text-slate-600 leading-relaxed italic">
+                    "保持穩定的節奏。在練習場時，專注於落點而非力量。"
+                </p>
+            </div>
+        </div>
+
+        <div class="md:col-span-2 space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 text-center">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">平均距離</span>
+                    <div class="text-3xl font-bold text-slate-800"><span id="avgDist">0</span> <small
+                            class="text-sm font-normal">yds</small></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 text-center">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">精準度 (±5y)</span>
+                    <div class="text-3xl font-bold text-green-600"><span id="accuracy">0</span><small
+                            class="text-sm font-normal">%</small></div>
+                </div>
+            </div>
+
+            <div class="card p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="font-bold text-slate-800 mb-4">距離分佈趨勢</h2>
+                <canvas id="historyChart" height="200"></canvas>
+            </div>
+
+            <div class="card p-6 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="font-bold text-slate-800 mb-4">落點散佈圖 (模擬練習場)</h2>
+                <canvas id="targetCanvas" width="500" height="300" class="w-full"></canvas>
+                <p class="text-[10px] text-slate-400 mt-2 text-center text-center">橫軸表示左右偏差，縱軸表示距離目標差距</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let shotData = JSON.parse(localStorage.getItem('golfShots')) || {};
+        let chart;
+
+        function initChart() {
+            const ctx = document.getElementById('historyChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '擊球距離 (yds)',
+                        borderColor: '#166534',
+                        backgroundColor: 'rgba(22, 101, 52, 0.1)',
+                        data: [],
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: false } }
+                }
+            });
+            updateUI();
+        }
+
+        function recordShot() {
+            const club = document.getElementById('clubSelect').value;
+            const dist = parseFloat(document.getElementById('shotDistance').value);
+
+            if (!dist) return alert('請輸入距離！');
+
+            if (!shotData[club]) shotData[club] = [];
+            shotData[club].push({
+                dist: dist,
+                timestamp: new Date().toLocaleTimeString(),
+                dev: (Math.random() * 20 - 10) // 模擬隨機左右偏差
+            });
+
+            localStorage.setItem('golfShots', JSON.stringify(shotData));
+            document.getElementById('shotDistance').value = '';
+            updateUI();
+            drawTargetMap();
+        }
+
+        function updateUI() {
+            const club = document.getElementById('clubSelect').value;
+            const data = shotData[club] || [];
+
+            // Update Stats
+            const avg = data.length ? (data.reduce((a, b) => a + b.dist, 0) / data.length).toFixed(1) : 0;
+            document.getElementById('avgDist').innerText = avg;
+
+            const accuracy = data.length ? ((data.filter(s => Math.abs(s.dist - avg) < 5).length / data.length) * 100).toFixed(0) : 0;
+            document.getElementById('accuracy').innerText = accuracy;
+
+            // Update Chart
+            chart.data.labels = data.slice(-10).map(s => s.timestamp);
+            chart.data.datasets[0].data = data.slice(-10).map(s => s.dist);
+            chart.update();
+
+            // Update Coach Tip
+            const tips = [
+                "你的 7 號鐵桿非常穩定，試著增加揮桿弧度。",
+                "距離波動較大，注意下盤重心轉移。",
+                "好球！這個距離可以讓你輕鬆進攻果嶺。",
+                "建議休息 5 分鐘，避免肌肉疲勞導致動作變形。"
+            ];
+            document.getElementById('coachTip').innerText = `"${tips[Math.floor(Math.random() * tips.length)]}"`;
+        }
+
+        function drawTargetMap() {
+            const canvas = document.getElementById('targetCanvas');
+            const ctx = canvas.getContext('2d');
+            const club = document.getElementById('clubSelect').value;
+            const data = shotData[club] || [];
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Target Rings
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 20, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2, 50, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2, 90, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Draw Crosshair
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0); ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.moveTo(0, canvas.height / 2); ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
+
+            // Draw Shots
+            const avg = data.reduce((a, b) => a + b.dist, 0) / data.length;
+            data.slice(-20).forEach(shot => {
+                const x = (canvas.width / 2) + (shot.dev * 10);
+                const y = (canvas.height / 2) - ((shot.dist - avg) * 5);
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+            });
+        }
+
+        document.getElementById('clubSelect').addEventListener('change', () => {
+            updateUI();
+            drawTargetMap();
+        });
+
+        window.onload = () => {
+            initChart();
+            drawTargetMap();
+        };
+    </script>
+</body>
+
+</html>

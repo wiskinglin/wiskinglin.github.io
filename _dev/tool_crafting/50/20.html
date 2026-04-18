@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pikmin Task Squad - 皮克敏工作小隊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
+
+        :root {
+            --pikmin-red: #ff5e5e;
+            --pikmin-yellow: #f9d423;
+            --pikmin-blue: #4facfe;
+            --pikmin-green: #a8e063;
+        }
+
+        body {
+            font-family: 'Varela Round', sans-serif;
+            background: linear-gradient(180deg, #d4fc79 0%, #96e6a1 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .task-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 4px solid #fff;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .pikmin-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 2px;
+            position: relative;
+        }
+
+        .pikmin-dot::after {
+            content: '🌱';
+            position: absolute;
+            top: -12px;
+            left: -2px;
+            font-size: 10px;
+        }
+
+        .carrying-animation {
+            animation: bounce 0.5s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .progress-leaf {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-leaf-inner {
+            height: 100%;
+            background: var(--pikmin-green);
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-green-800 mb-2">Pikmin Task Squad</h1>
+            <p class="text-green-700">派遣你的皮克敏，搬走所有的工作壓力！</p>
+        </header>
+
+        <div class="task-card rounded-3xl p-6 mb-8">
+            <div class="flex flex-col md:flex-row gap-4">
+                <input id="taskInput" type="text" placeholder="輸入你想處理的任務（例如：寫報告）"
+                    class="flex-1 px-4 py-3 rounded-full border-2 border-green-200 focus:outline-none focus:border-green-500 text-lg">
+                <button onclick="addTask()"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition">
+                    呼喚皮克敏！
+                </button>
+            </div>
+        </div>
+
+        <div id="taskList" class="space-y-4">
+        </div>
+    </div>
+
+    <script>
+        const colors = ['var(--pikmin-red)', 'var(--pikmin-yellow)', 'var(--pikmin-blue)'];
+        const items = ['🍎', '🍇', '🔋', '📱', '🔔', '🏺'];
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const pikminCount = Math.floor(Math.random() * 5) + 3;
+            const randomItem = items[Math.floor(Math.random() * items.length)];
+            const taskId = Date.now();
+
+            const taskHtml = `
+                <div id="task-${taskId}" class="task-card rounded-2xl p-5 animate__animated animate__fadeInUp">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${text}</h3>
+                            <div class="mt-2" id="pikmin-container-${taskId}">
+                                ${generatePikminDots(pikminCount)}
+                                <span class="text-sm text-gray-500 ml-2">${pikminCount} 隻皮克敏正在待命</span>
+                            </div>
+                        </div>
+                        <span class="text-4xl">${randomItem}</span>
+                    </div>
+                    
+                    <div id="status-${taskId}" class="mt-4">
+                        <button onclick="startCarry(${taskId}, ${pikminCount})" 
+                            class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl font-bold transition">
+                            開始搬運 (10秒專注)
+                        </button>
+                    </div>
+                    
+                    <div class="progress-leaf mt-4 hidden" id="progress-container-${taskId}">
+                        <div id="bar-${taskId}" class="progress-leaf-inner" style="width: 0%"></div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('taskList').insertAdjacentHTML('afterbegin', taskHtml);
+            input.value = '';
+        }
+
+        function generatePikminDots(count) {
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                html += `<span class="pikmin-dot" style="background-color: ${color}"></span>`;
+            }
+            return html;
+        }
+
+        function startCarry(id, count) {
+            const btn = document.querySelector(`#status-${id} button`);
+            const container = document.getElementById(`progress-container-${id}`);
+            const bar = document.getElementById(`bar-${id}`);
+            const card = document.getElementById(`task-${id}`);
+
+            btn.disabled = true;
+            btn.innerHTML = "搬運中... 嘿咻！嘿咻！";
+            btn.classList.replace('bg-blue-500', 'bg-gray-400');
+            container.classList.remove('hidden');
+            card.classList.add('carrying-animation');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 1;
+                bar.style.width = `${progress}%`;
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    completeTask(id);
+                }
+            }, 100); // 10秒完成 (100 * 100ms)
+        }
+
+        function completeTask(id) {
+            const card = document.getElementById(`task-${id}`);
+            card.classList.remove('carrying-animation');
+            card.classList.add('animate__animated', 'animate__fadeOutRight');
+
+            setTimeout(() => {
+                card.innerHTML = `
+                    <div class="flex items-center justify-center py-4">
+                        <span class="text-2xl font-bold text-green-600">✨ 任務已送達基地！</span>
+                    </div>
+                `;
+                setTimeout(() => {
+                    card.remove();
+                    if (document.getElementById('taskList').children.length === 0) {
+                        alert("太棒了！所有寶物都搬完了，休息一下吧！");
+                    }
+                }, 1500);
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>

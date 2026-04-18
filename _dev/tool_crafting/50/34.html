@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地瀑布流相簿 (支援資料夾選取)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #121212;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* 頂部操作區：包含選取按鈕與標籤 */
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .upload-btn {
+            align-self: flex-start;
+            background-color: #e60023;
+            /* 類似 Pinterest 的紅色 */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .upload-btn:hover {
+            background-color: #ad081b;
+        }
+
+        /* 隱藏預設的 input 介面 */
+        #folder-input {
+            display: none;
+        }
+
+        .tags-nav {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .tag-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: transparent;
+            color: #888;
+            border: 1px solid #333;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .tag-btn:hover {
+            border-color: #666;
+        }
+
+        .tag-btn.active {
+            background-color: white;
+            color: black;
+            font-weight: bold;
+        }
+
+        /* 瀑布流容器 */
+        .masonry-grid {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .masonry-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        /* 圖片卡片 */
+        .image-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #2a2a2a;
+            width: 100%;
+        }
+
+        /* 真實圖片的樣式設定 */
+        .image-card img {
+            width: 100%;
+            height: auto;
+            /* 讓圖片依比例自動調整高度 */
+            display: block;
+        }
+
+        .image-tag {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        /* 提示文字 */
+        .empty-state {
+            text-align: center;
+            color: #666;
+            margin-top: 50px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-controls">
+        <label for="folder-input" class="upload-btn">📂 選擇本地圖片資料夾</label>
+        <input type="file" id="folder-input" webkitdirectory directory multiple accept="image/*">
+
+        <div class="tags-nav" id="nav-container"></div>
+    </div>
+
+    <div class="masonry-grid" id="grid-container">
+        <div class="empty-state">請點擊上方按鈕選擇包含圖片的資料夾</div>
+    </div>
+
+    <script>
+        const CATEGORIES = ['全部', '構圖', '女角色', '食物和飲品', 'MoviePoster'];
+        let MOCK_IMAGES = []; // 初始為空，等使用者選取資料夾
+        let activeCategory = '全部';
+        const columnCount = 4;
+
+        // 渲染導覽列標籤
+        function renderNav() {
+            const nav = document.getElementById('nav-container');
+            nav.innerHTML = '';
+
+            CATEGORIES.forEach(category => {
+                const btn = document.createElement('button');
+                btn.className = `tag-btn ${activeCategory === category ? 'active' : ''}`;
+                btn.textContent = category;
+
+                btn.onclick = () => {
+                    activeCategory = category;
+                    renderNav();
+                    renderGrid();
+                };
+                nav.appendChild(btn);
+            });
+        }
+
+        // 渲染瀑布流圖片
+        function renderGrid() {
+            const grid = document.getElementById('grid-container');
+            grid.innerHTML = '';
+
+            if (MOCK_IMAGES.length === 0) {
+                grid.innerHTML = '<div class="empty-state">資料夾內沒有圖片，請重新選擇</div>';
+                return;
+            }
+
+            const filteredImages = activeCategory === '全部'
+                ? MOCK_IMAGES
+                : MOCK_IMAGES.filter(img => img.tag === activeCategory);
+
+            const columns = Array.from({ length: columnCount }, () => []);
+
+            filteredImages.forEach((img, index) => {
+                columns[index % columnCount].push(img);
+            });
+
+            columns.forEach(colData => {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'masonry-column';
+
+                colData.forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+
+                    // 建立真實圖片標籤
+                    const imageEl = document.createElement('img');
+                    imageEl.src = img.url;
+                    imageEl.loading = 'lazy'; // 延遲加載效能優化
+
+                    const tagSpan = document.createElement('span');
+                    tagSpan.className = 'image-tag';
+                    tagSpan.textContent = img.tag;
+
+                    card.appendChild(imageEl);
+                    card.appendChild(tagSpan);
+                    colDiv.appendChild(card);
+                });
+
+                grid.appendChild(colDiv);
+            });
+        }
+
+        // 處理資料夾選取事件
+        document.getElementById('folder-input').addEventListener('change', (event) => {
+            const files = event.target.files;
+
+            // 過濾出圖片檔案 (排除資料夾內的 txt 或其他非圖片檔)
+            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+
+            if (imageFiles.length === 0) {
+                alert('這個資料夾裡找不到圖片喔！');
+                return;
+            }
+
+            // 將真實圖片轉換為我們的資料格式
+            MOCK_IMAGES = imageFiles.map((file, index) => {
+                // 為了測試分類功能，這裡隨機指派一個標籤（排除"全部"）
+                const randomCategoryIndex = Math.floor(Math.random() * (CATEGORIES.length - 1)) + 1;
+                const randomTag = CATEGORIES[randomCategoryIndex];
+
+                return {
+                    id: index.toString(),
+                    url: URL.createObjectURL(file), // 產生本地端可讀取的暫時網址
+                    tag: randomTag
+                };
+            });
+
+            // 重置狀態並重新渲染
+            activeCategory = '全部';
+            renderNav();
+            renderGrid();
+        });
+
+        // 初始只渲染導覽列
+        renderNav();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenBonsai - 數位專注盆栽</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+
+        #bonsai-canvas {
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+        }
+
+        .growth-ring {
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .btn-zen {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-zen:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center p-4">
+
+    <div class="glass-card w-full max-w-4xl flex flex-col md:flex-row overflow-hidden">
+        <div class="relative flex-1 bg-white/40 p-8 flex flex-col items-center justify-center min-h-[400px]">
+            <div id="status-tag"
+                class="absolute top-6 left-6 px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                靜待發芽
+            </div>
+            <canvas id="bonsai-canvas" width="400" height="400"></canvas>
+            <div class="mt-4 text-center">
+                <h2 id="plant-name" class="text-xl font-light text-slate-600">我的數位松柏</h2>
+                <p id="growth-stage" class="text-xs text-slate-400 mt-1 uppercase tracking-widest">Stage: Seedling</p>
+            </div>
+        </div>
+
+        <div
+            class="w-full md:w-80 p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-white/50">
+            <div>
+                <h1 class="text-2xl font-medium text-slate-800">ZenBonsai</h1>
+                <p class="text-sm text-slate-500 mb-8">專注，是灌溉心靈的唯一養分。</p>
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">設定專注時長 (分鐘)</label>
+                        <input type="range" id="timer-slider" min="1" max="60" value="25"
+                            class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer mt-2 accent-green-500">
+                        <div class="flex justify-between text-sm text-slate-600 mt-2">
+                            <span>1m</span>
+                            <span id="selected-time" class="font-bold text-green-600 text-lg">25:00</span>
+                            <span>60m</span>
+                        </div>
+                    </div>
+
+                    <div class="text-center py-4">
+                        <div id="display-timer" class="text-5xl font-light text-slate-700 tracking-tighter">
+                            25:00
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button id="start-btn" class="btn-zen w-full py-4 bg-slate-800 text-white rounded-xl font-medium">
+                    開始灌溉
+                </button>
+                <button id="reset-btn"
+                    class="btn-zen w-full py-4 bg-white text-slate-600 rounded-xl font-medium border border-slate-200">
+                    重新整理
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('bonsai-canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const timerSlider = document.getElementById('timer-slider');
+        const selectedTimeDisplay = document.getElementById('selected-time');
+        const timerDisplay = document.getElementById('display-timer');
+        const statusTag = document.getElementById('status-tag');
+        const growthStageTxt = document.getElementById('growth-stage');
+
+        let timer = null;
+        let timeLeft = 25 * 60;
+        let isRunning = false;
+        let totalFocusTime = 25 * 60;
+        let growthLevel = 0.1; // 0 to 1
+
+        // 初始繪製
+        drawBonsai(growthLevel);
+
+        // UI 事件
+        timerSlider.addEventListener('input', (e) => {
+            if (isRunning) return;
+            const mins = e.target.value;
+            selectedTimeDisplay.innerText = `${mins}:00`;
+            timerDisplay.innerText = `${mins < 10 ? '0' + mins : mins}:00`;
+            timeLeft = mins * 60;
+            totalFocusTime = timeLeft;
+        });
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                startFocus();
+            } else {
+                pauseFocus();
+            }
+        });
+
+        resetBtn.addEventListener('click', resetSession);
+
+        function startFocus() {
+            isRunning = true;
+            startBtn.innerText = '暫停專注';
+            startBtn.classList.replace('bg-slate-800', 'bg-amber-500');
+            statusTag.innerText = '成長中...';
+            statusTag.classList.replace('bg-green-100', 'bg-blue-100');
+            statusTag.classList.replace('text-green-700', 'text-blue-700');
+
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                // 計算成長進度 (0 -> 1)
+                growthLevel = 0.1 + (0.9 * (1 - (timeLeft / totalFocusTime)));
+                drawBonsai(growthLevel);
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    completeFocus();
+                }
+            }, 1000);
+        }
+
+        function pauseFocus() {
+            isRunning = false;
+            clearInterval(timer);
+            startBtn.innerText = '繼續灌溉';
+            startBtn.classList.replace('bg-amber-500', 'bg-slate-800');
+            statusTag.innerText = '暫停中';
+        }
+
+        function resetSession() {
+            isRunning = false;
+            clearInterval(timer);
+            timeLeft = timerSlider.value * 60;
+            growthLevel = 0.1;
+            updateTimerDisplay();
+            drawBonsai(growthLevel);
+            startBtn.innerText = '開始灌溉';
+            startBtn.className = 'btn-zen w-full py-4 bg-slate-800 text-white rounded-xl font-medium';
+            statusTag.innerText = '靜待發芽';
+            statusTag.className = 'absolute top-6 left-6 px-4 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium';
+            growthStageTxt.innerText = 'Stage: Seedling';
+        }
+
+        function completeFocus() {
+            isRunning = false;
+            statusTag.innerText = '完全體！';
+            statusTag.className = 'absolute top-6 left-6 px-4 py-1 rounded-full bg-purple-100 text-purple-700 text-sm font-medium';
+            growthStageTxt.innerText = 'Stage: Masterpiece';
+            alert('恭喜！你的盆栽已茁壯。');
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            timerDisplay.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+        }
+
+        // 盆栽繪製邏輯 (遞迴演算法)
+        function drawBonsai(level) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製花盆
+            ctx.fillStyle = '#4b5563';
+            ctx.beginPath();
+            ctx.roundRect(140, 350, 120, 20, 5);
+            ctx.fill();
+            ctx.fillStyle = '#374151';
+            ctx.beginPath();
+            ctx.roundRect(130, 340, 140, 10, 2);
+            ctx.fill();
+
+            // 設置樹幹參數
+            const startX = 200;
+            const startY = 340;
+            const initialLen = 60 * level + 20;
+            const angle = -Math.PI / 2;
+            const branchWidth = 10 * level + 2;
+
+            drawBranch(startX, startY, initialLen, angle, branchWidth, 0);
+        }
+
+        function drawBranch(x, y, len, angle, width, depth) {
+            ctx.beginPath();
+            ctx.save();
+            ctx.strokeStyle = '#3d2b1f';
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(len, 0);
+            ctx.stroke();
+
+            if (depth > 5) {
+                // 繪製葉子 (圓點)
+                ctx.beginPath();
+                ctx.fillStyle = `rgba(34, 197, 94, ${0.4 + (growthLevel * 0.6)})`;
+                ctx.arc(len, 0, 5 + (growthLevel * 5), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                return;
+            }
+
+            // 遞迴生長
+            const nextLen = len * 0.75;
+            const nextWidth = width * 0.7;
+            const nextX = len;
+            const nextY = 0;
+
+            // 右枝
+            drawBranch(nextX, nextY, nextLen, 0.3 + (Math.random() * 0.2), nextWidth, depth + 1);
+            // 左枝
+            drawBranch(nextX, nextY, nextLen, -0.3 - (Math.random() * 0.2), nextWidth, depth + 1);
+
+            ctx.restore();
+        }
+    </script>
+</body>
+
+</html>
