@@ -220,24 +220,35 @@
             return filteredPool[Math.floor(Math.random() * filteredPool.length)];
         }
 
+        function getCardByRarity(rarity) {
+            const filteredPool = cardPool.filter(c => c.rarity === rarity);
+            return filteredPool[Math.floor(Math.random() * filteredPool.length)];
+        }
+
         function drawPack() {
             const display = document.getElementById('card-display');
             const btn = document.getElementById('draw-btn');
 
-            // 介面重置與震動
             display.innerHTML = '';
             btn.disabled = true;
             btn.innerText = '正在感應卡包...';
 
-            for (let i = 0; i < 5; i++) {
-                const cardData = getRandomCard();
+            // 準備抽卡清單：保證各有一個等級，第五張隨機
+            const rarities = ["C", "R", "UR", "HR"];
+            let pack = rarities.map(r => getCardByRarity(r));
+            pack.push(getRandomCard()); // 第五張隨機
+
+            // 隨機排序避免每次稀有卡都在固定位置
+            pack.sort(() => Math.random() - 0.5);
+
+            pack.forEach((cardData, i) => {
                 const cardEl = createCardElement(cardData, i);
                 display.appendChild(cardEl);
 
                 // 更新數據
                 stats[cardData.rarity]++;
                 totalCollected++;
-            }
+            });
 
             // 更新 UI 數據顯示
             setTimeout(() => {
