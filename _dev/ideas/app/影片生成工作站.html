@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wan Studio - Wan2.2 Video Generator</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-base: #0B0A0F;
+            --bg-surface: #14131B;
+            --bg-surface-elevated: #1D1C27;
+            --accent-primary: #8A2BE2;
+            --accent-secondary: #FF2E93;
+            --accent-tertiary: #00F0FF;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A09EAB;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --gradient-primary: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            --shadow-glow: 0 0 20px rgba(138, 43, 226, 0.4);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(138, 43, 226, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255, 46, 147, 0.05), transparent 25%);
+        }
+
+        /* Sidebar */
+        aside {
+            width: 250px;
+            background: rgba(20, 19, 27, 0.6);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            font-size: 24px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo i {
+            font-size: 28px;
+            color: #8A2BE2;
+            -webkit-text-fill-color: initial;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Main Workspace */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            height: 72px;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(11, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            color: var(--accent-tertiary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-tertiary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-tertiary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(0, 240, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+        }
+
+        /* Content Area */
+        .content-area {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* Input Panel */
+        .input-panel {
+            width: 400px;
+            padding: 24px;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            background: rgba(20, 19, 27, 0.3);
+        }
+        
+        .input-panel::-webkit-scrollbar { width: 6px; }
+        .input-panel::-webkit-scrollbar-track { background: transparent; }
+        .input-panel::-webkit-scrollbar-thumb { background: var(--bg-surface-elevated); border-radius: 10px; }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .textarea-wrapper {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px rgba(138, 43, 226, 0.2);
+        }
+
+        /* File Upload */
+        .file-dropzone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 32px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.02);
+            position: relative;
+            display: none; /* hidden by default, shown based on mode */
+        }
+        
+        .file-dropzone.active {
+            border-color: var(--accent-secondary);
+            background: rgba(255, 46, 147, 0.05);
+        }
+
+        .file-dropzone:hover {
+            border-color: var(--text-secondary);
+            background: rgba(255,255,255,0.04);
+        }
+
+        .file-dropzone i {
+            font-size: 32px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .file-dropzone.hidden { display: none; }
+        .file-dropzone.show { display: block; }
+
+        /* Settings Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        select:focus, input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .btn-generate {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(138, 43, 226, 0.5);
+        }
+        
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+
+        .btn-generate .spinner {
+            display: none;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Preview Panel */
+        .preview-panel {
+            flex-grow: 1;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: url('data:image/svg+xml;utf8,<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.05)"/></svg>') repeat;
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .video-placeholder i {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .video-result {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+        }
+        
+        /* Stats / Info under video */
+        .generation-info {
+            margin-top: 24px;
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            background: var(--bg-surface-elevated);
+            padding: 16px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .generation-info.show { display: flex; }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* Loader Overlay */
+        .loader-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+        
+        .loader-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .loader-bar {
+            width: 200px;
+            height: 4px;
+            background: var(--bg-surface-elevated);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        
+        .loader-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--gradient-primary);
+            animation: load 5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes load {
+            0% { width: 0%; }
+            20% { width: 30%; }
+            50% { width: 60%; }
+            80% { width: 85%; }
+            100% { width: 95%; } /* stays at 95% until done */
+        }
+        
+        .loader-text {
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--accent-tertiary);
+            font-weight: 500;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="logo">
+            <i class="ph-fill ph-aperture"></i>
+            Wan Studio
+        </div>
+        <div class="nav-items" id="mode-nav">
+            <div class="nav-item active" data-mode="t2v">
+                <i class="ph ph-text-t"></i>
+                Text to Video
+            </div>
+            <div class="nav-item" data-mode="i2v">
+                <i class="ph ph-image"></i>
+                Image to Video
+            </div>
+            <div class="nav-item" data-mode="ti2v">
+                <i class="ph ph-images"></i>
+                Text+Image to Video
+            </div>
+            <div class="nav-item" data-mode="s2v">
+                <i class="ph ph-waveform"></i>
+                Speech to Video
+            </div>
+            <div class="nav-item" data-mode="animate">
+                <i class="ph ph-person-simple-walk"></i>
+                Character Animate
+            </div>
+        </div>
+        
+        <div style="margin-top: auto; font-size: 12px; color: var(--text-secondary); text-align: center;">
+            Powered by Wan2.2 (14B)
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main>
+        <header>
+            <div class="header-title" id="header-title">Text to Video Generation</div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                Wan2.2 Engine Ready
+            </div>
+        </header>
+
+        <div class="content-area">
+            <!-- Left Input Panel -->
+            <div class="input-panel">
+                
+                <!-- Prompt -->
+                <div class="form-group" id="prompt-group">
+                    <label>Prompt</label>
+                    <div class="textarea-wrapper">
+                        <textarea id="prompt-input" placeholder="Describe the video you want to generate in detail... (e.g., Summer beach vacation style, a white cat wearing sunglasses sits on a surfboard.)"></textarea>
+                    </div>
+                </div>
+
+                <!-- File uploads dynamically shown -->
+                <div class="file-dropzone" id="image-upload">
+                    <i class="ph ph-upload-simple"></i>
+                    <div style="font-size: 14px; font-weight: 500;">Drop Image Here</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">or click to browse</div>
+                </div>
+
+                <div class="file-dropzone" id="audio-upload">
+                    <i class="ph ph-music-notes"></i>
+                    <div style="font-size: 14px; font-weight: 500;">Drop Audio (.wav/.mp3)</div>
+                </div>
+
+                <div class="file-dropzone" id="video-upload">
+                    <i class="ph ph-video-camera"></i>
+                    <div style="font-size: 14px; font-weight: 500;">Drop Source Video (.mp4)</div>
+                </div>
+
+                <!-- Settings -->
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Generation Settings</label>
+                    <div class="settings-grid">
+                        <div class="form-group">
+                            <label>Resolution</label>
+                            <select id="resolution-select">
+                                <option value="1280*720">1280x720 (720P)</option>
+                                <option value="854*480">854x480 (480P)</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="model-select-group">
+                            <label>Model</label>
+                            <select id="model-select">
+                                <option value="t2v-A14B">T2V A14B MoE</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-grid" style="margin-top: 12px">
+                        <div class="form-group">
+                            <label>Prompt Extension</label>
+                            <select id="extend-select">
+                                <option value="none">Disabled</option>
+                                <option value="dashscope">Dashscope API</option>
+                                <option value="local">Local Qwen2.5</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Seed</label>
+                            <input type="text" placeholder="Random (-1)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Action -->
+                <button class="btn-generate" id="btn-generate">
+                    <i class="ph ph-magic-wand"></i>
+                    <span>Generate Video</span>
+                    <i class="ph ph-spinner spinner" id="btn-spinner"></i>
+                </button>
+                
+                <div style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: -8px;">
+                    Estimated VRAM: <span id="vram-est" style="color:var(--text-primary)">~24GB</span>
+                </div>
+            </div>
+
+            <!-- Right Preview Panel -->
+            <div class="preview-panel">
+                <div class="video-container">
+                    <div class="video-placeholder" id="video-placeholder">
+                        <i class="ph-duotone ph-film-strip"></i>
+                        <h2>Ready to Generate</h2>
+                        <p style="margin-top: 8px; font-size: 14px; max-width: 300px; margin-inline: auto;">Enter your prompt and click generate to see the hyper-realistic video.</p>
+                    </div>
+                    
+                    <!-- Simulated Video element -->
+                    <video class="video-result" id="video-result" controls loop autoplay muted poster=""></video>
+                    
+                    <!-- Loader -->
+                    <div class="loader-overlay" id="loader-overlay">
+                        <div class="logo" style="margin-bottom: 0;">
+                            <i class="ph-fill ph-aperture" style="animation: spin 3s linear infinite"></i>
+                        </div>
+                        <h3 style="margin-top: 16px; font-weight: 500;">Synthesizing Video...</h3>
+                        <div class="loader-bar">
+                            <div class="loader-progress"></div>
+                        </div>
+                        <div class="loader-text" id="loader-text">Initializing Wan2.2 MoE Network...</div>
+                    </div>
+                </div>
+                
+                <div class="generation-info" id="gen-info">
+                    <div class="info-item">
+                        <span class="info-label">Resolution</span>
+                        <span class="info-value">1280x720</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">FPS</span>
+                        <span class="info-value">24</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Model</span>
+                        <span class="info-value" id="info-model">Wan2.2-T2V-A14B</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Inference Time</span>
+                        <span class="info-value">1m 45s</span>
+                    </div>
+                    
+                    <button style="background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; gap: 8px; align-items: center; font-family: inherit;">
+                        <i class="ph ph-export"></i> Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const uiState = {
+            mode: 't2v',
+        };
+
+        const dom = {
+            navItems: document.querySelectorAll('.nav-item'),
+            headerTitle: document.getElementById('header-title'),
+            promptGroup: document.getElementById('prompt-group'),
+            imageUpload: document.getElementById('image-upload'),
+            audioUpload: document.getElementById('audio-upload'),
+            videoUpload: document.getElementById('video-upload'),
+            modelSelect: document.getElementById('model-select'),
+            resolutionSelect: document.getElementById('resolution-select'),
+            vramEst: document.getElementById('vram-est'),
+            btnGenerate: document.getElementById('btn-generate'),
+            loaderOverlay: document.getElementById('loader-overlay'),
+            loaderText: document.getElementById('loader-text'),
+            videoPlaceholder: document.getElementById('video-placeholder'),
+            videoResult: document.getElementById('video-result'),
+            genInfo: document.getElementById('gen-info'),
+            infoModel: document.getElementById('info-model')
+        };
+
+        const modeConfig = {
+            't2v': {
+                title: 'Text to Video Generation',
+                showPrompt: true, showImg: false, showAud: false, showVid: false,
+                models: [{val: 't2v-A14B', text: 'T2V A14B MoE'}],
+                vram: '~24GB - 80GB'
+            },
+            'i2v': {
+                title: 'Image to Video Generation',
+                showPrompt: true, showImg: true, showAud: false, showVid: false,
+                models: [{val: 'i2v-A14B', text: 'I2V A14B MoE'}],
+                vram: '~24GB - 80GB'
+            },
+            'ti2v': {
+                title: 'Text + Image to Video Generation',
+                showPrompt: true, showImg: true, showAud: false, showVid: false,
+                models: [{val: 'ti2v-5B', text: 'TI2V 5B Dense'}],
+                vram: '~24GB',
+                resolution: '1280*704'
+            },
+            's2v': {
+                title: 'Speech to Video Generation',
+                showPrompt: true, showImg: true, showAud: true, showVid: false,
+                models: [{val: 's2v-14B', text: 'S2V 14B Audio-Driven'}],
+                vram: '~80GB',
+                resolution: '1024*704'
+            },
+            'animate': {
+                title: 'Character Animation & Replacement',
+                showPrompt: false, showImg: true, showAud: false, showVid: true,
+                models: [{val: 'animate-14B', text: 'Animate 14B'}],
+                vram: '~80GB'
+            }
+        };
+
+        // Switch Modes
+        dom.navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                dom.navItems.forEach(n => n.classList.remove('active'));
+                item.classList.add('active');
+                const mode = item.getAttribute('data-mode');
+                updateUI(mode);
+            });
+        });
+
+        function updateUI(mode) {
+            uiState.mode = mode;
+            const cfg = modeConfig[mode];
+            
+            // Text updates
+            dom.headerTitle.innerText = cfg.title;
+            dom.vramEst.innerText = cfg.vram;
+            
+            // Visibility
+            dom.promptGroup.style.display = cfg.showPrompt ? 'flex' : 'none';
+            dom.imageUpload.classList.toggle('show', cfg.showImg);
+            dom.audioUpload.classList.toggle('show', cfg.showAud);
+            dom.videoUpload.classList.toggle('show', cfg.showVid);
+
+            // Update Model Select
+            dom.modelSelect.innerHTML = '';
+            cfg.models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.val;
+                opt.innerText = m.text;
+                dom.modelSelect.appendChild(opt);
+            });
+            
+            // Default Res
+            if(cfg.resolution) {
+                let found = false;
+                Array.from(dom.resolutionSelect.options).forEach(o => {
+                    if(o.value === cfg.resolution) found = true;
+                });
+                if(!found) {
+                    const opt = document.createElement('option');
+                    opt.value = cfg.resolution;
+                    opt.innerText = cfg.resolution.replace('*', 'x');
+                    dom.resolutionSelect.appendChild(opt);
+                }
+                dom.resolutionSelect.value = cfg.resolution;
+            }
+            
+            // Reset View
+            dom.videoPlaceholder.style.display = 'block';
+            dom.videoResult.style.display = 'none';
+            dom.genInfo.classList.remove('show');
+            dom.videoResult.src = '';
+        }
+
+        // Simulate or Trigger Generation
+        dom.btnGenerate.addEventListener('click', async () => {
+            if(dom.btnGenerate.disabled) return;
+            
+            const btnText = dom.btnGenerate.querySelector('span');
+            const btnIcon = dom.btnGenerate.querySelector('.ph-magic-wand');
+            const spinner = dom.btnGenerate.querySelector('.ph-spinner');
+            
+            // Build the generation payload
+            const payload = {
+                mode: uiState.mode,
+                prompt: dom.promptGroup.querySelector('textarea').value,
+                resolution: dom.resolutionSelect.value,
+                model: dom.modelSelect.value,
+                extend: document.getElementById('extend-select').value
+            };
+            
+            // Generate local command for fallback
+            const ckptFallback = `./Wan2.2-${payload.model.toUpperCase()}`;
+            const sizeStr = payload.resolution;
+            let cliCmd = `python generate.py --task ${payload.model} --size ${sizeStr} --ckpt_dir ${ckptFallback} --offload_model True --t5_cpu`;
+            if(payload.prompt) cliCmd += ` --prompt "${payload.prompt}"`;
+            if(payload.extend !== 'none') cliCmd += ` --use_prompt_extend --prompt_extend_method ${payload.extend}`;
+            
+            // UI state
+            dom.btnGenerate.disabled = true;
+            btnText.innerText = 'Connecting to Server...';
+            btnIcon.style.display = 'none';
+            spinner.style.display = 'block';
+            
+            try {
+                // Try sending to the FastAPI backend
+                const backendUrl = window.location.port ? '/api/generate' : 'http://localhost:8000/api/generate';
+                let response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                let resData = await response.json();
+                
+                if(resData.status === 'started' || resData.status === 'error' && resData.message.includes('Already running')) {
+                    // Start polling
+                    dom.loaderOverlay.classList.add('active');
+                    btnText.innerText = 'Generating Video...';
+                    
+                    const pollInterval = setInterval(async () => {
+                        try {
+                            let statRes = await fetch(window.location.port ? '/api/status' : 'http://localhost:8000/api/status');
+                            let statusInfo = await statRes.json();
+                            
+                            dom.loaderText.innerText = statusInfo.error ? statusInfo.error : "Status: " + statusInfo.progress + "%";
+                            
+                            // Quick progress bar update based on statusInfo.progress 
+                            // (Overriding CSS animation slightly if possible)
+                            document.querySelector('.loader-progress').style.animation = 'none';
+                            document.querySelector('.loader-progress').style.width = statusInfo.progress + '%';
+                            
+                            if(!statusInfo.is_running && statusInfo.progress === 100) {
+                                clearInterval(pollInterval);
+                                finishGeneration(window.location.port ? '/api/video' : 'http://localhost:8000/api/video');
+                            } else if (!statusInfo.is_running && statusInfo.error) {
+                                clearInterval(pollInterval);
+                                btnText.innerText = 'Generate Video';
+                                dom.btnGenerate.disabled = false;
+                                spinner.style.display = 'none';
+                                btnIcon.style.display = 'block';
+                                dom.loaderText.innerText = "Error: " + statusInfo.error;
+                            }
+                        } catch(e) {
+                            console.error("Polling error", e);
+                        }
+                    }, 5000); // Check every 5 seconds
+                } else if(resData.status === 'error') {
+                   throw new Error(resData.message); 
+                }
+            } catch (err) {
+                // Backend not found or model not found -> Fallback to Local CLI Generator approach
+                dom.btnGenerate.disabled = false;
+                btnText.innerText = 'Generate Video';
+                spinner.style.display = 'none';
+                btnIcon.style.display = 'block';
+                
+                const showMockup = confirm(`Backend server not running or error: ${err.message}\n\nWould you like to copy the required CLI Command instead?\n(Press Cancel to just see a Mockup Video preview)`);
+                
+                if(showMockup) {
+                    navigator.clipboard.writeText(cliCmd);
+                    alert("Command copied to clipboard!\n\n" + cliCmd);
+                } else {
+                    // Fallback Demo
+                    dom.loaderOverlay.classList.add('active');
+                    btnText.innerText = 'Simulating...';
+                    dom.btnGenerate.disabled = true;
+                    btnIcon.style.display = 'none';
+                    spinner.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        finishGeneration('https://www.w3schools.com/html/mov_bbb.mp4');
+                    }, 4000);
+                }
+            }
+        });
+
+        function finishGeneration(vidUrl) {
+            dom.loaderOverlay.classList.remove('active');
+            
+            // Button reset
+            dom.btnGenerate.disabled = false;
+            dom.btnGenerate.querySelector('span').innerText = 'Generate Video';
+            dom.btnGenerate.querySelector('.ph-magic-wand').style.display = 'block';
+            dom.btnGenerate.querySelector('.ph-spinner').style.display = 'none';
+            
+            // Show result
+            dom.videoPlaceholder.style.display = 'none';
+            dom.videoResult.style.display = 'block';
+            dom.videoResult.src = vidUrl; 
+            
+            // Show info
+            dom.genInfo.classList.add('show');
+            dom.infoModel.innerText = dom.modelSelect.options[dom.modelSelect.selectedIndex].text;
+        }
+
+        // Add dropzone active state listeners
+        document.querySelectorAll('.file-dropzone').forEach(dropzone => {
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('active');
+            });
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('active');
+            });
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('active');
+                // Just change styling to show file selected for mockup
+                dropzone.style.borderColor = "var(--accent-secondary)";
+                dropzone.querySelector('i').style.color = "var(--accent-secondary)";
+                
+                const files = e.dataTransfer.files;
+                if(files.length > 0) {
+                    const label = dropzone.querySelector('div');
+                    label.innerText = files[0].name;
+                }
+            });
+        });
+
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>針對 Wan2.2 的 T2V/I2V 完整互動配置介面</li>
+                        <li>與 FastAPI 後端連線的長輪詢 (Long-polling) 架構邏輯</li>
+                        <li>後端斷線時的 CLI Command 複製與備援機制</li>
+                        <li>拖過上傳檔案區塊的視覺互動設計</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>缺乏真實運營的 Python Wan2.2 Node (只能模擬失敗並給出 mock影片)</li>
+                        <li>所有產生的影片與狀態顯示都是固定假資料</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

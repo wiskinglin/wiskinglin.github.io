@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local AI Voice Studio</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f1115;
+            color: #e5e7eb;
+        }
+
+        .glass-panel {
+            background: rgba(31, 34, 41, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Range slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #6366f1;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #374151;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <div id="app" class="h-full flex flex-col">
+        <header class="h-16 border-b border-gray-800 flex items-center justify-between px-6 bg-gray-900/50">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                    <i class="ph ph-waveform text-xl"></i>
+                </div>
+                <h1 class="text-xl font-semibold tracking-tight">AI Voice Studio <span
+                        class="text-xs font-normal text-indigo-400 border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 rounded-full ml-2">Local
+                        Instance</span></h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full" :class="vramStatusColor"></div>
+                    <span class="text-gray-400">VRAM: {{ vramUsage }} / 8GB</span>
+                </div>
+                <button class="p-2 hover:bg-gray-800 rounded-md transition"><i class="ph ph-gear text-lg"></i></button>
+            </div>
+        </header>
+
+        <main class="flex-1 flex overflow-hidden">
+
+            <section class="w-1/2 border-r border-gray-800 flex flex-col p-6 overflow-y-auto">
+
+                <div class="mb-6">
+                    <h2
+                        class="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="ph ph-microphone-stage"></i> 1. 參考音色 (Voice Reference)
+                    </h2>
+                    <div class="glass-panel rounded-xl p-4 flex flex-col gap-4">
+                        <div class="flex items-center gap-4">
+                            <button
+                                class="flex-1 border border-dashed border-gray-600 hover:border-indigo-500 hover:bg-indigo-500/5 transition rounded-lg py-4 flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-indigo-400">
+                                <i class="ph ph-upload-simple text-2xl"></i>
+                                <span class="text-sm">上傳音檔 (.wav, 3-10s)</span>
+                            </button>
+                            <button
+                                class="flex-1 border border-gray-700 bg-gray-800/50 hover:bg-red-500/10 hover:border-red-500/50 hover:text-red-400 transition rounded-lg py-4 flex flex-col items-center justify-center gap-2 text-gray-400">
+                                <i class="ph ph-record text-2xl"></i>
+                                <span class="text-sm">即時錄製</span>
+                            </button>
+                        </div>
+                        <div class="bg-gray-800/50 rounded-lg p-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                    <i class="ph ph-user-sound text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium">sample_voice_01.wav</p>
+                                    <p class="text-xs text-gray-500">長度: 5.2s • 就緒</p>
+                                </div>
+                            </div>
+                            <button class="p-2 text-gray-400 hover:text-white"><i
+                                    class="ph ph-play-circle text-2xl"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 flex flex-col">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2
+                            class="text-sm font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
+                            <i class="ph ph-text-aa"></i> 2. 文本輸入 (Script Editor)
+                        </h2>
+                        <div class="flex gap-2" v-if="selectedModel === 'chattts'">
+                            <button @click="insertTag('[laugh]')"
+                                class="text-xs bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded text-gray-300">+
+                                笑聲</button>
+                            <button @click="insertTag('[breath]')"
+                                class="text-xs bg-gray-800 hover:bg-gray-700 px-2 py-1 rounded text-gray-300">+
+                                呼吸</button>
+                        </div>
+                    </div>
+                    <textarea v-model="inputText"
+                        class="flex-1 glass-panel rounded-xl p-4 text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none font-sans text-sm leading-relaxed"
+                        placeholder="在這裡輸入你想讓 AI 說的話..."></textarea>
+                    <div class="text-right text-xs text-gray-500 mt-2">
+                        字數: {{ inputText.length }}
+                    </div>
+                </div>
+            </section>
+
+            <section class="w-1/2 flex flex-col p-6 overflow-y-auto bg-gray-900/20">
+
+                <div class="mb-8">
+                    <h2
+                        class="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <i class="ph ph-cpu"></i> 3. 模型引擎 (Engine Selection)
+                    </h2>
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div v-for="model in models" :key="model.id" @click="selectedModel = model.id"
+                            class="cursor-pointer border rounded-xl p-4 transition-all duration-200"
+                            :class="selectedModel === model.id ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'border-gray-700 glass-panel hover:border-gray-500'">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-medium text-gray-100">{{ model.name }}</h3>
+                                <i v-if="selectedModel === model.id"
+                                    class="ph-fill ph-check-circle text-indigo-400"></i>
+                            </div>
+                            <p class="text-xs text-gray-400 line-clamp-2">{{ model.desc }}</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-xl p-5 space-y-5">
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-300">語速 (Speed)</span>
+                                <span class="text-indigo-400 font-mono">{{ speed.toFixed(1) }}x</span>
+                            </div>
+                            <input type="range" min="0.5" max="2.0" step="0.1" v-model.number="speed" class="w-full">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-2">
+                                <span class="text-gray-300">情緒強度 (Emotion / Temperature)</span>
+                                <span class="text-indigo-400 font-mono">{{ emotion.toFixed(2) }}</span>
+                            </div>
+                            <input type="range" min="0.1" max="1.0" step="0.05" v-model.number="emotion" class="w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-auto flex flex-col gap-4">
+
+                    <div v-if="isGenerating"
+                        class="glass-panel rounded-xl p-5 flex flex-col items-center justify-center gap-3">
+                        <i class="ph ph-spinner-gap animate-spin text-3xl text-indigo-500"></i>
+                        <p class="text-sm text-gray-300">正在加載 {{ currentModelName }} 進行推理...</p>
+                        <div class="w-full bg-gray-800 rounded-full h-1.5 mt-2">
+                            <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300"
+                                :style="`width: ${progress}%`"></div>
+                        </div>
+                    </div>
+
+                    <div v-else-if="audioGenerated"
+                        class="glass-panel border-indigo-500/30 rounded-xl p-5 flex flex-col gap-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2 text-green-400">
+                                <i class="ph-fill ph-check-circle"></i>
+                                <span class="text-sm font-medium">生成完成</span>
+                            </div>
+                            <span class="text-xs text-gray-500">耗時: 2.4s</span>
+                        </div>
+                        <div class="flex items-center gap-4 bg-gray-800/80 rounded-lg p-2 px-4">
+                            <button class="text-indigo-400 hover:text-indigo-300 transition"><i
+                                    class="ph-fill ph-play-circle text-3xl"></i></button>
+                            <div class="flex-1 flex items-center justify-between h-8 gap-0.5">
+                                <div v-for="i in 40" :key="i" class="w-1 bg-indigo-500/60 rounded-full"
+                                    :style="`height: ${Math.max(20, Math.random() * 100)}%`"></div>
+                            </div>
+                            <button class="text-gray-400 hover:text-white transition"><i
+                                    class="ph ph-download-simple text-xl"></i></button>
+                        </div>
+                    </div>
+
+                    <button @click="generateAudio" :disabled="isGenerating || !inputText"
+                        class="w-full py-4 rounded-xl font-medium text-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-lg"
+                        :class="(isGenerating || !inputText) ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'">
+                        <i class="ph-fill" :class="isGenerating ? 'ph-hourglass' : 'ph-magic-wand'"></i>
+                        {{ isGenerating ? '處理中...' : '開始合成 (Synthesize)' }}
+                    </button>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref, computed } = Vue;
+
+        createApp({
+            setup() {
+                const inputText = ref("你好！這是一段透過本地 AI 語音工作室生成的測試音檔。[laugh] 結合最新的開源模型，我們能達成近乎真人的語氣與情感渲染。");
+                const selectedModel = ref('gpt-sovits');
+                const speed = ref(1.0);
+                const emotion = ref(0.7);
+
+                const isGenerating = ref(false);
+                const progress = ref(0);
+                const audioGenerated = ref(false);
+                const vramUsage = ref(2.4);
+
+                const models = [
+                    { id: 'gpt-sovits', name: 'GPT-SoVITS', desc: '最佳長文本一致性，適合有聲書與影片旁白。' },
+                    { id: 'cosyvoice', name: 'CosyVoice', desc: '3秒極速克隆，多語種與情緒控制極佳。' },
+                    { id: 'chattts', name: 'ChatTTS', desc: '口語對話王者，支援笑聲與呼吸聲。' },
+                    { id: 'fishspeech', name: 'Fish Speech', desc: 'LLM 架構，逼真的抑揚頓挫與韻律。' }
+                ];
+
+                const currentModelName = computed(() => {
+                    return models.find(m => m.id === selectedModel.value)?.name || 'Model';
+                });
+
+                const vramStatusColor = computed(() => {
+                    if (vramUsage.value > 7) return 'bg-red-500';
+                    if (vramUsage.value > 5) return 'bg-yellow-500';
+                    return 'bg-green-500';
+                });
+
+                const insertTag = (tag) => {
+                    inputText.value += ` ${tag} `;
+                };
+
+                const generateAudio = () => {
+                    if (!inputText.value) return;
+
+                    isGenerating.value = true;
+                    audioGenerated.value = false;
+                    progress.value = 0;
+
+                    // Simulate VRAM spike during model loading and inference
+                    vramUsage.value = 6.8;
+
+                    // Fake progress generation
+                    const interval = setInterval(() => {
+                        progress.value += Math.random() * 15;
+                        if (progress.value >= 100) {
+                            clearInterval(interval);
+                            progress.value = 100;
+                            setTimeout(() => {
+                                isGenerating.value = false;
+                                audioGenerated.value = true;
+                                // Cool down VRAM after generation
+                                vramUsage.value = 3.1;
+                            }, 500);
+                        }
+                    }, 300);
+                };
+
+                return {
+                    inputText,
+                    selectedModel,
+                    models,
+                    speed,
+                    emotion,
+                    isGenerating,
+                    progress,
+                    audioGenerated,
+                    currentModelName,
+                    generateAudio,
+                    insertTag,
+                    vramUsage,
+                    vramStatusColor
+                }
+            }
+        }).mount('#app');
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>Vue 3 響應式框架綁定與資料雙向更新</li>
+                        <li>各類 UI 狀態依據 Vue 狀態機無縫渲染 (生成進度率、VRAM 顏色切換等)</li>
+                        <li>文本編輯器快捷插入 tag 邏輯 (`[laugh]`, `[breath]`)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>缺乏真實音頻檔案拖曳上傳與讀取</li>
+                        <li>沒有實際呼叫 GPT-SoVITS 等引擎 API</li>
+                        <li>下載按鈕與播放按鈕無法播放並下載實際音檔</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

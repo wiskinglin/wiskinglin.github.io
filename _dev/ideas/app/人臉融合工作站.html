@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FaceFusion Web Studio</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-dark: #0f111a;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15), transparent 25%);
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(15, 17, 26, 0.8);
+            backdrop-filter: blur(12px);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a5b4fc, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+        }
+
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        /* Sidebar Settings */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .setting-group label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .custom-select {
+            appearance: none;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .custom-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 34px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 3px;
+            background-color: var(--text-muted);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+            background-color: white;
+        }
+
+        .switch-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Workspace */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .upload-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .upload-panel {
+            background: var(--glass-bg);
+            border: 2px dashed var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-panel:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .upload-panel input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            display: none;
+            object-fit: cover;
+        }
+
+        /* Result Panel */
+        .result-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .btn-generate {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            margin-top: 1rem;
+        }
+
+        .btn-generate:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 17, 26, 0.8);
+            backdrop-filter: blur(4px);
+            border-radius: 16px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+            .upload-panels {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>FaceFusion Studio</h1>
+        <p>Next-Generation Face Manipulation & Enhancement</p>
+    </header>
+
+    <main>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="setting-group">
+                <label>Execution Provider</label>
+                <select class="custom-select" id="provider">
+                    <option value="cpu">CPU</option>
+                    <option value="cuda">CUDA (NVIDIA)</option>
+                    <option value="directml">DirectML</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label>Face Analyzer Model</label>
+                <select class="custom-select">
+                    <option value="insightface">InsightFace (Default)</option>
+                    <option value="retinaface">RetinaFace</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <div class="switch-row">
+                    <label>Face Enhancer</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="enhancer-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="switch-row">
+                    <label>Frame Enhancer</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="switch-row">
+                    <label>Keep Audio</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Workspace -->
+        <section class="workspace">
+            <div class="upload-panels">
+                <!-- Source Upload -->
+                <div class="upload-panel" id="source-panel">
+                    <span class="upload-icon">👤</span>
+                    <h3 id="source-text">Upload Source Face</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem;">Click or drag image here</p>
+                    <input type="file" id="source-input" accept="image/*">
+                    <img id="source-preview" class="preview-img" alt="Source Preview">
+                </div>
+
+                <!-- Target Upload -->
+                <div class="upload-panel" id="target-panel">
+                    <span class="upload-icon">🖼️</span>
+                    <h3 id="target-text">Upload Target Image/Video</h3>
+                    <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem;">Click or drag media here</p>
+                    <input type="file" id="target-input" accept="image/*,video/*">
+                    <img id="target-preview" class="preview-img" alt="Target Preview">
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="result-panel">
+                <h2 style="margin-bottom: 1rem; color: var(--text-muted);">Result Preview</h2>
+                <div class="loading-overlay" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem; color: var(--text-main);">Processing via FaceFusion Engine...</p>
+                </div>
+                <!-- Result placeholder -->
+                <div id="result-content" style="display:none; flex-direction:column; align-items:center;">
+                    <img id="final-result" class="preview-img" style="display:block; max-height: 400px; margin-bottom: 1.5rem;" alt="Generated Result">
+                    <button class="btn-generate" onclick="downloadResult()" style="background: #10b981; margin-top: 0;">Download Result</button>
+                </div>
+                <button class="btn-generate" id="generate-btn" onclick="startGeneration()">Start Fusion</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function handleUpload(inputId, previewId, textId, panelId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const text = document.getElementById(textId);
+            const panel = document.getElementById(panelId);
+
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        text.style.display = 'none';
+                        panel.querySelector('.upload-icon').style.display = 'none';
+                        panel.querySelector('p').style.display = 'none';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        handleUpload('source-input', 'source-preview', 'source-text', 'source-panel');
+        handleUpload('target-input', 'target-preview', 'target-text', 'target-panel');
+
+        function startGeneration() {
+            const sourceInfo = document.getElementById('source-input').files.length;
+            const targetInfo = document.getElementById('target-input').files.length;
+
+            if (sourceInfo === 0 || targetInfo === 0) {
+                alert('Please upload both Source and Target files first.');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const generateBtn = document.getElementById('generate-btn');
+            const resultContent = document.getElementById('result-content');
+            const finalResult = document.getElementById('final-result');
+            
+            loading.style.display = 'flex';
+            generateBtn.style.display = 'none';
+            resultContent.style.display = 'none';
+
+            // Simulate API processing delay
+            setTimeout(() => {
+                loading.style.display = 'none';
+                resultContent.style.display = 'flex';
+                // For demo purposes, we will just show the target image as the result
+                finalResult.src = document.getElementById('target-preview').src;
+                // Add a filter to simulate some processing visually
+                if (document.getElementById('enhancer-toggle').checked) {
+                    finalResult.style.filter = 'contrast(1.1) saturate(1.2)';
+                }
+            }, 3000);
+        }
+
+        function downloadResult() {
+            const resultSrc = document.getElementById('final-result').src;
+            const a = document.createElement('a');
+            a.href = resultSrc;
+            a.download = 'facefusion_result.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>FaceFusion Web介面完整設計 (Tailwind)</li>
+                        <li>拖曳上傳與點擊上傳圖片邏輯 (Target/Source)</li>
+                        <li>模型選擇器與參數開關 UI</li>
+                        <li>生成進度條動畫模擬與結果預覽</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>無連接任何真實的 FaceFusion Python 後端</li>
+                        <li>換臉結果僅為使用 CSS 濾鏡處理原圖的假效果</li>
+                        <li>影片換臉 (Video Face Swap) 尚未支援</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

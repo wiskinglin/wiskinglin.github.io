@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Velocity - 極速霓虹</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-pink: #ff007f;
+            --neon-blue: #00f2ff;
+            --neon-purple: #bc13fe;
+        }
+        body {
+            margin: 0;
+            background-color: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .neon-text {
+            text-shadow: 0 0 10px var(--neon-blue), 0 0 20px var(--neon-blue);
+        }
+        .btn-gradient {
+            background: linear-gradient(45deg, var(--neon-pink), var(--neon-purple));
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+        }
+        #ui-layer {
+            pointer-events: none;
+        }
+        #ui-layer div, #ui-layer button {
+            pointer-events: auto;
+        }
+        .touch-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 遊戲畫布 -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- UI 層 -->
+    <div id="ui-layer" class="absolute inset-0 flex flex-col justify-between p-6">
+        <!-- 頂部數據 -->
+        <div class="flex justify-between items-start">
+            <div class="bg-black/50 backdrop-blur-md p-4 rounded-xl border border-white/10">
+                <p class="text-xs uppercase tracking-widest text-gray-400">Score</p>
+                <p id="scoreDisplay" class="text-2xl font-orbitron font-bold neon-text">0</p>
+            </div>
+            <div class="bg-black/50 backdrop-blur-md p-4 rounded-xl border border-white/10 text-right">
+                <p class="text-xs uppercase tracking-widest text-gray-400">Speed</p>
+                <p id="speedDisplay" class="text-2xl font-orbitron font-bold text-pink-500">0 km/h</p>
+            </div>
+        </div>
+
+        <!-- 中央引導/結束介面 -->
+        <div id="startScreen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm z-50">
+            <h1 class="text-6xl font-orbitron font-bold mb-2 tracking-tighter">NEON<span class="text-pink-500">VELOCITY</span></h1>
+            <p class="text-gray-400 mb-8 tracking-widest uppercase text-sm">穿越未來的電子邊境</p>
+            <button id="startBtn" class="btn-gradient px-12 py-4 rounded-full font-bold text-xl uppercase tracking-widest">開始競速</button>
+            <div class="mt-8 grid grid-cols-2 gap-8 text-center text-xs text-gray-500 uppercase tracking-widest">
+                <div>[← / →] 轉向</div>
+                <div>[↑] 加速</div>
+            </div>
+        </div>
+
+        <!-- 死亡畫面 -->
+        <div id="gameOverScreen" class="absolute inset-0 flex flex-col items-center justify-center bg-red-900/40 backdrop-blur-md z-50 hidden">
+            <h2 class="text-5xl font-orbitron font-bold mb-2">CRASHED</h2>
+            <p id="finalScore" class="text-xl mb-8">最終得分: 0</p>
+            <button onclick="location.reload()" class="bg-white text-black px-12 py-4 rounded-full font-bold text-xl uppercase tracking-widest hover:bg-gray-200 transition-colors">重新挑戰</button>
+        </div>
+
+        <!-- 手機控制按鈕 -->
+        <div class="flex justify-between items-end md:hidden">
+            <div class="flex gap-4">
+                <div id="btnLeft" class="touch-btn">←</div>
+                <div id="btnRight" class="touch-btn">→</div>
+            </div>
+            <div id="btnAccel" class="touch-btn border-pink-500 text-pink-500">GAZ</div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 遊戲配置與常數
+         */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const speedDisplay = document.getElementById('speedDisplay');
+        const startScreen = document.getElementById('startScreen');
+        const startBtn = document.getElementById('startBtn');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+
+        // 螢幕尺寸適應
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 遊戲參數
+        const fps = 60;
+        const step = 1/fps;
+        const width = 1024; // 邏輯寬度
+        const height = 768; // 邏輯高度
+        const roadWidth = 2000;
+        const segmentLength = 200;
+        const rumbleLength = 3;
+        const lanes = 3;
+        const fieldOfView = 100;
+        const cameraHeight = 1000;
+        const cameraDepth = 1 / Math.tan((fieldOfView / 2) * Math.PI / 180);
+        const drawDistance = 200;
+        const playerZ = cameraHeight * cameraDepth;
+        const fogDensity = 5;
+
+        let segments = [];
+        let playerX = 0;
+        let position = 0;
+        let speed = 0;
+        let maxSpeed = segmentLength / step;
+        let accel = maxSpeed / 5;
+        let breaking = -maxSpeed;
+        let decel = -maxSpeed / 5;
+        let offRoadDecel = -maxSpeed / 2;
+        let offRoadLimit = maxSpeed / 4;
+        let trackLength = 0;
+        let score = 0;
+        let gameActive = false;
+
+        // 輸入狀態
+        const key = { left: false, right: false, up: false, down: false };
+        document.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') key.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd') key.right = true;
+            if (e.key === 'ArrowUp' || e.key === 'w') key.up = true;
+            if (e.key === 'ArrowDown' || e.key === 's') key.down = true;
+        });
+        document.addEventListener('keyup', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') key.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd') key.right = false;
+            if (e.key === 'ArrowUp' || e.key === 'w') key.up = false;
+            if (e.key === 'ArrowDown' || e.key === 's') key.down = false;
+        });
+
+        // 觸控按鈕邏輯
+        const setupTouch = (id, k) => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('touchstart', (e) => { e.preventDefault(); key[k] = true; });
+            btn.addEventListener('touchend', (e) => { e.preventDefault(); key[k] = false; });
+        };
+        setupTouch('btnLeft', 'left');
+        setupTouch('btnRight', 'right');
+        setupTouch('btnAccel', 'up');
+
+        /**
+         * 幾何輔助函數
+         */
+        function project(p, cameraX, cameraY, cameraZ, width, height) {
+            p.camera.x     = (p.world.x || 0) - cameraX;
+            p.camera.y     = (p.world.y || 0) - cameraY;
+            p.camera.z     = (p.world.z || 0) - cameraZ;
+            p.screen.scale = cameraDepth / p.camera.z;
+            p.screen.x     = Math.round((width / 2) + (p.screen.scale * p.camera.x * width / 2));
+            p.screen.y     = Math.round((height / 2) - (p.screen.scale * p.camera.y * height / 2));
+            p.screen.w     = Math.round((p.screen.scale * roadWidth * width / 2));
+        }
+
+        function drawPolygon(ctx, x1, y1, w1, x2, y2, w2, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x1 - w1, y1);
+            ctx.lineTo(x2 - w2, y2);
+            ctx.lineTo(x2 + w2, y2);
+            ctx.lineTo(x1 + w1, y1);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawSegment(ctx, width, lanes, x1, y1, w1, x2, y2, w2, color) {
+            // 草地/背景
+            ctx.fillStyle = color.grass;
+            ctx.fillRect(0, y2, width, y1 - y2);
+            
+            // 路面
+            drawPolygon(ctx, x1, y1, w1, x2, y2, w2, color.road);
+            
+            // 路肩
+            const rumble_w1 = w1 * 0.1;
+            const rumble_w2 = w2 * 0.1;
+            drawPolygon(ctx, x1 - w1 - rumble_w1, y1, rumble_w1, x2 - w2 - rumble_w2, y2, rumble_w2, color.rumble);
+            drawPolygon(ctx, x1 + w1 + rumble_w1, y1, rumble_w1, x2 + w2 + rumble_w2, y2, rumble_w2, color.rumble);
+
+            // 分隔線
+            if (color.lane) {
+                const line_w1 = w1 * 0.05;
+                const line_w2 = w2 * 0.05;
+                const lane_w1 = w1 * 2 / lanes;
+                const lane_w2 = w2 * 2 / lanes;
+                let l_x1 = x1 - w1 + lane_w1;
+                let l_x2 = x2 - w2 + lane_w2;
+                for (let i = 1; i < lanes; i++) {
+                    drawPolygon(ctx, l_x1 - line_w1 / 2, y1, line_w1, l_x2 - line_w2 / 2, y2, line_w2, color.lane);
+                    l_x1 += lane_w1;
+                    l_x2 += lane_w2;
+                }
+            }
+        }
+
+        /**
+         * 賽道生成
+         */
+        function resetTrack() {
+            segments = [];
+            for (let n = 0; n < 5000; n++) {
+                segments.push({
+                    index: n,
+                    point: {
+                        world: { z: n * segmentLength },
+                        camera: {},
+                        screen: {}
+                    },
+                    curve: Math.sin(n / 30) * 2, // 隨機彎道
+                    color: Math.floor(n / rumbleLength) % 2 ? 
+                        { road: '#111', grass: '#050505', rumble: '#bc13fe', lane: '#00f2ff' } : 
+                        { road: '#1a1a1a', grass: '#080808', rumble: '#555' }
+                });
+            }
+            trackLength = segments.length * segmentLength;
+        }
+
+        /**
+         * 玩家車輛繪製 (SVG-like canvas drawing)
+         */
+        function drawPlayer(ctx, width, height, resolution, speedPercent, scale, destX, destY, steer) {
+            const bounce = (1.5 * Math.random() * speedPercent * resolution) * (Math.random() > 0.5 ? -1 : 1);
+            const w = 80 * scale;
+            const h = 40 * scale;
+
+            ctx.save();
+            ctx.translate(destX, destY + bounce);
+            
+            // 傾斜效果
+            ctx.rotate(steer * 0.1);
+
+            // 車身底座 (Neon Blue)
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#00f2ff';
+            ctx.fillStyle = '#00f2ff';
+            ctx.fillRect(-w/2, -h, w, h);
+            
+            // 駕駛艙
+            ctx.fillStyle = '#111';
+            ctx.fillRect(-w/4, -h - 10*scale, w/2, 10*scale);
+
+            // 尾燈 (Neon Pink)
+            ctx.shadowColor = '#ff007f';
+            ctx.fillStyle = '#ff007f';
+            ctx.fillRect(-w/2, -h + 5, 15*scale, 10*scale);
+            ctx.fillRect(w/2 - 15*scale, -h + 5, 15*scale, 10*scale);
+
+            ctx.restore();
+        }
+
+        /**
+         * 主循環
+         */
+        function update(dt) {
+            if (!gameActive) return;
+
+            position = (position + speed * dt);
+            while (position >= trackLength) position -= trackLength;
+            while (position < 0) position += trackLength;
+
+            // 速度邏輯
+            if (key.up) speed = speed + (accel * dt);
+            else if (key.down) speed = speed + (breaking * dt);
+            else speed = speed + (decel * dt);
+
+            // 越野減速
+            if (((playerX < -1) || (playerX > 1)) && (speed > offRoadLimit))
+                speed = speed + (offRoadDecel * dt);
+
+            // 轉向
+            if (key.left) playerX = playerX - (dt * 2 * (speed / maxSpeed));
+            else if (key.right) playerX = playerX + (dt * 2 * (speed / maxSpeed));
+
+            // 邊界限制
+            playerX = Math.max(-2, Math.min(2, playerX));
+            speed = Math.max(0, Math.min(maxSpeed, speed));
+
+            // 分數計算
+            if (speed > 100) {
+                score += Math.floor(speed / 1000);
+                scoreDisplay.innerText = score;
+                speedDisplay.innerText = Math.floor(speed / 100) + " km/h";
+            }
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const baseSegment = segments[Math.floor(position / segmentLength) % segments.length];
+            const percent = (position % segmentLength) / segmentLength;
+            let dx = -(baseSegment.curve * percent);
+            let x = 0;
+
+            // 繪製賽道
+            for (let n = 0; n < drawDistance; n++) {
+                const segment = segments[(baseSegment.index + n) % segments.length];
+                const cameraZ = position;
+                
+                project(segment.point, playerX * roadWidth - x, cameraHeight, cameraZ, canvas.width, canvas.height);
+                
+                x = x + dx;
+                dx = dx + segment.curve;
+
+                if (n > 0) {
+                    const prev = segments[(baseSegment.index + n - 1) % segments.length];
+                    drawSegment(
+                        ctx, canvas.width, lanes,
+                        prev.point.screen.x, prev.point.screen.y, prev.point.screen.w,
+                        segment.point.screen.x, segment.point.screen.y, segment.point.screen.w,
+                        segment.color
+                    );
+                }
+            }
+
+            // 繪製玩家
+            const speedPercent = speed / maxSpeed;
+            const steer = key.left ? -1 : (key.right ? 1 : 0);
+            drawPlayer(
+                ctx, canvas.width, canvas.height, 
+                1, speedPercent, 
+                (canvas.width / width), 
+                canvas.width / 2, canvas.height - 100,
+                steer * speedPercent
+            );
+        }
+
+        function frame() {
+            update(step);
+            render();
+            requestAnimationFrame(frame);
+        }
+
+        // 初始化
+        resetTrack();
+        
+        startBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            gameActive = true;
+            // 請求全螢幕 (可選)
+            if (document.documentElement.requestFullscreen) {
+                // document.documentElement.requestFullscreen();
+            }
+        });
+
+        // 開始循環
+        frame();
+
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>\n<li>Canvas 影像繪製與處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+</html>

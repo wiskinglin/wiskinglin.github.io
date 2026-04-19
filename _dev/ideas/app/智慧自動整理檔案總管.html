@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartDrop - 自動整理檔案總管</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .file-card {
+            transition: all 0.3s ease;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen overflow-hidden flex items-center justify-center p-4 sm:p-6 text-slate-800">
+
+    <div
+        class="glass-panel w-full max-w-6xl h-full max-h-[800px] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden border border-white">
+
+        <aside class="w-full md:w-64 bg-slate-50/50 border-r border-slate-200 flex flex-col">
+            <div class="p-6 pb-2">
+                <h1 class="text-xl font-bold text-indigo-600 flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> SmartDrop
+                </h1>
+                <p class="text-xs text-slate-500 mt-1">自動資料整理引擎</p>
+            </div>
+
+            <div class="mt-4 flex-1 overflow-y-auto px-4" id="folder-list">
+            </div>
+
+            <div class="p-6 border-t border-slate-200">
+                <button onclick="autoSortFiles()"
+                    class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-md shadow-indigo-200 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> 一鍵自動整理
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col bg-white/50 relative">
+            <header class="h-20 border-b border-slate-200 flex items-center justify-between px-8 bg-white/80 z-10">
+                <h2 class="text-xl font-semibold text-slate-800" id="current-folder-title">未分類 (Unsorted)</h2>
+
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <input type="text" id="new-file-input" placeholder="輸入檔名 (例: report.pdf)"
+                            class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none w-64 transition-all text-sm">
+                        <i
+                            class="fa-solid fa-file-circle-plus absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    </div>
+                    <button onclick="addFile()"
+                        class="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-full w-9 h-9 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-8 relative">
+                <div id="file-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                </div>
+
+                <div id="empty-state"
+                    class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                    <i class="fa-regular fa-folder-open text-6xl mb-4 text-slate-300"></i>
+                    <p class="text-lg font-medium text-slate-500">此資料夾是空的</p>
+                    <p class="text-sm">檔案都已經整理好，或還沒有加入檔案。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 系統資料結構與狀態
+        const FOLDERS = {
+            'Unsorted': { name: '未分類', icon: 'fa-box-open', color: 'text-slate-500' },
+            'Documents': { name: '文件與報表', icon: 'fa-file-lines', color: 'text-blue-500' },
+            'Media': { name: '圖片與影音', icon: 'fa-images', color: 'text-rose-500' },
+            'Code': { name: '程式碼與專案', icon: 'fa-code', color: 'text-emerald-500' },
+            'Archives': { name: '壓縮檔', icon: 'fa-file-zipper', color: 'text-amber-500' },
+            'Trash': { name: '垃圾桶 (未知)', icon: 'fa-trash-can', color: 'text-slate-400' }
+        };
+
+        // 自動分類規則 (副檔名對應)
+        const RULES = {
+            'Documents': ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'],
+            'Media': ['jpg', 'jpeg', 'png', 'gif', 'svg', 'mp4', 'mov', 'mp3', 'wav'],
+            'Code': ['html', 'css', 'js', 'json', 'py', 'java', 'cpp', 'php'],
+            'Archives': ['zip', 'rar', '7z', 'tar', 'gz']
+        };
+
+        // 模擬初始混亂的檔案
+        let files = [
+            { id: 1, name: '2026_Q1_Financial_Report.xlsx', folder: 'Unsorted' },
+            { id: 2, name: 'vacation_taiwan.jpg', folder: 'Unsorted' },
+            { id: 3, name: 'app_v2_script.js', folder: 'Unsorted' },
+            { id: 4, name: 'meeting_notes_apr.txt', folder: 'Unsorted' },
+            { id: 5, name: 'project_assets.zip', folder: 'Unsorted' },
+            { id: 6, name: 'marketing_video.mp4', folder: 'Unsorted' },
+            { id: 7, name: 'client_contract_signed.pdf', folder: 'Unsorted' },
+            { id: 8, name: 'unknown_system_data.dat', folder: 'Unsorted' },
+            { id: 9, name: 'styles.css', folder: 'Unsorted' }
+        ];
+
+        let currentFolder = 'Unsorted';
+
+        // 取得副檔名與對應的圖標
+        function getFileInfo(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (RULES.Documents.includes(ext)) return { icon: 'fa-file-pdf', color: 'text-blue-500' };
+            if (RULES.Media.includes(ext)) return { icon: 'fa-file-image', color: 'text-rose-500' };
+            if (RULES.Code.includes(ext)) return { icon: 'fa-file-code', color: 'text-emerald-500' };
+            if (RULES.Archives.includes(ext)) return { icon: 'fa-file-zipper', color: 'text-amber-500' };
+            return { icon: 'fa-file', color: 'text-slate-400' };
+        }
+
+        // 判斷檔案應該去哪個資料夾
+        function determineFolder(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            for (const [folder, extensions] of Object.entries(RULES)) {
+                if (extensions.includes(ext)) {
+                    return folder;
+                }
+            }
+            return 'Trash'; // 找不到規則就丟垃圾桶
+        }
+
+        // 渲染側邊欄資料夾
+        function renderSidebar() {
+            const folderList = document.getElementById('folder-list');
+            folderList.innerHTML = '';
+
+            for (const [key, folder] of Object.entries(FOLDERS)) {
+                const count = files.filter(f => f.folder === key).length;
+                const isActive = currentFolder === key;
+
+                const btn = document.createElement('button');
+                btn.className = `w-full flex items-center justify-between p-3 rounded-xl mb-1 transition-colors ${isActive ? 'bg-indigo-100/50 text-indigo-700 font-semibold' : 'hover:bg-slate-100 text-slate-600'}`;
+                btn.onclick = () => switchFolder(key);
+
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid ${folder.icon} ${isActive ? 'text-indigo-600' : folder.color}"></i>
+                        <span class="text-sm">${folder.name}</span>
+                    </div>
+                    ${count > 0 ? `<span class="px-2 py-0.5 rounded-full text-xs ${isActive ? 'bg-indigo-200 text-indigo-800' : 'bg-slate-200 text-slate-600'}">${count}</span>` : ''}
+                `;
+                folderList.appendChild(btn);
+            }
+        }
+
+        // 渲染主要檔案區
+        function renderFiles() {
+            const grid = document.getElementById('file-grid');
+            const emptyState = document.getElementById('empty-state');
+            const headerTitle = document.getElementById('current-folder-title');
+
+            headerTitle.textContent = FOLDERS[currentFolder].name;
+            grid.innerHTML = '';
+
+            const currentFiles = files.filter(f => f.folder === currentFolder);
+
+            if (currentFiles.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'flex';
+            } else {
+                grid.style.display = 'grid';
+                emptyState.style.display = 'none';
+
+                currentFiles.forEach(file => {
+                    const info = getFileInfo(file.name);
+                    const card = document.createElement('div');
+                    card.className = 'file-card bg-white p-5 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center gap-3 relative group cursor-pointer';
+                    card.innerHTML = `
+                        <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-1">
+                            <i class="fa-solid ${info.icon} text-3xl ${info.color}"></i>
+                        </div>
+                        <span class="text-sm font-medium text-slate-700 break-all w-full line-clamp-2">${file.name}</span>
+                        <div class="absolute inset-0 bg-indigo-600/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        // 切換資料夾
+        function switchFolder(folderKey) {
+            currentFolder = folderKey;
+            renderSidebar();
+            renderFiles();
+        }
+
+        // 新增檔案
+        function addFile() {
+            const input = document.getElementById('new-file-input');
+            const filename = input.value.trim();
+
+            if (filename) {
+                // 確保包含副檔名格式
+                if (!filename.includes('.')) {
+                    alert('請輸入包含副檔名的完整檔名 (例如: data.txt)');
+                    return;
+                }
+                files.push({
+                    id: Date.now(),
+                    name: filename,
+                    folder: 'Unsorted'
+                });
+                input.value = '';
+
+                // 切換回未分類資料夾以顯示新檔案
+                if (currentFolder !== 'Unsorted') {
+                    currentFolder = 'Unsorted';
+                }
+                updateUI();
+            }
+        }
+
+        // 綁定 Enter 鍵新增檔案
+        document.getElementById('new-file-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') addFile();
+        });
+
+        // 核心功能：一鍵自動整理
+        function autoSortFiles() {
+            let sortedCount = 0;
+
+            files.forEach(file => {
+                if (file.folder === 'Unsorted') {
+                    const targetFolder = determineFolder(file.name);
+                    file.folder = targetFolder;
+                    sortedCount++;
+                }
+            });
+
+            if (sortedCount > 0) {
+                // 如果目前在未分類，整理完後自動跳轉到文件區(或留著看空狀態)
+                currentFolder = 'Documents';
+                updateUI();
+
+                // 簡易的視覺回饋
+                const btn = document.querySelector('button[onclick="autoSortFiles()"]');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check"></i> 成功整理 ${sortedCount} 個檔案！`;
+                btn.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+                    btn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                }, 2000);
+            } else {
+                alert('沒有需要整理的檔案在「未分類」區！');
+            }
+        }
+
+        // 更新畫面
+        function updateUI() {
+            renderSidebar();
+            renderFiles();
+        }
+
+        // 初始化
+        updateUI();
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>依副檔名自動分類邏輯引擎</li>
+                        <li>各類檔案圖示生成與網格展示</li>
+                        <li>資料夾切換與檔案統計</li>
+                        <li>動態新增檔案模擬</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>串接真實作業系統的檔案管理 (File System API)</li>
+                        <li>滑鼠拖曳上傳檔案</li>
+                        <li>自定義分類規則介面</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

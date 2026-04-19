@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地瀑布流相簿 (支援資料夾選取)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #121212;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* 頂部操作區：包含選取按鈕與標籤 */
+        .header-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .upload-btn {
+            align-self: flex-start;
+            background-color: #e60023;
+            /* 類似 Pinterest 的紅色 */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .upload-btn:hover {
+            background-color: #ad081b;
+        }
+
+        /* 隱藏預設的 input 介面 */
+        #folder-input {
+            display: none;
+        }
+
+        .tags-nav {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .tag-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: transparent;
+            color: #888;
+            border: 1px solid #333;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .tag-btn:hover {
+            border-color: #666;
+        }
+
+        .tag-btn.active {
+            background-color: white;
+            color: black;
+            font-weight: bold;
+        }
+
+        /* 瀑布流容器 */
+        .masonry-grid {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .masonry-column {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        /* 圖片卡片 */
+        .image-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #2a2a2a;
+            width: 100%;
+        }
+
+        /* 真實圖片的樣式設定 */
+        .image-card img {
+            width: 100%;
+            height: auto;
+            /* 讓圖片依比例自動調整高度 */
+            display: block;
+        }
+
+        .image-tag {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        /* 提示文字 */
+        .empty-state {
+            text-align: center;
+            color: #666;
+            margin-top: 50px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-controls">
+        <label for="folder-input" class="upload-btn">📂 選擇本地圖片資料夾</label>
+        <input type="file" id="folder-input" webkitdirectory directory multiple accept="image/*">
+
+        <div class="tags-nav" id="nav-container"></div>
+    </div>
+
+    <div class="masonry-grid" id="grid-container">
+        <div class="empty-state">請點擊上方按鈕選擇包含圖片的資料夾</div>
+    </div>
+
+    <script>
+        const CATEGORIES = ['全部', '構圖', '女角色', '食物和飲品', 'MoviePoster'];
+        let MOCK_IMAGES = []; // 初始為空，等使用者選取資料夾
+        let activeCategory = '全部';
+        const columnCount = 4;
+
+        // 渲染導覽列標籤
+        function renderNav() {
+            const nav = document.getElementById('nav-container');
+            nav.innerHTML = '';
+
+            CATEGORIES.forEach(category => {
+                const btn = document.createElement('button');
+                btn.className = `tag-btn ${activeCategory === category ? 'active' : ''}`;
+                btn.textContent = category;
+
+                btn.onclick = () => {
+                    activeCategory = category;
+                    renderNav();
+                    renderGrid();
+                };
+                nav.appendChild(btn);
+            });
+        }
+
+        // 渲染瀑布流圖片
+        function renderGrid() {
+            const grid = document.getElementById('grid-container');
+            grid.innerHTML = '';
+
+            if (MOCK_IMAGES.length === 0) {
+                grid.innerHTML = '<div class="empty-state">資料夾內沒有圖片，請重新選擇</div>';
+                return;
+            }
+
+            const filteredImages = activeCategory === '全部'
+                ? MOCK_IMAGES
+                : MOCK_IMAGES.filter(img => img.tag === activeCategory);
+
+            const columns = Array.from({ length: columnCount }, () => []);
+
+            filteredImages.forEach((img, index) => {
+                columns[index % columnCount].push(img);
+            });
+
+            columns.forEach(colData => {
+                const colDiv = document.createElement('div');
+                colDiv.className = 'masonry-column';
+
+                colData.forEach(img => {
+                    const card = document.createElement('div');
+                    card.className = 'image-card';
+
+                    // 建立真實圖片標籤
+                    const imageEl = document.createElement('img');
+                    imageEl.src = img.url;
+                    imageEl.loading = 'lazy'; // 延遲加載效能優化
+
+                    const tagSpan = document.createElement('span');
+                    tagSpan.className = 'image-tag';
+                    tagSpan.textContent = img.tag;
+
+                    card.appendChild(imageEl);
+                    card.appendChild(tagSpan);
+                    colDiv.appendChild(card);
+                });
+
+                grid.appendChild(colDiv);
+            });
+        }
+
+        // 處理資料夾選取事件
+        document.getElementById('folder-input').addEventListener('change', (event) => {
+            const files = event.target.files;
+
+            // 過濾出圖片檔案 (排除資料夾內的 txt 或其他非圖片檔)
+            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+
+            if (imageFiles.length === 0) {
+                alert('這個資料夾裡找不到圖片喔！');
+                return;
+            }
+
+            // 將真實圖片轉換為我們的資料格式
+            MOCK_IMAGES = imageFiles.map((file, index) => {
+                // 為了測試分類功能，這裡隨機指派一個標籤（排除"全部"）
+                const randomCategoryIndex = Math.floor(Math.random() * (CATEGORIES.length - 1)) + 1;
+                const randomTag = CATEGORIES[randomCategoryIndex];
+
+                return {
+                    id: index.toString(),
+                    url: URL.createObjectURL(file), // 產生本地端可讀取的暫時網址
+                    tag: randomTag
+                };
+            });
+
+            // 重置狀態並重新渲染
+            activeCategory = '全部';
+            renderNav();
+            renderGrid();
+        });
+
+        // 初始只渲染導覽列
+        renderNav();
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+
+</html>

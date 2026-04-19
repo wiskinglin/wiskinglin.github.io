@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdgeScribe - Local AI Markdown Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .prose pre { background-color: #1e293b; color: #f8fafc; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
+        .prose code { background-color: #e2e8f0; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; }
+        .prose pre code { background-color: transparent; padding: 0; }
+        
+        /* Glassmorphism effects */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col font-sans overflow-hidden">
+
+    <header class="glass sticky top-0 z-50 flex items-center justify-between px-6 py-4 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <i class="fa-solid fa-brain"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">EdgeScribe</h1>
+                <p class="text-xs text-slate-500 font-medium">Local ONNX AI & Web Search</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="ai-status" class="flex items-center gap-2 text-sm font-medium text-amber-500 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
+                <i class="fa-solid fa-circle-notch fa-spin"></i> 模型初始化中...
+            </div>
+            <button class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm transition-colors shadow-md">
+                <i class="fa-solid fa-download mr-2"></i>匯出 .md
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden p-4 gap-4">
+        
+        <div class="flex-1 flex flex-col md:flex-row gap-4 h-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="flex-1 flex flex-col border-r border-slate-100 h-full">
+                <div class="bg-slate-50 px-4 py-2 border-b border-slate-100 flex justify-between items-center text-sm font-semibold text-slate-600">
+                    <span><i class="fa-solid fa-pen-nib mr-2"></i>Markdown 編輯器</span>
+                </div>
+                <textarea id="editor" class="flex-1 w-full p-4 resize-none outline-none font-mono text-sm leading-relaxed bg-transparent" placeholder="# 在此開始寫作...&#10;&#10;或者在右側使用 AI 助手為你蒐集資料並撰寫。"></textarea>
+            </div>
+            
+            <div class="flex-1 flex flex-col h-full bg-slate-50">
+                <div class="bg-slate-100 px-4 py-2 border-b border-slate-200 flex justify-between items-center text-sm font-semibold text-slate-600">
+                    <span><i class="fa-solid fa-eye mr-2"></i>即時預覽</span>
+                </div>
+                <div id="preview" class="flex-1 p-6 overflow-y-auto prose prose-slate max-w-none bg-white">
+                    </div>
+            </div>
+        </div>
+
+        <div class="w-80 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden shrink-0">
+            <div class="bg-indigo-50 px-4 py-3 border-b border-indigo-100 text-sm font-semibold text-indigo-800 flex items-center">
+                <i class="fa-solid fa-robot mr-2"></i>AI 寫作助手
+            </div>
+            
+            <div class="p-4 flex flex-col gap-4 flex-1 overflow-y-auto">
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">輸入主題 / 網址 / 關鍵字</label>
+                    <textarea id="ai-input" rows="3" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="例如：介紹 Web3 的核心概念，或者輸入一個維基百科詞條..."></textarea>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">處理流程設定</label>
+                    <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input type="checkbox" id="use-search" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                        <span>1. 執行網路搜尋 (Web Search)</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input type="checkbox" id="use-context" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                        <span>2. 彙整當前 Markdown 內容</span>
+                    </label>
+                </div>
+
+                <button id="generate-btn" disabled class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span>請先等待模型載入</span>
+                </button>
+
+                <div class="mt-4 flex flex-col gap-2 flex-1">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">處理日誌 (Logs)</label>
+                    <div id="log-window" class="flex-1 bg-slate-900 text-green-400 font-mono text-xs p-3 rounded-lg overflow-y-auto h-32 border border-slate-700 break-words">
+                        > 系統初始化完成...<br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // 引入 Transformers.js (ONNX Runtime Web)
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.0';
+        
+        // 禁用本地端模型緩存檢查，強制從 CDN 加載
+        env.allowLocalModels = false;
+
+        // UI Elements
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const aiInput = document.getElementById('ai-input');
+        const generateBtn = document.getElementById('generate-btn');
+        const logWindow = document.getElementById('log-window');
+        const aiStatus = document.getElementById('ai-status');
+        const useSearch = document.getElementById('use-search');
+        const useContext = document.getElementById('use-context');
+
+        // State
+        let generatorPipeline = null;
+
+        // Logger Helper
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            let color = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-blue-400' : 'text-green-400');
+            logWindow.innerHTML += `<span class="${color}">[${time}] ${message}</span><br>`;
+            logWindow.scrollTop = logWindow.scrollHeight;
+        }
+
+        // Markdown即時預覽綁定
+        function updatePreview() {
+            preview.innerHTML = marked.parse(editor.value);
+        }
+        editor.addEventListener('input', updatePreview);
+        
+        // 初始化 Markdown 渲染器配置
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+
+        // 1. 初始化 ONNX 模型
+        async function initModel() {
+            try {
+                log('開始下載並編譯 ONNX 模型 (這可能需要幾分鐘)...', 'info');
+                // 使用輕量級的文本生成模型 (Flan-T5 base 適合多任務)
+                generatorPipeline = await pipeline('text2text-generation', 'Xenova/LaMini-Flan-T5-77M');
+                
+                aiStatus.innerHTML = '<i class="fa-solid fa-check-circle"></i> 模型已就緒 (ONNX)';
+                aiStatus.className = "flex items-center gap-2 text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200";
+                
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>開始本地撰寫</span>';
+                log('模型載入成功！', 'success');
+            } catch (error) {
+                log(`模型載入失敗: ${error.message}`, 'error');
+                aiStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> 模型載入失敗';
+                aiStatus.className = "flex items-center gap-2 text-sm font-medium text-red-600 bg-red-50 px-3 py-1.5 rounded-full border border-red-200";
+            }
+        }
+
+        // 2. 模擬網路搜尋 (使用 Wikipedia API 作為資料來源)
+        async function fetchWebData(keyword) {
+            log(`正在搜尋網路資訊: "${keyword}"...`);
+            try {
+                // 擷取第一段摘要
+                const url = `https://zh.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&explaintext=true&titles=${encodeURIComponent(keyword)}&origin=*`;
+                const response = await fetch(url);
+                const data = await response.json();
+                const pages = data.query.pages;
+                const pageId = Object.keys(pages)[0];
+                
+                if (pageId === "-1" || !pages[pageId].extract) {
+                    log('找不到相關維基百科資料，將僅依賴模型知識。', 'info');
+                    return '';
+                }
+                
+                const extract = pages[pageId].extract.substring(0, 500); // 截取前 500 字避免超過 Token 限制
+                log('成功獲取網路資訊。', 'success');
+                return extract;
+            } catch (err) {
+                log(`網路搜尋失敗: ${err.message}`, 'error');
+                return '';
+            }
+        }
+
+        // 3. AI 生成邏輯
+        generateBtn.addEventListener('click', async () => {
+            const topic = aiInput.value.trim();
+            if (!topic) {
+                alert("請輸入主題或關鍵字！");
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>AI 運算中...</span>';
+
+            let prompt = "";
+            let contextData = "";
+
+            // 步驟 A: 網路資訊搜尋
+            if (useSearch.checked) {
+                const searchResult = await fetchWebData(topic);
+                if (searchResult) {
+                    contextData += `External Info: ${searchResult}\n`;
+                }
+            }
+
+            // 步驟 B: 彙整目前 MD 內容
+            if (useContext.checked && editor.value.trim() !== '') {
+                log('正在分析當前 Markdown 上下文...');
+                // 截取最後一段作為上下文
+                const currentText = editor.value.trim();
+                const lastFewLines = currentText.substring(currentText.length - 300); 
+                contextData += `Current Document Context: ${lastFewLines}\n`;
+            }
+
+            // 組合 Prompt
+            prompt = `Write a comprehensive paragraph about: ${topic}. \nContext:\n${contextData}`;
+            log('將 Prompt 送入本地 ONNX 模型進行推理...');
+
+            try {
+                // 步驟 C: 透過 JS ONNX 模型生成內容
+                // 設定參數控制生成品質
+                const result = await generatorPipeline(prompt, {
+                    max_new_tokens: 150,
+                    temperature: 0.7,
+                    repetition_penalty: 1.2
+                });
+
+                const generatedText = result[0].generated_text;
+                log('生成完成！', 'success');
+
+                // 將結果附加到編輯器中
+                const textToAppend = `\n\n### 關於 ${topic} 的 AI 擴充\n${generatedText}\n`;
+                editor.value += textToAppend;
+                updatePreview();
+                
+                // 捲動到底部
+                editor.scrollTop = editor.scrollHeight;
+
+            } catch (error) {
+                log(`AI 生成時發生錯誤: ${error.message}`, 'error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> <span>開始本地撰寫</span>';
+            }
+        });
+
+        // 啟動時加載模型
+        window.onload = initModel;
+
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>串接 Transformers.js 進行完全本地端 ONNX 推論 (LaMini 模型)</li>
+                        <li>整合 Wikipedia MediaWiki API 進行資料爬取</li>
+                        <li>實作基礎的「聯邦式查詢 + RAG」寫作輔助架構</li>
+                        <li>Markdown 編輯器佈局與簡單預覽</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>複雜的外部網站解析與摘要 (目前僅限 Wiki API)</li>
+                        <li>本地端文件儲存與專案管理</li>
+                        <li>進階 Markdown 格式工具列</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

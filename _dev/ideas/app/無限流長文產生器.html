@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinity Stream | Local JS 萬字文章產生器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f3f4f6;
+            scroll-behavior: smooth;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .streaming-text::after {
+            content: '▍';
+            animation: blink 1s step-start infinite;
+            color: #3b82f6;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* 自訂捲軸 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-screen overflow-hidden flex text-gray-800">
+
+    <aside class="w-80 h-full glass-panel shadow-xl flex flex-col z-10 relative">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
+                <i class="fa-solid fa-microchip mr-2 text-blue-500"></i>Local Engine
+            </h1>
+            <p class="text-xs text-gray-500 mt-2">10 Styles • 10,000+ Words • 100% Client-Side</p>
+        </div>
+
+        <div class="p-6 flex-1 overflow-y-auto space-y-6">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">選擇寫作風格 (10種)</label>
+                <div class="grid grid-cols-2 gap-2" id="styleGrid">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">文章主題 (核心關鍵字)</label>
+                <input type="text" id="topicInput" value="人工智慧的未來"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                    placeholder="輸入關鍵字...">
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">目標字數 (至少一萬字)</label>
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="wordCountInput" value="10000" min="10000" step="1000"
+                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <span class="text-gray-500 text-sm">字</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t border-gray-200 bg-gray-50/50">
+            <button id="generateBtn"
+                class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all flex justify-center items-center">
+                <i class="fa-solid fa-bolt mr-2"></i> 開始萬字生成
+            </button>
+            <button id="stopBtn"
+                class="w-full mt-3 py-3 rounded-xl bg-red-100 text-red-600 font-bold hover:bg-red-200 transition-all hidden">
+                <i class="fa-solid fa-stop mr-2"></i> 停止生成
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 h-full flex flex-col bg-white relative">
+        <header class="h-16 border-b border-gray-100 flex items-center justify-between px-8 shadow-sm z-10">
+            <div class="flex items-center space-x-4">
+                <div class="w-3 h-3 rounded-full bg-gray-300 shadow-inner" id="statusDot"></div>
+                <span class="text-sm font-medium text-gray-600" id="statusText">系統待命中</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="text-sm font-mono bg-gray-100 px-3 py-1 rounded-md text-gray-600">
+                    已生成: <span id="currentCount" class="font-bold text-blue-600">0</span> / <span
+                        id="targetCount">10000</span>
+                </div>
+                <button id="copyBtn" class="text-gray-400 hover:text-gray-700 transition" title="複製全文">
+                    <i class="fa-regular fa-copy text-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="w-full h-1 bg-gray-100">
+            <div id="progressBar" class="h-full bg-blue-500 w-0 transition-all duration-300 ease-out"></div>
+        </div>
+
+        <div id="outputArea"
+            class="flex-1 p-8 md:p-12 overflow-y-auto text-lg leading-relaxed text-gray-700 whitespace-pre-wrap font-serif">
+            <div class="h-full flex flex-col items-center justify-center text-gray-300 space-y-4" id="emptyState">
+                <i class="fa-solid fa-pen-nib text-5xl"></i>
+                <p>設定左側參數，體驗 Local 端一萬字串流生成</p>
+            </div>
+            <article id="articleContent" class="hidden pb-20"></article>
+        </div>
+    </main>
+
+    <script>
+        /** * 核心：本地端文本引擎 (模擬 LLM 邏輯)
+         * 為了不依賴數 GB 的真實本地 LLM 模型檔案，我們實作了「動態語義矩陣」
+         * 來生成符合風格且邏輯不斷延伸的萬字文本。
+         */
+        const styles = [
+            {
+                id: 'business', name: '商業賦能', icon: 'fa-briefcase',
+                corpus: ['痛點', '賦能', '抓手', '閉環', '垂直領域', '底層邏輯', '矩陣', '賽道', '降本增效', '顆粒度', '迭代', '心智', '生態', '壁壘']
+            },
+            {
+                id: 'academic', name: '學術論文', icon: 'fa-graduation-cap',
+                corpus: ['綜上所述', '實證研究', '變量', '範式', '顯著性', '異質性', '假設檢驗', '文獻探討', '維度', '機制', '相關係數', '邊界條件']
+            },
+            {
+                id: 'scifi', name: '賽博科幻', icon: 'fa-robot',
+                corpus: ['量子', '矩陣', '義體', '霓虹', '神經網路', '意識上傳', '反烏托邦', '仿生人', '突觸', '伺服器', '全息投影', '賽博空間', '代碼']
+            },
+            {
+                id: 'wuxia', name: '武俠江湖', icon: 'fa-dragon',
+                corpus: ['內力', '劍氣', '丹田', '江湖', '經脈', '輕功', '門派', '刀光劍影', '破綻', '招式', '天機', '恩怨', '絕學', '走火入魔']
+            },
+            {
+                id: 'philosophical', name: '哲學思辨', icon: 'fa-brain',
+                corpus: ['存在', '虛無', '意識', '本體論', '解構', '異化', '主體性', '現象學', '彼岸', '邏輯', '荒謬', '本質', '形而上', '二元對立']
+            },
+            {
+                id: 'poetic', name: '詩意抒情', icon: 'fa-feather',
+                corpus: ['歲月', '微風', '斑駁', '漣漪', '呢喃', '時光', '婆娑', '流年', '晚霞', '蒼穹', '羈絆', '花火', '靜謐', '輪迴']
+            },
+            {
+                id: 'thriller', name: '懸疑驚悚', icon: 'fa-ghost',
+                corpus: ['深淵', '戰慄', '陰霾', '瞳孔', '窒息', '詭異', '血腥', '毛骨悚然', '死寂', '倒影', '寒意', '扭曲', '黑影', '腳步聲']
+            },
+            {
+                id: 'news', name: '新聞報導', icon: 'fa-newspaper',
+                corpus: ['據悉', '專家指出', '趨勢顯示', '當局表示', '數據表明', '不容忽視', '首當其衝', '各界呼籲', '日益嚴重', '不可磨滅', '里程碑']
+            },
+            {
+                id: 'humor', name: '幽默吐槽', icon: 'fa-face-laugh-squint',
+                corpus: ['驚呆了', '神操作', '老司機', '翻車', '吃瓜', '躺平', '內卷', '鍵盤俠', '打臉', '畫餅', '真香', '求生慾', '套路']
+            },
+            {
+                id: 'nonsense', name: '廢話文學', icon: 'fa-comment-dots',
+                corpus: ['聽君一席話，如聽一席話', '這件事說來話長，那我們就長話短說', '據我所知，我一無所知', '這個問題，我們需要從長計議', '雖然但是，然而其實', '懂的都懂，不懂的說了也不懂']
+            }
+        ];
+
+        // 句型結構矩陣 (用於排列組合，產生無盡的文本)
+        const sentenceStructures = [
+            "在探討{topic}的過程中，我們不得不面對「{word1}」這個核心概念，這不僅是{word2}的體現，更是{word3}的延伸。",
+            "關於{topic}，很多人認為關鍵在於{word1}，但實際上，{word2}與{word3}之間的交互作用才決定了最終的走向。",
+            "當{word1}遇上{word2}，{topic}的本質便開始發生轉變，這種轉變直接影響了我們對{word3}的認知。",
+            "不可否認的是，{topic}的發展始終伴隨著{word1}的演進。在這個框架下，{word2}成為了不可或缺的要素，進而推動了{word3}的突破。",
+            "如果說{word1}是{topic}的基礎，那麼{word2}就是它的靈魂，而{word3}則是它最終展現出的形態。",
+            "我們從{word1}的角度來審視{topic}，會發現一個驚人的事實：{word2}正在以我們難以察覺的方式重塑{word3}。",
+            "在未來的藍圖中，{topic}將不再侷限於{word1}，而是會深度融合{word2}，最終達成{word3}的終極目標。",
+            "回顧{topic}的歷史，{word1}的出現打破了原有的平衡，隨之而來的{word2}引發了一系列關於{word3}的深刻反思。",
+            "正因為有了{word1}的支撐，{topic}才能在充滿變數的環境中保持穩定，並透過{word2}不斷向外擴展{word3}的邊界。",
+            "總而言之，{topic}的複雜性在於它既包含了{word1}的特徵，又展現出{word2}的潛力，最終導向了無法預測的{word3}。"
+        ];
+
+        // UI 元素選取
+        const styleGrid = document.getElementById('styleGrid');
+        const topicInput = document.getElementById('topicInput');
+        const wordCountInput = document.getElementById('wordCountInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const currentCountEl = document.getElementById('currentCount');
+        const targetCountEl = document.getElementById('targetCount');
+        const progressBar = document.getElementById('progressBar');
+        const outputArea = document.getElementById('outputArea');
+        const emptyState = document.getElementById('emptyState');
+        const articleContent = document.getElementById('articleContent');
+        const copyBtn = document.getElementById('copyBtn');
+
+        let currentStyle = styles[0];
+        let isGenerating = false;
+        let generationInterval = null;
+
+        // 初始化風格按鈕
+        styles.forEach((style, index) => {
+            const btn = document.createElement('button');
+            btn.className = `py-2 px-3 rounded-lg text-sm font-medium border transition-all flex items-center justify-center space-x-2 
+                ${index === 0 ? 'bg-blue-50 border-blue-200 text-blue-700 shadow-sm' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`;
+            btn.innerHTML = `<i class="fa-solid ${style.icon}"></i> <span>${style.name}</span>`;
+            btn.onclick = () => selectStyle(style, btn);
+            styleGrid.appendChild(btn);
+        });
+
+        function selectStyle(style, clickedBtn) {
+            if (isGenerating) return; // 生成中不允許切換
+            currentStyle = style;
+            Array.from(styleGrid.children).forEach(btn => {
+                btn.className = `py-2 px-3 rounded-lg text-sm font-medium border transition-all flex items-center justify-center space-x-2 bg-white border-gray-200 text-gray-600 hover:bg-gray-50`;
+            });
+            clickedBtn.className = `py-2 px-3 rounded-lg text-sm font-medium border transition-all flex items-center justify-center space-x-2 bg-blue-50 border-blue-200 text-blue-700 shadow-sm`;
+        }
+
+        // 隨機獲取陣列元素
+        const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+        // 生成一段話
+        function generateParagraph(topic, styleConfig) {
+            const numSentences = Math.floor(Math.random() * 5) + 4; // 4~8句一段
+            let paragraph = "";
+            for (let i = 0; i < numSentences; i++) {
+                let template = getRandom(sentenceStructures);
+                let w1 = getRandom(styleConfig.corpus);
+                let w2 = getRandom(styleConfig.corpus);
+                let w3 = getRandom(styleConfig.corpus);
+
+                // 替換佔位符
+                let sentence = template
+                    .replace(/{topic}/g, topic)
+                    .replace(/{word1}/g, w1)
+                    .replace(/{word2}/g, w2)
+                    .replace(/{word3}/g, w3);
+
+                paragraph += sentence + " ";
+            }
+            return paragraph.trim();
+        }
+
+        // 非同步休眠 (用於模擬生成延遲與讓出 UI 執行緒)
+        const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+        // 開始生成主邏輯
+        async function startGeneration() {
+            const topic = topicInput.value.trim() || "未命名主題";
+            const targetWordCount = parseInt(wordCountInput.value, 10) || 10000;
+
+            if (targetWordCount < 10000) {
+                alert("根據系統設定，每次生成必須至少達到一萬字！請修正數值。");
+                wordCountInput.value = 10000;
+                return;
+            }
+
+            // UI 狀態切換
+            isGenerating = true;
+            generateBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            articleContent.classList.remove('hidden');
+            articleContent.classList.add('streaming-text');
+            articleContent.innerHTML = `<h1 class="text-3xl font-bold mb-6 text-gray-900">${topic}</h1>`;
+
+            statusDot.classList.replace('bg-gray-300', 'bg-green-500');
+            statusDot.classList.add('animate-pulse');
+            statusText.textContent = `Local 引擎運算中 (${currentStyle.name})...`;
+            targetCountEl.textContent = targetWordCount;
+
+            let currentWords = 0;
+            let titleLength = topic.length;
+            currentWords += titleLength;
+
+            // 由於目標是一萬字，為確保效能與體驗，我們每次生成一個段落(約100-300字)，並使用 async/await 讓出 Main Thread
+            while (currentWords < targetWordCount && isGenerating) {
+                const pText = generateParagraph(topic, currentStyle);
+                const pElement = document.createElement('p');
+                pElement.className = "mb-6 text-justify";
+
+                // 逐字串流效果 (為了在一萬字時不要等太久，採用批次逐字)
+                articleContent.appendChild(pElement);
+
+                for (let i = 0; i < pText.length; i += 3) { // 每次印出3個字元加快速度
+                    if (!isGenerating) break;
+                    let chunk = pText.substring(i, i + 3);
+                    pElement.textContent += chunk;
+                    currentWords += chunk.length;
+
+                    // UI 更新
+                    if (currentWords > targetWordCount) currentWords = targetWordCount;
+                    currentCountEl.textContent = currentWords;
+                    progressBar.style.width = `${(currentWords / targetWordCount) * 100}%`;
+
+                    // 保持滾動條在最底部
+                    outputArea.scrollTop = outputArea.scrollHeight;
+
+                    // 極短延遲模擬打字機，同時防止瀏覽器卡死
+                    await sleep(2);
+                }
+            }
+
+            finishGeneration();
+        }
+
+        function finishGeneration() {
+            isGenerating = false;
+            generateBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+            statusDot.classList.remove('animate-pulse', 'bg-green-500');
+            statusDot.classList.add('bg-blue-500');
+            statusText.textContent = "生成完成";
+            articleContent.classList.remove('streaming-text');
+        }
+
+        function stopGeneration() {
+            isGenerating = false;
+            statusText.textContent = "使用者已中斷";
+        }
+
+        // 事件綁定
+        generateBtn.addEventListener('click', startGeneration);
+        stopBtn.addEventListener('click', stopGeneration);
+        copyBtn.addEventListener('click', () => {
+            if (!articleContent.innerText) return;
+            navigator.clipboard.writeText(articleContent.innerText).then(() => {
+                const originalHtml = copyBtn.innerHTML;
+                copyBtn.innerHTML = `<i class="fa-solid fa-check text-green-500"></i>`;
+                setTimeout(() => copyBtn.innerHTML = originalHtml, 2000);
+            });
+        });
+
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>瀏覽器端文字「動態語義矩陣」拼接邏輯</li>
+                        <li>提供 10 種不同寫作風格與專屬詞彙庫</li>
+                        <li>無盡串流萬字生成的長文排版展示與打字機效果</li>
+                        <li>一鍵複製生成的文章全文</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>使用真實的 LLM 進行語意流暢且合乎邏輯的寫作 (目前為隨機排列組合)</li>
+                        <li>匯出為 PDF/Word 等外部文檔格式</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

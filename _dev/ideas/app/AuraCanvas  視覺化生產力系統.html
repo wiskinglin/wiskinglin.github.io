@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraCanvas | 視覺化生產力系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .masonry {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-auto-rows: 10px;
+            gap: 20px;
+        }
+        .item {
+            grid-row-end: span 20;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .item:hover {
+            transform: translateY(-5px);
+        }
+        .item-small { grid-row-end: span 25; }
+        .item-medium { grid-row-end: span 35; }
+        .item-large { grid-row-end: span 45; }
+
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .category-pill {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .category-pill.active {
+            background-color: #000;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <!-- 導航欄 -->
+    <nav class="glass-nav sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-gradient-to-tr from-purple-500 to-pink-500 rounded-lg"></div>
+            <h1 class="text-xl font-bold tracking-tight">AuraCanvas</h1>
+        </div>
+        <div class="flex gap-4">
+            <button onclick="toggleModal()" class="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition">
+                + 新增靈感
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="max-w-7xl mx-auto p-6">
+        
+        <!-- 過濾器 (Notion 風格) -->
+        <div class="flex gap-3 mb-8 overflow-x-auto pb-2" id="filterBar">
+            <div class="category-pill active border px-4 py-1.5 rounded-full text-sm font-medium" onclick="filterItems('all')">全部</div>
+            <div class="category-pill border px-4 py-1.5 rounded-full text-sm font-medium" onclick="filterItems('visual')">視覺靈感</div>
+            <div class="category-pill border px-4 py-1.5 rounded-full text-sm font-medium" onclick="filterItems('content')">內容策劃</div>
+            <div class="category-pill border px-4 py-1.5 rounded-full text-sm font-medium" onclick="filterItems('reference')">參考資料</div>
+        </div>
+
+        <!-- 畫板 (Pinterest/IG 風格) -->
+        <div id="masonryContainer" class="masonry">
+            <!-- 動態生成內容 -->
+        </div>
+    </main>
+
+    <!-- 新增靈感 Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <h2 class="text-xl font-bold mb-4">捕捉新靈感</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">標題</label>
+                    <input type="text" id="inputTitle" placeholder="想到了什麼？" class="w-full border rounded-xl px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">類別</label>
+                    <select id="inputCategory" class="w-full border rounded-xl px-4 py-2 outline-none">
+                        <option value="visual">視覺靈感</option>
+                        <option value="content">內容策劃</option>
+                        <option value="reference">參考資料</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">圖片 URL (可選)</label>
+                    <input type="text" id="inputImage" placeholder="https://..." class="w-full border rounded-xl px-4 py-2 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">筆記</label>
+                    <textarea id="inputNote" rows="3" placeholder="詳細描述..." class="w-full border rounded-xl px-4 py-2 outline-none"></textarea>
+                </div>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="toggleModal()" class="flex-1 px-4 py-2 border rounded-xl hover:bg-gray-50">取消</button>
+                    <button onclick="addItem()" class="flex-1 px-4 py-2 bg-black text-white rounded-xl hover:bg-gray-800">儲存靈感</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始測試資料
+        let items = [
+            { id: 1, title: "極簡主義海報研究", category: "visual", image: "https://images.unsplash.com/photo-1508615039623-a25605d2b022?auto=format&fit=crop&w=800&q=80", note: "注意留白的使用與非對稱平衡。", size: "item-large" },
+            { id: 2, title: "IG 週三限動腳本", category: "content", image: "", note: "1. 問卷調查 \n2. 產品幕後 \n3. CTA 連結", size: "item-small" },
+            { id: 3, title: "莫蘭迪色系配色", category: "visual", image: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80", note: "適用於 2024 春季系列。", size: "item-medium" },
+            { id: 4, title: "用戶行為研究報告", category: "reference", image: "", note: "閱讀關於 Gen Z 在社交媒體上的消費習慣。", size: "item-medium" },
+            { id: 5, title: "品牌 Logo 迭代", category: "visual", image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=800&q=80", note: "嘗試更圓潤的字體。", size: "item-large" },
+            { id: 6, title: "短影音拍攝清單", category: "content", image: "", note: "記得帶上補光燈與收音麥。", size: "item-small" }
+        ];
+
+        const container = document.getElementById('masonryContainer');
+        const modal = document.getElementById('modal');
+
+        function renderItems(filter = 'all') {
+            container.innerHTML = '';
+            const filtered = filter === 'all' ? items : items.filter(i => i.category === filter);
+            
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `item ${item.size} bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col`;
+                
+                let imageHtml = item.image ? `<img src="${item.image}" class="w-full object-cover max-h-[60%] flex-shrink-0" alt="${item.title}">` : '';
+                
+                card.innerHTML = `
+                    ${imageHtml}
+                    <div class="p-5 flex-grow">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-500">${item.category}</span>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2 leading-tight">${item.title}</h3>
+                        <p class="text-sm text-gray-600 line-clamp-4 whitespace-pre-line">${item.note}</p>
+                    </div>
+                    <div class="p-4 pt-0 mt-auto flex justify-between items-center">
+                        <button onclick="deleteItem(${item.id})" class="text-gray-300 hover:text-red-500 transition text-xs">刪除</button>
+                        <div class="flex -space-x-2">
+                            <div class="w-6 h-6 rounded-full border-2 border-white bg-gray-200"></div>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleModal() {
+            modal.classList.toggle('hidden');
+        }
+
+        function addItem() {
+            const title = document.getElementById('inputTitle').value;
+            const category = document.getElementById('inputCategory').value;
+            const image = document.getElementById('inputImage').value;
+            const note = document.getElementById('inputNote').value;
+
+            if (!title) return;
+
+            const sizes = ['item-small', 'item-medium', 'item-large'];
+            const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
+
+            const newItem = {
+                id: Date.now(),
+                title,
+                category,
+                image,
+                note,
+                size: image ? 'item-large' : randomSize
+            };
+
+            items.unshift(newItem);
+            renderItems();
+            toggleModal();
+            
+            // 清空表單
+            document.getElementById('inputTitle').value = '';
+            document.getElementById('inputNote').value = '';
+            document.getElementById('inputImage').value = '';
+        }
+
+        function deleteItem(id) {
+            items = items.filter(i => i.id !== id);
+            renderItems();
+        }
+
+        function filterItems(category) {
+            const pills = document.querySelectorAll('.category-pill');
+            pills.forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+            renderItems(category);
+        }
+
+        // 初始化
+        window.onload = () => renderItems();
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+</html>

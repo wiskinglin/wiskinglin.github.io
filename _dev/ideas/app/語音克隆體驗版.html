@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地語音克隆 TTS Demo（單檔 HTML）</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .waveform {
+            height: 60px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <div class="max-w-4xl mx-auto p-6">
+        <h1
+            class="text-4xl font-bold text-center mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            本地語音克隆 TTS 體驗
+        </h1>
+
+        <!-- 模型選擇 -->
+        <div class="bg-gray-900 rounded-2xl p-6 mb-8">
+            <label class="block text-sm font-medium mb-2">選擇模型風格</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button onclick="selectModel(0)" id="model-0"
+                    class="model-btn active bg-blue-600 hover:bg-blue-700 py-3 rounded-xl text-sm font-medium">GPT-SoVITS
+                    (自然長文)</button>
+                <button onclick="selectModel(1)" id="model-1"
+                    class="model-btn bg-purple-600 hover:bg-purple-700 py-3 rounded-xl text-sm font-medium">CosyVoice
+                    (極速多語)</button>
+                <button onclick="selectModel(2)" id="model-2"
+                    class="model-btn bg-pink-600 hover:bg-pink-700 py-3 rounded-xl text-sm font-medium">Fish Speech
+                    (抑揚頓挫)</button>
+                <button onclick="selectModel(3)" id="model-3"
+                    class="model-btn bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl text-sm font-medium">ChatTTS
+                    (對話感)</button>
+            </div>
+        </div>
+
+        <!-- 音色錄製區 -->
+        <div class="bg-gray-900 rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-microphone"></i> 參考音色錄製 / 上傳
+            </h2>
+            <div class="flex flex-wrap gap-4">
+                <button onclick="startRecording()" id="recordBtn"
+                    class="flex-1 bg-red-600 hover:bg-red-700 py-4 rounded-2xl font-medium flex items-center justify-center gap-2">
+                    <i class="fas fa-circle"></i> 開始錄音 (5-30秒)
+                </button>
+                <button onclick="stopRecording()" id="stopBtn"
+                    class="flex-1 bg-gray-700 hover:bg-gray-600 py-4 rounded-2xl font-medium hidden">停止錄音</button>
+
+                <label
+                    class="flex-1 cursor-pointer bg-gray-700 hover:bg-gray-600 py-4 rounded-2xl font-medium text-center">
+                    上傳音檔
+                    <input type="file" id="audioUpload" accept="audio/*" class="hidden"
+                        onchange="handleFileUpload(event)">
+                </label>
+            </div>
+            <div id="referenceInfo" class="mt-4 text-sm text-green-400 hidden">已載入參考音色：我的聲音</div>
+
+            <audio id="referencePlayer" controls class="w-full mt-4 hidden"></audio>
+        </div>
+
+        <!-- 文字輸入 -->
+        <div class="bg-gray-900 rounded-2xl p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">輸入要朗讀的文字</h2>
+            <textarea id="textInput" rows="4"
+                class="w-full bg-gray-800 border border-gray-700 rounded-2xl p-5 text-lg resize-y focus:outline-none focus:border-blue-500"
+                placeholder="在此輸入文字，例如：今天天氣真好，我們一起去散步吧！"></textarea>
+        </div>
+
+        <!-- 參數調整 -->
+        <div class="bg-gray-900 rounded-2xl p-6 mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label class="block text-sm mb-2">語速 <span id="speedValue">1.0</span>x</label>
+                <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" class="w-full accent-blue-500"
+                    oninput="updateValue(this)">
+            </div>
+            <div>
+                <label class="block text-sm mb-2">音高 <span id="pitchValue">0</span></label>
+                <input type="range" id="pitch" min="-10" max="10" step="1" value="0" class="w-full accent-purple-500"
+                    oninput="updateValue(this)">
+            </div>
+            <div>
+                <label class="block text-sm mb-2">情感強度 <span id="emotionValue">中性</span></label>
+                <select id="emotion" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3">
+                    <option value="neutral">中性</option>
+                    <option value="happy">開心</option>
+                    <option value="sad">傷心</option>
+                    <option value="excited">興奮</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 控制按鈕 -->
+        <div class="flex gap-4 mb-8">
+            <button onclick="generateSpeech()"
+                class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 py-6 rounded-3xl text-xl font-bold flex items-center justify-center gap-3">
+                <i class="fas fa-play"></i> 生成並播放語音
+            </button>
+            <button onclick="clearAll()" class="px-8 bg-gray-700 hover:bg-gray-600 rounded-3xl">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+
+        <!-- 播放器 -->
+        <div id="resultPanel" class="hidden bg-gray-900 rounded-2xl p-6">
+            <h3 class="text-lg font-medium mb-3">生成結果</h3>
+            <audio id="resultAudio" controls class="w-full"></audio>
+            <div class="mt-4 flex gap-3">
+                <button onclick="downloadAudio()" class="flex-1 bg-green-600 hover:bg-green-700 py-3 rounded-2xl">下載 WAV
+                    音檔</button>
+                <button onclick="playAgain()"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-2xl">再播一次</button>
+            </div>
+        </div>
+
+        <div class="text-center text-xs text-gray-500 mt-12">
+            這是純瀏覽器本地 Demo • 實際使用 GPT-SoVITS 等模型仍需 Python + FastAPI 後端<br>
+            錄音與播放完全在本機，不上傳任何資料
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let referenceAudioBlob = null;
+        let currentModel = 0;
+        const modelNames = ["GPT-SoVITS", "CosyVoice", "Fish Speech", "ChatTTS"];
+
+        function selectModel(index) {
+            document.querySelectorAll('.model-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === index);
+                if (i === index) {
+                    btn.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-950', 'ring-white');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-offset-2', 'ring-offset-gray-950', 'ring-white');
+                }
+            });
+            currentModel = index;
+            console.log(`切換至模擬模型：${modelNames[index]}`);
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    referenceAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const url = URL.createObjectURL(referenceAudioBlob);
+                    document.getElementById('referencePlayer').src = url;
+                    document.getElementById('referencePlayer').classList.remove('hidden');
+                    document.getElementById('referenceInfo').classList.remove('hidden');
+                    document.getElementById('referenceInfo').textContent = `已錄製參考音色（${Math.round(referenceAudioBlob.size / 1024)} KB）`;
+                };
+
+                mediaRecorder.start();
+                document.getElementById('recordBtn').classList.add('hidden');
+                document.getElementById('stopBtn').classList.remove('hidden');
+            } catch (err) {
+                alert('錄音失敗：' + err.message);
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('recordBtn').classList.remove('hidden');
+            document.getElementById('stopBtn').classList.add('hidden');
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            referenceAudioBlob = file;
+            const url = URL.createObjectURL(file);
+            document.getElementById('referencePlayer').src = url;
+            document.getElementById('referencePlayer').classList.remove('hidden');
+            document.getElementById('referenceInfo').classList.remove('hidden');
+            document.getElementById('referenceInfo').textContent = `已上傳：${file.name}`;
+        }
+
+        function updateValue(slider) {
+            if (slider.id === 'speed') {
+                document.getElementById('speedValue').textContent = parseFloat(slider.value).toFixed(1);
+            } else if (slider.id === 'pitch') {
+                document.getElementById('pitchValue').textContent = slider.value;
+            }
+        }
+
+        function generateSpeech() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('請輸入要朗讀的文字！');
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+
+            // 模擬不同模型的參數調整
+            utterance.rate = parseFloat(document.getElementById('speed').value);
+            utterance.pitch = 1 + (parseFloat(document.getElementById('pitch').value) / 20);
+
+            const voices = speechSynthesis.getVoices();
+            // 簡單選擇一個中文或預設聲音
+            const zhVoice = voices.find(v => v.lang.includes('zh') || v.name.includes('中文'));
+            if (zhVoice) utterance.voice = zhVoice;
+
+            // 模擬情感（實際效果有限）
+            const emotion = document.getElementById('emotion').value;
+            if (emotion === 'happy') utterance.pitch += 0.2;
+            if (emotion === 'sad') utterance.rate -= 0.15;
+
+            utterance.onend = () => {
+                console.log('朗讀完成');
+            };
+
+            // 顯示結果面板（模擬生成）
+            document.getElementById('resultPanel').classList.remove('hidden');
+
+            // 使用 Web Speech API 直接播放
+            speechSynthesis.cancel(); // 清空佇列
+            speechSynthesis.speak(utterance);
+
+            // 模擬音檔下載功能（實際產生一個簡單的 blob）
+            setTimeout(() => {
+                const resultAudio = document.getElementById('resultAudio');
+                // 這裡無法直接取得 Web Speech 的音訊，只能提示
+                resultAudio.src = ''; // 無法直接取得音檔
+                console.log(`已使用 ${modelNames[currentModel]} 風格生成語音`);
+            }, 500);
+        }
+
+        function playAgain() {
+            const text = document.getElementById('textInput').value.trim();
+            if (text) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = parseFloat(document.getElementById('speed').value);
+                utterance.pitch = 1 + (parseFloat(document.getElementById('pitch').value) / 20);
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function downloadAudio() {
+            if (!referenceAudioBlob) {
+                alert('請先錄音或上傳參考音色，再生成語音。');
+                return;
+            }
+            const text = document.getElementById('textInput').value || "這是一段測試語音";
+            const filename = `cloned-voice-${Date.now()}.webm`;
+            const url = URL.createObjectURL(referenceAudioBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('已下載參考音檔（模擬克隆音檔）。真實完整克隆需後端模型支援。');
+        }
+
+        function clearAll() {
+            document.getElementById('textInput').value = '';
+            document.getElementById('resultPanel').classList.add('hidden');
+            speechSynthesis.cancel();
+        }
+
+        // 初始化
+        window.onload = () => {
+            selectModel(0);
+
+            // 載入可用語音
+            speechSynthesis.onvoiceschanged = () => {
+                console.log('可用語音已載入，共', speechSynthesis.getVoices().length, '個');
+            };
+            speechSynthesis.getVoices(); // 觸發載入
+
+            // Tailwind 樣式已透過 CDN 載入
+            console.log('本地語音克隆 Demo 已啟動！');
+        };
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>瀏覽器原生 `SpeechSynthesis` Web API 語音合成</li>
+                        <li>`MediaRecorder` 麥克風錄音與Blob儲存，用於模擬克隆參考檔</li>
+                        <li>音檔上傳與預覽播放</li>
+                        <li>前端滑桿控制語速(Rate)與音高(Pitch)與 Web 原生 API 綁定聯動</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>沒有真正的 Voice Cloning (音色克隆) 功能</li>
+                        <li>所選的模型按鈕僅為視覺切換，不影響底層使用的原生 Windows/macOS 語音</li>
+                        <li>下載按鈕下載的是當初的錄音檔而非克隆生成的檔案</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

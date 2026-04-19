@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>江戶前壽司：職人風味圖鑑</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f0f0f;
+            color: #d1d1d1;
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        .sushi-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .sushi-card:hover {
+            border-color: #c9a063;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(201, 160, 99, 0.15);
+        }
+
+        .active-tab {
+            color: #c9a063;
+            border-bottom: 2px solid #c9a063;
+        }
+
+        .gold-text {
+            color: #c9a063;
+        }
+
+        .bg-gold {
+            background-color: #c9a063;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-20">
+
+    <header class="py-16 text-center border-b border-zinc-800">
+        <h1 class="text-4xl md:text-5xl font-bold tracking-widest text-white mb-4">握壽司・一貫入魂</h1>
+        <p class="text-zinc-500 tracking-widest italic uppercase text-sm">The Art of Edomae Nigiri</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 mt-12">
+
+        <div class="flex justify-center space-x-8 mb-12 overflow-x-auto pb-4 no-scrollbar">
+            <button onclick="filterSushi('all')"
+                class="tab-btn active-tab px-4 py-2 hover:text-white transition">全部魚料</button>
+            <button onclick="filterSushi('light')" class="tab-btn px-4 py-2 hover:text-white transition">白身
+                (淡雅)</button>
+            <button onclick="filterSushi('fatty')" class="tab-btn px-4 py-2 hover:text-white transition">油脂
+                (豐盈)</button>
+            <button onclick="filterSushi('blue')" class="tab-btn px-4 py-2 hover:text-white transition">亮身 (鮮明)</button>
+            <button onclick="filterSushi('shell')" class="tab-btn px-4 py-2 hover:text-white transition">貝類
+                (甘甜)</button>
+        </div>
+
+        <div id="sushi-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        </div>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full bg-zinc-900 border border-zinc-700 p-8 rounded-lg relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-2xl">&times;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const sushiData = [
+            { id: 1, name: "大腹 (Otoro)", type: "fatty", desc: "鮪魚最肥美的部位，入口即化，油脂香氣濃郁。", season: "冬季", level: "★★★★★", info: "熟成約3-5天可達最佳風味。" },
+            { id: 2, name: "真鯛 (Madai)", type: "light", desc: "白身魚之王，味道清雅高貴，肉質富有彈性。", season: "春季", level: "★☆☆☆☆", info: "通常搭配少許鹽與酸橘汁。" },
+            { id: 3, name: "小肌 (Kohada)", type: "blue", desc: "江戶前的代表作，透過鹽與醋的醃漬展現職人功力。", season: "秋季", level: "★★★☆☆", info: "醃漬時間隨魚身大小調整，考驗經驗。" },
+            { id: 4, name: "赤身 (Akami)", type: "fatty", desc: "鮪魚背部，肉質緊實，帶有微酸的高雅血紅素風味。", season: "秋季/冬季", level: "★★☆☆☆", info: "進行醬油漬 (Zuke) 處理能提升旨味。" },
+            { id: 5, name: "赤貝 (Akagai)", type: "shell", desc: "色澤鮮艷，口感爽脆，咀嚼後散發強烈甘甜。", season: "冬季", level: "★☆☆☆☆", info: "拍打後肌肉收縮，口感最為彈牙。" },
+            { id: 6, name: "鰤魚 (Buri)", type: "fatty", desc: "寒鰤魚油脂極其豐富，是冬日壽司檯上的主角。", season: "冬季", level: "★★★★☆", info: "富山縣冰見產最為出名。" }
+        ];
+
+        function renderSushi(data) {
+            const grid = document.getElementById('sushi-grid');
+            grid.innerHTML = '';
+            data.forEach(sushi => {
+                const card = `
+                    <div class="sushi-card p-6 cursor-pointer group" onclick="openModal(${sushi.id})">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-xs tracking-tighter text-zinc-500 uppercase">${sushi.type}</span>
+                            <span class="gold-text">${sushi.level}</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-2 group-hover:text-[#c9a063] transition">${sushi.name}</h3>
+                        <p class="text-zinc-400 text-sm leading-relaxed mb-4">${sushi.desc}</p>
+                        <div class="flex items-center text-xs text-zinc-500">
+                            <span class="mr-2">當季時令:</span>
+                            <span class="text-zinc-300">${sushi.season}</span>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function filterSushi(category) {
+            // Update Tab UI
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active-tab'));
+            event.target.classList.add('active-tab');
+
+            if (category === 'all') {
+                renderSushi(sushiData);
+            } else {
+                const filtered = sushiData.filter(s => s.type === category);
+                renderSushi(filtered);
+            }
+        }
+
+        function openModal(id) {
+            const sushi = sushiData.find(s => s.id === id);
+            const content = `
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-white mb-2">${sushi.name}</h2>
+                    <div class="w-12 h-1 bg-gold mx-auto mb-6"></div>
+                    <div class="grid grid-cols-2 gap-4 text-left mt-8">
+                        <div>
+                            <p class="text-zinc-500 text-sm">風味特徵</p>
+                            <p class="text-white">${sushi.desc}</p>
+                        </div>
+                        <div>
+                            <p class="text-zinc-500 text-sm">旬之時期</p>
+                            <p class="text-white">${sushi.season}</p>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-zinc-500 text-sm">職人筆記</p>
+                            <p class="text-[#c9a063] italic">${sushi.info}</p>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-zinc-500 text-sm">油脂等級</p>
+                            <p class="text-white">${sushi.level}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('modal-content').innerHTML = content;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        // Initialize
+        renderSushi(sushiData);
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+
+</html>

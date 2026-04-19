@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraStyle | 氛圍美學探索器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #fcfaf8; }
+        .serif { font-family: 'Playfair Display', serif; }
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); }
+        .card-zoom:hover img { transform: scale(1.05); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <nav class="fixed top-0 w-full z-50 glass px-6 py-4 flex justify-between items-center">
+        <h1 class="serif text-2xl tracking-tighter font-bold text-pink-600">AuraStyle</h1>
+        <div class="flex space-x-6 items-center">
+            <i data-lucide="search" class="w-5 h-5 cursor-pointer hover:text-pink-500 transition"></i>
+            <i data-lucide="heart" class="w-5 h-5 cursor-pointer hover:text-pink-500 transition"></i>
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-300 to-rose-400 border border-white"></div>
+        </div>
+    </nav>
+
+    <header class="pt-32 pb-12 px-6 max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+                <span class="text-pink-500 font-medium tracking-widest uppercase text-xs">Curated Inspiration</span>
+                <h2 class="text-4xl md:text-5xl font-bold mt-2 leading-tight">定義妳的<br><span class="serif italic">獨特氛圍感</span></h2>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="filterStyle('all')" class="px-5 py-2 rounded-full bg-black text-white text-sm hover:bg-gray-800 transition shadow-lg">全部探索</button>
+                <button onclick="filterStyle('sweet')" class="px-5 py-2 rounded-full border border-gray-200 bg-white text-sm hover:border-pink-300 transition">甜美系</button>
+                <button onclick="filterStyle('cool')" class="px-5 py-2 rounded-full border border-gray-200 bg-white text-sm hover:border-blue-300 transition">酷颯風</button>
+                <button onclick="filterStyle('minimalist')" class="px-5 py-2 rounded-full border border-gray-200 bg-white text-sm hover:border-gray-400 transition">極簡靜奢</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="px-6 max-w-7xl mx-auto pb-20">
+        <div id="gallery" class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+            </div>
+    </main>
+
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 glass px-8 py-4 rounded-full shadow-2xl flex space-x-12 z-50">
+        <button class="flex flex-col items-center text-pink-600"><i data-lucide="sparkles" class="w-6 h-6"></i><span class="text-[10px] mt-1">靈感</span></button>
+        <button class="flex flex-col items-center text-gray-400 hover:text-pink-400 transition"><i data-lucide="camera" class="w-6 h-6"></i><span class="text-[10px] mt-1">實拍</span></button>
+        <button class="flex flex-col items-center text-gray-400 hover:text-pink-400 transition"><i data-lucide="user" class="w-6 h-6"></i><span class="text-[10px] mt-1">我的</span></button>
+    </div>
+
+    <script>
+        const styleData = [
+            { id: 1, type: 'sweet', title: '草莓奶油系', img: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=800&q=80', desc: '溫柔的粉嫩色調，充滿空氣感的捲髮。' },
+            { id: 2, type: 'cool', title: '深夜街頭 Y2K', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80', desc: '金屬感配飾與俐落的工裝裝束。' },
+            { id: 3, type: 'minimalist', title: '靜奢老錢風', img: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=800&q=80', desc: '高品質羊絨與中性色調的完美平衡。' },
+            { id: 4, type: 'sweet', title: '法式碎花午後', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=800&q=80', desc: '復古方領與陽光灑落的愜意感。' },
+            { id: 5, type: 'cool', title: '賽博龐克少女', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80', desc: '霓虹燈光下的前衛眼妝。' },
+            { id: 6, type: 'minimalist', title: '北歐灰調生活', img: 'https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=800&q=80', desc: '寬鬆的西裝外套，展現鬆弛美學。' },
+            { id: 7, type: 'sweet', title: '日系氧氣少女', img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80', desc: '清新透明妝感，溫潤如玉。' }
+        ];
+
+        function renderGallery(filter = 'all') {
+            const container = document.getElementById('gallery');
+            container.innerHTML = '';
+            
+            const filtered = filter === 'all' ? styleData : styleData.filter(item => item.type === filter);
+            
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'break-inside-avoid bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 card-zoom group';
+                card.innerHTML = `
+                    <div class="relative overflow-hidden">
+                        <img src="${item.img}" alt="${item.title}" class="w-full h-auto transition-transform duration-700">
+                        <div class="absolute top-4 right-4 bg-white/80 backdrop-blur p-2 rounded-full opacity-0 group-hover:opacity-100 transition">
+                            <i data-lucide="bookmark" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-lg mb-2">${item.title}</h3>
+                        <p class="text-gray-500 text-sm leading-relaxed">${item.desc}</p>
+                        <div class="mt-4 flex items-center justify-between">
+                            <span class="text-[10px] bg-gray-100 px-3 py-1 rounded-full text-gray-400 uppercase tracking-tighter">#${item.type}</span>
+                            <button class="text-pink-500 text-sm font-semibold flex items-center">探索細節 <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i></button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function filterStyle(type) {
+            renderGallery(type);
+            // Update button styles if needed
+        }
+
+        // Initialize
+        window.onload = () => {
+            renderGallery();
+            lucide.createIcons();
+        };
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+</html>

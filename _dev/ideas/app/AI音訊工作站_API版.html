@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniVoice Studio | AI 音訊工作站</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom scrollbar for modern feel */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .pulse-anim {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .5;
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gray-900 text-gray-100 h-screen flex overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">
+
+    <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+        <div class="p-6 flex items-center gap-3 border-b border-gray-700">
+            <div
+                class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center font-bold shadow-lg shadow-indigo-500/50">
+                OV</div>
+            <h1 class="text-xl font-bold tracking-wider">OmniVoice</h1>
+        </div>
+
+        <div class="p-4 flex-1 overflow-y-auto">
+            <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">AI 引擎選擇 (Engine)</h2>
+            <div class="space-y-2" id="engine-selector">
+                <button
+                    class="engine-btn w-full text-left px-4 py-3 rounded-xl bg-indigo-600 border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-between"
+                    data-engine="gpt-sovits">
+                    <div>
+                        <div class="font-semibold text-sm">GPT-SoVITS</div>
+                        <div class="text-xs text-indigo-200">5秒零樣本克隆</div>
+                    </div>
+                    <i class="fa-solid fa-check text-indigo-200 text-sm"></i>
+                </button>
+                <button
+                    class="engine-btn w-full text-left px-4 py-3 rounded-xl bg-gray-700/50 hover:bg-gray-700 border border-transparent transition-all"
+                    data-engine="cosyvoice">
+                    <div>
+                        <div class="font-semibold text-sm">CosyVoice</div>
+                        <div class="text-xs text-gray-400">極速生成 & 情緒控制</div>
+                    </div>
+                </button>
+                <button
+                    class="engine-btn w-full text-left px-4 py-3 rounded-xl bg-gray-700/50 hover:bg-gray-700 border border-transparent transition-all"
+                    data-engine="fish-speech">
+                    <div>
+                        <div class="font-semibold text-sm">Fish Speech</div>
+                        <div class="text-xs text-gray-400">LLM 長文本自然抑揚</div>
+                    </div>
+                </button>
+                <button
+                    class="engine-btn w-full text-left px-4 py-3 rounded-xl bg-gray-700/50 hover:bg-gray-700 border border-transparent transition-all"
+                    data-engine="chat-tts">
+                    <div>
+                        <div class="font-semibold text-sm">ChatTTS</div>
+                        <div class="text-xs text-gray-400">對話感 & 呼吸笑聲</div>
+                    </div>
+                </button>
+            </div>
+
+            <div class="mt-8">
+                <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">系統資源監控</h2>
+                <div class="bg-gray-900 rounded-lg p-3 border border-gray-700">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-gray-400">VRAM 使用率</span>
+                        <span class="text-green-400" id="vram-text">3.2 / 8.0 GB</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-1.5 mb-3">
+                        <div class="bg-green-500 h-1.5 rounded-full" style="width: 40%" id="vram-bar"></div>
+                    </div>
+                    <div class="flex justify-between text-xs items-center">
+                        <span class="text-gray-400">狀態</span>
+                        <span class="text-green-400 text-xs flex items-center gap-1"><span
+                                class="w-2 h-2 rounded-full bg-green-400 pulse-anim"></span> 引擎待命</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-gray-900 relative">
+        <header class="h-16 border-b border-gray-800 flex items-center justify-between px-6 glass-panel">
+            <div class="flex items-center gap-4">
+                <div class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                    <i class="fa-solid fa-microphone-lines text-indigo-400 text-sm"></i>
+                    <span class="text-sm font-medium">目標音色：我的克隆語音_01.wav</span>
+                    <button class="ml-2 text-gray-400 hover:text-white transition"><i
+                            class="fa-solid fa-cloud-arrow-up"></i></button>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button
+                    class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm font-medium transition border border-gray-700"><i
+                        class="fa-solid fa-gear mr-2"></i>API 設定</button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 flex gap-6">
+            <div class="flex-1 flex flex-col space-y-4">
+                <div class="flex justify-between items-end">
+                    <h2 class="text-lg font-semibold flex items-center gap-2">
+                        <i class="fa-solid fa-keyboard text-gray-400"></i> 文本合成腳本
+                    </h2>
+                    <span class="text-xs text-gray-500" id="char-count">0 / 500 字</span>
+                </div>
+                <textarea id="script-input"
+                    class="w-full flex-1 bg-gray-800 border border-gray-700 rounded-xl p-4 text-gray-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all"
+                    placeholder="在這裡輸入你想合成的文字...&#10;&#10;[小提示] 若使用 ChatTTS，系統將自動分析語境並加入適當的停頓與呼吸聲。"></textarea>
+
+                <div class="flex gap-3">
+                    <button id="generate-btn"
+                        class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> 立即生成 (Synthesize)
+                    </button>
+                    <button
+                        class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white py-3 px-4 rounded-xl transition-all">
+                        <i class="fa-solid fa-list-check"></i> 加入佇列
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-80 flex flex-col space-y-6">
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-5">
+                    <h3 class="text-sm font-semibold mb-4 text-gray-300">參數微調 (Parameters)</h3>
+
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <label class="text-gray-400">語速 (Speed)</label>
+                                <span id="speed-val" class="font-mono text-gray-300">1.0x</span>
+                            </div>
+                            <input type="range" min="0.5" max="2.0" step="0.1" value="1.0"
+                                class="w-full accent-indigo-500"
+                                oninput="document.getElementById('speed-val').innerText = parseFloat(this.value).toFixed(1) + 'x'">
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <label class="text-gray-400">情感波動 (Temperature)</label>
+                                <span id="temp-val" class="font-mono text-gray-300">0.7</span>
+                            </div>
+                            <input type="range" min="0.1" max="1.0" step="0.1" value="0.7"
+                                class="w-full accent-indigo-500"
+                                oninput="document.getElementById('temp-val').innerText = parseFloat(this.value).toFixed(1)">
+                        </div>
+
+                        <div id="emotion-preset-container">
+                            <label class="text-xs text-gray-400 mb-1 block">情感預設 (Emotion)</label>
+                            <select
+                                class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500">
+                                <option>中性 (Neutral)</option>
+                                <option>開心 (Happy)</option>
+                                <option>嚴肅 (Serious)</option>
+                                <option>激動 (Excited)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 border border-gray-700 rounded-xl p-5 flex-1 flex flex-col">
+                    <h3 class="text-sm font-semibold mb-4 text-gray-300">生成結果 (Output)</h3>
+
+                    <div id="loading-state" class="hidden flex-1 flex-col items-center justify-center space-y-3">
+                        <div class="w-10 h-10 border-4 border-gray-700 border-t-indigo-500 rounded-full animate-spin">
+                        </div>
+                        <p class="text-xs text-gray-400" id="loading-text">正在加載模型權重...</p>
+                    </div>
+
+                    <div id="empty-state"
+                        class="flex-1 flex flex-col items-center justify-center text-gray-500 space-y-2">
+                        <i class="fa-solid fa-compact-disc text-3xl mb-2 opacity-50"></i>
+                        <p class="text-sm">尚未生成任何音訊</p>
+                    </div>
+
+                    <div id="result-state" class="hidden flex-1 flex-col justify-end space-y-4">
+                        <div
+                            class="w-full h-16 bg-gray-900 rounded-lg border border-gray-700 relative overflow-hidden flex items-center px-2">
+                            <div class="flex items-end gap-0.5 h-8 w-full opacity-70">
+                                <script>
+                                    for (let i = 0; i < 40; i++) {
+                                        let h = Math.floor(Math.random() * 100) + 10;
+                                        document.write(`<div class="w-full bg-indigo-400 rounded-t-sm" style="height: ${h}%"></div>`);
+                                    }
+                                </script>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <button
+                                    class="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center transition shadow-lg">
+                                    <i class="fa-solid fa-play text-white ml-1"></i>
+                                </button>
+                                <span class="text-xs font-mono text-gray-400">00:00 / 00:04</span>
+                            </div>
+                            <button class="p-2 text-gray-400 hover:text-white transition tooltip" title="下載 WAV">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // UI Logic Implementation
+        const engineBtns = document.querySelectorAll('.engine-btn');
+        const generateBtn = document.getElementById('generate-btn');
+        const scriptInput = document.getElementById('script-input');
+        const charCount = document.getElementById('char-count');
+        const vramBar = document.getElementById('vram-bar');
+        const vramText = document.getElementById('vram-text');
+
+        let currentEngine = 'gpt-sovits';
+
+        // Engine Selection Logic
+        engineBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Reset all
+                engineBtns.forEach(b => {
+                    b.className = "engine-btn w-full text-left px-4 py-3 rounded-xl bg-gray-700/50 hover:bg-gray-700 border border-transparent transition-all";
+                    if (b.querySelector('.fa-check')) b.querySelector('.fa-check').remove();
+                });
+
+                // Set active
+                btn.className = "engine-btn w-full text-left px-4 py-3 rounded-xl bg-indigo-600 border border-indigo-500 shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-between";
+                const icon = document.createElement('i');
+                icon.className = "fa-solid fa-check text-indigo-200 text-sm";
+                btn.appendChild(icon);
+
+                currentEngine = btn.dataset.engine;
+
+                // Simulate VRAM loading spike
+                simulateVramChange();
+            });
+        });
+
+        // Textarea character count
+        scriptInput.addEventListener('input', (e) => {
+            const len = e.target.value.length;
+            charCount.innerText = `${len} / 500 字`;
+            if (len > 500) charCount.classList.add('text-red-400');
+            else charCount.classList.remove('text-red-400');
+        });
+
+        // Simulate VRAM logic
+        function simulateVramChange() {
+            vramBar.className = "bg-yellow-500 h-1.5 rounded-full transition-all duration-1000";
+            vramBar.style.width = "85%";
+            vramText.innerText = "6.8 / 8.0 GB";
+            vramText.className = "text-yellow-400";
+
+            setTimeout(() => {
+                let baseVram = currentEngine === 'chat-tts' ? "4.2" : "6.5";
+                let width = currentEngine === 'chat-tts' ? "52%" : "81%";
+                let colorClass = currentEngine === 'chat-tts' ? "bg-green-500" : "bg-orange-500";
+                let textClass = currentEngine === 'chat-tts' ? "text-green-400" : "text-orange-400";
+
+                vramBar.className = `${colorClass} h-1.5 rounded-full transition-all duration-500`;
+                vramBar.style.width = width;
+                vramText.innerText = `${baseVram} / 8.0 GB`;
+                vramText.className = textClass;
+            }, 1500);
+        }
+
+        // B方案：真實串接本地端 API 的實作
+        generateBtn.addEventListener('click', async () => {
+            if (!scriptInput.value.trim()) {
+                alert("請先輸入合成文本！");
+                return;
+            }
+
+            // UI States
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('result-state').classList.add('hidden');
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('loading-state').classList.add('flex');
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> 生成中...';
+
+            const loadingText = document.getElementById('loading-text');
+            loadingText.innerText = `準備呼叫 ${currentEngine} API...`;
+
+            try {
+                // 讀取目前的相關環境參數
+                const payload = {
+                    engine: currentEngine,
+                    text: scriptInput.value.trim(),
+                    speed: parseFloat(document.getElementById('speed-val').innerText),
+                    temperature: parseFloat(document.getElementById('temp-val').innerText),
+                    emotion: document.querySelector('#emotion-preset-container select').value
+                };
+
+                loadingText.innerText = "發送請求給本地伺服器...";
+                
+                // 這裡假設本地有一個 FastAPI / Python Server 運行在 8000 port
+                const response = await fetch('http://localhost:8000/api/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) throw new Error(`伺服器錯誤: ${response.status}`);
+
+                loadingText.innerText = "正在接收音訊資料...";
+                const blob = await response.blob();
+                const audioUrl = URL.createObjectURL(blob);
+                
+                // 將 Audio URL 儲存供播放與下載使用
+                window.currentAudio = new Audio(audioUrl);
+                
+                // 重置播放按鈕狀態
+                const playBtnIcon = document.querySelector('.fa-play') || document.querySelector('.fa-pause');
+                if(playBtnIcon) playBtnIcon.className = "fa-solid fa-play text-white ml-1";
+                
+                // 更新下載按鈕功能
+                const downloadBtn = document.querySelector('.fa-download').parentElement;
+                downloadBtn.onclick = () => {
+                    const a = document.createElement('a');
+                    a.href = audioUrl;
+                    a.download = `voice_${currentEngine}_${new Date().getTime()}.wav`;
+                    a.click();
+                };
+
+                // UI切換為完成狀態
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('loading-state').classList.remove('flex');
+                document.getElementById('result-state').classList.remove('hidden');
+                document.getElementById('result-state').classList.add('flex');
+                
+            } catch (error) {
+                console.error(error);
+                alert("合成失敗 (API錯誤)\n請確認您是否已經在本地 (http://localhost:8000) 啟動 Python Backend 服務！\n詳細錯誤：" + error.message);
+                
+                // 還原狀態
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('loading-state').classList.remove('flex');
+                document.getElementById('empty-state').classList.remove('hidden');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> 再次生成 (Regenerate)';
+                loadingText.innerText = "正在加載模型權重..."; // Reset for next time
+            }
+        });
+
+        // 綁定真實的播放/暫停功能
+        const playBtn = document.querySelector('.fa-play').parentElement;
+        playBtn.addEventListener('click', () => {
+            if (window.currentAudio) {
+                const icon = playBtn.querySelector('i');
+                if (window.currentAudio.paused) {
+                    window.currentAudio.play();
+                    icon.className = "fa-solid fa-pause text-white ml-1";
+                } else {
+                    window.currentAudio.pause();
+                    icon.className = "fa-solid fa-play text-white ml-1";
+                }
+                
+                window.currentAudio.onended = () => {
+                    icon.className = "fa-solid fa-play text-white ml-1";
+                };
+            }
+        });
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>完整的 UI 佈局與設計美學</li>
+                        <li>推論引擎與生成參數選擇</li>
+                        <li>API Fetch 串接架構 (準備對接 localhost:8000)</li>
+                        <li>播放與下載生成的音訊 (如果 API 正確回應)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>VRAM 狀態監控僅為視覺模擬</li>
+                        <li>真正的後端 Python Local API 尚需獨立啟動</li>
+                        <li>真實的模型權重載入邏輯</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

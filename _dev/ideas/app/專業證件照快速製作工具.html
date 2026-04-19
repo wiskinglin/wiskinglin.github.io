@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專業證件照快速製作工具 - 2吋專用</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; }
+        .canvas-container {
+            position: relative;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        #mask {
+            position: absolute;
+            top: 0; left: 0;
+            pointer-events: none;
+            border: 2px dashed #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            display: none;
+        }
+        .guide-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: rgba(239, 68, 68, 0.5);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">專業證件照製作器</h1>
+            <p class="text-gray-500 text-sm">標準 2 吋 (3.5 x 4.5 cm) | 隱私安全：照片僅在瀏覽器本地處理</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-1 space-y-6 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">1. 上傳原始照片</label>
+                    <input type="file" id="upload" accept="image/*" class="block w-full text-sm text-slate-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-blue-50 file:text-blue-700
+                      hover:file:bg-blue-100 cursor-pointer"
+                    />
+                </div>
+
+                <div class="space-y-4">
+                    <label class="block text-sm font-semibold text-gray-700">2. 調整照片</label>
+                    <div>
+                        <span class="text-xs text-gray-400">縮放比例</span>
+                        <input type="range" id="zoom" min="0.1" max="3" step="0.01" value="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-400">水平位移</span>
+                        <input type="range" id="posX" min="-200" max="200" step="1" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-400">垂直位移</span>
+                        <input type="range" id="posY" min="-200" max="200" step="1" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100">
+                    <button id="download" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="Wait, what? Output should be 4x6 print? 4 12v4a2 2 0 002 2h10a2 2 0 002-2v-4M7 10l5 5m0 0l5-5m-5 5V3" />
+                        </svg>
+                        下載 2吋 單張
+                    </button>
+                    <button id="downloadSheet" class="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center gap-2">
+                        下載 4x6 組合版 (8張)
+                    </button>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 flex flex-col items-center justify-center bg-slate-100 rounded-2xl p-4 min-h-[400px] border-2 border-dashed border-gray-300 relative overflow-hidden">
+                <div id="preview-hint" class="text-gray-400 text-center">
+                    <p>尚未上傳照片</p>
+                    <p class="text-xs">建議使用純色背景照片</p>
+                </div>
+                
+                <div id="editor-ui" class="hidden text-center">
+                    <div class="canvas-container inline-block bg-white mb-4" id="canvas-wrapper">
+                        <canvas id="canvas" width="350" height="450" class="cursor-move"></canvas>
+                        <div id="mask" style="width:350px; height:450px;">
+                            <div class="guide-line" style="top: 20%;"></div> <div class="guide-line" style="top: 45%;"></div> <div class="guide-line" style="top: 85%;"></div> </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mb-4">提示：使用拉桿調整位置，使頭部符合紅色參考線</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const upload = document.getElementById('upload');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const zoomInput = document.getElementById('zoom');
+        const posXInput = document.getElementById('posX');
+        const posYInput = document.getElementById('posY');
+        const downloadBtn = document.getElementById('download');
+        const downloadSheetBtn = document.getElementById('downloadSheet');
+        const editorUI = document.getElementById('editor-ui');
+        const previewHint = document.getElementById('preview-hint');
+        const mask = document.getElementById('mask');
+
+        let img = new Image();
+        let scale = 1;
+        let x = 0;
+        let y = 0;
+
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                img.onload = () => {
+                    resetControls();
+                    draw();
+                    editorUI.classList.remove('hidden');
+                    previewHint.classList.add('hidden');
+                    mask.style.display = 'block';
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function resetControls() {
+            // 自動適配初始縮放
+            const ratio = Math.max(canvas.width / img.width, canvas.height / img.height);
+            zoomInput.value = ratio.toFixed(2);
+            posXInput.value = 0;
+            posYInput.value = 0;
+            scale = ratio;
+            x = 0;
+            y = 0;
+        }
+
+        function draw() {
+            if (!img.src) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            
+            scale = parseFloat(zoomInput.value);
+            x = parseInt(posXInput.value);
+            y = parseInt(posYInput.value);
+
+            const drawW = img.width * scale;
+            const drawH = img.height * scale;
+            
+            // 置中繪製並加上偏移
+            const startX = (canvas.width - drawW) / 2 + x;
+            const startY = (canvas.height - drawH) / 2 + y;
+            
+            ctx.drawImage(img, startX, startY, drawW, drawH);
+            ctx.restore();
+        }
+
+        [zoomInput, posXInput, posYInput].forEach(input => {
+            input.addEventListener('input', draw);
+        });
+
+        // 下載單張
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = '2吋證件照.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.click();
+        });
+
+        // 下載 4x6 組合版 (1200x1800 像素)
+        downloadSheetBtn.addEventListener('click', () => {
+            const sheet = document.createElement('canvas');
+            sheet.width = 1800; // 6吋
+            sheet.height = 1200; // 4吋
+            const sCtx = sheet.getContext('2d');
+            sCtx.fillStyle = 'white';
+            sCtx.fillRect(0, 0, sheet.width, sheet.height);
+
+            const singleW = 350;
+            const singleH = 450;
+            const gapX = 60;
+            const gapY = 100;
+            const startX = 100;
+            const startY = 100;
+
+            // 畫兩排，每排四張 (共8張)
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 4; j++) {
+                    sCtx.drawImage(canvas, 
+                        startX + j * (singleW + gapX), 
+                        startY + i * (singleH + gapY), 
+                        singleW, singleH
+                    );
+                    // 畫裁切線
+                    sCtx.strokeStyle = '#eee';
+                    sCtx.strokeRect(startX + j * (singleW + gapX), startY + i * (singleH + gapY), singleW, singleH);
+                }
+            }
+
+            const link = document.createElement('a');
+            link.download = '2吋證件照_4x6拼版.jpg';
+            link.href = sheet.toDataURL('image/jpeg', 0.9);
+            link.click();
+        });
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>\n<li>Canvas 影像繪製與處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+</html>

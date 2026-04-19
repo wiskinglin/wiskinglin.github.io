@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LocalCanvas AI - 瀏覽器端私密圖片生成</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* 柔和的漸層背景，增強現代感 */
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+        }
+
+        /* 玻璃擬物化風格 (Glassmorphism) */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 1);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 自訂滾動條與過渡效果 */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center p-4 sm:p-8">
+
+    <div class="glass-panel w-full max-w-2xl p-6 sm:p-10 transition-all hover:shadow-xl">
+
+        <div class="text-center mb-8">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 text-white shadow-lg mb-4">
+                <i class="ph ph-magic-wand text-3xl"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight mb-2">LocalCanvas AI</h1>
+            <p class="text-gray-500 text-sm">基於 WebGPU & Transformers.js <br> 100% 於您的設備本地運行，守護資料隱私</p>
+        </div>
+
+        <div class="space-y-5">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2" for="prompt-input">
+                    輸入想像的畫面 (建議使用英文 Prompt)
+                </label>
+                <textarea id="prompt-input" rows="3"
+                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none transition-all text-gray-700 bg-white/80 placeholder-gray-400"
+                    placeholder="例如: A cute red panda wearing aviator goggles, cyberpunk city background, 4k, masterpiece..."></textarea>
+            </div>
+
+            <button id="generate-btn"
+                class="w-full flex justify-center items-center py-4 px-6 rounded-xl text-white font-semibold text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-[0.98] transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed">
+                <span>生成圖像 (Generate)</span>
+            </button>
+        </div>
+
+        <div class="mt-6 text-center">
+            <p id="status-text" class="text-sm text-blue-600 font-medium h-5">準備就緒，等待指令...</p>
+
+            <div id="progress-container" class="mt-3 hidden">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-500 h-2.5 rounded-full"
+                        style="width: 0%; transition: width 0.2s;"></div>
+                </div>
+                <p id="progress-detail" class="text-xs text-gray-400">0%</p>
+            </div>
+        </div>
+
+        <div
+            class="mt-8 relative flex justify-center bg-gray-100 rounded-2xl overflow-hidden min-h-[300px] border border-gray-200">
+            <div id="placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                <i class="ph ph-image text-5xl mb-2 opacity-50"></i>
+                <span class="text-sm font-medium">生成的圖片將顯示於此</span>
+            </div>
+            <img id="output-image" class="hidden max-w-full h-auto rounded-2xl shadow-sm z-10 relative"
+                alt="Generated Image" />
+        </div>
+
+    </div>
+
+    <script type="module">
+        // 匯入最新的 transformers.js alpha 版本 (支援 WebGPU)
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0-alpha.19';
+
+        // 設定不強制作為 Node.js 環境本地載入，允許從 Hugging Face Hub 下載
+        env.allowLocalModels = false;
+
+        const DOM = {
+            input: document.getElementById('prompt-input'),
+            btn: document.getElementById('generate-btn'),
+            status: document.getElementById('status-text'),
+            progressBox: document.getElementById('progress-container'),
+            progressBar: document.getElementById('progress-bar'),
+            progressDetail: document.getElementById('progress-detail'),
+            outputImage: document.getElementById('output-image'),
+            placeholder: document.getElementById('placeholder')
+        };
+
+        let generator = null;
+
+        // 初始化/載入模型
+        async function initModel() {
+            if (generator) return;
+
+            DOM.status.innerText = '正在初始化 AI 模型 (首次需下載約幾百MB，請保持網路暢通)...';
+            DOM.progressBox.classList.remove('hidden');
+
+            try {
+                // 使用支援 WebGPU 的輕量級文字生成圖片模型 (SDXS)
+                generator = await pipeline('text-to-image', 'Xenova/sdxs-512-0.9-webgpu', {
+                    device: 'webgpu', // 強制呼叫 WebGPU 加速
+                    progress_callback: (x) => {
+                        if (x.status === 'init' || x.status === 'download') {
+                            DOM.status.innerText = `下載與編譯模型區塊: ${x.name || '核心組件'}...`;
+                        } else if (x.status === 'progress') {
+                            const percent = Math.round((x.loaded / x.total) * 100);
+                            DOM.progressBar.style.width = `${percent}%`;
+                            DOM.progressDetail.innerText = `${percent}% (${(x.loaded / 1024 / 1024).toFixed(1)}MB / ${(x.total / 1024 / 1024).toFixed(1)}MB)`;
+                        } else if (x.status === 'done' || x.status === 'ready') {
+                            DOM.progressBar.style.width = `100%`;
+                            DOM.progressDetail.innerText = '載入完成';
+                        }
+                    }
+                });
+
+                DOM.status.innerText = '✅ 模型載入完成！開始進行神經網路推理...';
+                setTimeout(() => DOM.progressBox.classList.add('hidden'), 1500);
+            } catch (error) {
+                console.error("模型載入失敗:", error);
+                throw new Error('模型載入失敗。請確認您的瀏覽器 (Chrome/Edge 最新版) 支援 WebGPU。');
+            }
+        }
+
+        DOM.btn.addEventListener('click', async () => {
+            const prompt = DOM.input.value.trim();
+            if (!prompt) {
+                alert('請先輸入畫面描述！');
+                DOM.input.focus();
+                return;
+            }
+
+            // UI 狀態切換
+            DOM.btn.disabled = true;
+            DOM.btn.innerHTML = '<div class="loader inline-block align-middle mr-2"></div> <span>核心運算中...</span>';
+            DOM.outputImage.classList.add('hidden');
+            DOM.placeholder.classList.remove('hidden');
+
+            try {
+                await initModel();
+
+                DOM.status.innerText = '🧠 正在使用本機 GPU 繪製圖像中...';
+
+                // 執行生成
+                // num_inference_steps 設為 1 即可，因為 SDXS 是極速單步生成模型
+                const output = await generator(prompt, {
+                    num_inference_steps: 1,
+                    guidance_scale: 0.0, // SDXS 不需要 CFG
+                });
+
+                // 處理模型輸出的 RawImage
+                const image = output[0];
+
+                // Transformers.js 的 RawImage 有內建 toCanvas() 方法
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                const ctx = canvas.getContext('2d');
+
+                // 將 imageData 繪製到 canvas
+                const imageData = new ImageData(new Uint8ClampedArray(image.data), image.width, image.height);
+                ctx.putImageData(imageData, 0, 0);
+
+                // 將 Canvas 轉換為圖片 URL 並顯示
+                DOM.outputImage.src = canvas.toDataURL('image/png');
+                DOM.outputImage.classList.remove('hidden');
+                DOM.placeholder.classList.add('hidden');
+
+                DOM.status.innerText = '✨ 圖像生成完畢！ (0 API 費用, 100% 本地)';
+
+            } catch (error) {
+                console.error(error);
+                DOM.status.innerText = `❌ 錯誤: ${error.message}`;
+            } finally {
+                // 恢復按鈕狀態
+                DOM.btn.disabled = false;
+                DOM.btn.innerHTML = '<span>生成圖像 (Generate)</span>';
+            }
+        });
+    </script>
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>瀏覽器端 WebGPU 加速介面配置</li>
+                        <li>Transformers.js API 實例整合 (SDXS 模型準備就緒)</li>
+                        <li>模型下載與載入進度條顯示</li>
+                        <li>基礎像素渲染到 Canvas 的邏輯</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>高解析度圖像生成 (目前為低解析度基礎版)</li>
+                        <li>進階 LoRA 掛載與風格控制</li>
+                        <li>Image-to-Image (圖生圖) 流程</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

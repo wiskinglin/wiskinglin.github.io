@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformers.js Local TTS 引擎</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f172a; /* slate-900 */
+            color: #f8fafc;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wave-anim {
+            display: inline-block;
+            width: 4px;
+            height: 15px;
+            background: #8b5cf6; /* violet-500 */
+            border-radius: 2px;
+            margin: 0 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .wave-anim:nth-child(2) { animation-delay: 0.1s; }
+        .wave-anim:nth-child(3) { animation-delay: 0.2s; }
+        .wave-anim:nth-child(4) { animation-delay: 0.3s; }
+        .wave-anim:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1.5); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-sans">
+    <!-- Background Decor -->
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-violet-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-40"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-fuchsia-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-40"></div>
+
+    <div class="glass-panel w-full max-w-4xl rounded-3xl shadow-2xl p-8 relative z-10 flex flex-col md:flex-row gap-8">
+        
+        <!-- Sidebar config -->
+        <div class="w-full md:w-1/3 flex flex-col gap-6">
+            <div>
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-fuchsia-400 flex items-center gap-2">
+                    <i class="fa-solid fa-microchip"></i> Local TTS
+                </h1>
+                <p class="text-xs text-slate-400 mt-1">100% 瀏覽器離線合成，無伺服器</p>
+                <p class="text-xs text-slate-500 mt-1">模型: Xenova/speecht5_tts</p>
+            </div>
+
+            <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                <h3 class="text-sm font-semibold text-slate-300 mb-3"><i class="fa-solid fa-server mr-2"></i>引擎狀態</h3>
+                
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-400">Transformers.js</span>
+                    <span id="engine-status" class="px-2 py-1 bg-yellow-500/20 text-yellow-400 rounded-md text-xs border border-yellow-500/30">
+                        <i class="fa-solid fa-circle-notch fa-spin mr-1"></i>初始化中...
+                    </span>
+                </div>
+                <!-- 預載進度條 -->
+                <div class="w-full bg-slate-700 h-1.5 rounded-full mt-3 overflow-hidden hidden" id="progress-container">
+                    <div class="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-full w-0 transition-all duration-300" id="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="text-xs text-slate-500 space-y-2">
+                <p><i class="fa-solid fa-info-circle mr-1"></i>此架構首次載入時會下載約 150MB~300MB 的 ONNX 模型權重進入瀏覽器 Cache。</p>
+                <p><i class="fa-solid fa-exclamation-triangle text-yellow-500 mr-1"></i>注意：SpeechT5 官方模型主要支援英文，輸入中文效果極差甚至失敗，請盡量輸入英文測試。</p>
+            </div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="flex-1 flex flex-col bg-slate-900/50 rounded-2xl border border-slate-700 p-6">
+            
+            <label class="text-sm font-medium text-slate-300 mb-2">輸入英文合成文本：</label>
+            <textarea id="text-input" class="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-slate-100 focus:outline-none focus:border-violet-500 resize-none h-40 transition-all text-sm leading-relaxed whitespace-pre-wrap" placeholder="Try typing some English sentences here...&#10;&#10;For example: Hello everyone, this is an entirely local text to speech AI running directly in your browser."></textarea>
+            
+            <div class="mt-4 flex justify-end">
+                <button id="generate-btn" disabled class="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i>
+                    <span>等待模型加載 (Wait...)</span>
+                </button>
+            </div>
+
+            <div class="mt-8 border-t border-slate-700 pt-6">
+                <h3 class="text-sm font-semibold text-slate-300 mb-4">生成結果</h3>
+                
+                <div id="output-placeholder" class="h-20 bg-slate-800/50 border border-slate-700 border-dashed rounded-xl flex items-center justify-center text-slate-500 text-sm">
+                    尚未產生音訊
+                </div>
+
+                <div id="loading-anim" class="hidden h-20 bg-slate-800/50 border border-slate-700 rounded-xl flex items-center justify-center gap-3">
+                    <div class="wave-anim text-violet-400"></div>
+                    <div class="wave-anim text-violet-400"></div>
+                    <div class="wave-anim text-violet-400"></div>
+                    <div class="wave-anim text-violet-400"></div>
+                    <div class="wave-anim text-violet-400"></div>
+                    <span class="text-xs text-violet-400 font-medium tracking-widest ml-2">SYNTHESIZING...</span>
+                </div>
+
+                <div id="audio-container" class="hidden h-20 bg-slate-800 border border-violet-500/30 rounded-xl flex items-center px-6 justify-between gap-4">
+                    <div class="flex items-center gap-4 flex-1">
+                        <button id="play-res-btn" class="w-10 h-10 rounded-full bg-violet-600 hover:bg-violet-500 flex items-center justify-center text-white transition-colors">
+                            <i class="fa-solid fa-play ml-1"></i>
+                        </button>
+                        <div class="text-xs text-slate-400 font-mono" id="audio-duration">00:00 / 00:00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯入 Transformers.js -->
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+        // 設定：禁止本地快取錯誤時崩潰，確保 Web 環境正常運行
+        env.allowLocalModels = false;
+
+        const generateBtn = document.getElementById('generate-btn');
+        const textInput = document.getElementById('text-input');
+        const engineStatus = document.getElementById('engine-status');
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const outputPlaceholder = document.getElementById('output-placeholder');
+        const loadingAnim = document.getElementById('loading-anim');
+        const audioContainer = document.getElementById('audio-container');
+        const playResBtn = document.getElementById('play-res-btn');
+        
+        let synthesizer = null;
+        let audioContext = null;
+        let currentAudioBuffer = null;
+        let currentAudioSource = null;
+        let isPlaying = false;
+
+        // 初始化模型
+        async function initModel() {
+            try {
+                progressContainer.classList.remove('hidden');
+                
+                // Pipeline 載入進度回調
+                const progressCallback = (info) => {
+                    if (info.status === 'progress') {
+                        progressBar.style.width = `${info.progress}%`;
+                    }
+                };
+
+                // 載入 SpeechT5
+                synthesizer = await pipeline('text-to-speech', 'Xenova/speecht5_tts', {
+                    quantized: true,
+                    progress_callback: progressCallback
+                });
+
+                // UI 更新為就緒狀態
+                progressContainer.classList.add('hidden');
+                engineStatus.className = "px-2 py-1 bg-green-500/20 text-green-400 rounded-md text-xs border border-green-500/30";
+                engineStatus.innerHTML = '<i class="fa-solid fa-check mr-1"></i>準備就緒';
+                
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>開始合成語音';
+                
+            } catch (err) {
+                console.error("載入模型失敗", err);
+                engineStatus.className = "px-2 py-1 bg-red-500/20 text-red-400 rounded-md text-xs border border-red-500/30";
+                engineStatus.innerHTML = '<i class="fa-solid fa-xmark mr-1"></i>載入失敗';
+                generateBtn.innerHTML = '載入發生錯誤';
+            }
+        }
+
+        // 啟動載入
+        initModel();
+
+        // 點擊合成
+        generateBtn.addEventListener('click', async () => {
+            const text = textInput.value.trim();
+            if(!text) return;
+
+            // UI 狀態切換
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>運算中...';
+            outputPlaceholder.classList.add('hidden');
+            audioContainer.classList.add('hidden');
+            loadingAnim.classList.remove('hidden');
+
+            try {
+                // 必須載入說話者特徵向量 (Speaker Embeddings)
+                const speaker_embeddings = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/speaker_embeddings.bin';
+                
+                // 執行推論 (Inference)
+                const result = await synthesizer(text, { speaker_embeddings });
+                
+                // result 包含 { audio: Float32Array, sampling_rate: 16000 }
+                setupAudioPlayback(result.audio, result.sampling_rate);
+
+            } catch(e) {
+                console.error(e);
+                alert("生成語音時發生錯誤，請查看 Console。");
+                outputPlaceholder.classList.remove('hidden');
+                loadingAnim.classList.add('hidden');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles mr-2"></i>再次合成語音';
+            }
+        });
+
+        // 設定 Web Audio API 播放邏輯
+        function setupAudioPlayback(float32Array, sampleRate) {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // 停止現有播放
+            if (currentAudioSource) {
+                try { currentAudioSource.stop(); } catch(e){}
+            }
+
+            // 建立 Buffer
+            const buffer = audioContext.createBuffer(1, float32Array.length, sampleRate);
+            buffer.getChannelData(0).set(float32Array);
+            currentAudioBuffer = buffer;
+
+            // 計算時間
+            const duration = buffer.duration;
+            const ms = Math.floor(duration);
+            const formatTime = (secs) => `00:${secs.toString().padStart(2, '0')}`;
+            document.getElementById('audio-duration').innerText = `00:00 / ${formatTime(ms)}`;
+
+            // UI 更新
+            loadingAnim.classList.add('hidden');
+            audioContainer.classList.remove('hidden');
+            
+            // 重置播放鈕
+            playResBtn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+            isPlaying = false;
+        }
+
+        // 綁定結果播放鈕事件
+        playResBtn.addEventListener('click', () => {
+            if(!currentAudioBuffer || !audioContext) return;
+
+            if (isPlaying) {
+                // 實作中斷播放
+                if (currentAudioSource) {
+                    currentAudioSource.stop();
+                    currentAudioSource.disconnect();
+                }
+                isPlaying = false;
+                playResBtn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+                return;
+            }
+
+            // 建立 Source
+            currentAudioSource = audioContext.createBufferSource();
+            currentAudioSource.buffer = currentAudioBuffer;
+            currentAudioSource.connect(audioContext.destination);
+
+            currentAudioSource.onended = () => {
+                isPlaying = false;
+                playResBtn.innerHTML = '<i class="fa-solid fa-play ml-1"></i>';
+            };
+
+            // 開始播放
+            currentAudioSource.start(0);
+            isPlaying = true;
+            playResBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        });
+
+    </script>
+</body>
+</html>

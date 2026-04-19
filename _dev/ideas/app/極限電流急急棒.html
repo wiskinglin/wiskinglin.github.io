@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>極限電流急急棒 - Pro Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 50px rgba(56, 189, 248, 0.2);
+            border-radius: 1rem;
+            overflow: hidden;
+            background: #1e293b;
+        }
+
+        canvas {
+            cursor: none;
+            display: block;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #38bdf8 0%, #3b82f6 100%);
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        #timer {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #38bdf8;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="timer">00:00:00</div>
+
+        <div id="start-screen" class="overlay">
+            <h1 class="text-4xl font-extrabold mb-4 tracking-tighter">電流急急棒 <span class="text-blue-400">PRO</span></h1>
+            <p class="text-slate-400 mb-8 text-center px-10">保持鼠標在藍色軌道內，觸碰牆壁即刻失敗。<br>準備好挑戰你的專注力了嗎？</p>
+            <button onclick="startGame()" class="btn-primary text-white">開始挑戰</button>
+        </div>
+
+        <div id="result-screen" class="overlay hidden">
+            <h2 id="result-title" class="text-5xl font-black mb-2"></h2>
+            <p id="result-msg" class="text-slate-400 mb-8"></p>
+            <button onclick="startGame()" class="btn-primary text-white">再試一次</button>
+        </div>
+
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const timerEl = document.getElementById('timer');
+        const startScreen = document.getElementById('start-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const resultTitle = document.getElementById('result-title');
+        const resultMsg = document.getElementById('result-msg');
+
+        let isPlaying = false;
+        let startTime;
+        let animationId;
+
+        // 定義軌道路徑 (x, y, radius)
+        const pathPoints = [
+            { x: 50, y: 250 }, { x: 150, y: 250 }, { x: 150, y: 100 },
+            { x: 350, y: 100 }, { x: 350, y: 400 }, { x: 550, y: 400 },
+            { x: 550, y: 250 }, { x: 750, y: 250 }
+        ];
+        const trackWidth = 50;
+
+        function drawTrack() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製背景顏色 (牆壁)
+            ctx.fillStyle = "#1e293b";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製軌道 (安全區)
+            ctx.beginPath();
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = "#334155"; // 軌道路徑底色
+            ctx.lineWidth = trackWidth + 4;
+            ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+            pathPoints.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.strokeStyle = "#0f172a"; // 核心路徑
+            ctx.lineWidth = trackWidth;
+            ctx.moveTo(pathPoints[0].x, pathPoints[0].y);
+            pathPoints.forEach(p => ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+
+            // 繪製起點與終點
+            ctx.fillStyle = "#10b981"; // 起點
+            ctx.beginPath();
+            ctx.arc(pathPoints[0].x, pathPoints[0].y, trackWidth / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#ef4444"; // 終點
+            ctx.beginPath();
+            ctx.arc(pathPoints[pathPoints.length - 1].x, pathPoints[pathPoints.length - 1].y, trackWidth / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "white";
+            ctx.font = "12px Bold Inter";
+            ctx.fillText("START", pathPoints[0].x - 20, pathPoints[0].y + 5);
+            ctx.fillText("GOAL", pathPoints[pathPoints.length - 1].x - 18, pathPoints[pathPoints.length - 1].y + 5);
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            drawTrack();
+            isPlaying = true;
+            startTime = Date.now();
+            requestAnimationFrame(updateTimer);
+
+            canvas.onmousemove = checkCollision;
+        }
+
+        function updateTimer() {
+            if (!isPlaying) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            timerEl.innerText = elapsed.toFixed(2) + "s";
+            animationId = requestAnimationFrame(updateTimer);
+        }
+
+        function checkCollision(e) {
+            if (!isPlaying) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // 獲取當前位置的像素資料
+            const pixel = ctx.getImageData(x, y, 1, 1).data;
+            // 如果碰到了背景色 (1e293b -> 30, 41, 59)
+            // 簡化判定：如果顏色太深（接近背景），則視為碰撞
+            const brightness = pixel[0] + pixel[1] + pixel[2];
+
+            // 繪製玩家位置 (鼠標)
+            drawTrack();
+            ctx.fillStyle = "#38bdf8";
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#38bdf8";
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // 判斷是否到達終點 (距離最後一點小於半徑)
+            const goal = pathPoints[pathPoints.length - 1];
+            const distToGoal = Math.sqrt((x - goal.x) ** 2 + (y - goal.y) ** 2);
+
+            if (distToGoal < 20) {
+                endGame(true);
+                return;
+            }
+
+            // 判斷碰撞：如果像素是背景色
+            if (pixel[0] === 30 && pixel[1] === 41 && pixel[2] === 59) {
+                endGame(false);
+            }
+        }
+
+        function endGame(isWin) {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            resultScreen.classList.remove('hidden');
+
+            if (isWin) {
+                resultTitle.innerText = "🏆 任務完成";
+                resultTitle.className = "text-5xl font-black mb-2 text-emerald-400";
+                resultMsg.innerText = `你的紀錄是 ${timerEl.innerText}！這反應速度驚人。`;
+            } else {
+                resultTitle.innerText = "⚡ 觸電失敗";
+                resultTitle.className = "text-5xl font-black mb-2 text-red-500";
+                resultMsg.innerText = "穩住你的手，再試一次！";
+            }
+        }
+
+        // 初始化繪製
+        drawTrack();
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>\n<li>Canvas 影像繪製與處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantPulse | 量化策略回測沙盒</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .accent-gradient { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-8 flex justify-between items-end">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-white">QuantPulse <span class="text-blue-500">v1.0</span></h1>
+                <p class="text-slate-400">適應性量化交易回測引擎</p>
+            </div>
+            <div class="text-right hidden md:block">
+                <span class="text-xs text-slate-500 uppercase font-semibold">Market Status</span>
+                <div class="flex items-center text-green-400"><span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span> Simulated Live</div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-1 space-y-6">
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                        策略參數
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm text-slate-400 block mb-1">快線週期 (Short MA)</label>
+                            <input type="range" id="shortMA" min="5" max="50" value="20" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                            <div class="flex justify-between text-xs mt-1"><span>5</span><span id="shortMAVal" class="text-blue-400 font-bold">20</span><span>50</span></div>
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-slate-400 block mb-1">慢線週期 (Long MA)</label>
+                            <input type="range" id="longMA" min="20" max="200" value="60" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500">
+                            <div class="flex justify-between text-xs mt-1"><span>20</span><span id="longMAVal" class="text-purple-400 font-bold">60</span><span>200</span></div>
+                        </div>
+
+                        <div class="pt-4">
+                            <button onclick="runBacktest()" class="w-full py-3 rounded-xl accent-gradient font-bold text-white shadow-lg hover:opacity-90 transition-all active:scale-95">
+                                執行回測
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl overflow-hidden relative">
+                    <div class="relative z-10">
+                        <h2 class="text-slate-400 text-sm font-medium">總報酬率</h2>
+                        <div id="totalReturn" class="text-4xl font-bold text-white mt-1">0.00%</div>
+                        <div class="mt-4 flex justify-between items-center">
+                            <span class="text-xs text-slate-500">交易次數</span>
+                            <span id="tradeCount" class="text-sm font-semibold">0</span>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 right-0 opacity-10 italic font-black text-6xl p-2 select-none">ROI</div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-3 space-y-6">
+                <div class="glass-card p-6 rounded-2xl h-[500px]">
+                    <canvas id="mainChart"></canvas>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-card p-4 rounded-xl">
+                        <p class="text-slate-400 text-xs">勝率 (Win Rate)</p>
+                        <p id="winRate" class="text-xl font-bold text-green-400">--</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl">
+                        <p class="text-slate-400 text-xs">最大回撤 (Max DD)</p>
+                        <p id="maxDD" class="text-xl font-bold text-red-400">--</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl">
+                        <p class="text-slate-400 text-xs">最終資產 (Final Equity)</p>
+                        <p id="finalEquity" class="text-xl font-bold text-white">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mainChart;
+        const ctx = document.getElementById('mainChart').getContext('2d');
+
+        // 初始化模擬數據
+        function generateData(points = 300) {
+            let prices = [];
+            let currentPrice = 100;
+            let volatility = 0.02;
+            for (let i = 0; i < points; i++) {
+                let change = currentPrice * volatility * (Math.random() - 0.5);
+                currentPrice += change + 0.1; // 帶一點向上趨勢
+                prices.push(currentPrice);
+            }
+            return prices;
+        }
+
+        function calculateMA(data, period) {
+            let ma = [];
+            for (let i = 0; i < data.length; i++) {
+                if (i < period - 1) {
+                    ma.push(null);
+                } else {
+                    let sum = 0;
+                    for (let j = 0; j < period; j++) {
+                        sum += data[i - j];
+                    }
+                    ma.push(sum / period);
+                }
+            }
+            return ma;
+        }
+
+        function runBacktest() {
+            const shortPeriod = parseInt(document.getElementById('shortMA').value);
+            const longPeriod = parseInt(document.getElementById('longMA').value);
+            
+            document.getElementById('shortMAVal').innerText = shortPeriod;
+            document.getElementById('longMAVal').innerText = longPeriod;
+
+            const prices = generateData(300);
+            const shortMA = calculateMA(prices, shortPeriod);
+            const longMA = calculateMA(prices, longPeriod);
+            
+            // 策略邏輯
+            let capital = 10000;
+            let initialCapital = 10000;
+            let position = 0;
+            let trades = 0;
+            let wins = 0;
+            let equityCurve = [];
+            let maxEquity = initialCapital;
+            let maxDrawdown = 0;
+
+            for (let i = 0; i < prices.length; i++) {
+                // 訊號判定 (黃金交叉)
+                if (shortMA[i] && longMA[i]) {
+                    if (shortMA[i] > longMA[i] && position === 0) {
+                        // Buy
+                        position = capital / prices[i];
+                        capital = 0;
+                        trades++;
+                    } else if (shortMA[i] < longMA[i] && position > 0) {
+                        // Sell
+                        capital = position * prices[i];
+                        if (capital > initialCapital) wins++;
+                        position = 0;
+                    }
+                }
+                
+                let currentValue = position > 0 ? position * prices[i] : capital;
+                equityCurve.push(currentValue);
+                
+                // 計算回撤
+                if (currentValue > maxEquity) maxEquity = currentValue;
+                let dd = (maxEquity - currentValue) / maxEquity;
+                if (dd > maxDrawdown) maxDrawdown = dd;
+            }
+
+            const finalValue = position > 0 ? position * prices[prices.length-1] : capital;
+            const totalReturn = ((finalValue - initialCapital) / initialCapital * 100).toFixed(2);
+
+            // 更新 UI
+            document.getElementById('totalReturn').innerText = `${totalReturn}%`;
+            document.getElementById('totalReturn').className = totalReturn >= 0 ? 'text-4xl font-bold text-green-400 mt-1' : 'text-4xl font-bold text-red-400 mt-1';
+            document.getElementById('tradeCount').innerText = trades;
+            document.getElementById('winRate').innerText = trades > 0 ? ((wins / (trades/2)) * 50).toFixed(1) + '%' : '0%';
+            document.getElementById('maxDD').innerText = (maxDrawdown * 100).toFixed(2) + '%';
+            document.getElementById('finalEquity').innerText = '$' + Math.round(finalValue).toLocaleString();
+
+            updateChart(prices, shortMA, longMA, equityCurve);
+        }
+
+        function updateChart(prices, sMA, lMA, equity) {
+            if (mainChart) mainChart.destroy();
+
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: prices.length}, (_, i) => i),
+                    datasets: [
+                        {
+                            label: '價格 (Price)',
+                            data: prices,
+                            borderColor: '#94a3b8',
+                            borderWidth: 1,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '快線',
+                            data: sMA,
+                            borderColor: '#3b82f6',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '慢線',
+                            data: lMA,
+                            borderColor: '#8b5cf6',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '資產曲線 (Equity)',
+                            data: equity,
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            fill: true,
+                            pointRadius: 0,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        y: { display: true, position: 'left', grid: { color: '#1e293b' } },
+                        y1: { display: true, position: 'right', grid: { drawOnChartArea: false } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // 初始化
+        window.onload = runBacktest;
+
+        // 監聽滑桿即時顯示數值
+        document.getElementById('shortMA').oninput = function() { document.getElementById('shortMAVal').innerText = this.value; };
+        document.getElementById('longMA').oninput = function() { document.getElementById('longMAVal').innerText = this.value; };
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>\n<li>Canvas 影像繪製與處理</li>\n<li>動態資料視覺化圖表</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+</html>

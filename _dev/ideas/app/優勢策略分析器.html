@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>優勢策略分析器 - 賽局理論決策工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .matrix-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .nash-highlight {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 2px solid #10b981;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2">優勢策略分析器</h1>
+            <p class="text-gray-600 italic">"在競爭中，邏輯是唯一的武器。" — 賽局理論顧問</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Matrix Input Area -->
+            <div class="lg:col-span-2 bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">2x2 收益矩陣 (Payoff Matrix)</h2>
+                    <button onclick="resetMatrix()"
+                        class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">重置數據</button>
+                </div>
+
+                <div class="relative overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="w-1/4"></th>
+                                <th class="w-3/8 p-2 text-indigo-600 font-bold uppercase text-xs tracking-wider">玩家 B:
+                                    策略 1</th>
+                                <th class="w-3/8 p-2 text-indigo-600 font-bold uppercase text-xs tracking-wider">玩家 B:
+                                    策略 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th class="p-2 text-emerald-600 font-bold uppercase text-xs tracking-wider text-left">玩家
+                                    A: 策略 1</th>
+                                <td class="p-2" id="cell-0-0">
+                                    <div
+                                        class="flex gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 transition-all">
+                                        <input type="number" id="a-0-0" value="3"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                        <input type="number" id="b-0-0" value="3"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                    </div>
+                                </td>
+                                <td class="p-2" id="cell-0-1">
+                                    <div
+                                        class="flex gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 transition-all">
+                                        <input type="number" id="a-0-1" value="0"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                        <input type="number" id="b-0-1" value="5"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="p-2 text-emerald-600 font-bold uppercase text-xs tracking-wider text-left">玩家
+                                    A: 策略 2</th>
+                                <td class="p-2" id="cell-1-0">
+                                    <div
+                                        class="flex gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 transition-all">
+                                        <input type="number" id="a-1-0" value="5"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                        <input type="number" id="b-1-0" value="0"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                    </div>
+                                </td>
+                                <td class="p-2" id="cell-1-1">
+                                    <div
+                                        class="flex gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200 transition-all">
+                                        <input type="number" id="a-1-1" value="1"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                        <input type="number" id="b-1-1" value="1"
+                                            class="w-1/2 bg-white border border-gray-300 rounded p-1 text-center matrix-input"
+                                            onchange="analyze()">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-4 text-xs text-gray-400 text-center">左側數值為玩家 A 收益，右側數值為玩家 B 收益。</p>
+            </div>
+
+            <!-- Analysis Dashboard -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                            d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM5.884 6.68a1 1 0 10-1.404-1.427l-.707.707a1 1 0 001.414 1.414l.707-.707zm8.58 4.706a1 1 0 10.707-1.707l-.707-.707a1 1 0 10-1.414 1.414l.707.707zm-1.103-6.133a1 1 0 00-1.414 1.414l.707.707a1 1 0 001.414-1.414l-.707-.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1zm14.95 0a1 1 0 100-2h-1a1 1 0 100 2h1zM8 3a1 1 0 00-1 1v1a1 1 0 002 0V4a1 1 0 00-1-1zM5 11a1 1 0 11-2 0 1 1 0 012 0z">
+                        </path>
+                    </svg>
+                    決策報告
+                </h2>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase">玩家 A 的優勢策略</h3>
+                        <p id="result-a" class="text-lg font-bold text-indigo-600 mt-1">計算中...</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase">玩家 B 的優勢策略</h3>
+                        <p id="result-b" class="text-lg font-bold text-indigo-600 mt-1">計算中...</p>
+                    </div>
+                    <hr class="border-gray-100">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase">納許均衡 (Nash Equilibrium)</h3>
+                        <div id="result-nash" class="mt-2 space-y-1">
+                            <!-- Equilibrium list -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Description Card -->
+        <div class="mt-8 bg-indigo-900 rounded-2xl p-6 text-white shadow-lg">
+            <h3 class="text-lg font-bold mb-3 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                什麼是優勢策略？
+            </h3>
+            <p class="text-indigo-100 text-sm leading-relaxed">
+                在賽局理論中，<strong>優勢策略 (Dominant Strategy)</strong>
+                是指不論競爭對手採取何種行動，該策略對玩家而言都是最優選擇。如果雙方都有優勢策略，賽局將會導向一個可預測的結果。如果雙方在特定選擇下都無法單方面改變策略來獲得更高收益，該點即為<strong>納許均衡</strong>。
+            </p>
+        </div>
+
+        <footer class="mt-8 text-center text-gray-500 text-xs">
+            由 Hank-HTML 構建 &copy; 2024 賽局理論決策科學套件
+        </footer>
+    </div>
+
+    <script>
+        function getMatrix() {
+            return {
+                a: [
+                    [parseFloat(document.getElementById('a-0-0').value), parseFloat(document.getElementById('a-0-1').value)],
+                    [parseFloat(document.getElementById('a-1-0').value), parseFloat(document.getElementById('a-1-1').value)]
+                ],
+                b: [
+                    [parseFloat(document.getElementById('b-0-0').value), parseFloat(document.getElementById('b-0-1').value)],
+                    [parseFloat(document.getElementById('b-1-0').value), parseFloat(document.getElementById('b-1-1').value)]
+                ]
+            };
+        }
+
+        function analyze() {
+            const data = getMatrix();
+            const results = {
+                a: "不存在",
+                b: "不存在",
+                nash: []
+            };
+
+            // Analyze Player A Dominant Strategy
+            // Does Strat 1 dominate Strat 2?
+            if (data.a[0][0] > data.a[1][0] && data.a[0][1] > data.a[1][1]) results.a = "策略 1";
+            else if (data.a[1][0] > data.a[0][0] && data.a[1][1] > data.a[0][1]) results.a = "策略 2";
+
+            // Analyze Player B Dominant Strategy
+            if (data.b[0][0] > data.b[0][1] && data.b[1][0] > data.b[1][1]) results.b = "策略 1";
+            else if (data.b[0][1] > data.b[0][0] && data.b[1][1] > data.b[1][0]) results.b = "策略 2";
+
+            // Find Nash Equilibria
+            // A point (r, c) is Nash if a[r][c] >= a[other_r][c] AND b[r][c] >= b[r][other_c]
+            for (let r = 0; r < 2; r++) {
+                for (let c = 0; c < 2; c++) {
+                    const cellId = `cell-${r}-${c}`;
+                    document.getElementById(cellId).classList.remove('nash-highlight');
+
+                    const aIsMaxInCol = data.a[r][c] >= data.a[1 - r][c];
+                    const bIsMaxInRow = data.b[r][c] >= data.b[r][1 - c];
+
+                    if (aIsMaxInCol && bIsMaxInRow) {
+                        results.nash.push(`(策略 ${r + 1}, 策略 ${c + 1})`);
+                        document.getElementById(cellId).classList.add('nash-highlight');
+                    }
+                }
+            }
+
+            // Update UI
+            document.getElementById('result-a').innerText = results.a;
+            document.getElementById('result-b').innerText = results.b;
+
+            const nashDiv = document.getElementById('result-nash');
+            nashDiv.innerHTML = '';
+            if (results.nash.length === 0) {
+                nashDiv.innerHTML = '<p class="text-gray-400 italic">無純策略均衡</p>';
+            } else {
+                results.nash.forEach(eq => {
+                    nashDiv.innerHTML += `<div class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-md border border-emerald-200 text-sm font-semibold flex items-center justify-between">
+                        ${eq}
+                        <span class="text-[10px] bg-emerald-200 px-1 rounded uppercase">Stable</span>
+                    </div>`;
+                });
+            }
+        }
+
+        function resetMatrix() {
+            const defaults = {
+                a: [[3, 0], [5, 1]],
+                b: [[3, 5], [0, 1]]
+            };
+            for (let r = 0; r < 2; r++) {
+                for (let c = 0; c < 2; c++) {
+                    document.getElementById(`a-${r}-${c}`).value = defaults.a[r][c];
+                    document.getElementById(`b-${r}-${c}`).value = defaults.b[r][c];
+                }
+            }
+            analyze();
+        }
+
+        // Initialize
+        window.onload = analyze;
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+
+</html>

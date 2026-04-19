@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TyreMaster - 專業輪胎安全與計算專家</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .accent-gradient { background: linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%); }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-5xl mx-auto">
+        <header class="mb-10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-white">Tyre<span class="text-blue-500">Master</span></h1>
+                <p class="text-slate-400">專業輪胎安全診斷與規格計算系統</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold border border-blue-500/30">v1.0 Pro Edition</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-2 space-y-6">
+                <div class="glass-card rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        輪胎升級規格計算機
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-medium text-slate-400 uppercase tracking-wider">原始規格 (Original)</h3>
+                            <div class="space-y-3">
+                                <div><label class="text-xs text-slate-500">胎寬 (mm)</label><input type="number" id="w1" value="205" class="w-full bg-slate-800 border-none rounded-lg p-2 text-white"></div>
+                                <div><label class="text-xs text-slate-500">扁平比 (%)</label><input type="number" id="a1" value="55" class="w-full bg-slate-800 border-none rounded-lg p-2 text-white"></div>
+                                <div><label class="text-xs text-slate-500">輪圈直徑 (inch)</label><input type="number" id="r1" value="16" class="w-full bg-slate-800 border-none rounded-lg p-2 text-white"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h3 class="text-sm font-medium text-blue-400 uppercase tracking-wider">新規格 (New)</h3>
+                            <div class="space-y-3">
+                                <div><label class="text-xs text-slate-500">胎寬 (mm)</label><input type="number" id="w2" value="225" class="w-full bg-slate-800 border-none rounded-lg p-2 text-white"></div>
+                                <div><label class="text-xs text-slate-500">扁平比 (%)</label><input type="number" id="a2" value="45" class="w-full bg-slate-800 border-none rounded-lg p-2 text-white"></div>
+                                <div><label class="text-xs text-slate-500">輪圈直徑 (inch)</label><input type="number" id="r2" value="17" class="w-full bg-slate-800 border-none rounded-lg p-2 text-white"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="calculateDiff()" class="w-full mt-8 accent-gradient py-3 rounded-xl font-bold hover:opacity-90 transition shadow-lg shadow-blue-500/20">
+                        執行比對計算
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="resultArea">
+                    <div class="glass-card p-4 rounded-xl text-center">
+                        <p class="text-slate-400 text-xs">直徑差異</p>
+                        <p id="diffPerc" class="text-2xl font-bold text-white">0.00%</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl text-center">
+                        <p class="text-slate-400 text-xs">車速誤差 (時速 100km)</p>
+                        <p id="speedErr" class="text-2xl font-bold text-white">100 km/h</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl text-center">
+                        <p class="text-slate-400 text-xs">離地高度變化</p>
+                        <p id="heightDiff" class="text-2xl font-bold text-white">0 mm</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="glass-card rounded-2xl p-6 shadow-xl">
+                    <h2 class="text-xl font-semibold mb-6 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        輪胎健康診斷
+                    </h2>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-2">已使用里程 (公里)</label>
+                            <input type="range" id="mileage" min="0" max="60000" step="1000" value="15000" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-xs mt-2 text-slate-500"><span id="mileageLabel">15,000 km</span><span>60,000+ km</span></div>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-2">出廠年份 (年齡)</label>
+                            <select id="tyreAge" class="w-full bg-slate-800 border-none rounded-lg p-2 text-white">
+                                <option value="1">1 年內 (新胎)</option>
+                                <option value="3">1 - 3 年 (穩定期)</option>
+                                <option value="5">3 - 5 年 (警戒期)</option>
+                                <option value="6">5 年以上 (老化危險)</option>
+                            </select>
+                        </div>
+                        <div id="healthStatus" class="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
+                            <p class="text-xs text-green-400 font-bold uppercase tracking-widest">目前狀態</p>
+                            <p id="statusText" class="text-lg font-bold text-green-400">狀態優良</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6">
+                    <canvas id="healthChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化圖表
+        let ctx = document.getElementById('healthChart').getContext('2d');
+        let healthChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['磨耗剩餘', '已磨耗'],
+                datasets: [{
+                    data: [75, 25],
+                    backgroundColor: ['#3b82f6', '#1e293b'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        function calculateDiff() {
+            // 取得輸入
+            const w1 = parseFloat(document.getElementById('w1').value);
+            const a1 = parseFloat(document.getElementById('a1').value);
+            const r1 = parseFloat(document.getElementById('r1').value);
+            
+            const w2 = parseFloat(document.getElementById('w2').value);
+            const a2 = parseFloat(document.getElementById('a2').value);
+            const r2 = parseFloat(document.getElementById('r2').value);
+
+            // 直徑計算公式: (胎寬 * 扁平比 / 100 * 2) + (輪圈 * 25.4)
+            const d1 = (w1 * a1 / 100 * 2) + (r1 * 25.4);
+            const d2 = (w2 * a2 / 100 * 2) + (r2 * 25.4);
+
+            const diff = ((d2 - d1) / d1) * 100;
+            const hDiff = (d2 - d1) / 2;
+            const speedFact = 100 * (d2 / d1);
+
+            // 更新 UI
+            const diffEl = document.getElementById('diffPerc');
+            diffEl.innerText = diff.toFixed(2) + "%";
+            diffEl.className = Math.abs(diff) > 3 ? "text-2xl font-bold text-red-500" : "text-2xl font-bold text-green-400";
+            
+            document.getElementById('heightDiff').innerText = (hDiff > 0 ? "+" : "") + hDiff.toFixed(1) + " mm";
+            document.getElementById('speedErr').innerText = speedFact.toFixed(1) + " km/h";
+        }
+
+        // 健康診斷邏輯
+        function updateHealth() {
+            const mileage = parseInt(document.getElementById('mileage').value);
+            const age = parseInt(document.getElementById('tyreAge').value);
+            document.getElementById('mileageLabel').innerText = mileage.toLocaleString() + " km";
+
+            // 計算健康分 (100為滿分)
+            let score = 100;
+            score -= (mileage / 60000) * 70;
+            score -= (age / 6) * 30;
+            if(score < 0) score = 0;
+
+            const statusEl = document.getElementById('healthStatus');
+            const textEl = document.getElementById('statusText');
+
+            if(score > 60) {
+                statusEl.className = "p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-center";
+                textEl.innerText = "狀態優良";
+                textEl.className = "text-lg font-bold text-green-400";
+            } else if (score > 30) {
+                statusEl.className = "p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-center";
+                textEl.innerText = "建議檢查";
+                textEl.className = "text-lg font-bold text-yellow-500";
+            } else {
+                statusEl.className = "p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center";
+                textEl.innerText = "立即更換";
+                textEl.className = "text-lg font-bold text-red-500";
+            }
+
+            // 更新圖表
+            healthChart.data.datasets[0].data = [score, 100 - score];
+            healthChart.data.datasets[0].backgroundColor = [score > 30 ? '#3b82f6' : '#ef4444', '#1e293b'];
+            healthChart.update();
+        }
+
+        document.getElementById('mileage').addEventListener('input', updateHealth);
+        document.getElementById('tyreAge').addEventListener('change', updateHealth);
+        
+        // 初次執行
+        calculateDiff();
+        updateHealth();
+    </script>
+
+<!-- Help Info Button Module -->
+<div id="help-module">
+    <button id="help-info-btn" style="position:fixed; top:1rem; right:1rem; z-index:9999;" class="bg-indigo-600/80 hover:bg-indigo-500 backdrop-blur-md border border-white/20 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,84a12,12,0,1,1,12,12A12,12,0,0,1,112,84Z"></path></svg>
+    </button>
+    <div id="help-info-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#1e293b; border:1px solid #334155; border-radius:1rem; max-width:32rem; width:100%; margin:1rem; padding:1.5rem; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); position:relative; font-family:sans-serif;">
+            <button id="close-help-btn" style="position:absolute; top:1rem; right:1rem; color:#94a3b8; background:none; border:none; cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="font-size:1.25rem; font-weight:bold; color:white; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                ℹ️ 應用程式功能說明
+            </h2>
+            <div style="color:#cbd5e1; font-size:0.875rem; line-height:1.5; display:flex; flex-direction:column; gap:1rem;">
+                <div>
+                    <h3 style="color:#4ade80; font-weight:600; margin-bottom:0.25rem;">✅ 已實作功能</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#e2e8f0;">
+                        <li>現代化 RWD 使用者介面設計</li>\n<li>前端互動邏輯與動畫效果</li>\n<li>本地瀏覽器端資料處理</li>\n<li>Canvas 影像繪製與處理</li>\n<li>動態資料視覺化圖表</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color:#fbbf24; font-weight:600; margin-bottom:0.25rem;">🚧 尚未實作 (純前端/Mock)</h3>
+                    <ul style="list-style-type:disc; padding-left:1.25rem; color:#94a3b8;">
+                        <li>後端 API 真實數據介接</li>\n<li>雲端資料庫持久化儲存</li>\n<li>涉及 AI 運算的部分為模擬效果</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('help-info-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'flex';
+    });
+    document.getElementById('close-help-btn').addEventListener('click', () => {
+        document.getElementById('help-info-modal').style.display = 'none';
+    });
+    document.getElementById('help-info-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('help-info-modal')) {
+            document.getElementById('help-info-modal').style.display = 'none';
+        }
+    });
+</script>
+\n</body>
+</html>
