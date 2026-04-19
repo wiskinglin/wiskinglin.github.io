@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIMD — AI Markdown Studio</title>
+    <meta name="description" content="Browser-based AI-powered Markdown editor with local ONNX inference, web scraping, and streaming generation.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Marked.js for preview -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+
+    <!-- highlight.js for code blocks in preview -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="app-loader" class="app-loader">
+        <div class="loader-content">
+            <div class="loader-icon">
+                <svg viewBox="0 0 48 48" width="56" height="56">
+                    <defs>
+                        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366f1"/>
+                            <stop offset="100%" style="stop-color:#8b5cf6"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#grad)"/>
+                    <text x="24" y="30" text-anchor="middle" fill="white" font-size="20" font-weight="bold">M</text>
+                </svg>
+            </div>
+            <h2 class="loader-title">AIMD Studio</h2>
+            <p class="loader-subtitle">Initializing AI Markdown Editor...</p>
+            <div class="loader-bar-track">
+                <div class="loader-bar-fill" id="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Shell -->
+    <div id="app" class="app-shell hidden">
+        <!-- Top Navigation Bar -->
+        <header id="app-header" class="app-header">
+            <div class="header-left">
+                <div class="app-logo">
+                    <svg viewBox="0 0 48 48" width="32" height="32">
+                        <defs>
+                            <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1"/>
+                                <stop offset="100%" style="stop-color:#8b5cf6"/>
+                            </linearGradient>
+                        </defs>
+                        <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#logo-grad)"/>
+                        <text x="24" y="30" text-anchor="middle" fill="white" font-size="20" font-weight="bold">M</text>
+                    </svg>
+                </div>
+                <div class="app-title-group">
+                    <h1 class="app-name">AIMD Studio</h1>
+                    <span class="app-badge">v2.0 • Browser-Native AI</span>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="file-name-wrapper">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <input type="text" id="file-name-input" class="file-name-input" value="untitled.md" spellcheck="false">
+                    <span class="file-unsaved-dot" id="unsaved-dot" title="Unsaved changes"></span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- AI Model Status -->
+                <button id="model-status-btn" class="header-btn model-status-btn" title="AI Model Status">
+                    <span class="status-indicator idle"></span>
+                    <span class="model-label">AI Model</span>
+                    <span class="model-name" id="model-name-display">Not loaded</span>
+                </button>
+
+                <!-- Language Switcher -->
+                <button id="lang-btn" class="header-btn icon-btn" title="Switch Language">
+                    <i class="fa-solid fa-globe"></i>
+                </button>
+
+                <!-- Save Button -->
+                <button id="save-btn" class="header-btn icon-btn" title="Save Draft (Ctrl+S)">
+                    <i class="fa-regular fa-floppy-disk"></i>
+                </button>
+
+                <!-- Export Button -->
+                <button id="export-btn" class="header-btn primary-btn" title="Export Markdown">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Export</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="app-body">
+            <!-- Left: AI Command Panel (collapsible) -->
+            <aside id="ai-panel" class="ai-panel">
+                <div class="panel-header">
+                    <div class="panel-title-group">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <h2 class="panel-title" data-i18n="ai_assistant">AI Assistant</h2>
+                    </div>
+                    <button id="collapse-panel-btn" class="icon-btn-sm" title="Collapse Panel">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </button>
+                </div>
+
+                <!-- Input Mode Tabs -->
+                <div class="mode-tabs">
+                    <button class="mode-tab active" data-mode="url">
+                        <i class="fa-solid fa-link"></i>
+                        <span data-i18n="url_mode">URL</span>
+                    </button>
+                    <button class="mode-tab" data-mode="search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span data-i18n="search_mode">Search</span>
+                    </button>
+                    <button class="mode-tab" data-mode="prompt">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span data-i18n="prompt_mode">Prompt</span>
+                    </button>
+                </div>
+
+                <!-- URL Mode -->
+                <div class="mode-panel active" id="mode-url">
+                    <div class="input-group">
+                        <label data-i18n="target_url">Target URL</label>
+                        <input type="url" id="url-input" class="text-input" placeholder="https://example.com/article">
+                        <p class="input-hint">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span data-i18n="jina_hint">Jina Reader API — auto-converts webpages to clean Markdown</span>
+                        </p>
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="instruction">Instruction (optional)</label>
+                        <textarea id="url-instruction" class="text-input" rows="2" placeholder="Summarize and translate to Chinese..."></textarea>
+                    </div>
+                    <button id="url-go-btn" class="action-btn primary">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span data-i18n="fetch_and_integrate">Fetch & Integrate</span>
+                    </button>
+                </div>
+
+                <!-- Search Mode -->
+                <div class="mode-panel" id="mode-search">
+                    <div class="input-group">
+                        <label data-i18n="search_keywords">Search Keywords</label>
+                        <input type="text" id="search-input" class="text-input" placeholder="WebGPU ONNX browser AI...">
+                        <p class="input-hint">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span data-i18n="search_hint">Uses Wikipedia API for real data retrieval</span>
+                        </p>
+                    </div>
+                    <div class="input-group">
+                        <label data-i18n="instruction">Instruction (optional)</label>
+                        <textarea id="search-instruction" class="text-input" rows="2" placeholder="Write a comprehensive overview..."></textarea>
+                    </div>
+                    <button id="search-go-btn" class="action-btn primary">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span data-i18n="search_and_generate">Search & Generate</span>
+                    </button>
+                </div>
+
+                <!-- Prompt Mode -->
+                <div class="mode-panel" id="mode-prompt">
+                    <div class="input-group">
+                        <label data-i18n="ai_instruction">AI Instruction</label>
+                        <textarea id="prompt-input" class="text-input" rows="5" placeholder="Write a 500-word article about quantum computing trends..."></textarea>
+                    </div>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="use-context" checked>
+                            <span data-i18n="use_context">Include current document context</span>
+                        </label>
+                    </div>
+                    <button id="prompt-go-btn" class="action-btn primary">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span data-i18n="generate">Generate</span>
+                    </button>
+                </div>
+
+                <!-- Processing Pipeline -->
+                <div class="pipeline-status" id="pipeline-status">
+                    <h3 class="pipeline-title" data-i18n="pipeline">Processing Pipeline</h3>
+                    <div class="pipeline-steps">
+                        <div class="pipeline-step" id="step-fetch">
+                            <span class="step-icon">1</span>
+                            <span class="step-label" data-i18n="step_fetch">Fetch Data</span>
+                            <span class="step-status" id="step-fetch-status">—</span>
+                        </div>
+                        <div class="pipeline-step" id="step-preprocess">
+                            <span class="step-icon">2</span>
+                            <span class="step-label" data-i18n="step_preprocess">Preprocess</span>
+                            <span class="step-status" id="step-preprocess-status">—</span>
+                        </div>
+                        <div class="pipeline-step" id="step-prompt">
+                            <span class="step-icon">3</span>
+                            <span class="step-label" data-i18n="step_prompt">Build Prompt</span>
+                            <span class="step-status" id="step-prompt-status">—</span>
+                        </div>
+                        <div class="pipeline-step" id="step-infer">
+                            <span class="step-icon">4</span>
+                            <span class="step-label" data-i18n="step_infer">ONNX Inference</span>
+                            <span class="step-status" id="step-infer-status">—</span>
+                        </div>
+                    </div>
+                    <div class="pipeline-progress-track">
+                        <div class="pipeline-progress-fill" id="pipeline-progress"></div>
+                    </div>
+                </div>
+
+                <!-- Log Window -->
+                <div class="log-section">
+                    <div class="log-header">
+                        <span><i class="fa-solid fa-terminal"></i> <span data-i18n="logs">Logs</span></span>
+                        <button id="clear-log-btn" class="icon-btn-xs" title="Clear logs">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div class="log-window" id="log-window">
+                        <div class="log-entry info">[System] AIMD Studio initialized.</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Toggle Panel Button (when collapsed) -->
+            <button id="expand-panel-btn" class="expand-panel-btn hidden" title="Show AI Panel">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+
+            <!-- Center: Editor + Preview -->
+            <main class="editor-main">
+                <!-- Editor Toolbar -->
+                <div class="editor-toolbar">
+                    <div class="toolbar-left">
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" data-action="bold" title="Bold (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+                            <button class="toolbar-btn" data-action="italic" title="Italic (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+                            <button class="toolbar-btn" data-action="strikethrough" title="Strikethrough"><i class="fa-solid fa-strikethrough"></i></button>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" data-action="h1" title="Heading 1">H1</button>
+                            <button class="toolbar-btn" data-action="h2" title="Heading 2">H2</button>
+                            <button class="toolbar-btn" data-action="h3" title="Heading 3">H3</button>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" data-action="ul" title="Unordered List"><i class="fa-solid fa-list-ul"></i></button>
+                            <button class="toolbar-btn" data-action="ol" title="Ordered List"><i class="fa-solid fa-list-ol"></i></button>
+                            <button class="toolbar-btn" data-action="quote" title="Blockquote"><i class="fa-solid fa-quote-left"></i></button>
+                            <button class="toolbar-btn" data-action="code" title="Code Block"><i class="fa-solid fa-code"></i></button>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <div class="toolbar-group">
+                            <button class="toolbar-btn" data-action="link" title="Insert Link"><i class="fa-solid fa-link"></i></button>
+                            <button class="toolbar-btn" data-action="image" title="Insert Image"><i class="fa-solid fa-image"></i></button>
+                            <button class="toolbar-btn" data-action="table" title="Insert Table"><i class="fa-solid fa-table"></i></button>
+                            <button class="toolbar-btn" data-action="hr" title="Horizontal Rule"><i class="fa-solid fa-minus"></i></button>
+                        </div>
+                    </div>
+                    <div class="toolbar-right">
+                        <div class="view-toggle">
+                            <button class="view-btn active" data-view="split" title="Split View">
+                                <i class="fa-solid fa-columns"></i>
+                            </button>
+                            <button class="view-btn" data-view="editor" title="Editor Only">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button class="view-btn" data-view="preview" title="Preview Only">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editor + Preview Split -->
+                <div class="editor-split" id="editor-split">
+                    <div class="editor-pane" id="editor-pane">
+                        <div id="codemirror-host"></div>
+                    </div>
+                    <div class="split-handle" id="split-handle">
+                        <div class="handle-grip"></div>
+                    </div>
+                    <div class="preview-pane" id="preview-pane">
+                        <div class="preview-content" id="preview-content">
+                            <div class="preview-placeholder">
+                                <i class="fa-solid fa-eye"></i>
+                                <p data-i18n="preview_placeholder">Live preview will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar">
+                    <div class="status-left">
+                        <span class="status-item">
+                            <i class="fa-solid fa-language"></i>
+                            <span id="detected-lang">—</span>
+                        </span>
+                        <span class="status-divider"></span>
+                        <span class="status-item">
+                            <span id="char-count">0</span> chars
+                        </span>
+                        <span class="status-divider"></span>
+                        <span class="status-item">
+                            <span id="word-count">0</span> words
+                        </span>
+                        <span class="status-divider"></span>
+                        <span class="status-item">
+                            <span id="line-count">0</span> lines
+                        </span>
+                    </div>
+                    <div class="status-right">
+                        <span class="status-item" id="inference-info">
+                            <span class="status-indicator idle"></span>
+                            <span id="inference-speed">—</span>
+                        </span>
+                        <span class="status-divider"></span>
+                        <span class="status-item cursor-info" id="cursor-info">Ln 1, Col 1</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Model Loader Modal -->
+    <div class="modal-overlay" id="model-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-microchip"></i> Load Local AI Model</h3>
+                <button class="modal-close" id="model-modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="model-options">
+                    <label class="model-option active" data-model="Xenova/LaMini-Flan-T5-77M">
+                        <input type="radio" name="model-choice" value="Xenova/LaMini-Flan-T5-77M" checked>
+                        <div class="model-option-content">
+                            <div class="model-option-header">
+                                <span class="model-option-name">LaMini-Flan-T5-77M</span>
+                                <span class="model-option-size">~150MB</span>
+                            </div>
+                            <p class="model-option-desc">Lightweight, fast startup. Good for summaries and short text.</p>
+                        </div>
+                    </label>
+                    <label class="model-option" data-model="Xenova/LaMini-Flan-T5-248M">
+                        <input type="radio" name="model-choice" value="Xenova/LaMini-Flan-T5-248M">
+                        <div class="model-option-content">
+                            <div class="model-option-header">
+                                <span class="model-option-name">LaMini-Flan-T5-248M</span>
+                                <span class="model-option-size">~500MB</span>
+                            </div>
+                            <p class="model-option-desc">Balanced size and quality. Better for longer text generation.</p>
+                        </div>
+                    </label>
+                    <label class="model-option" data-model="Xenova/distilbart-cnn-6-6">
+                        <input type="radio" name="model-choice" value="Xenova/distilbart-cnn-6-6">
+                        <div class="model-option-content">
+                            <div class="model-option-header">
+                                <span class="model-option-name">DistilBART CNN</span>
+                                <span class="model-option-size">~600MB</span>
+                            </div>
+                            <p class="model-option-desc">Specialized in summarization. Best for content distillation.</p>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="model-progress-section" id="model-progress-section" style="display:none;">
+                    <div class="model-progress-info">
+                        <span id="model-download-label">Downloading model...</span>
+                        <span id="model-download-pct">0%</span>
+                    </div>
+                    <div class="model-progress-track">
+                        <div class="model-progress-fill" id="model-download-bar"></div>
+                    </div>
+                    <p class="model-progress-hint">First load downloads from Hugging Face. Cached to IndexedDB for instant reload.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn secondary" id="model-cancel-btn">Cancel</button>
+                <button class="action-btn primary" id="model-load-btn">
+                    <i class="fa-solid fa-download"></i> Load Model
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts (ESM) -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
