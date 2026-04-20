@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iTW Editor — Scenario-Driven Web App Engine</title>
+    <meta name="description" content="iTaiwan (.itw) 情境驅動編輯器：一個檔案就是一個專屬 Web 應用程式。支援簡報、圖片、試算表與文件四大場景。">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+
+    <!-- highlight.js for code blocks -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Workspace view mode styles (injected here for clarity) -->
+    <style>
+        /* View mode layout control */
+        .editor-workspace.mode-blocks .source-pane { display: none; }
+        .editor-workspace.mode-blocks .blocks-pane { display: block; }
+        .editor-workspace.mode-blocks .preview-pane { display: none; }
+
+        .editor-workspace.mode-source .source-pane { display: flex; }
+        .editor-workspace.mode-source .blocks-pane { display: none; }
+        .editor-workspace.mode-source .preview-pane { display: none; }
+
+        .editor-workspace.mode-split .source-pane { display: none; }
+        .editor-workspace.mode-split .blocks-pane { display: block; flex: 1; }
+        .editor-workspace.mode-split .preview-pane { display: block; flex: 1; }
+    </style>
+</head>
+<body>
+    <!-- ======================== LOADING SCREEN ======================== -->
+    <div id="app-loader" class="app-loader">
+        <div class="loader-content">
+            <div class="loader-logo">
+                <div class="loader-logo-inner">iTW</div>
+            </div>
+            <h2 class="loader-title">iTW Editor</h2>
+            <p class="loader-subtitle">Scenario-Driven Web App Engine</p>
+            <div class="loader-bar-track">
+                <div class="loader-bar-fill" id="loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== APP SHELL ======================== -->
+    <div id="app" class="app-shell hidden">
+
+        <!-- ======== HEADER ======== -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="header-logo">iTW</div>
+                <div class="header-title-group">
+                    <h1 class="header-app-name">iTW Editor</h1>
+                    <span class="header-version">v4.0</span>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="file-pill">
+                    <i class="fa-regular fa-file-lines"></i>
+                    <input type="text" id="file-name" value="untitled.itw" spellcheck="false">
+                    <span class="unsaved-dot" id="unsaved-dot" title="未儲存"></span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Scenario Badge -->
+                <span class="scenario-badge hidden" id="scenario-badge" data-scenario="">
+                    <i class="fa-solid fa-file"></i> —
+                </span>
+
+                <!-- Action Buttons -->
+                <button class="h-btn" id="btn-new" title="新增文件 (Ctrl+N)">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <button class="h-btn" id="btn-open" title="開啟檔案 (Ctrl+O)">
+                    <i class="fa-solid fa-folder-open"></i>
+                </button>
+                <button class="h-btn" id="btn-save" title="儲存 (Ctrl+S)">
+                    <i class="fa-regular fa-floppy-disk"></i>
+                </button>
+                <button class="h-btn primary" id="btn-export" title="匯出 .itw">
+                    <i class="fa-solid fa-download"></i>
+                    <span>匯出</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ======== MAIN BODY ======== -->
+        <div class="app-body">
+
+            <!-- ── LEFT ICON BAR ── -->
+            <nav class="icon-bar">
+                <button class="icon-bar-btn active" data-panel="outline" title="區塊大綱">
+                    <i class="fa-solid fa-layer-group"></i>
+                </button>
+                <button class="icon-bar-btn" data-panel="assets" title="素材庫">
+                    <i class="fa-solid fa-images"></i>
+                </button>
+                <button class="icon-bar-btn" data-panel="ai" title="AI 助手">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+
+                <div class="icon-bar-spacer"></div>
+
+                <button class="icon-bar-btn" id="btn-settings" title="設定">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </nav>
+
+            <!-- ── LEFT CONTEXT PANEL ── -->
+            <aside class="context-panel" id="context-panel">
+                <div class="panel-section">
+                    <div class="panel-section-title">區塊大綱 BLOCKS</div>
+                </div>
+                <div class="block-list" id="block-list">
+                    <!-- Dynamically populated -->
+                </div>
+                <div class="panel-section" style="border-bottom:none;">
+                    <button class="add-block-btn" id="add-block-panel" style="width:100%;">
+                        <i class="fa-solid fa-plus"></i> 新增區塊
+                    </button>
+                </div>
+            </aside>
+
+            <!-- ── EDITOR MAIN ── -->
+            <main class="editor-main">
+
+                <!-- Toolbar -->
+                <div class="editor-toolbar">
+                    <div class="tb-group">
+                        <button class="tb-btn" data-action="bold" title="粗體 (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+                        <button class="tb-btn" data-action="italic" title="斜體 (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+                    </div>
+                    <div class="tb-divider"></div>
+                    <div class="tb-group">
+                        <button class="tb-btn" data-action="h1" title="標題 1">H1</button>
+                        <button class="tb-btn" data-action="h2" title="標題 2">H2</button>
+                        <button class="tb-btn" data-action="h3" title="標題 3">H3</button>
+                    </div>
+                    <div class="tb-divider"></div>
+                    <div class="tb-group">
+                        <button class="tb-btn" data-action="ul" title="無序列表"><i class="fa-solid fa-list-ul"></i></button>
+                        <button class="tb-btn" data-action="ol" title="有序列表"><i class="fa-solid fa-list-ol"></i></button>
+                        <button class="tb-btn" data-action="quote" title="引用"><i class="fa-solid fa-quote-left"></i></button>
+                        <button class="tb-btn" data-action="code" title="程式碼"><i class="fa-solid fa-code"></i></button>
+                    </div>
+                    <div class="tb-divider"></div>
+                    <div class="tb-group">
+                        <button class="tb-btn" data-action="link" title="連結"><i class="fa-solid fa-link"></i></button>
+                        <button class="tb-btn" data-action="image" title="圖片"><i class="fa-solid fa-image"></i></button>
+                        <button class="tb-btn" data-action="table" title="表格"><i class="fa-solid fa-table"></i></button>
+                        <button class="tb-btn" data-action="hr" title="分隔線"><i class="fa-solid fa-minus"></i></button>
+                    </div>
+
+                    <div class="tb-spacer"></div>
+
+                    <!-- View Mode Switcher -->
+                    <div class="view-switch">
+                        <button class="view-switch-btn active" id="view-blocks" title="區塊視圖">
+                            <i class="fa-solid fa-cubes"></i> 區塊
+                        </button>
+                        <button class="view-switch-btn" id="view-source" title="原始碼">
+                            <i class="fa-solid fa-code"></i> 原始碼
+                        </button>
+                        <button class="view-switch-btn" id="view-split" title="分割預覽">
+                            <i class="fa-solid fa-columns"></i> 分割
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Workspace -->
+                <div class="editor-workspace mode-blocks">
+
+                    <!-- Source Code View -->
+                    <div class="source-pane">
+                        <textarea id="source-editor"
+                                  class="source-editor"
+                                  spellcheck="false"
+                                  autocomplete="off"
+                                  autocorrect="off"
+                                  autocapitalize="off"
+                                  placeholder="在此輸入或貼上 .itw 原始內容...&#10;&#10;範例:&#10;---JSON---&#10;{ &quot;type&quot;: &quot;document&quot; }&#10;---MD---&#10;# 標題&#10;內容..."></textarea>
+                    </div>
+
+                    <!-- Block View -->
+                    <div class="blocks-pane" id="blocks-pane">
+                        <div class="blocks-container" id="blocks-container">
+                            <!-- Dynamically populated by app.js -->
+                        </div>
+                    </div>
+
+                    <!-- Preview Pane (visible in split mode) -->
+                    <div class="preview-pane" id="preview-pane">
+                        <div class="preview-content" id="preview-content">
+                            <div class="preview-placeholder">
+                                <i class="fa-solid fa-eye"></i>
+                                <p>即時預覽將顯示在這裡</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar">
+                    <div class="status-left">
+                        <span class="status-item">
+                            <span class="status-dot ready"></span>
+                            <span id="scenario-status">General</span>
+                        </span>
+                        <span class="status-sep"></span>
+                        <span class="status-item">
+                            <span id="block-count">0</span> 區塊
+                        </span>
+                        <span class="status-sep"></span>
+                        <span class="status-item">
+                            <span id="char-count">0</span> 字元
+                        </span>
+                    </div>
+                    <div class="status-right">
+                        <span class="status-item">
+                            <i class="fa-solid fa-hard-drive" style="font-size:10px;"></i>
+                            Local-First
+                        </span>
+                        <span class="status-sep"></span>
+                        <span class="status-item">iTW v4.0</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ======================== TEMPLATE DIALOG ======================== -->
+    <div class="modal-overlay" id="template-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> 建立新文件</h3>
+                <button class="modal-close" id="template-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="template-grid">
+                    <!-- Pitch Deck -->
+                    <div class="template-card" data-scenario="deck">
+                        <div class="template-icon"><i class="fa-solid fa-display"></i></div>
+                        <div class="template-name">簡報 Pitch Deck</div>
+                        <div class="template-desc">募資簡報、產品發表、年度報告、教學投影片、工作坊引導簡報</div>
+                        <span class="template-priority p0">P0 優先</span>
+                    </div>
+                    <!-- Visual Content -->
+                    <div class="template-card" data-scenario="visual">
+                        <div class="template-icon"><i class="fa-solid fa-image"></i></div>
+                        <div class="template-name">圖片 Visual Content</div>
+                        <div class="template-desc">社群貼文、YT 封面、行銷 Banner、活動海報、品牌 Logo、名片</div>
+                        <span class="template-priority p0">P0 優先</span>
+                    </div>
+                    <!-- DataGrid -->
+                    <div class="template-card" data-scenario="datagrid">
+                        <div class="template-icon"><i class="fa-solid fa-table"></i></div>
+                        <div class="template-name">試算表 DataGrid</div>
+                        <div class="template-desc">預算規劃、專案追蹤、庫存盤點、財務報表、ROI 計算機</div>
+                        <span class="template-priority p1">P1</span>
+                    </div>
+                    <!-- Document -->
+                    <div class="template-card" data-scenario="document">
+                        <div class="template-icon"><i class="fa-solid fa-file-lines"></i></div>
+                        <div class="template-name">文件 Document</div>
+                        <div class="template-desc">商業企劃書、履歷表、會議記錄、合約、報價單、講義</div>
+                        <span class="template-priority p1">P1</span>
+                    </div>
+                    <!-- Blank -->
+                    <div class="template-card" data-scenario="blank" style="grid-column: span 2;">
+                        <div class="template-icon" style="background:rgba(255,255,255,0.05);color:var(--n-500);">
+                            <i class="fa-solid fa-file"></i>
+                        </div>
+                        <div class="template-name">空白文件</div>
+                        <div class="template-desc">從頭開始，自由組合 MD / CSV / JSON / HTML / SLIDE 區塊</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn secondary" id="template-cancel-btn" onclick="closeTemplateDialog()">取消</button>
+                <button class="action-btn primary" id="template-create-btn">
+                    <i class="fa-solid fa-plus"></i> 建立
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
