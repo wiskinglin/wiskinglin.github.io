@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sky Fly</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Noto+Sans+TC:wght@700&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #0f172a;
+            font-family: 'Noto Sans TC', sans-serif;
+            touch-action: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .game-font {
+            font-family: 'Bungee', cursive;
+        }
+
+        .text-outline {
+            -webkit-text-stroke: 2px #020617;
+            text-shadow: 0 6px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse-soft {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow: 0 0 30px rgba(253, 224, 71, 0.6);
+            }
+        }
+
+        .btn-pulse {
+            animation: pulse-soft 2s infinite;
+        }
+
+        #mute-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+            transition: opacity 0.2s;
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center h-screen bg-slate-950">
+
+    <div id="ui-layer"
+        class="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none pb-safe">
+
+        <div class="absolute top-safe-8 top-8 left-0 right-0 flex justify-between items-start px-6 md:px-10">
+            <div class="flex flex-col items-start pointer-events-auto">
+                <div class="text-white text-[10px] uppercase tracking-[0.3em] opacity-80 font-bold drop-shadow-md">
+                    Distance</div>
+                <div id="score"
+                    class="text-white text-5xl md:text-7xl game-font text-outline transition-transform duration-75 origin-left">
+                    0m</div>
+                <div id="gamepad-status"
+                    class="hidden text-green-400 text-[10px] font-bold tracking-widest mt-1 bg-black/40 px-2 py-1 rounded-md">
+                    🎮 手把已連接</div>
+            </div>
+            <button id="mute-btn" onclick="toggleMute(event)"
+                class="pointer-events-auto p-3 md:p-4 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full border border-white/20 transition-transform active:scale-90">
+                <svg id="icon-unmuted" viewBox="0 0 24 24">
+                    <path
+                        d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                </svg>
+                <svg id="icon-muted" class="hidden" viewBox="0 0 24 24">
+                    <path
+                        d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                </svg>
+            </button>
+        </div>
+
+        <div id="start-screen"
+            class="bg-white/10 backdrop-blur-2xl p-8 md:p-12 rounded-[2rem] border border-white/20 text-center pointer-events-auto shadow-2xl transition-opacity duration-500">
+            <h1 class="text-white text-6xl md:text-7xl mb-3 game-font tracking-tighter drop-shadow-2xl">SKY FLY</h1>
+            <div
+                class="bg-slate-900/60 rounded-full py-2.5 px-6 mb-8 inline-block border border-slate-600/50 shadow-inner">
+                <span class="text-sky-200 text-sm font-bold tracking-wider">最高紀錄: <span id="best-score-display"
+                        class="text-yellow-400 text-lg ml-1">0</span>m</span>
+            </div>
+            <p class="text-white/80 mb-8 text-sm font-bold tracking-[0.2em] animate-pulse">點擊、空白鍵 或 🎮手把(A)</p>
+            <button onclick="startGame()"
+                class="w-full btn-pulse bg-gradient-to-b from-yellow-300 to-yellow-500 hover:from-yellow-200 hover:to-yellow-400 text-slate-900 font-black py-4 px-12 rounded-full text-2xl transition-transform active:scale-95 border-b-[5px] border-yellow-600">
+                啟動引擎
+            </button>
+        </div>
+
+        <div id="game-over-screen"
+            class="hidden bg-slate-950/80 backdrop-blur-2xl p-8 md:p-12 rounded-[2rem] border border-red-500/30 text-center pointer-events-auto shadow-2xl fade-in mt-10">
+            <h2
+                class="text-red-500 text-6xl md:text-7xl mb-3 game-font drop-shadow-[0_0_15px_rgba(239,68,68,0.5)] text-outline">
+                CRASHED</h2>
+            <div class="bg-slate-900/80 rounded-3xl p-6 mb-8 border border-white/10 shadow-inner">
+                <p class="text-slate-400 text-sm mb-1 font-bold tracking-widest">本次飛行</p>
+                <p id="final-score" class="text-white text-6xl font-black game-font mb-3 tracking-tighter">0m</p>
+                <p class="text-slate-500 text-sm font-bold border-t border-slate-700/50 pt-3 mt-1">歷史最佳: <span
+                        id="game-over-best" class="text-yellow-500 ml-1 text-lg">0</span>m</p>
+            </div>
+            <button onclick="startGame()"
+                class="w-full bg-white hover:bg-gray-100 text-red-700 font-black py-4 px-12 rounded-full text-xl shadow-[0_5px_15px_rgba(255,255,255,0.2)] transition-transform active:scale-95 border-b-[5px] border-gray-300">
+                重新挑戰
+            </button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const finalScoreEl = document.getElementById('final-score');
+        const bestScoreDisplays = [document.getElementById('best-score-display'), document.getElementById('game-over-best')];
+        const gamepadStatus = document.getElementById('gamepad-status');
+
+        // 系統與遊戲狀態
+        let gameActive = false;
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('skyBirdHighScore')) || 0;
+        let baseSpeed = 6;
+        let currentGap = 300;
+        let lastTime = 0;
+
+        // 視覺特效變數
+        let screenShake = 0;
+        let flashAlpha = 0;
+        let isMuted = false;
+        let dayTimePhase = 0; // 0 = 白天, 1 = 黃昏, 2 = 黑夜
+
+        bestScoreDisplays.forEach(el => el.innerText = highScore);
+
+        // Web Audio API
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function toggleMute(e) {
+            e.stopPropagation();
+            isMuted = !isMuted;
+            document.getElementById('icon-unmuted').classList.toggle('hidden');
+            document.getElementById('icon-muted').classList.toggle('hidden');
+        }
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (isMuted || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+            if (type === 'flap') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(700, now + 0.1);
+                gainNode.gain.setValueAtTime(0.1, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'crash') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.exponentialRampToValueAtTime(20, now + 0.4);
+                gainNode.gain.setValueAtTime(0.25, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            }
+        }
+
+        // ================= 物件池 (Object Pooling) =================
+        const PARTICLE_COUNT = 100;
+        const OBSTACLE_COUNT = 6;
+        const CLOUD_COUNT = 12;
+        const MOUNTAIN_COUNT = 6;
+        const STAR_COUNT = 30; // 黑夜星星
+
+        const particles = Array.from({ length: PARTICLE_COUNT }, () => ({ active: false, x: 0, y: 0, vx: 0, vy: 0, life: 0, size: 0, color: '' }));
+        const obstacles = Array.from({ length: OBSTACLE_COUNT }, () => ({ active: false, x: 0, top: 0, bottom: 0, width: 0 }));
+        const clouds = Array.from({ length: CLOUD_COUNT }, () => ({ x: 0, y: 0, scale: 0, width: 0, speedMult: 0 }));
+        const mountains = Array.from({ length: MOUNTAIN_COUNT }, () => ({ x: 0, width: 0, height: 0 }));
+        const stars = Array.from({ length: STAR_COUNT }, () => ({ x: Math.random(), y: Math.random(), size: Math.random() * 2, twinkle: Math.random() }));
+
+        const bird = { x: 0, y: 0, radius: 15, velocity: 0, gravity: 0.38, lift: -8, tilt: 0, wingPhase: 0 };
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            canvas.style.width = `${window.innerWidth}px`;
+            canvas.style.height = `${window.innerHeight}px`;
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.scale(dpr, dpr);
+
+            if (!gameActive) {
+                bird.y = window.innerHeight / 2;
+                bird.x = window.innerWidth < 768 ? window.innerWidth * 0.25 : window.innerWidth * 0.2;
+            }
+        }
+        window.addEventListener('resize', resize);
+
+        function initScenery() {
+            clouds.forEach(c => {
+                c.x = Math.random() * window.innerWidth; c.y = Math.random() * window.innerHeight * 0.6;
+                c.scale = Math.random() * 1.5 + 0.5; c.width = Math.random() * 100 + 80; c.speedMult = Math.random() * 0.5 + 0.5;
+            });
+            let mx = 0;
+            mountains.forEach(m => {
+                m.width = Math.random() * 400 + 400; m.height = Math.random() * 150 + 150;
+                m.x = mx; mx += m.width * 0.5;
+            });
+        }
+
+        // ================= 輸入控制與手把 =================
+        let lastGamepadFlap = false;
+
+        window.addEventListener("gamepadconnected", () => gamepadStatus.classList.remove('hidden'));
+        window.addEventListener("gamepaddisconnected", () => gamepadStatus.classList.add('hidden'));
+
+        function pollGamepad() {
+            const gamepads = navigator.getGamepads();
+            if (gamepads[0]) {
+                const gp = gamepads[0];
+                // Button 0 (A/Cross), Button 7 (R2/RT)
+                const pressed = gp.buttons[0]?.pressed || gp.buttons[7]?.pressed;
+                if (pressed && !lastGamepadFlap) flap({ target: document.body }); // Mock event to bypass UI check
+                lastGamepadFlap = pressed;
+            }
+        }
+
+        const flap = (e) => {
+            if (e && e.target && e.target.closest && e.target.closest('button')) return;
+            if (e && e.type === 'touchstart') e.preventDefault();
+            initAudio();
+
+            if (!gameActive) return;
+            bird.velocity = bird.lift;
+            playSound('flap');
+            createFlapParticles();
+
+            scoreEl.style.transform = 'scale(1.15) rotate(-2deg)';
+            setTimeout(() => scoreEl.style.transform = 'scale(1) rotate(0)', 80);
+        };
+
+        window.addEventListener('keydown', (e) => { if (e.code === 'Space') flap(e); });
+        window.addEventListener('touchstart', flap, { passive: false });
+        window.addEventListener('mousedown', flap);
+
+        // ================= 遊戲主邏輯 =================
+        function startGame() {
+            initAudio();
+            gameActive = true;
+            score = 0; dayTimePhase = 0;
+            baseSpeed = window.innerWidth < 768 ? 4.8 : 7;
+            currentGap = window.innerHeight * 0.45;
+            bird.y = window.innerHeight / 2;
+            bird.velocity = 0;
+            screenShake = 0; flashAlpha = 0;
+
+            particles.forEach(p => p.active = false);
+            obstacles.forEach(o => o.active = false);
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+        }
+
+        function spawnObstacle() {
+            const obs = obstacles.find(o => !o.active);
+            if (!obs) return;
+
+            const minHeight = window.innerHeight * 0.15;
+            // 難度極限縮小到 150px
+            const targetGap = Math.max(150, window.innerHeight * 0.45 - (score * 1.2));
+            currentGap += (targetGap - currentGap) * 0.1;
+
+            const height = Math.random() * (window.innerHeight - currentGap - minHeight * 2) + minHeight;
+
+            obs.active = true;
+            obs.x = window.innerWidth + 50;
+            obs.top = height;
+            obs.bottom = window.innerHeight - height - currentGap;
+            obs.width = window.innerWidth < 768 ? 65 : 85;
+        }
+
+        function createFlapParticles() {
+            let spawned = 0;
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                if (!particles[i].active) {
+                    const p = particles[i];
+                    p.active = true; p.x = bird.x - 12; p.y = bird.y + (Math.random() * 10 - 5);
+                    p.vx = Math.random() * -3 - 2; p.vy = Math.random() * 2 - 1;
+                    p.life = 1; p.size = Math.random() * 3 + 2; p.color = '255, 255, 255';
+                    spawned++; if (spawned >= 3) break;
+                }
+            }
+        }
+
+        function createExplosion() {
+            particles.forEach(p => {
+                p.active = true; p.x = bird.x; p.y = bird.y;
+                p.vx = (Math.random() - 0.5) * 20; p.vy = (Math.random() - 0.5) * 20;
+                p.life = 1.5; p.size = Math.random() * 6 + 3; p.color = Math.random() > 0.5 ? '239, 68, 68' : '253, 224, 71';
+            });
+        }
+
+        function drawBird() {
+            ctx.save();
+            ctx.translate(bird.x, bird.y);
+            bird.tilt = Math.min(Math.PI / 3, Math.max(-Math.PI / 4, bird.velocity * 0.1));
+            ctx.rotate(bird.tilt);
+            bird.wingPhase += 0.4 + (bird.velocity < 0 ? 0.3 : 0);
+            const wingY = Math.sin(bird.wingPhase) * 12;
+
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath(); ctx.ellipse(0, 0, 18, 14, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fde047';
+            ctx.beginPath(); ctx.ellipse(2, 4, 12, 6, -Math.PI / 8, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ea580c';
+            ctx.beginPath(); ctx.ellipse(-4, wingY, 12, 7, Math.PI / 6, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.arc(9, -4, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#020617';
+            ctx.beginPath(); ctx.arc(11, -4, 2, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.moveTo(15, -2); ctx.lineTo(26, 2); ctx.lineTo(15, 6); ctx.fill();
+            ctx.restore();
+        }
+
+        function updateGame(timeScale) {
+            bird.velocity += bird.gravity * timeScale;
+            bird.y += bird.velocity * timeScale;
+
+            score += (baseSpeed / 60) * timeScale;
+            scoreEl.innerText = `${Math.floor(score)}m`;
+            let currentSpeed = baseSpeed + (score * 0.008);
+
+            // 晝夜變數計算 (每 150m 一個循環)
+            dayTimePhase = (score % 450) / 450;
+
+            // 粒子更新
+            particles.forEach(p => {
+                if (!p.active) return;
+                p.x += (p.vx - currentSpeed * 0.5) * timeScale; p.y += p.vy * timeScale;
+                p.life -= 0.04 * timeScale;
+                if (p.life <= 0) p.active = false;
+            });
+
+            // 障礙物管理
+            const activeObs = obstacles.filter(o => o.active);
+            if (activeObs.length === 0 || Math.max(...activeObs.map(o => o.x)) < window.innerWidth - (window.innerWidth < 768 ? 260 : 400)) {
+                spawnObstacle();
+            }
+
+            obstacles.forEach(obs => {
+                if (!obs.active) return;
+                obs.x -= currentSpeed * timeScale;
+
+                let testX = Math.max(obs.x, Math.min(bird.x, obs.x + obs.width));
+                let testYTop = Math.min(bird.y, obs.top);
+                let testYBottom = Math.max(bird.y, window.innerHeight - obs.bottom);
+
+                if (Math.hypot(bird.x - testX, bird.y - testYTop) <= bird.radius * 0.7 ||
+                    Math.hypot(bird.x - testX, bird.y - testYBottom) <= bird.radius * 0.7) {
+                    triggerCrash();
+                }
+                if (obs.x + obs.width < -100) obs.active = false;
+            });
+
+            if (bird.y + bird.radius > window.innerHeight || bird.y - bird.radius < -50) triggerCrash();
+        }
+
+        function triggerCrash() {
+            gameActive = false;
+            playSound('crash');
+            screenShake = 30; flashAlpha = 1;
+            createExplosion();
+
+            const finalDisplayScore = Math.floor(score);
+            if (finalDisplayScore > highScore) {
+                highScore = finalDisplayScore;
+                localStorage.setItem('skyBirdHighScore', highScore);
+            }
+
+            setTimeout(() => {
+                bestScoreDisplays.forEach(el => el.innerText = highScore);
+                finalScoreEl.innerText = `${finalDisplayScore}m`;
+                gameOverScreen.classList.remove('hidden');
+            }, 800);
+        }
+
+        function getSkyColors(phase) {
+            // HSL 顏色插值邏輯
+            if (phase < 0.3) return ['#0284c7', '#7dd3fc', '#0369a1']; // 白天
+            if (phase < 0.5) return ['#9a3412', '#f59e0b', '#7c2d12']; // 黃昏
+            if (phase < 0.8) return ['#0f172a', '#1e293b', '#020617']; // 黑夜
+            return ['#0369a1', '#38bdf8', '#075985']; // 黎明過渡
+        }
+
+        function draw() {
+            ctx.save();
+            if (screenShake > 0) {
+                ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+                screenShake *= 0.85; if (screenShake < 0.5) screenShake = 0;
+            }
+
+            const colors = getSkyColors(dayTimePhase);
+            const gradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
+            gradient.addColorStop(0, colors[0]);
+            gradient.addColorStop(1, colors[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(-20, -20, window.innerWidth + 40, window.innerHeight + 40);
+
+            // 黑夜星星
+            if (dayTimePhase > 0.4 && dayTimePhase < 0.9) {
+                ctx.fillStyle = 'white';
+                stars.forEach(s => {
+                    s.twinkle += 0.05;
+                    ctx.globalAlpha = Math.abs(Math.sin(s.twinkle)) * 0.8 + 0.2;
+                    ctx.beginPath(); ctx.arc(s.x * window.innerWidth, s.y * window.innerHeight * 0.5, s.size, 0, Math.PI * 2); ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+            }
+
+            // 山脈 (永遠滾動)
+            ctx.fillStyle = colors[2];
+            mountains.forEach(m => {
+                ctx.beginPath(); ctx.moveTo(m.x, window.innerHeight);
+                ctx.lineTo(m.x + m.width / 2, window.innerHeight - m.height);
+                ctx.lineTo(m.x + m.width, window.innerHeight); ctx.fill();
+            });
+
+            // 雲朵 (永遠滾動)
+            ctx.fillStyle = dayTimePhase > 0.5 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)';
+            clouds.forEach(c => {
+                ctx.beginPath(); ctx.roundRect(c.x, c.y, c.width, 30 * c.scale, 15 * c.scale); ctx.fill();
+            });
+
+            // 粒子
+            particles.forEach(p => {
+                if (!p.active) return;
+                ctx.fillStyle = `rgba(${p.color}, ${Math.min(p.life, 1)})`;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+            });
+
+            // 障礙物
+            obstacles.forEach(obs => {
+                if (!obs.active) return;
+                const obsGradient = ctx.createLinearGradient(obs.x, 0, obs.x + obs.width, 0);
+                obsGradient.addColorStop(0, '#1e293b'); obsGradient.addColorStop(1, '#334155');
+                ctx.fillStyle = obsGradient;
+                const highlight = dayTimePhase > 0.5 ? '#475569' : '#94a3b8';
+
+                ctx.beginPath(); ctx.roundRect(obs.x, 0, obs.width, obs.top, [0, 0, 8, 8]); ctx.fill();
+                ctx.fillStyle = highlight; ctx.fillRect(obs.x + obs.width - 8, 0, 4, obs.top - 4);
+
+                ctx.fillStyle = obsGradient;
+                ctx.beginPath(); ctx.roundRect(obs.x, window.innerHeight - obs.bottom, obs.width, obs.bottom, [8, 8, 0, 0]); ctx.fill();
+                ctx.fillStyle = highlight; ctx.fillRect(obs.x + obs.width - 8, window.innerHeight - obs.bottom + 4, 4, obs.bottom);
+
+                // 警示燈條 (晚上更亮)
+                ctx.fillStyle = dayTimePhase > 0.5 ? '#fbbf24' : '#ef4444';
+                ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = dayTimePhase > 0.5 ? 15 : 0;
+                ctx.fillRect(obs.x, obs.top - 12, obs.width, 8);
+                ctx.fillRect(obs.x, window.innerHeight - obs.bottom + 4, obs.width, 8);
+                ctx.shadowBlur = 0;
+            });
+
+            if (gameActive) drawBird();
+
+            if (flashAlpha > 0) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha})`;
+                ctx.fillRect(-20, -20, window.innerWidth + 40, window.innerHeight + 40);
+                flashAlpha -= 0.08;
+            }
+            ctx.restore();
+        }
+
+        // 永動迴圈
+        function animate(timestamp) {
+            let dt = (timestamp - lastTime) / 1000;
+            if (dt > 0.1 || !lastTime) dt = 0.016;
+            lastTime = timestamp;
+
+            const timeScale = dt * 60;
+            let idleSpeed = baseSpeed * 0.5;
+
+            pollGamepad(); // 偵測手把輸入
+
+            if (gameActive) {
+                updateGame(timeScale);
+            } else {
+                // 死亡或選單狀態下，環境繼續滾動
+                mountains.forEach(m => {
+                    m.x -= idleSpeed * 0.1 * timeScale;
+                    if (m.x + m.width < 0) m.x = Math.max(...mountains.map(mt => mt.x + mt.width * 0.5));
+                });
+                clouds.forEach(c => {
+                    c.x -= idleSpeed * 0.25 * c.scale * c.speedMult * timeScale;
+                    if (c.x + c.width < -50) { c.x = window.innerWidth + 50; c.y = Math.random() * window.innerHeight * 0.6; }
+                });
+                particles.forEach(p => {
+                    if (!p.active) return;
+                    p.x += p.vx * timeScale; p.y += p.vy * timeScale; p.life -= 0.03 * timeScale;
+                    if (p.life <= 0) p.active = false;
+                });
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // 系統啟動
+        resize();
+        initScenery();
+        requestAnimationFrame(animate); // 啟動永動迴圈
+    </script>
+</body>
+
+</html>

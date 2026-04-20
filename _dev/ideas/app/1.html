@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocket Camp 隨身手帳 V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #FDF6E3;
+            background-image: radial-gradient(#8FBC8F 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        /* 自訂核取方塊樣式 */
+        .task-checkbox:checked+div {
+            background-color: #78C8A0;
+            border-color: #78C8A0;
+            transform: scale(1.1);
+        }
+
+        .task-checkbox:checked+div i {
+            display: block;
+        }
+
+        .task-completed-style {
+            opacity: 0.6;
+            background-color: #F3F4F6 !important;
+        }
+
+        .task-completed-style .task-text {
+            text-decoration: line-through;
+            color: #9CA3AF;
+        }
+
+        /* 頁籤過渡 */
+        .tab-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .tab-active {
+            background-color: #78C8A0;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(120, 200, 160, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .tab-inactive {
+            background-color: #E5E7EB;
+            color: #9CA3AF;
+        }
+
+        .tab-inactive:hover {
+            background-color: #D1D5DB;
+            color: #6B7280;
+        }
+
+        /* 隱藏原生捲軸但保留功能 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #D1D5DB;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div
+        class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-white outline outline-4 outline-[#E5E0C8]">
+
+        <div class="bg-gradient-to-b from-[#8FBC8F] to-[#78C8A0] p-6 text-center text-white relative">
+            <div
+                class="absolute top-4 right-4 bg-white/25 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center">
+                <i class="fas fa-leaf mr-1"></i> Pocket Camp
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-wide mt-2 drop-shadow-md">隨身手帳</h1>
+            <p class="text-emerald-100 font-bold mt-1 text-sm tracking-wider">DAILY PLANNER</p>
+        </div>
+
+        <div class="flex p-4 gap-3 bg-[#F9F7F1]">
+            <button id="tab-tasks" class="tab-btn flex-1 py-3 rounded-2xl font-bold tab-active"
+                onclick="switchTab('tasks')">
+                <i class="fas fa-check-square mr-2"></i>日常任務
+            </button>
+            <button id="tab-villagers" class="tab-btn flex-1 py-3 rounded-2xl font-bold tab-inactive"
+                onclick="switchTab('villagers')">
+                <i class="fas fa-paw mr-2"></i>動物圖鑑
+            </button>
+        </div>
+
+        <div class="p-6 bg-white min-h-[420px]">
+
+            <div id="section-tasks" class="block animate-fade-in">
+                <div class="mb-5">
+                    <div class="flex justify-between text-sm font-bold text-gray-500 mb-2">
+                        <span>今日進度</span>
+                        <span id="progress-text" class="text-[#78C8A0]">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                        <div id="progress-bar"
+                            class="bg-[#78C8A0] h-3 rounded-full transition-all duration-500 ease-out"
+                            style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-end mb-3">
+                    <h2 class="text-lg font-extrabold text-gray-800">代辦事項</h2>
+                    <button onclick="resetTasks(true)"
+                        class="text-sm text-gray-400 font-bold hover:text-emerald-600 transition-colors">
+                        <i class="fas fa-undo mr-1"></i>重新開始
+                    </button>
+                </div>
+                <div id="task-list" class="space-y-3">
+                </div>
+            </div>
+
+            <div id="section-villagers" class="hidden animate-fade-in">
+                <h2 class="text-lg font-extrabold text-gray-800 mb-4">動物喜好速查</h2>
+                <div class="relative mb-4">
+                    <input type="text" id="search-input" placeholder="輸入動物名稱或主題..."
+                        class="w-full bg-[#F3F4F6] border-none rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-[#78C8A0] focus:outline-none font-semibold text-gray-700 placeholder-gray-400 transition-shadow">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 text-lg"></i>
+                </div>
+                <div id="villager-list" class="space-y-3 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- 核心資料區 ---
+        const defaultTasks = [
+            { id: 1, title: '滿足營地動物的請求', completed: false, icon: 'fa-comment-dots', desc: '每3小時更新一次' },
+            { id: 2, title: '前往礦山挖礦', completed: false, icon: 'fa-gem', desc: 'Shovelstrike Quarry' },
+            { id: 3, title: '搖晃不結果的樹', completed: false, icon: 'fa-tree', desc: '尋找隱藏的鈴錢' },
+            { id: 4, title: '查看市場盒子', completed: false, icon: 'fa-store', desc: 'Market Box' },
+            { id: 5, title: '收集特產水果', completed: false, icon: 'fa-apple-alt', desc: '檸檬/葡萄/荔枝' }
+        ];
+
+        const villagers = [
+            { name: '小潤 (Marshal)', theme: '鄉村 (Rustic)', type: '松鼠', color: '#B4E197' },
+            { name: '傑克 (Raymond)', theme: '華麗 (Elegant)', type: '貓', color: '#A78BFA' },
+            { name: '莉莉安 (Bunnie)', theme: '可愛 (Cute)', type: '兔子', color: '#F9A8D4' },
+            { name: '阿波羅 (Apollo)', theme: '酷 (Cool)', type: '老鷹', color: '#60A5FA' },
+            { name: '牛奶糖 (Goldie)', theme: '自然 (Natural)', type: '狗', color: '#FCD34D' },
+            { name: '彭花 (Rosie)', theme: '可愛 (Cute)', type: '貓', color: '#F9A8D4' },
+            { name: '彼得 (Beau)', theme: '自然 (Natural)', type: '鹿', color: '#FCD34D' },
+            { name: '美玲 (Judy)', theme: '可愛 (Cute)', type: '小熊', color: '#F9A8D4' }
+        ];
+
+        let currentTasks = [];
+
+        // --- 初始化與跨日重置邏輯 ---
+        function initApp() {
+            const today = new Date().toLocaleDateString();
+            const lastDate = localStorage.getItem('pocketCampLastDate');
+            const savedTasks = localStorage.getItem('pocketCampTasks');
+
+            // 如果是新的一天，或者沒有存檔，則載入預設值（深拷貝避免參照污染）
+            if (lastDate !== today || !savedTasks) {
+                currentTasks = JSON.parse(JSON.stringify(defaultTasks));
+                localStorage.setItem('pocketCampLastDate', today);
+                saveTasks();
+            } else {
+                currentTasks = JSON.parse(savedTasks);
+            }
+
+            renderTasks();
+            renderVillagers();
+        }
+
+        // --- UI 切換邏輯 ---
+        function switchTab(tab) {
+            const taskBtn = document.getElementById('tab-tasks');
+            const villagerBtn = document.getElementById('tab-villagers');
+            const taskSec = document.getElementById('section-tasks');
+            const villagerSec = document.getElementById('section-villagers');
+
+            if (tab === 'tasks') {
+                taskBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-active';
+                villagerBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-inactive';
+                taskSec.classList.remove('hidden');
+                villagerSec.classList.add('hidden');
+            } else {
+                villagerBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-active';
+                taskBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-inactive';
+                villagerSec.classList.remove('hidden');
+                taskSec.classList.add('hidden');
+            }
+        }
+
+        // --- 任務處理邏輯 ---
+        function renderTasks() {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+            let completedCount = 0;
+
+            currentTasks.forEach((task, index) => {
+                if (task.completed) completedCount++;
+
+                const wrapperClass = task.completed
+                    ? 'task-completed-style bg-gray-50'
+                    : 'bg-[#F9F7F1] hover:bg-[#f1ede1] hover:shadow-sm';
+
+                taskList.innerHTML += `
+                    <label class="flex items-center p-3.5 rounded-2xl cursor-pointer transition-all duration-300 ${wrapperClass}">
+                        <div class="relative flex items-center justify-center w-6 h-6 mr-4 flex-shrink-0">
+                            <input type="checkbox" class="task-checkbox opacity-0 absolute w-full h-full cursor-pointer z-10" 
+                                ${task.completed ? 'checked' : ''} 
+                                onchange="toggleTask(${index})">
+                            <div class="w-6 h-6 rounded-md border-2 border-[#D1D5DB] bg-white transition-all flex items-center justify-center">
+                                <i class="fas fa-check text-white text-sm hidden"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 flex items-center min-w-0">
+                            <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center mr-3 shadow-sm text-[#78C8A0] flex-shrink-0">
+                                <i class="fas ${task.icon}"></i>
+                            </div>
+                            <div class="flex flex-col truncate">
+                                <span class="task-text font-bold text-gray-700 transition-colors truncate">${task.title}</span>
+                                <span class="text-xs text-gray-400 font-semibold mt-0.5 truncate">${task.desc}</span>
+                            </div>
+                        </div>
+                    </label>
+                `;
+            });
+
+            updateProgress(completedCount, currentTasks.length);
+            saveTasks();
+        }
+
+        function updateProgress(completed, total) {
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            progressBar.style.width = `${percentage}%`;
+            progressText.innerText = `${percentage}%`;
+
+            if (percentage === 100) {
+                progressBar.classList.replace('bg-[#78C8A0]', 'bg-yellow-400');
+                progressText.classList.replace('text-[#78C8A0]', 'text-yellow-500');
+                progressText.innerText = '完成！🎉';
+            } else {
+                progressBar.classList.replace('bg-yellow-400', 'bg-[#78C8A0]');
+                progressText.classList.replace('text-yellow-500', 'text-[#78C8A0]');
+            }
+        }
+
+        function toggleTask(index) {
+            currentTasks[index].completed = !currentTasks[index].completed;
+            renderTasks();
+        }
+
+        function resetTasks(manual = false) {
+            if (manual && !confirm('確定要清除今天的進度嗎？')) return;
+            currentTasks = JSON.parse(JSON.stringify(defaultTasks));
+            renderTasks();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('pocketCampTasks', JSON.stringify(currentTasks));
+        }
+
+        // --- 動物圖鑑邏輯 ---
+        function renderVillagers(filterText = '') {
+            const list = document.getElementById('villager-list');
+            list.innerHTML = '';
+
+            const filtered = villagers.filter(v =>
+                v.name.toLowerCase().includes(filterText.toLowerCase()) ||
+                v.theme.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center text-gray-400 py-10 flex flex-col items-center">
+                        <i class="fas fa-search-minus text-4xl mb-3 text-gray-300"></i>
+                        <span class="font-bold">找不到該動物喔！</span>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach(v => {
+                list.innerHTML += `
+                    <div class="flex items-center justify-between p-3.5 bg-white border-2 border-gray-100 rounded-2xl hover:border-[#78C8A0] transition-colors shadow-sm hover:shadow-md">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-800 text-sm">${v.name}</span>
+                            <span class="text-xs text-gray-400 font-bold mt-0.5"><i class="fas fa-tag mr-1 text-gray-300"></i>${v.type}</span>
+                        </div>
+                        <div class="px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center" style="background-color: ${v.color}25; color: ${v.color.replace('B4E197', '65A30D').replace('A78BFA', '7C3AED').replace('F9A8D4', 'DB2777').replace('60A5FA', '2563EB').replace('FCD34D', 'D97706')}; border: 1px solid ${v.color}40;">
+                            ${v.theme}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 事件綁定 ---
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            renderVillagers(e.target.value);
+        });
+
+        // --- 啟動 APP ---
+        initApp();
+    </script>
+</body>
+
+</html>

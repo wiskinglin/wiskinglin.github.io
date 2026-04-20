@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="theme-dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design First - Premium Design Resources</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        design: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            accent: '#6366f1'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #6366f1;
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+
+        .theme-light {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --accent: #4f46e5;
+            --card-border: rgba(0, 0, 0, 0.05);
+        }
+
+        .theme-design {
+            --bg-primary: #000000;
+            --bg-secondary: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --accent: #f59e0b;
+            --card-border: rgba(245, 158, 11, 0.2);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .glass-hero {
+            background: radial-gradient(circle at 50% 0%, var(--accent) 0%, transparent 70%);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .resource-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--card-border);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .resource-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .sticky-nav {
+            background: rgba(var(--bg-primary-rgb), 0.7);
+            backdrop-blur: 16px;
+        }
+
+        .theme-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-btn.active {
+            border-color: var(--accent);
+        }
+
+        /* Section dividers */
+        .section-header::after {
+            content: '';
+            display: block;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            margin-top: 8px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            .resource-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="font-sans antialiased">
+    <!-- Hero Background Effect -->
+    <div class="fixed inset-0 glass-hero z-[-1]"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/5 backdrop-blur-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <a href="../../index.html" class="font-display font-bold text-xl tracking-tight hover:opacity-80 transition-opacity">
+                        <span class="text-indigo-500">DF.</span> BOOKMARK
+                    </a>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="flex gap-2 p-1 rounded-full border border-white/10 bg-black/20">
+                        <button onclick="setTheme('dark')" id="btn-dark" class="theme-btn bg-slate-900" title="Dark Mode"></button>
+                        <button onclick="setTheme('light')" id="btn-light" class="theme-btn bg-slate-100" title="Light Mode"></button>
+                        <button onclick="setTheme('design')" id="btn-design" class="theme-btn bg-amber-500" title="Design Mode"></button>
+                    </div>
+                    <a href="../../index.html" class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity hidden sm:block">Back Home</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-16 animate-slide-up">
+            <h1 class="font-display text-4xl sm:text-6xl font-extrabold mb-6 tracking-tight">
+                Design <span class="text-indigo-500">First.</span>
+            </h1>
+            <p class="text-lg sm:text-xl opacity-60 max-w-2xl leading-relaxed">
+                精心挑選的全球頂尖數位設計工作室、傳奇設計師與創意開發者清單。現代網頁工藝與使用者體驗的最高標竿。
+            </p>
+        </header>
+
+        <!-- Dynamic Sections -->
+        <div id="content-area" class="space-y-20">
+            <!-- Content will be injected here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-10 border-t border-white/5">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-sm opacity-40 font-display uppercase tracking-widest">
+                Keep Creating & Stay Inspired
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const data = [
+            {
+                category: "1. 全球知名數位廣告與產品工作室",
+                items: [
+                    { name: "Lusion", desc: "數位工藝與實驗性視覺的頂尖工作室", url: "https://lusion.co" },
+                    { name: "Resn", desc: "創意數位設計的常勝軍，風格大膽創新", url: "https://resn.co.nz" },
+                    { name: "Active Theory", desc: "擅長沈浸式體驗與 VR/AR 結合的數位開發", url: "https://activetheory.net" },
+                    { name: "Locomotive", desc: "品牌與代碼完美揉合，動效說故事的專家", url: "https://locomotive.ca" },
+                    { name: "Studio Dumbar/DEPT®", desc: "動態識別與視覺系統的權威", url: "https://studiodumbar.com" },
+                    { name: "Garden Eight", desc: "結合日系精緻感與趣味性的網頁設計天花板", url: "https://garden-eight.com" },
+                    { name: "Immersive Garden", desc: "專注於情感共鳴與極致沈浸感的數位體驗", url: "https://immersive-g.com" },
+                    { name: "Dogstudio", desc: "強調藝術性、3D 與互動性結合的創意機構", url: "https://dogstudio.co" },
+                    { name: "Stink Studios", desc: "橫跨廣告與數位的極致視覺體驗", url: "https://stinkstudios.com" },
+                    { name: "BASIC/DEPT®", desc: "現代高端商用設計與品牌體驗的審美指標", url: "https://basicagency.com" },
+                    { name: "Work & Co", desc: "專注於數位產品開發，極簡與功能性的代名詞", url: "https://work.co" },
+                    { name: "Metalab", desc: "應用程式介面設計與數位產品的黃金標準", url: "https://metalab.com" },
+                    { name: "Merci-Michel", desc: "法國創意巨巨，網頁遊戲化與互動敘事的王者", url: "https://mercimichel.com" },
+                    { name: "Makemepulse", desc: "擅長高難度技術開發與互動式敘事的法國團隊", url: "https://makemepulse.com" },
+                    { name: "Build in Amsterdam", desc: "電商視覺與品牌故事敘事的結合典範", url: "https://buildinamsterdam.com" },
+                    { name: "Antinomy Studio", desc: "極簡中帶有豐富細節與流暢動效的視覺實驗", url: "https://antinomy.studio" },
+                    { name: "Synchronized Studio", desc: "紐約頂尖工作室，以極致流暢的佈局與動效著稱", url: "https://synchronized.studio" },
+                    { name: "The First The Last", desc: "烏克蘭傳奇工作室，擅長敘事性極強的動態排版", url: "https://thefirstthelast.agency" },
+                    { name: "Hello Monday", desc: "充滿趣味互動、精準品牌設計的創意機構", url: "https://hellomonday.com" },
+                    { name: "B-Reel", desc: "結合技術創新與現代美學的全球創意夥伴", url: "https://b-reel.com" },
+                    { name: "Zajno", desc: "充滿藝術氣息的插畫與數位動態設計", url: "https://zajno.com" },
+                    { name: "Media.Monks", desc: "全球頂尖的數位製作與創意科技巨頭", url: "https://media.monks.com" },
+                    { name: "Motto", desc: "強調品牌故事與大膽色彩戰略的設計機構", url: "https://wearemotto.com" },
+                    { name: "Odd Common", desc: "風格獨特且帶有濃厚敘事性的數位體驗設計", url: "https://oddcommon.com" },
+                    { name: "Cappen", desc: "動效流暢且具現代感的前端開發與視覺設計", url: "https://cappen.com" },
+                    { name: "Instrument", desc: "跨領域的現代視覺整合與數位產品開發", url: "https://instrument.com" },
+                    { name: "Watson Design Group", desc: "娛樂產業與電影感十足的互動網站天花板", url: "https://watsondg.com" },
+                    { name: "Akufen", desc: "獨特排版實驗與創意數位的加拿大工作室", url: "https://akufen.ca" },
+                    { name: "Clay", desc: "矽谷風格 UI/UX 設計與科技品牌包裝的代表", url: "https://clay.global" },
+                    { name: "Lounge Lizard", desc: "兼具極致創意與高轉換率平衡的網站設計", url: "https://loungelizard.com" },
+                    { name: "Adchitects", desc: "技術紮實、視覺清爽且流暢的網頁設計", url: "https://adchitects.co" },
+                    { name: "Phenomenon Studio", desc: "結合未來感、科技與精緻動畫的 UI/UX 工作室", url: "https://phenomenon-studio.com" },
+                    { name: "Noomo Agency", desc: "專注於體驗設計，動效細節處理得無懈可擊", url: "https://noomoagency.com" },
+                    { name: "Wonderland", desc: "來自阿姆斯特丹，風格華麗且充滿奇思妙想", url: "https://wonderlandindustry.com" },
+                    { name: "Thinkingbox", desc: "打造跨媒體、跨平台沈浸式體驗的創意機構", url: "https://thinkingbox.com" },
+                    { name: "AQuest", desc: "義大利頂尖數位代理商，視覺與技術的完美結合", url: "https://www.aquest.it" },
+                    { name: "Bornfight", desc: "專注於打造進階數位產品與客製化網站", url: "https://www.bornfight.com" },
+                    { name: "Buck", desc: "全球知名的動態影像與動畫設計工作室", url: "https://buck.co" },
+                    { name: "ManvsMachine", desc: "頂尖 3D 動態設計與品牌視覺實驗室", url: "https://mvsm.com" },
+                    { name: "Tendril", desc: "專注於未來主義視覺與 3D 動態的設計工作室", url: "https://tendril.studio" },
+                    { name: "DixonBaxi", desc: "強調動態與品牌個性的全球創意工作室", url: "https://dixonbaxi.com" }
+                ]
+            },
+            {
+                category: "2. 日本精品數位工藝工作室",
+                items: [
+                    { name: "SHIFTBRAIN", desc: "日本數位設計指標，將互動、動效與極簡美學完美結合", url: "https://shiftbrain.com" },
+                    { name: "Mount Inc.", desc: "擁有無可挑惕的流暢動效與排版，屢獲國際大獎", url: "https://mount.jp" },
+                    { name: "tha ltd.", desc: "傳奇大師中村勇吾的互動工作室，物理演算美學", url: "https://tha.jp" },
+                    { name: "BASCULE", desc: "擅長大型互動體驗、太空專案與前衛空間視覺", url: "https://bascule.co.jp" },
+                    { name: "PARTY", desc: "跨界數位藝術、廣告與實體體驗，創意無限", url: "https://prty.jp" },
+                    { name: "Whatever Co.", desc: "融合廣告、數位與產品開發的全球化團隊", url: "https://whatever.com" },
+                    { name: "STUDIO DETAILS", desc: "強調設計細節與數位工藝的頂級製作公司", url: "https://details.co.jp" },
+                    { name: "1-10 (One to Ten)", desc: "擅長將前沿科技轉化為絕美視覺的體驗團隊", url: "https://1-10.com" },
+                    { name: "WOW", desc: "享譽國際的動態影像與 3D 空間視覺王者", url: "https://wow.inc" },
+                    { name: "Takram", desc: "結合設計工程、未來思維與前衛美學的創新機構", url: "https://takram.com" },
+                    { name: "nendo", desc: "佐藤大創立，極簡幾何佈局的經典", url: "https://nendo.jp" },
+                    { name: "BIRDMAN", desc: "提供驚艷數位體驗與裝置藝術的創意技術團隊", url: "https://birdman.tokyo" },
+                    { name: "Aww", desc: "專注於虛擬人類與次世代 3D 視覺的工作室", url: "https://aww.tokyo" },
+                    { name: "Dentsu Craft Tokyo", desc: "電通旗下的頂尖創意編程與數位製作團隊", url: "https://dentsucraft.tokyo" },
+                    { name: "Rhizomatiks", desc: "世界級數位藝術與演算視覺團隊", url: "https://rhizomatiks.com" },
+                    { name: "Uniel", desc: "溫潤、透氣且極度乾淨，現代日系網頁留白代表", url: "https://uniel.jp" },
+                    { name: "Goodpatch", desc: "日本 UI/UX 業界領頭羊，推動體驗設計標準化", url: "https://goodpatch.com" },
+                    { name: "Baigie", desc: "B2B 網頁設計與複雜邏輯視覺化、資訊架構的典範", url: "https://baigie.me" }
+                ]
+            },
+            {
+                category: "3. 傳奇設計師與創意開發者個人作品集",
+                items: [
+                    { name: "Bruno Simon", desc: "3D 網頁互動傳奇，開創「開車逛作品集」先河", url: "https://bruno-simon.com" },
+                    { name: "Aristide Benoist", desc: "創意開發之神，動效與字體極其絲滑", url: "https://aristidebenoist.com" },
+                    { name: "Dennis Snellenberg", desc: "擅長現代感磁吸動效與流暢過渡", url: "https://dennissnellenberg.com" },
+                    { name: "Claudio Guglieri", desc: "頂級藝術指導，擅長空間感與產品視覺展示", url: "https://guglieri.com" },
+                    { name: "Peter Tarka", desc: "3D 背景與介面設計的全球標竿，視覺層次極豐", url: "https://petertarka.com" },
+                    { name: "Jessica Hische", desc: "知名字體藝術家，排版與文字美學基準", url: "https://jessicahische.is" },
+                    { name: "Tobias Ahlin", desc: "極簡代碼美學與流暢動效的介面設計專家", url: "https://tobiasahlin.com" },
+                    { name: "Robin Mastromarino", desc: "介面設計師，將捲動體驗做到極致的大師", url: "https://robinmastromarino.com" },
+                    { name: "Thibaud Allie", desc: "頂級排版、網格系統與前端開發技術", url: "https://thibaudallie.com" },
+                    { name: "Leta Sobierajski", desc: "超現實色彩與平面設計的怪物級創作者", url: "https://letasobierajski.com" },
+                    { name: "Niccolò Miranda", desc: "將復古未來感與動態視覺結合的極致設計師", url: "https://niccolomiranda.com" },
+                    { name: "Ben Mingo", desc: "以獨特色彩感與細膩微動效聞名", url: "https://benmingo.com" },
+                    { name: "Riccardo Zanutta", desc: "將 3D 與平滑捲動結合得最優雅的前端設計", url: "https://riccardozanutta.com" },
+                    { name: "Daniel Spatzek", desc: "極具個性的混合媒體佈局與大膽排版風格", url: "https://danielspatzek.com" },
+                    { name: "Vasjen Katro (Baugasm)", desc: "數位海報與漸層美學的全球定義者", url: "https://baugasm.com" },
+                    { name: "Davy Evans", desc: "抽象視覺與光影魔術師，奇幻視覺效果", url: "https://davyevans.co.uk" },
+                    { name: "Ilya Kulbachny", desc: "高端品牌化個人作品集與流暢互動體驗", url: "https://kulbachny.com" },
+                    { name: "Tobias van Schneider", desc: "作品充滿現代極簡的獨特魅力", url: "https://vanschneider.com" },
+                    { name: "Rauno Freiberg", desc: "極致細節與微互動，Vercel 設計靈魂", url: "https://rauno.me" },
+                    { name: "Paco Coursey", desc: "定義現代工程師美學的標竿，極簡且極速", url: "https://paco.me" },
+                    { name: "Emil Kowalski", desc: "專注於動畫與無縫過渡，前端流暢感巔峰", url: "https://emilkowal.ski" },
+                    { name: "Guillermo Rauch", desc: "Vercel 創辦人，終極極簡主義與高性能美學", url: "https://rauchg.com" }
+                ]
+            },
+            {
+                category: "4. 品牌策略、字體設計與跨界研究",
+                items: [
+                    { name: "Pentagram", desc: "全球最具影響力的獨立設計諮詢公司", url: "https://pentagram.com" },
+                    { name: "Collins", desc: "屢獲殊榮的品牌策略與體驗設計公司", url: "https://wearecollins.com" },
+                    { name: "DesignStudio", desc: "打造世界級品牌體驗與視覺革命的機構", url: "https://design.studio" },
+                    { name: "Koto", desc: "全球頂尖的品牌識別與視覺策略工作室", url: "https://koto.studio" },
+                    { name: "Dinamo", desc: "瑞士頂尖字體設計廠牌，極致排版展示", url: "https://abcdinamo.com" },
+                    { name: "Grilli Type", desc: "瑞士字體設計公司，兼具古典與現代視覺", url: "https://grillitype.com" },
+                    { name: "Pangram Pangram", desc: "提供高品質且具現代感字體的設計廠牌", url: "https://pangrampangram.com" },
+                    { name: "Anagrama", desc: "將建築感與平面美學完美融合的知名品牌", url: "https://anagrama.com" },
+                    { name: "&Walsh", desc: "視覺華麗且具顛覆性的創意機構", url: "https://andwalsh.com" },
+                    { name: "Order", desc: "以系統化思維與嚴謹排版見長的設計工作室", url: "https://order.design" },
+                    { name: "Red Antler", desc: "成功幫助新創品牌建立視覺定位的推手", url: "https://redantler.com" }
+                ]
+            },
+            {
+                category: "5. 數據視覺化、CSS 藝術與前端先鋒",
+                items: [
+                    { name: "Amelia Wattenberger", desc: "數據視覺化與互動敘事", url: "https://wattenberger.com" },
+                    { name: "Mike Bostock", desc: "D3.js 創作者，數據視覺化的終極殿堂", url: "https://bost.ocks.org" },
+                    { name: "Nadieh Bremer", desc: "以豐富色彩和星系佈局著稱的數據專家", url: "https://visualcinnamon.com" },
+                    { name: "Josh W Comeau", desc: "教科書等級的互動教學，動效細節極豐", url: "https://joshwcomeau.com" },
+                    { name: "Lynn Fisher", desc: "CSS 繪圖神技與單頁網站設計專家", url: "https://lynnandtonic.com" },
+                    { name: "Sarah Drasner", desc: "前端與動態設計專家，兼具技術深度與美感", url: "https://sarah.dev" },
+                    { name: "Cassie Evans", desc: "SVG 動畫大師，活潑創意與網頁互動", url: "https://cassie.codes" },
+                    { name: "Jhey Tompkins", desc: "實驗性 CSS 與趣味互動前端開發者", url: "https://jhey.dev" },
+                    { name: "Lea Verou", desc: "CSS 標準推動者與代碼實驗大師", url: "https://lea.verou.me" },
+                    { name: "Jen Simmons", desc: "CSS Grid 先驅，現代網頁排版教育家", url: "https://jensimmons.com" },
+                    { name: "Brad Frost", desc: "原子設計理論提出者，結構化設計領航", url: "https://bradfrost.com" },
+                    { name: "Ethan Marcotte", desc: "響應式網頁設計之父", url: "https://ethanmarcotte.com" },
+                    { name: "Hakim El Hattab", desc: "reveal.js 創作者，互動設計神級人物", url: "https://hakim.se" },
+                    { name: "Tania Rascia", desc: "極致清晰、去蕪存菁的技術文字與極簡風格", url: "https://taniarascia.com" }
+                ]
+            }
+        ];
+
+        function initContent() {
+            const container = document.getElementById('content-area');
+            data.forEach((section, idx) => {
+                const sectionEl = document.createElement('section');
+                sectionEl.className = 'animate-slide-up';
+                sectionEl.style.animationDelay = `${idx * 0.1}s`;
+                
+                sectionEl.innerHTML = `
+                    <h2 class="section-header font-display text-2xl font-bold mb-8 uppercase tracking-wider opacity-80">
+                        ${section.category}
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 resource-grid">
+                        ${section.items.map(item => `
+                            <div class="resource-card p-6 rounded-2xl flex flex-col justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2 font-display">${item.name}</h3>
+                                    <p class="text-sm opacity-60 leading-relaxed mb-6">${item.desc}</p>
+                                </div>
+                                <a href="${item.url}" target="_blank" class="flex items-center gap-2 text-sm font-bold text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-wider group">
+                                    Visit Website
+                                    <i data-lucide="external-link" class="w-4 h-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(sectionEl);
+            });
+            lucide.createIcons();
+        }
+
+        function setTheme(theme) {
+            document.documentElement.className = `theme-${theme}`;
+            
+            // Update active state of buttons
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${theme}`).classList.add('active');
+            
+            // Store theme preference
+            localStorage.setItem('df-theme', theme);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initContent();
+            const savedTheme = localStorage.getItem('df-theme') || 'dark';
+            setTheme(savedTheme);
+        });
+    </script>
+</body>
+
+</html>

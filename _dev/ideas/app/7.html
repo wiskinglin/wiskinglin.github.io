@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>彈弓物理遊樂場 - Hank HTML</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            overflow: hidden;
+            /* 防止手機端滾動 */
+            touch-action: none;
+            /* 改善觸控體驗 */
+        }
+
+        #game-container {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+    <div class="mb-4 text-center z-10">
+        <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">彈弓物理遊樂場</h1>
+        <p class="text-gray-500 mt-1">拖曳紅球，瞄準積木，然後放開！</p>
+    </div>
+
+    <div id="game-container" class="bg-blue-100 border-4 border-white">
+        <div class="absolute top-4 right-4 z-20">
+            <button id="reset-btn"
+                class="bg-white/80 backdrop-blur-sm hover:bg-white text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded shadow-sm transition-all duration-200">
+                🔄 重置關卡
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Matter.js 模組縮寫
+        const Engine = Matter.Engine,
+            Render = Matter.Render,
+            Runner = Matter.Runner,
+            Composites = Matter.Composites,
+            Events = Matter.Events,
+            Constraint = Matter.Constraint,
+            MouseConstraint = Matter.MouseConstraint,
+            Mouse = Matter.Mouse,
+            Composite = Matter.Composite,
+            Bodies = Matter.Bodies;
+
+        // 初始化物理引擎
+        const engine = Engine.create();
+        const world = engine.world;
+
+        // 畫布尺寸設定 (響應式思維：根據螢幕大小微調，這裡設定一個適中尺寸)
+        const width = Math.min(window.innerWidth * 0.95, 800);
+        const height = Math.min(window.innerHeight * 0.6, 500);
+
+        // 初始化渲染器
+        const render = Render.create({
+            element: document.getElementById('game-container'),
+            engine: engine,
+            options: {
+                width: width,
+                height: height,
+                wireframes: false, // 關閉線框模式，顯示實體顏色
+                background: '#bae6fd' // Tailwind sky-200
+            }
+        });
+
+        Render.run(render);
+
+        // 初始化運行器
+        const runner = Runner.create();
+        Runner.run(runner, engine);
+
+        // --- 遊戲實體物件建立 ---
+        let bird, elastic, pyramid;
+        const ground = Bodies.rectangle(width / 2, height - 20, width * 1.5, 40, {
+            isStatic: true,
+            render: { fillStyle: '#4d7c0f' } // Tailwind lime-700
+        });
+
+        const anchorPoint = { x: width * 0.2, y: height * 0.7 };
+
+        function initLevel() {
+            // 清除舊物件
+            if (bird) Composite.remove(world, bird);
+            if (elastic) Composite.remove(world, elastic);
+            if (pyramid) Composite.remove(world, pyramid);
+
+            // 建立彈力球 (主角)
+            bird = Bodies.circle(anchorPoint.x, anchorPoint.y, 20, {
+                density: 0.005, // 稍微重一點以增加破壞力
+                restitution: 0.4, // 彈性
+                frictionAir: 0.01,
+                render: { fillStyle: '#ef4444' } // Tailwind red-500
+            });
+
+            // 建立彈弓約束線
+            elastic = Constraint.create({
+                pointA: anchorPoint,
+                bodyB: bird,
+                stiffness: 0.05, // 彈弓硬度
+                damping: 0.01,
+                render: { strokeStyle: '#78350f', lineWidth: 4 } // Tailwind amber-900
+            });
+
+            // 建立目標方塊堆 (金字塔形狀)
+            const pyramidX = width * 0.7;
+            const pyramidY = height * 0.3;
+            pyramid = Composites.pyramid(pyramidX - 100, pyramidY, 7, 7, 0, 0, function (x, y) {
+                return Bodies.rectangle(x, y, 30, 40, {
+                    render: {
+                        fillStyle: '#fbbf24', // Tailwind amber-400
+                        strokeStyle: '#b45309',
+                        lineWidth: 2
+                    }
+                });
+            });
+
+            // 將物件加入世界
+            Composite.add(world, [bird, elastic, pyramid]);
+        }
+
+        // 初始載入關卡與加入地面
+        Composite.add(world, ground);
+        initLevel();
+
+        // --- 滑鼠與觸控互動 ---
+        const mouse = Mouse.create(render.canvas);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: { visible: false }
+            }
+        });
+
+        Composite.add(world, mouseConstraint);
+        render.mouse = mouse; // 保持滑鼠與渲染器同步
+
+        // --- 釋放彈弓的邏輯 ---
+        Events.on(engine, 'afterUpdate', function () {
+            // 當球被往後拉，且滑鼠/手指放開時 (bodyB 存在代表還被綁在彈弓上)
+            if (mouseConstraint.mouse.button === -1 && elastic.bodyB) {
+                // 如果球的位置已經超過錨點往前飛，就解除綁定
+                if (bird.position.x > anchorPoint.x + 20) {
+                    elastic.bodyB = null;
+                }
+            }
+        });
+
+        // --- UI 按鈕事件 ---
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            initLevel();
+        });
+
+        // 處理視窗大小改變 (簡單重整以確保版面不亂)
+        window.addEventListener('resize', () => {
+            // 實務上可以動態調整 canvas 大小，這裡為求穩定採用重新載入
+            // 但為了體驗流暢，僅在寬度變化過大時重整
+            if (Math.abs(window.innerWidth - width) > 100) {
+                location.reload();
+            }
+        });
+    </script>
+</body>
+
+</html>
