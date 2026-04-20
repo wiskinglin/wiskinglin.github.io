@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KLIO Docs Reader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- 加入 marked.js 來解析 Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* 閱讀主題樣式 */
+        body { transition: background-color 0.3s, color 0.3s; }
+        .theme-light { background-color: #f9f9f9; color: #333333; }
+        .theme-sepia { background-color: #f4ecd8; color: #5b4636; }
+        .theme-dark { background-color: #1a1a1a; color: #cccccc; }
+        
+        /* 導覽列與側邊欄背景適應 */
+        .theme-light .nav-bar { background-color: #ffffff; border-bottom: 1px solid #e5e5e5; }
+        .theme-sepia .nav-bar { background-color: #eaddc5; border-bottom: 1px solid #d4c5ab; }
+        .theme-dark .nav-bar { background-color: #2d2d2d; border-bottom: 1px solid #404040; }
+        
+        .theme-light .sidebar { background-color: #ffffff; border-right: 1px solid #e5e5e5; }
+        .theme-sepia .sidebar { background-color: #eaddc5; border-right: 1px solid #d4c5ab; }
+        .theme-dark .sidebar { background-color: #2d2d2d; border-right: 1px solid #404040; }
+
+        /* 電子書排版樣式 */
+        .reader-content p { margin-bottom: 1.5em; line-height: 1.8; text-align: justify; letter-spacing: 0.05em; }
+        .reader-content h1 { font-size: 2em; font-weight: bold; margin-top: 1em; margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 2px solid currentColor; }
+        .reader-content h2 { font-size: 1.75em; font-weight: bold; margin-top: 2em; margin-bottom: 1em; padding-bottom: 0.5em; border-bottom: 1px solid currentColor; }
+        .reader-content h3 { font-size: 1.3em; font-weight: bold; margin-top: 2em; margin-bottom: 1em; }
+        .reader-content h4 { font-size: 1.1em; font-weight: bold; margin-top: 1.5em; margin-bottom: 1em; }
+        .reader-content blockquote { border-left: 4px solid currentColor; padding-left: 1.2rem; opacity: 0.8; margin-bottom: 2em; font-style: italic; background: inherit; filter: brightness(0.95); padding: 1em; border-radius: 0 8px 8px 0; }
+        .theme-dark .reader-content blockquote { filter: brightness(1.2); }
+        .reader-content ul { list-style-type: disc; padding-left: 2em; margin-bottom: 2em; background: inherit; filter: brightness(0.95); padding: 1.5em; border-radius: 8px; }
+        .theme-dark .reader-content ul { filter: brightness(1.2); }
+        .reader-content ol { list-style-type: decimal; padding-left: 2em; margin-bottom: 2em; background: inherit; filter: brightness(0.95); padding: 1.5em; border-radius: 8px; }
+        .theme-dark .reader-content ol { filter: brightness(1.2); }
+        .reader-content li { margin-bottom: 0.8em; position: relative; }
+        
+        /* 擴充 Markdown 特有樣式：表格與程式碼 */
+        .reader-content pre { background-color: rgba(0,0,0,0.05); padding: 1.5em; border-radius: 8px; overflow-x: auto; margin-bottom: 2em; }
+        .theme-dark .reader-content pre { background-color: rgba(255,255,255,0.05); }
+        .reader-content code { background-color: rgba(0,0,0,0.05); padding: 0.2em 0.4em; border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; }
+        .theme-dark .reader-content code { background-color: rgba(255,255,255,0.1); }
+        .reader-content pre code { background-color: transparent; padding: 0; border-radius: 0; }
+        
+        .reader-content table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
+        .reader-content th, .reader-content td { border: 1px solid currentColor; padding: 0.75em 1em; text-align: left; opacity: 0.85; }
+        .reader-content th { font-weight: bold; opacity: 1; border-bottom-width: 2px; }
+        
+        .reader-content a { color: #3b82f6; text-decoration: underline; text-underline-offset: 4px; }
+        .theme-dark .reader-content a { color: #60a5fa; }
+        .reader-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 1.5em 0; }
+
+        /* 隱藏 Google 翻譯頂部橫幅與預設樣式 */
+        .skiptranslate.goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+        .goog-tooltip { display: none !important; }
+        .goog-tooltip:hover { display: none !important; }
+        .goog-text-highlight { background-color: transparent !important; border: none !important; box-shadow: none !important; }
+        
+        /* 深度美化 Google 翻譯選單 */
+        .goog-te-gadget { color: transparent !important; font-size: 0px !important; display: flex !important; align-items: center; overflow: hidden; }
+        .goog-te-gadget img, .goog-te-gadget a { display: none !important; }
+        .goog-te-gadget span { font-size: 0 !important; color: transparent !important; display: none !important; }
+        .goog-te-combo { margin: 0 !important; padding: 4px 8px !important; font-size: 13px !important; font-family: inherit !important; color: inherit !important; background-color: transparent !important; border: 1px solid currentColor !important; border-radius: 6px !important; outline: none !important; cursor: pointer !important; opacity: 0.7; transition: all 0.2s ease !important; max-width: 110px; }
+        .goog-te-combo:hover { opacity: 1; background-color: rgba(128, 128, 128, 0.1) !important; }
+        .theme-dark .goog-te-combo option { background-color: #2d2d2d; color: #ccc; }
+        .theme-light .goog-te-combo option { background-color: #fff; color: #333; }
+        .theme-sepia .goog-te-combo option { background-color: #eaddc5; color: #5b4636; }
+        
+        /* 自訂滾動條 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+
+</head>
+<body class="theme-light font-sans min-h-screen flex flex-col" id="bodyElement">
+
+    <!-- 頂部導覽列 -->
+    <header class="nav-bar fixed top-0 w-full z-40 flex items-center justify-between px-4 h-16 shadow-sm transition-colors duration-300">
+        <div class="flex items-center space-x-4">
+            <a href="../index.html" class="font-black text-xl tracking-tighter hover:opacity-70 transition-opacity" style="font-family: 'Inter', sans-serif; letter-spacing: -0.05em;">KLIO.</a>
+            <button onclick="toggleSidebar()" class="p-2 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="目錄">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <h1 id="top-title" class="text-lg font-bold hidden sm:block opacity-80">Docs Reader</h1>
+        </div>
+        
+        <div class="flex items-center space-x-2 sm:space-x-4">
+            <!-- 翻譯小工具 -->
+            <div id="google_translate_element" class="hidden md:flex items-center"></div>
+            
+            <!-- 字體大小調整 -->
+            <div class="flex items-center border rounded-lg overflow-hidden border-current opacity-70">
+                <button onclick="changeFontSize(-2)" class="px-3 py-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="縮小字體">
+                    <i class="fas fa-font text-sm"></i>-
+                </button>
+                <div class="w-px h-6 bg-current"></div>
+                <button onclick="changeFontSize(2)" class="px-3 py-1 hover:bg-black/5 dark:hover:bg-white/10 transition-colors" title="放大字體">
+                    <i class="fas fa-font text-lg"></i>+
+                </button>
+            </div>
+
+            <!-- 主題切換 -->
+            <div class="flex space-x-1">
+                <button onclick="setTheme('theme-light')" class="w-8 h-8 rounded-full border border-gray-300 bg-white text-gray-800 flex items-center justify-center hover:scale-110 transition-transform" title="淺色模式">
+                    <i class="fas fa-sun text-xs"></i>
+                </button>
+                <button onclick="setTheme('theme-sepia')" class="w-8 h-8 rounded-full border border-[#d4c5ab] bg-[#f4ecd8] text-[#5b4636] flex items-center justify-center hover:scale-110 transition-transform" title="護眼模式">
+                    <i class="fas fa-book-open text-xs"></i>
+                </button>
+                <button onclick="setTheme('theme-dark')" class="w-8 h-8 rounded-full border border-gray-600 bg-gray-800 text-gray-200 flex items-center justify-center hover:scale-110 transition-transform" title="深色模式">
+                    <i class="fas fa-moon text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 側邊欄 (目錄) -->
+    <div id="sidebar" class="sidebar fixed inset-y-0 left-0 transform -translate-x-full w-64 z-50 transition-transform duration-300 ease-in-out pt-16 shadow-lg overflow-y-auto hidden-scrollbar">
+        <div class="p-4">
+            <h2 class="text-xl font-bold mb-4 opacity-80 border-b border-current pb-2">文件列表</h2>
+            <ul id="toc-list" class="space-y-2">
+                <li class="opacity-50 italic">正在載入文件...</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 側邊欄遮罩 -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity"></div>
+
+    <!-- 閱讀內容區 -->
+    <main class="flex-grow pt-24 pb-20 px-4 sm:px-8 flex justify-center">
+        <article id="reader-content" class="reader-content max-w-4xl w-full transition-all duration-300" style="font-size: 18px;">
+            <div class="flex items-center justify-center h-64 opacity-50">
+                <i class="fas fa-spinner fa-spin text-3xl mr-3"></i> <span>載入內容中...</span>
+            </div>
+        </article>
+    </main>
+
+    <!-- 底部導覽 (上一篇/下一篇) -->
+    <footer class="nav-bar fixed bottom-0 w-full z-30 flex items-center justify-between px-4 max-w-4xl mx-auto left-0 right-0 h-16 shadow-[0_-1px_3px_rgba(0,0,0,0.1)] rounded-t-xl transition-colors duration-300">
+        <button id="prev-btn" onclick="prevChapter()" class="px-4 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex items-center space-x-2 invisible">
+            <i class="fas fa-chevron-left"></i>
+            <span class="hidden sm:inline">上一篇</span>
+        </button>
+        <span id="chapter-indicator" class="text-sm opacity-60"></span>
+        <button id="next-btn" onclick="nextChapter()" class="px-4 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors flex items-center space-x-2 invisible">
+            <span class="hidden sm:inline">下一篇</span>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </footer>
+
+    <script>
+        // 設定要讀取的 Markdown 檔案列表
+        // 若新增文件，請將檔名加在此陣列中
+        const mdFiles = [
+            "0419.md",
+            "AIMD_SPEC.md",
+            "EDAI.md",
+            "aieditor.md"
+        ];
+
+        let bookData = [];
+        let currentChapterIndex = 0;
+        let fontSize = 18;
+
+        // 初始化
+        async function init() {
+            // 自動動態載入 Markdown 內容
+            for (let i = 0; i < mdFiles.length; i++) {
+                try {
+                    const response = await fetch(mdFiles[i]);
+                    if (!response.ok) throw new Error('File not found');
+                    const text = await response.text();
+                    
+                    // 從內容萃取標題 (抓取第一個 # 或 ## 標題)
+                    let title = mdFiles[i];
+                    const titleMatch = text.match(/^#+\s+(.+)$/m);
+                    if (titleMatch && titleMatch[1]) {
+                        // 移除粗體等 Markdown 標記，純作目錄顯示用
+                        title = titleMatch[1].replace(/\\*\\*/g, '').trim(); 
+                    }
+                    
+                    // 將 Markdown 轉成 HTML
+                    const htmlContent = marked.parse(text);
+                    
+                    bookData.push({
+                        id: i,
+                        title: title,
+                        fileName: mdFiles[i],
+                        content: htmlContent
+                    });
+                } catch (error) {
+                    console.error("載入失敗: " + mdFiles[i], error);
+                    bookData.push({
+                        id: i,
+                        title: mdFiles[i] + " (載入失敗)",
+                        fileName: mdFiles[i],
+                        content: "<p class='opacity-50 italic'>無法載入此檔案的內容，它可能不存在或是網路問題。</p>"
+                    });
+                }
+            }
+
+            renderSidebar();
+            
+            // 如果 URI 直接帶了 hash (例如 #c=2)，可以跳轉
+            checkHash();
+            if(!window.location.hash || Number.isNaN(parseInt(new URLSearchParams(window.location.hash.substring(1)).get('c')))) {
+                if (bookData.length > 0) {
+                    loadChapter(0);
+                } else {
+                    document.getElementById('reader-content').innerHTML = "<p>沒有找到任何文件。</p>";
+                }
+            }
+            
+            window.addEventListener('hashchange', checkHash);
+        }
+
+        // 處理由 hash 控制章節跳轉
+        function checkHash() {
+            if (window.location.hash) {
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const chapterId = parseInt(hashParams.get('c'));
+                if (!isNaN(chapterId) && chapterId >= 0 && chapterId < bookData.length && chapterId !== currentChapterIndex) {
+                    loadChapter(chapterId);
+                }
+            }
+        }
+
+        // 渲染側邊欄目錄
+        function renderSidebar() {
+            const tocList = document.getElementById('toc-list');
+            if(bookData.length === 0) return;
+            
+            tocList.innerHTML = bookData.map((chapter, index) => {
+                const isActive = currentChapterIndex === index;
+                // 添加選中狀態的深色背景指示
+                return `
+                <li>
+                    <button onclick="window.location.hash = 'c=${index}'; toggleSidebar();" 
+                        class="w-full text-left px-3 py-2 rounded transition-colors break-words 
+                        ${isActive ? 'bg-black/10 dark:bg-white/20 font-bold opacity-100' : 'hover:bg-black/5 dark:hover:bg-white/10 opacity-70'}">
+                        <div class="text-xs opacity-50 mb-1">${chapter.fileName}</div>
+                        ${chapter.title}
+                    </button>
+                </li>
+            `}).join('');
+        }
+
+        // 載入指定章節
+        function loadChapter(index) {
+            if (index < 0 || index >= bookData.length) return;
+            
+            currentChapterIndex = index;
+            const contentDiv = document.getElementById('reader-content');
+            
+            // 更新頂部標題
+            document.getElementById('top-title').textContent = bookData[currentChapterIndex].title;
+            
+            // 加入淡出淡入動畫效果
+            contentDiv.style.opacity = 0;
+            
+            setTimeout(() => {
+                contentDiv.innerHTML = bookData[currentChapterIndex].content || "<p>內容為空</p>";
+                contentDiv.style.opacity = 1;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                updateControls();
+                renderSidebar(); // 重新渲染側邊欄以更新高亮
+            }, 200);
+        }
+
+        // 更新底部導覽列與按鈕狀態
+        function updateControls() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const indicator = document.getElementById('chapter-indicator');
+
+            // 使用 visibility 避免版面跳動
+            prevBtn.style.visibility = currentChapterIndex > 0 ? 'visible' : 'hidden';
+            nextBtn.style.visibility = currentChapterIndex < bookData.length - 1 ? 'visible' : 'hidden';
+            
+            indicator.textContent = `${currentChapterIndex + 1} / ${bookData.length}`;
+        }
+
+        // 上一篇
+        function prevChapter() {
+            if (currentChapterIndex > 0) {
+                window.location.hash = 'c=' + (currentChapterIndex - 1);
+            }
+        }
+
+        // 下一篇
+        function nextChapter() {
+            if (currentChapterIndex < bookData.length - 1) {
+                window.location.hash = 'c=' + (currentChapterIndex + 1);
+            }
+        }
+
+        // 字體大小調整
+        function changeFontSize(delta) {
+            fontSize = Math.max(14, Math.min(32, fontSize + delta));
+            document.getElementById('reader-content').style.fontSize = `${fontSize}px`;
+        }
+
+        // 主題切換 (支援 localStorage 記錄)
+        function setTheme(themeName) {
+            const body = document.getElementById('bodyElement');
+            body.className = `font-sans min-h-screen flex flex-col ${themeName}`;
+            localStorage.setItem('klioReaderTheme', themeName);
+        }
+
+        // 側邊欄開關
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.style.opacity = '1', 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // 嘗試恢復上一次的主題
+        const savedTheme = localStorage.getItem('klioReaderTheme');
+        if(savedTheme) {
+            setTheme(savedTheme);
+        }
+
+        // Google 翻譯初始化腳本
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'zh-TW',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        // 啟動應用程式
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
