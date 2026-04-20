@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Glide: Apex Edition</title>
+    <style>
+        :root {
+            --primary: #ff007f;
+            --secondary: #00f3ff;
+            --accent: #ffea00;
+            --powerup: #00ff66;
+            --bg-color: #010103;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            touch-action: none;
+            user-select: none;
+            transition: filter 0.1s ease;
+        }
+
+        /* 受傷時的畫面干擾特效 */
+        body.damage-glitch {
+            filter: contrast(150%) brightness(150%) sepia(100%) hue-rotate(300deg) saturate(500%);
+        }
+
+        #game-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: rgba(1, 1, 5, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 243, 255, 0.5);
+            border-radius: 20px;
+            padding: 40px 60px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 1), inset 0 0 25px rgba(0, 243, 255, 0.15);
+            pointer-events: auto;
+            transition: opacity 0.4s;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--powerup));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+        }
+
+        p {
+            color: #ccc;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        button {
+            background: linear-gradient(45deg, var(--primary), #99004d);
+            border: 2px solid transparent;
+            border-radius: 40px;
+            padding: 18px 60px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.6);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            border-color: white;
+            box-shadow: 0 0 40px rgba(255, 0, 127, 0.9);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* HUD 介面升級 */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            right: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            color: white;
+            z-index: 5;
+            font-size: 1.3rem;
+            font-weight: 900;
+            font-family: monospace;
+            display: none;
+            text-shadow: 0 0 10px var(--secondary);
+        }
+
+        .hud-left,
+        .hud-right {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .hud-right {
+            text-align: right;
+        }
+
+        .shield-bar {
+            color: var(--powerup);
+            font-size: 1.5rem;
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px var(--powerup);
+        }
+
+        .weapon-level {
+            color: var(--secondary);
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none !important;
+        }
+
+        #scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.3));
+            background-size: 100% 4px;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="scanline"></div>
+    <div id="hud">
+        <div class="hud-left">
+            <span>SCORE: <span id="score" style="color: var(--secondary); font-size:1.8rem;">000000</span></span>
+            <span>SYNC RATE: <span id="multiplier" style="color: var(--accent)">1.0</span>x</span>
+        </div>
+        <div class="hud-right">
+            <span>SHIELDS: <span id="shields" class="shield-bar">███</span></span>
+            <span>WEAPON: <span id="weapon" class="weapon-level">LV.1</span></span>
+        </div>
+    </div>
+
+    <div id="ui-layer">
+        <div class="glass-panel" id="start-screen">
+            <h1>Apex Edition</h1>
+            <p>滑動控制戰機。按住螢幕 / 左鍵 發射雷射。<br>
+                紅色幾何體為<span style="color:var(--primary)">追蹤威脅</span>，綠色方塊可<span
+                    style="color:var(--powerup)">升級武器</span>。<br>
+                護盾能量有限，祝你好運。</p>
+            <button id="start-btn">System Override</button>
+        </div>
+
+        <div class="glass-panel hidden" id="game-over-screen">
+            <h1 style="color: #ff0000; text-shadow: 0 0 30px red;">Hull Breached</h1>
+            <p>最終得分: <br><span id="final-score"
+                    style="font-size: 3.5rem; color: var(--secondary); font-weight: 900;">0</span></p>
+            <button id="restart-btn">Re-engage</button>
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- 核心變數 ---
+        let scene, camera, renderer;
+        let ship, shipHitbox;
+        let gameActive = false;
+        let frameCount = 0;
+
+        // --- 遊戲狀態 ---
+        let score = 0, baseSpeed = 1.6, speedMultiplier = 1.0;
+        let health = 3, weaponLevel = 1;
+        let isInvulnerable = false;
+
+        // --- 控制與射擊 ---
+        let mouseX = 0, mouseY = 0;
+        let isFiring = false, lastFireTime = 0;
+        const FIRE_RATE = 120; // 發射間隔(ms)
+
+        // --- 材質預載 (極致效能) ---
+        const matObstacle = new THREE.MeshPhongMaterial({ color: 0xff007f, emissive: 0xaa0033, shininess: 100 });
+        const matSeeker = new THREE.MeshPhongMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.8, wireframe: true });
+        const matLaser = new THREE.MeshBasicMaterial({ color: 0x00f3ff });
+        const matOrb = new THREE.MeshPhongMaterial({ color: 0xffea00, emissive: 0xffea00, emissiveIntensity: 0.8, wireframe: true });
+        const matPowerup = new THREE.MeshPhongMaterial({ color: 0x00ff66, emissive: 0x00ff66, emissiveIntensity: 0.8 });
+        const matParticle = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+        // --- 物件池 (Object Pools) ---
+        const pools = { obstacles: [], seekers: [], lasers: [], orbs: [], powerups: [], particles: [] };
+
+        // --- DOM ---
+        const uiScore = document.getElementById('score');
+        const uiMultiplier = document.getElementById('multiplier');
+        const uiShields = document.getElementById('shields');
+        const uiWeapon = document.getElementById('weapon');
+
+        // --- 音效引擎 ---
+        let audioCtx;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        function playSynth(type, freqStart, freqEnd, duration, vol) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + duration);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // --- 初始化 ---
+        function init() {
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x010103, 0.018);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+            camera.position.set(0, 4, 12);
+            camera.lookAt(0, 0, -20);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+            // 光源
+            scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+            scene.add(new THREE.DirectionalLight(0xff007f, 1.5).position.set(10, 20, 10));
+            scene.add(new THREE.PointLight(0x00f3ff, 2.5, 60).position.set(-10, 2, -5));
+
+            // 地板網格
+            const grid = new THREE.GridHelper(400, 200, 0xff007f, 0x00f3ff);
+            grid.position.y = -2; grid.material.transparent = true; grid.material.opacity = 0.25;
+            scene.add(grid);
+
+            // 戰機模型
+            const shipGeo = new THREE.TetrahedronGeometry(1.2);
+            shipGeo.computeBoundingBox(); // 預計算邊界盒供效能優化使用
+            ship = new THREE.Mesh(shipGeo, new THREE.MeshPhongMaterial({
+                color: 0x00f3ff, emissive: 0x00f3ff, emissiveIntensity: 0.8, wireframe: true, wireframeLinewidth: 2
+            }));
+            ship.scale.set(1, 0.4, 2);
+            ship.rotation.x = Math.PI / 4;
+            scene.add(ship);
+            shipHitbox = new THREE.Box3();
+
+            buildPools();
+
+            // 事件綁定
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            const updateMouse = e => {
+                let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                mouseX = (clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(clientY / window.innerHeight) * 2 + 1;
+            };
+            document.addEventListener('mousemove', updateMouse);
+            document.addEventListener('touchmove', e => { e.preventDefault(); updateMouse(e); }, { passive: false });
+
+            const setFiring = val => () => isFiring = val;
+            document.addEventListener('mousedown', setFiring(true)); document.addEventListener('mouseup', setFiring(false));
+            document.addEventListener('touchstart', setFiring(true)); document.addEventListener('touchend', setFiring(false));
+
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', startGame);
+
+            animate();
+        }
+
+        // --- 建立物件池 (Zero-GC 架構) ---
+        function buildPools() {
+            const createPool = (geo, mat, count, arr) => {
+                geo.computeBoundingBox(); // 必須預先計算
+                for (let i = 0; i < count; i++) {
+                    let m = new THREE.Mesh(geo, mat);
+                    m.visible = false;
+                    m.userData = { active: false, box: new THREE.Box3(), velocity: new THREE.Vector3(), life: 0 };
+                    scene.add(m); arr.push(m);
+                }
+            };
+            createPool(new THREE.BoxGeometry(1, 1, 1), matObstacle, 40, pools.obstacles);
+            createPool(new THREE.TetrahedronGeometry(1.5), matSeeker, 15, pools.seekers);
+
+            const geoLaser = new THREE.CylinderGeometry(0.15, 0.15, 2.5, 8);
+            geoLaser.rotateX(Math.PI / 2);
+            createPool(geoLaser, matLaser, 40, pools.lasers);
+
+            createPool(new THREE.IcosahedronGeometry(1.5, 0), matOrb, 10, pools.orbs);
+            createPool(new THREE.BoxGeometry(1.2, 1.2, 1.2), matPowerup, 5, pools.powerups);
+            createPool(new THREE.BoxGeometry(0.4, 0.4, 0.4), matParticle, 120, pools.particles);
+        }
+
+        // --- 遊戲核心邏輯 ---
+        function startGame() {
+            initAudio(); if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('hud').style.display = 'flex';
+
+            score = 0; speedMultiplier = 1.0; health = 3; weaponLevel = 1; isInvulnerable = false;
+            updateHUD(true);
+
+            ship.position.set(0, 0, 0);
+            ship.material.wireframe = true; ship.material.color.setHex(0x00f3ff); ship.visible = true;
+            document.body.classList.remove('damage-glitch');
+
+            Object.values(pools).forEach(pool => pool.forEach(obj => { obj.visible = false; obj.userData.active = false; }));
+            gameActive = true;
+        }
+
+        function takeDamage() {
+            if (isInvulnerable || !gameActive) return;
+            health--;
+            updateHUD(true);
+            playSynth('sawtooth', 150, 10, 0.5, 0.4);
+
+            if (health <= 0) {
+                // Game Over
+                gameActive = false; isFiring = false;
+                document.getElementById('hud').style.display = 'none';
+                document.getElementById('final-score').innerText = Math.floor(score);
+                document.getElementById('game-over-screen').classList.remove('hidden');
+                ship.visible = false;
+                spawnParticles(ship.position, 50, 0xff0000);
+            } else {
+                // 受傷無敵判定與特效
+                isInvulnerable = true;
+                weaponLevel = Math.max(1, weaponLevel - 1); // 武器降級懲罰
+                document.body.classList.add('damage-glitch');
+
+                let blinkInt = setInterval(() => ship.visible = !ship.visible, 100);
+                setTimeout(() => {
+                    clearInterval(blinkInt);
+                    ship.visible = true;
+                    isInvulnerable = false;
+                    document.body.classList.remove('damage-glitch');
+                }, 1500);
+            }
+        }
+
+        function updateHUD(force = false) {
+            if (frameCount % 5 === 0 || force) {
+                uiScore.innerText = Math.floor(score).toString().padStart(6, '0');
+                uiMultiplier.innerText = speedMultiplier.toFixed(1);
+            }
+            if (force) {
+                uiShields.innerText = '███'.substring(0, health);
+                uiShields.style.color = health === 1 ? '#ff0000' : 'var(--powerup)';
+                uiWeapon.innerText = `LV.${weaponLevel}`;
+            }
+        }
+
+        // --- 生成器與武器邏輯 ---
+        function fireLaser(origin, offsetX, dirX) {
+            let laser = pools.lasers.find(l => !l.userData.active);
+            if (laser) {
+                laser.position.copy(origin);
+                laser.position.x += offsetX; laser.position.z -= 2;
+                laser.userData.velocity.set(dirX, 0, -5); // 雷射飛行向量
+                laser.visible = true; laser.userData.active = true;
+            }
+        }
+
+        function handleShooting() {
+            let now = Date.now();
+            if (now - lastFireTime < FIRE_RATE) return;
+            lastFireTime = now;
+            playSynth('square', 800, 200, 0.1, 0.1);
+
+            if (weaponLevel === 1) {
+                fireLaser(ship.position, 0, 0);
+            } else if (weaponLevel === 2) {
+                fireLaser(ship.position, -0.8, 0);
+                fireLaser(ship.position, 0.8, 0);
+            } else {
+                fireLaser(ship.position, 0, 0);
+                fireLaser(ship.position, -1.0, -0.2); // 擴散
+                fireLaser(ship.position, 1.0, 0.2);
+            }
+        }
+
+        function spawnEntity(pool, setupLogic) {
+            let entity = pool.find(e => !e.userData.active);
+            if (entity) { setupLogic(entity); entity.visible = true; entity.userData.active = true; }
+        }
+
+        function spawnParticles(pos, count, colorHex) {
+            let spawned = 0;
+            for (let i = 0; i < pools.particles.length && spawned < count; i++) {
+                let p = pools.particles[i];
+                if (!p.userData.active) {
+                    p.material.color.setHex(colorHex); p.position.copy(pos);
+                    p.userData.velocity.set((Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3);
+                    p.userData.life = 1.0; p.visible = true; p.userData.active = true;
+                    spawned++;
+                }
+            }
+        }
+
+        // --- 數學運算優化 (Fast AABB) ---
+        function updateHitbox(mesh, offset = 0) {
+            mesh.updateMatrixWorld(true);
+            mesh.userData.box.copy(mesh.geometry.boundingBox).applyMatrix4(mesh.matrixWorld);
+            if (offset !== 0) mesh.userData.box.expandByScalar(offset);
+        }
+
+        // --- 主迴圈 ---
+        function animate() {
+            requestAnimationFrame(animate);
+            frameCount++;
+
+            // 1. 戰機移動與攝影機連動
+            const targetX = mouseX * 22, targetY = mouseY * 8 + 1;
+            ship.position.x += (targetX - ship.position.x) * 0.15;
+            ship.position.y += (targetY - ship.position.y) * 0.15;
+            ship.rotation.z = (ship.position.x - targetX) * 0.1;
+            ship.rotation.x = (ship.position.y - targetY) * 0.05 + (Math.PI / 4);
+
+            scene.children.forEach(c => {
+                if (c.type === 'GridHelper') { c.position.z += baseSpeed * speedMultiplier; if (c.position.z > 10) c.position.z = 0; }
+            });
+
+            if (gameActive) {
+                if (isFiring) handleShooting();
+
+                score += 1 * speedMultiplier;
+                if (speedMultiplier < 4.5) speedMultiplier += 0.0004;
+                updateHUD();
+
+                camera.fov = 75 + (speedMultiplier - 1) * 12; camera.updateProjectionMatrix();
+
+                // 動態生成機制
+                if (Math.random() < 0.06 * speedMultiplier) spawnEntity(pools.obstacles, e => {
+                    let w = Math.random() * 5 + 2, h = Math.random() * 15 + 5, d = Math.random() * 3 + 2;
+                    e.scale.set(w, h, d); e.position.set((Math.random() - 0.5) * 60, h / 2 - 2, -200);
+                });
+                // 生成追蹤者 (後期機率增加)
+                if (Math.random() < 0.015 * Math.max(1, speedMultiplier - 1)) spawnEntity(pools.seekers, e => {
+                    e.position.set((Math.random() - 0.5) * 50, Math.random() * 10 + 5, -200);
+                    e.rotation.set(Math.random(), Math.random(), 0);
+                });
+                if (Math.random() < 0.008) spawnEntity(pools.orbs, e => e.position.set((Math.random() - 0.5) * 50, Math.random() * 5 + 2, -200));
+                if (Math.random() < 0.003 && weaponLevel < 3) spawnEntity(pools.powerups, e => e.position.set((Math.random() - 0.5) * 40, 2, -200));
+
+                // 玩家真實碰撞盒 (稍微縮小以利閃避)
+                updateHitbox(ship, -0.4);
+
+                // --- 物理與判定更新 ---
+
+                // 雷射移動
+                pools.lasers.forEach(l => {
+                    if (l.userData.active) {
+                        l.position.add(l.userData.velocity);
+                        updateHitbox(l);
+                        if (l.position.z < -250) { l.visible = false; l.userData.active = false; }
+                    }
+                });
+
+                // 障礙物與敵人
+                const processEnemies = (pool, speedFactor, isSeeker) => {
+                    pool.forEach(e => {
+                        if (e.userData.active) {
+                            if (isSeeker) {
+                                // 追蹤邏輯：向玩家的 X, Y 靠近
+                                e.position.x += (ship.position.x - e.position.x) * 0.015;
+                                e.position.y += (ship.position.y - e.position.y) * 0.015;
+                                e.rotation.x += 0.1; e.rotation.y += 0.1;
+                            }
+                            e.position.z += baseSpeed * speedMultiplier * speedFactor;
+                            updateHitbox(e);
+
+                            // 撞機
+                            if (shipHitbox.intersectsBox(e.userData.box)) { takeDamage(); e.visible = false; e.userData.active = false; return; }
+
+                            // 雷射擊中
+                            pools.lasers.forEach(l => {
+                                if (l.userData.active && e.userData.box.intersectsBox(l.userData.box)) {
+                                    playSynth('sawtooth', 100, 20, 0.2, 0.2);
+                                    spawnParticles(e.position, isSeeker ? 30 : 15, isSeeker ? 0xff0000 : 0xff007f);
+                                    score += (isSeeker ? 500 : 100) * speedMultiplier;
+                                    e.visible = false; e.userData.active = false;
+                                    l.visible = false; l.userData.active = false;
+                                }
+                            });
+                            if (e.position.z > 20) { e.visible = false; e.userData.active = false; }
+                        }
+                    });
+                };
+                processEnemies(pools.obstacles, 1.5, false);
+                processEnemies(pools.seekers, 2.0, true);
+
+                // 道具與收集品
+                const processItems = (pool, speedFactor, onCollect, rotSpeed) => {
+                    pool.forEach(e => {
+                        if (e.userData.active) {
+                            e.position.z += baseSpeed * speedMultiplier * speedFactor;
+                            e.rotation.y += rotSpeed; e.rotation.x += rotSpeed;
+                            updateHitbox(e, 0.5); // 擴大道具判定範圍，更好吃
+                            if (shipHitbox.intersectsBox(e.userData.box)) {
+                                onCollect(e); e.visible = false; e.userData.active = false;
+                            } else if (e.position.z > 20) { e.visible = false; e.userData.active = false; }
+                        }
+                    });
+                };
+
+                // 吃分數球
+                processItems(pools.orbs, 1.2, e => {
+                    playSynth('sine', 1000, 2000, 0.3, 0.3); score += 2000;
+                    spawnParticles(e.position, 20, 0xffea00); updateHUD(true);
+                }, 0.05);
+
+                // 吃武器升級
+                processItems(pools.powerups, 1.0, e => {
+                    playSynth('square', 400, 1200, 0.4, 0.3);
+                    if (weaponLevel < 3) weaponLevel++; else score += 5000;
+                    spawnParticles(e.position, 40, 0x00ff66); updateHUD(true);
+                }, 0.02);
+
+                // 粒子更新
+                pools.particles.forEach(p => {
+                    if (p.userData.active) {
+                        p.position.add(p.userData.velocity);
+                        p.userData.life -= 0.03;
+                        p.scale.setScalar(Math.max(0, p.userData.life));
+                        if (p.userData.life <= 0) { p.visible = false; p.userData.active = false; }
+                    }
+                });
+            } else {
+                // 待機畫面
+                ship.position.x = Math.sin(frameCount * 0.02) * 5;
+                ship.position.y = Math.cos(frameCount * 0.015) * 2 + 2;
+                ship.rotation.y += 0.02;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,4 +1,6 @@
-# AI 編輯器技術彙整報告：AI-Powered Local Editors
+# AI 編輯器技術架構總覽
+
+> 原標題：AI 編輯器技術彙整報告：AI-Powered Local Editors
 
 本文件彙整了目前專案中關於 AI 編輯器的核心技術架構、實作方案與未來規格。
 
