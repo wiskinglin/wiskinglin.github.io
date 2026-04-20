@@ -4,70 +4,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pocket Camp 隨身手帳 V2</title>
+    <title>ACPC 視覺化營地手帳</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
         body {
             font-family: 'Nunito', sans-serif;
-            background-color: #FDF6E3;
-            background-image: radial-gradient(#8FBC8F 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
+            background-color: #E2F3E5;
+            /* 森友會淺綠色 */
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
         }
 
-        /* 自訂核取方塊樣式 */
-        .task-checkbox:checked+div {
-            background-color: #78C8A0;
-            border-color: #78C8A0;
-            transform: scale(1.1);
+        .game-card {
+            background: #FFFFFF;
+            border: 4px solid #F0EDE1;
+            border-bottom-width: 8px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .task-checkbox:checked+div i {
-            display: block;
+        .game-card:active {
+            transform: translateY(4px);
+            border-bottom-width: 4px;
         }
 
-        .task-completed-style {
-            opacity: 0.6;
-            background-color: #F3F4F6 !important;
+        .task-done {
+            background-color: #D1FAE5 !important;
+            border-color: #A7F3D0 !important;
+            opacity: 0.8;
         }
 
-        .task-completed-style .task-text {
-            text-decoration: line-through;
-            color: #9CA3AF;
+        .leaf-ticket-shimmer {
+            background: linear-gradient(90deg, #78C8A0, #A7F3D0, #78C8A0);
+            background-size: 200% auto;
+            animation: shimmer 2s linear infinite;
         }
 
-        /* 頁籤過渡 */
-        .tab-btn {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        @keyframes shimmer {
+            to {
+                background-position: 200% center;
+            }
         }
 
-        .tab-active {
-            background-color: #78C8A0;
-            color: white;
-            box-shadow: 0 4px 10px -2px rgba(120, 200, 160, 0.5);
-            transform: translateY(-2px);
+        .rarity-5 {
+            background: linear-gradient(135deg, #FFF9C4 0%, #FFF176 100%);
+            box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
+            border-color: #FDD835 !important;
         }
 
-        .tab-inactive {
-            background-color: #E5E7EB;
-            color: #9CA3AF;
+        .floating {
+            animation: floating 3s ease-in-out infinite;
         }
 
-        .tab-inactive:hover {
-            background-color: #D1D5DB;
-            color: #6B7280;
+        @keyframes floating {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
-        /* 隱藏原生捲軸但保留功能 */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #D1D5DB;
-            border-radius: 10px;
+        #inventory-grid::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
@@ -75,244 +78,201 @@
 <body class="min-h-screen flex items-center justify-center p-4">
 
     <div
-        class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden border-4 border-white outline outline-4 outline-[#E5E0C8]">
+        class="w-full max-w-md bg-[#FFFBF0] rounded-[3rem] shadow-2xl border-8 border-[#78C8A0] overflow-hidden flex flex-col h-[850px] max-h-[90vh]">
 
-        <div class="bg-gradient-to-b from-[#8FBC8F] to-[#78C8A0] p-6 text-center text-white relative">
-            <div
-                class="absolute top-4 right-4 bg-white/25 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center">
-                <i class="fas fa-leaf mr-1"></i> Pocket Camp
+        <div class="p-6 pb-2">
+            <div class="flex justify-between items-center mb-4">
+                <div class="bg-white/80 px-4 py-2 rounded-2xl border-2 border-[#78C8A0] shadow-sm flex items-center">
+                    <i class="fas fa-ticket-alt text-[#78C8A0] mr-2 transform -rotate-45"></i>
+                    <span id="tickets" class="font-black text-xl text-gray-700">0</span>
+                </div>
+                <div class="bg-white/80 px-4 py-2 rounded-2xl border-2 border-orange-300 shadow-sm flex items-center cursor-pointer hover:bg-orange-50"
+                    onclick="resetGame()">
+                    <i class="fas fa-sync-alt text-orange-400"></i>
+                </div>
             </div>
-            <h1 class="text-3xl font-extrabold tracking-wide mt-2 drop-shadow-md">隨身手帳</h1>
-            <p class="text-emerald-100 font-bold mt-1 text-sm tracking-wider">DAILY PLANNER</p>
+
+            <div class="leaf-ticket-shimmer rounded-2xl p-4 text-white text-center shadow-lg relative overflow-hidden">
+                <div id="progress-val" class="font-black text-2xl drop-shadow-sm">CAMPING 0%</div>
+                <div class="text-xs font-bold opacity-80 uppercase tracking-widest">今日進度</div>
+            </div>
         </div>
 
-        <div class="flex p-4 gap-3 bg-[#F9F7F1]">
-            <button id="tab-tasks" class="tab-btn flex-1 py-3 rounded-2xl font-bold tab-active"
-                onclick="switchTab('tasks')">
-                <i class="fas fa-check-square mr-2"></i>日常任務
-            </button>
-            <button id="tab-villagers" class="tab-btn flex-1 py-3 rounded-2xl font-bold tab-inactive"
-                onclick="switchTab('villagers')">
-                <i class="fas fa-paw mr-2"></i>動物圖鑑
-            </button>
-        </div>
+        <div class="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
 
-        <div class="p-6 bg-white min-h-[420px]">
+            <section>
+                <h2 class="text-[#58B08B] font-black text-lg mb-4 flex items-center">
+                    <i class="fas fa-map-marked-alt mr-2"></i> 營地任務區
+                </h2>
+                <div class="grid grid-cols-2 gap-4" id="task-grid">
+                </div>
+            </section>
 
-            <div id="section-tasks" class="block animate-fade-in">
-                <div class="mb-5">
-                    <div class="flex justify-between text-sm font-bold text-gray-500 mb-2">
-                        <span>今日進度</span>
-                        <span id="progress-text" class="text-[#78C8A0]">0%</span>
-                    </div>
-                    <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                        <div id="progress-bar"
-                            class="bg-[#78C8A0] h-3 rounded-full transition-all duration-500 ease-out"
-                            style="width: 0%"></div>
-                    </div>
+            <section class="bg-orange-100 rounded-[2rem] p-5 border-4 border-dashed border-orange-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-orange-700 font-black text-lg italic">COOKIES SHOP</h2>
+                    <span class="bg-orange-400 text-white px-3 py-1 rounded-full text-xs font-bold">50 券 / 抽</span>
                 </div>
 
-                <div class="flex justify-between items-end mb-3">
-                    <h2 class="text-lg font-extrabold text-gray-800">代辦事項</h2>
-                    <button onclick="resetTasks(true)"
-                        class="text-sm text-gray-400 font-bold hover:text-emerald-600 transition-colors">
-                        <i class="fas fa-undo mr-1"></i>重新開始
+                <div class="flex flex-col items-center py-4">
+                    <div id="cookie-box"
+                        class="text-7xl mb-6 cursor-pointer transition-transform hover:scale-110 active:scale-95"
+                        onclick="tryGacha()">
+                        <i class="fas fa-cookie-bite text-orange-400 drop-shadow-lg floating"></i>
+                    </div>
+                    <button onclick="tryGacha()"
+                        class="bg-[#78C8A0] text-white font-black py-3 px-10 rounded-full shadow-lg hover:brightness-105 active:translate-y-1 transition-all">
+                        購入幸運餅乾
                     </button>
                 </div>
-                <div id="task-list" class="space-y-3">
-                </div>
-            </div>
+            </section>
 
-            <div id="section-villagers" class="hidden animate-fade-in">
-                <h2 class="text-lg font-extrabold text-gray-800 mb-4">動物喜好速查</h2>
-                <div class="relative mb-4">
-                    <input type="text" id="search-input" placeholder="輸入動物名稱或主題..."
-                        class="w-full bg-[#F3F4F6] border-none rounded-xl py-3 pl-11 pr-4 focus:ring-2 focus:ring-[#78C8A0] focus:outline-none font-semibold text-gray-700 placeholder-gray-400 transition-shadow">
-                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 text-lg"></i>
+            <section>
+                <h2 class="text-blue-500 font-black text-lg mb-4 flex items-center">
+                    <i class="fas fa-home mr-2"></i> 家具收藏展示
+                </h2>
+                <div class="grid grid-cols-3 gap-3" id="inventory-grid">
                 </div>
-                <div id="villager-list" class="space-y-3 max-h-[280px] overflow-y-auto pr-2 custom-scrollbar">
-                </div>
-            </div>
-
+            </section>
         </div>
+
+        <div id="overlay"
+            class="fixed inset-0 bg-black/80 z-50 hidden flex-col items-center justify-center p-10 text-center">
+            <div id="reveal-light" class="w-64 h-64 rounded-full bg-white/20 blur-3xl absolute animate-pulse"></div>
+            <div id="reveal-card"
+                class="bg-white p-8 rounded-[2rem] border-8 border-yellow-400 relative z-10 scale-0 transition-transform duration-500">
+                <div id="reveal-stars" class="text-yellow-400 text-2xl mb-2"></div>
+                <i id="reveal-icon" class="fas fa-box text-7xl text-gray-700 mb-6"></i>
+                <h3 id="reveal-name" class="font-black text-2xl text-gray-800 mb-6">???</h3>
+                <button onclick="closeOverlay()"
+                    class="bg-[#78C8A0] text-white font-black py-3 px-8 rounded-full shadow-lg">好耶！</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // --- 核心資料區 ---
-        const defaultTasks = [
-            { id: 1, title: '滿足營地動物的請求', completed: false, icon: 'fa-comment-dots', desc: '每3小時更新一次' },
-            { id: 2, title: '前往礦山挖礦', completed: false, icon: 'fa-gem', desc: 'Shovelstrike Quarry' },
-            { id: 3, title: '搖晃不結果的樹', completed: false, icon: 'fa-tree', desc: '尋找隱藏的鈴錢' },
-            { id: 4, title: '查看市場盒子', completed: false, icon: 'fa-store', desc: 'Market Box' },
-            { id: 5, title: '收集特產水果', completed: false, icon: 'fa-apple-alt', desc: '檸檬/葡萄/荔枝' }
+        const tasks = [
+            { id: 1, title: '採集水果', icon: 'fa-apple-alt', color: 'bg-red-100 text-red-500' },
+            { id: 2, title: '幫助動物', icon: 'fa-paw', color: 'bg-blue-100 text-blue-500' },
+            { id: 3, title: '挖礦石', icon: 'fa-gem', color: 'bg-purple-100 text-purple-500' },
+            { id: 4, title: '市場買賣', icon: 'fa-store', color: 'bg-orange-100 text-orange-500' }
         ];
 
-        const villagers = [
-            { name: '小潤 (Marshal)', theme: '鄉村 (Rustic)', type: '松鼠', color: '#B4E197' },
-            { name: '傑克 (Raymond)', theme: '華麗 (Elegant)', type: '貓', color: '#A78BFA' },
-            { name: '莉莉安 (Bunnie)', theme: '可愛 (Cute)', type: '兔子', color: '#F9A8D4' },
-            { name: '阿波羅 (Apollo)', theme: '酷 (Cool)', type: '老鷹', color: '#60A5FA' },
-            { name: '牛奶糖 (Goldie)', theme: '自然 (Natural)', type: '狗', color: '#FCD34D' },
-            { name: '彭花 (Rosie)', theme: '可愛 (Cute)', type: '貓', color: '#F9A8D4' },
-            { name: '彼得 (Beau)', theme: '自然 (Natural)', type: '鹿', color: '#FCD34D' },
-            { name: '美玲 (Judy)', theme: '可愛 (Cute)', type: '小熊', color: '#F9A8D4' }
+        const furniture = [
+            { name: '特製噴泉', icon: 'fa-fountain', stars: 5 },
+            { name: '旋轉木馬', icon: 'fa-horse', stars: 5 },
+            { name: '古典鋼琴', icon: 'fa-keyboard', stars: 4 },
+            { name: '舒適沙發', icon: 'fa-couch', stars: 3 },
+            { name: '多肉植物', icon: 'fa-seedling', stars: 3 },
+            { name: '露營火堆', icon: 'fa-fire', stars: 3 }
         ];
 
-        let currentTasks = [];
+        let state = {
+            tickets: parseInt(localStorage.getItem('acpc_tickets')) || 0,
+            completed: JSON.parse(localStorage.getItem('acpc_done')) || [],
+            inventory: JSON.parse(localStorage.getItem('acpc_items')) || []
+        };
 
-        // --- 初始化與跨日重置邏輯 ---
-        function initApp() {
-            const today = new Date().toLocaleDateString();
-            const lastDate = localStorage.getItem('pocketCampLastDate');
-            const savedTasks = localStorage.getItem('pocketCampTasks');
-
-            // 如果是新的一天，或者沒有存檔，則載入預設值（深拷貝避免參照污染）
-            if (lastDate !== today || !savedTasks) {
-                currentTasks = JSON.parse(JSON.stringify(defaultTasks));
-                localStorage.setItem('pocketCampLastDate', today);
-                saveTasks();
-            } else {
-                currentTasks = JSON.parse(savedTasks);
-            }
-
+        function init() {
             renderTasks();
-            renderVillagers();
+            renderInventory();
+            updateUI();
         }
 
-        // --- UI 切換邏輯 ---
-        function switchTab(tab) {
-            const taskBtn = document.getElementById('tab-tasks');
-            const villagerBtn = document.getElementById('tab-villagers');
-            const taskSec = document.getElementById('section-tasks');
-            const villagerSec = document.getElementById('section-villagers');
-
-            if (tab === 'tasks') {
-                taskBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-active';
-                villagerBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-inactive';
-                taskSec.classList.remove('hidden');
-                villagerSec.classList.add('hidden');
-            } else {
-                villagerBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-active';
-                taskBtn.className = 'tab-btn flex-1 py-3 rounded-2xl font-bold tab-inactive';
-                villagerSec.classList.remove('hidden');
-                taskSec.classList.add('hidden');
-            }
+        function updateUI() {
+            document.getElementById('tickets').innerText = state.tickets;
+            const progress = (state.completed.length / tasks.length) * 100;
+            document.getElementById('progress-val').innerText = `CAMPING ${Math.round(progress)}%`;
+            localStorage.setItem('acpc_tickets', state.tickets);
+            localStorage.setItem('acpc_done', JSON.stringify(state.completed));
+            localStorage.setItem('acpc_items', JSON.stringify(state.inventory));
         }
 
-        // --- 任務處理邏輯 ---
         function renderTasks() {
-            const taskList = document.getElementById('task-list');
-            taskList.innerHTML = '';
-            let completedCount = 0;
-
-            currentTasks.forEach((task, index) => {
-                if (task.completed) completedCount++;
-
-                const wrapperClass = task.completed
-                    ? 'task-completed-style bg-gray-50'
-                    : 'bg-[#F9F7F1] hover:bg-[#f1ede1] hover:shadow-sm';
-
-                taskList.innerHTML += `
-                    <label class="flex items-center p-3.5 rounded-2xl cursor-pointer transition-all duration-300 ${wrapperClass}">
-                        <div class="relative flex items-center justify-center w-6 h-6 mr-4 flex-shrink-0">
-                            <input type="checkbox" class="task-checkbox opacity-0 absolute w-full h-full cursor-pointer z-10" 
-                                ${task.completed ? 'checked' : ''} 
-                                onchange="toggleTask(${index})">
-                            <div class="w-6 h-6 rounded-md border-2 border-[#D1D5DB] bg-white transition-all flex items-center justify-center">
-                                <i class="fas fa-check text-white text-sm hidden"></i>
-                            </div>
+            const grid = document.getElementById('task-grid');
+            grid.innerHTML = tasks.map(t => {
+                const isDone = state.completed.includes(t.id);
+                return `
+                    <div onclick="toggleTask(${t.id})" class="game-card p-4 rounded-3xl flex flex-col items-center justify-center cursor-pointer ${isDone ? 'task-done' : ''}">
+                        <div class="w-12 h-12 ${t.color} rounded-2xl flex items-center justify-center mb-3 text-2xl shadow-inner">
+                            <i class="fas ${t.icon}"></i>
                         </div>
-                        <div class="flex-1 flex items-center min-w-0">
-                            <div class="w-9 h-9 rounded-full bg-white flex items-center justify-center mr-3 shadow-sm text-[#78C8A0] flex-shrink-0">
-                                <i class="fas ${task.icon}"></i>
-                            </div>
-                            <div class="flex flex-col truncate">
-                                <span class="task-text font-bold text-gray-700 transition-colors truncate">${task.title}</span>
-                                <span class="text-xs text-gray-400 font-semibold mt-0.5 truncate">${task.desc}</span>
-                            </div>
-                        </div>
-                    </label>
-                `;
-            });
-
-            updateProgress(completedCount, currentTasks.length);
-            saveTasks();
-        }
-
-        function updateProgress(completed, total) {
-            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
-            const progressBar = document.getElementById('progress-bar');
-            const progressText = document.getElementById('progress-text');
-
-            progressBar.style.width = `${percentage}%`;
-            progressText.innerText = `${percentage}%`;
-
-            if (percentage === 100) {
-                progressBar.classList.replace('bg-[#78C8A0]', 'bg-yellow-400');
-                progressText.classList.replace('text-[#78C8A0]', 'text-yellow-500');
-                progressText.innerText = '完成！🎉';
-            } else {
-                progressBar.classList.replace('bg-yellow-400', 'bg-[#78C8A0]');
-                progressText.classList.replace('text-yellow-500', 'text-[#78C8A0]');
-            }
-        }
-
-        function toggleTask(index) {
-            currentTasks[index].completed = !currentTasks[index].completed;
-            renderTasks();
-        }
-
-        function resetTasks(manual = false) {
-            if (manual && !confirm('確定要清除今天的進度嗎？')) return;
-            currentTasks = JSON.parse(JSON.stringify(defaultTasks));
-            renderTasks();
-        }
-
-        function saveTasks() {
-            localStorage.setItem('pocketCampTasks', JSON.stringify(currentTasks));
-        }
-
-        // --- 動物圖鑑邏輯 ---
-        function renderVillagers(filterText = '') {
-            const list = document.getElementById('villager-list');
-            list.innerHTML = '';
-
-            const filtered = villagers.filter(v =>
-                v.name.toLowerCase().includes(filterText.toLowerCase()) ||
-                v.theme.toLowerCase().includes(filterText.toLowerCase())
-            );
-
-            if (filtered.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center text-gray-400 py-10 flex flex-col items-center">
-                        <i class="fas fa-search-minus text-4xl mb-3 text-gray-300"></i>
-                        <span class="font-bold">找不到該動物喔！</span>
-                    </div>`;
-                return;
-            }
-
-            filtered.forEach(v => {
-                list.innerHTML += `
-                    <div class="flex items-center justify-between p-3.5 bg-white border-2 border-gray-100 rounded-2xl hover:border-[#78C8A0] transition-colors shadow-sm hover:shadow-md">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-gray-800 text-sm">${v.name}</span>
-                            <span class="text-xs text-gray-400 font-bold mt-0.5"><i class="fas fa-tag mr-1 text-gray-300"></i>${v.type}</span>
-                        </div>
-                        <div class="px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center" style="background-color: ${v.color}25; color: ${v.color.replace('B4E197', '65A30D').replace('A78BFA', '7C3AED').replace('F9A8D4', 'DB2777').replace('60A5FA', '2563EB').replace('FCD34D', 'D97706')}; border: 1px solid ${v.color}40;">
-                            ${v.theme}
-                        </div>
+                        <span class="font-black text-gray-700 text-sm">${t.title}</span>
+                        <div class="mt-2 text-[10px] font-bold text-[#78C8A0]">+15 TICKETS</div>
                     </div>
                 `;
-            });
+            }).join('');
         }
 
-        // --- 事件綁定 ---
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            renderVillagers(e.target.value);
-        });
+        function toggleTask(id) {
+            if (state.completed.includes(id)) {
+                state.completed = state.completed.filter(i => i !== id);
+                state.tickets = Math.max(0, state.tickets - 15);
+            } else {
+                state.completed.push(id);
+                state.tickets += 15;
+            }
+            renderTasks();
+            updateUI();
+        }
 
-        // --- 啟動 APP ---
-        initApp();
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            grid.innerHTML = state.inventory.map(item => `
+                <div class="game-card p-2 rounded-2xl flex flex-col items-center justify-center ${item.stars === 5 ? 'rarity-5' : 'bg-white'}">
+                    <i class="fas ${item.icon} text-2xl mb-1 text-gray-700"></i>
+                    <div class="text-yellow-500 text-[8px]">${'★'.repeat(item.stars)}</div>
+                </div>
+            `).join('');
+            if (state.inventory.length === 0) grid.innerHTML = '<div class="col-span-3 text-center text-gray-400 text-xs font-bold py-4">目前還沒有家具...</div>';
+        }
+
+        function tryGacha() {
+            if (state.tickets < 50) {
+                alert('葉子券不足喔！去解任務吧～');
+                return;
+            }
+            state.tickets -= 50;
+            updateUI();
+
+            // Start Animation
+            const overlay = document.getElementById('overlay');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+
+            setTimeout(() => {
+                const rand = Math.random();
+                let item;
+                if (rand > 0.9) item = furniture.filter(f => f.stars === 5)[Math.floor(Math.random() * 2)];
+                else if (rand > 0.6) item = furniture.filter(f => f.stars === 4)[0];
+                else item = furniture.filter(f => f.stars === 3)[Math.floor(Math.random() * 3)];
+
+                state.inventory.push(item);
+
+                const card = document.getElementById('reveal-card');
+                document.getElementById('reveal-stars').innerText = '★'.repeat(item.stars);
+                document.getElementById('reveal-icon').className = `fas ${item.icon} text-7xl mb-6 ${item.stars === 5 ? 'text-yellow-600' : 'text-gray-700'}`;
+                document.getElementById('reveal-name').innerText = item.name;
+                card.style.transform = 'scale(1)';
+            }, 500);
+        }
+
+        function closeOverlay() {
+            document.getElementById('overlay').classList.add('hidden');
+            document.getElementById('reveal-card').style.transform = 'scale(0)';
+            renderInventory();
+            updateUI();
+        }
+
+        function resetGame() {
+            if (confirm('確定要重置所有數據嗎？')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        init();
     </script>
 </body>
 

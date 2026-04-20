@@ -3,179 +3,237 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>彈弓物理遊樂場 - Hank HTML</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>破壞大師：極致物理優化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <style>
         body {
             margin: 0;
-            padding: 0;
-            background-color: #f3f4f6;
+            background: #0f172a;
+            font-family: 'Segoe UI', system-ui, sans-serif;
             overflow: hidden;
-            /* 防止手機端滾動 */
-            touch-action: none;
-            /* 改善觸控體驗 */
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            pointer-events: none;
+            display: flex;
+            justify-content: space-around;
+            z-index: 50;
+        }
+
+        .stat-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            padding: 10px 25px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        }
+
+        .label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #f59e0b;
+            display: block;
         }
 
         #game-container {
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            position: relative;
+            cursor: crosshair;
         }
 
-        canvas {
-            display: block;
+        /* 震動動畫 */
+        .shake {
+            animation: shake 0.2s cubic-bezier(.36, .07, .19, .97) both;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
         }
     </style>
 </head>
 
-<body class="flex flex-col items-center justify-center min-h-screen">
+<body class="flex items-center justify-center h-screen">
 
-    <div class="mb-4 text-center z-10">
-        <h1 class="text-3xl font-extrabold text-gray-800 tracking-tight">彈弓物理遊樂場</h1>
-        <p class="text-gray-500 mt-1">拖曳紅球，瞄準積木，然後放開！</p>
-    </div>
-
-    <div id="game-container" class="bg-blue-100 border-4 border-white">
-        <div class="absolute top-4 right-4 z-20">
-            <button id="reset-btn"
-                class="bg-white/80 backdrop-blur-sm hover:bg-white text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded shadow-sm transition-all duration-200">
-                🔄 重置關卡
-            </button>
+    <div id="ui-layer">
+        <div class="stat-card">
+            <span class="label">Total Score</span>
+            <span id="score" class="value">0</span>
+        </div>
+        <div class="stat-card">
+            <span class="label">Projectiles</span>
+            <span id="shots" class="value">0</span>
         </div>
     </div>
 
-    <script>
-        // Matter.js 模組縮寫
-        const Engine = Matter.Engine,
-            Render = Matter.Render,
-            Runner = Matter.Runner,
-            Composites = Matter.Composites,
-            Events = Matter.Events,
-            Constraint = Matter.Constraint,
-            MouseConstraint = Matter.MouseConstraint,
-            Mouse = Matter.Mouse,
-            Composite = Matter.Composite,
-            Bodies = Matter.Bodies;
+    <div id="game-container"></div>
 
-        // 初始化物理引擎
+    <script>
+        const { Engine, Render, Runner, Composites, Constraint, MouseConstraint, Mouse, Composite, Bodies, Events, Vector } = Matter;
+
         const engine = Engine.create();
         const world = engine.world;
+        const width = 1000;
+        const height = 600;
 
-        // 畫布尺寸設定 (響應式思維：根據螢幕大小微調，這裡設定一個適中尺寸)
-        const width = Math.min(window.innerWidth * 0.95, 800);
-        const height = Math.min(window.innerHeight * 0.6, 500);
-
-        // 初始化渲染器
         const render = Render.create({
             element: document.getElementById('game-container'),
             engine: engine,
             options: {
-                width: width,
-                height: height,
-                wireframes: false, // 關閉線框模式，顯示實體顏色
-                background: '#bae6fd' // Tailwind sky-200
+                width: width, height: height,
+                wireframes: false,
+                background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)'
             }
         });
 
         Render.run(render);
+        Runner.run(Runner.create(), engine);
 
-        // 初始化運行器
-        const runner = Runner.create();
-        Runner.run(runner, engine);
+        // --- 物理環境佈置 ---
+        const ground = Bodies.rectangle(width / 2, height + 25, width * 2, 60, { isStatic: true, render: { fillStyle: '#334155' } });
+        const platform = Bodies.rectangle(750, 450, 300, 20, { isStatic: true, render: { fillStyle: '#475569' } });
+        Composite.add(world, [ground, platform]);
 
-        // --- 遊戲實體物件建立 ---
-        let bird, elastic, pyramid;
-        const ground = Bodies.rectangle(width / 2, height - 20, width * 1.5, 40, {
-            isStatic: true,
-            render: { fillStyle: '#4d7c0f' } // Tailwind lime-700
-        });
-
-        const anchorPoint = { x: width * 0.2, y: height * 0.7 };
-
-        function initLevel() {
-            // 清除舊物件
-            if (bird) Composite.remove(world, bird);
-            if (elastic) Composite.remove(world, elastic);
-            if (pyramid) Composite.remove(world, pyramid);
-
-            // 建立彈力球 (主角)
-            bird = Bodies.circle(anchorPoint.x, anchorPoint.y, 20, {
-                density: 0.005, // 稍微重一點以增加破壞力
-                restitution: 0.4, // 彈性
-                frictionAir: 0.01,
-                render: { fillStyle: '#ef4444' } // Tailwind red-500
-            });
-
-            // 建立彈弓約束線
-            elastic = Constraint.create({
-                pointA: anchorPoint,
-                bodyB: bird,
-                stiffness: 0.05, // 彈弓硬度
-                damping: 0.01,
-                render: { strokeStyle: '#78350f', lineWidth: 4 } // Tailwind amber-900
-            });
-
-            // 建立目標方塊堆 (金字塔形狀)
-            const pyramidX = width * 0.7;
-            const pyramidY = height * 0.3;
-            pyramid = Composites.pyramid(pyramidX - 100, pyramidY, 7, 7, 0, 0, function (x, y) {
-                return Bodies.rectangle(x, y, 30, 40, {
+        // --- 結構生成器 (更複雜的目標) ---
+        function createStructure() {
+            const stack = Composites.stack(650, 100, 4, 8, 2, 2, (x, y) => {
+                return Bodies.rectangle(x, y, 35, 35, {
+                    friction: 0.5,
+                    restitution: 0.2,
                     render: {
-                        fillStyle: '#fbbf24', // Tailwind amber-400
-                        strokeStyle: '#b45309',
-                        lineWidth: 2
+                        fillStyle: x % 70 === 0 ? '#fbbf24' : '#f59e0b',
+                        strokeStyle: '#78350f', lineWidth: 1
                     }
                 });
             });
-
-            // 將物件加入世界
-            Composite.add(world, [bird, elastic, pyramid]);
+            Composite.add(world, stack);
+            return stack;
         }
+        let currentStructure = createStructure();
 
-        // 初始載入關卡與加入地面
-        Composite.add(world, ground);
-        initLevel();
+        // --- 彈弓邏輯 ---
+        const anchor = { x: 200, y: 400 };
+        let bird, elastic;
+        let shotCount = 0;
+        let totalScore = 0;
 
-        // --- 滑鼠與觸控互動 ---
+        function spawnBird() {
+            bird = Bodies.circle(anchor.x, anchor.y, 18, {
+                density: 0.015, // 超高密度提高破壞力
+                restitution: 0.5,
+                render: { fillStyle: '#ef4444' }
+            });
+
+            elastic = Constraint.create({
+                pointA: anchor,
+                bodyB: bird,
+                stiffness: 0.1,
+                damping: 0.05,
+                render: { strokeStyle: '#f87171', lineWidth: 3 }
+            });
+
+            Composite.add(world, [bird, elastic]);
+        }
+        spawnBird();
+
+        // --- 互動控制 ---
         const mouse = Mouse.create(render.canvas);
-        const mouseConstraint = MouseConstraint.create(engine, {
+        const msc = MouseConstraint.create(engine, {
             mouse: mouse,
-            constraint: {
-                stiffness: 0.2,
-                render: { visible: false }
+            constraint: { stiffness: 0.2, render: { visible: false } }
+        });
+        Composite.add(world, msc);
+
+        // --- 預測軌跡繪製 ---
+        Events.on(render, 'afterRender', () => {
+            if (msc.draggedBody === bird) {
+                const ctx = render.context;
+                ctx.beginPath();
+                ctx.setLineDash([5, 5]);
+                const pos = bird.position;
+                const dist = Vector.sub(anchor, pos);
+                const force = Vector.mult(dist, 0.12); // 模擬發射力度
+
+                let tempPos = { x: pos.x, y: pos.y };
+                let tempVel = { x: force.x * 15, y: force.y * 15 }; // 粗略模擬
+
+                ctx.moveTo(pos.x, pos.y);
+                for (let i = 0; i < 30; i++) {
+                    tempVel.y += 0.5; // 重力模擬
+                    tempPos.x += tempVel.x;
+                    tempPos.y += tempVel.y;
+                    ctx.lineTo(tempPos.x, tempPos.y);
+                }
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+                ctx.stroke();
+                ctx.setLineDash([]);
             }
         });
 
-        Composite.add(world, mouseConstraint);
-        render.mouse = mouse; // 保持滑鼠與渲染器同步
-
-        // --- 釋放彈弓的邏輯 ---
-        Events.on(engine, 'afterUpdate', function () {
-            // 當球被往後拉，且滑鼠/手指放開時 (bodyB 存在代表還被綁在彈弓上)
-            if (mouseConstraint.mouse.button === -1 && elastic.bodyB) {
-                // 如果球的位置已經超過錨點往前飛，就解除綁定
-                if (bird.position.x > anchorPoint.x + 20) {
+        // --- 發射偵測 ---
+        Events.on(engine, 'afterUpdate', () => {
+            if (bird && elastic.bodyB && msc.mouse.button === -1) {
+                if (bird.position.x > anchor.x + 20) {
                     elastic.bodyB = null;
+                    shotCount++;
+                    document.getElementById('shots').innerText = shotCount;
+                    setTimeout(spawnBird, 3000);
                 }
             }
+
+            // 計分邏輯：偵測積木移動速度或位移
+            currentStructure.bodies.forEach(b => {
+                if (b.speed > 2) {
+                    totalScore += Math.floor(b.speed);
+                    document.getElementById('score').innerText = totalScore;
+                }
+                // 掉出平台大加分
+                if (b.position.y > 550) {
+                    totalScore += 50;
+                    Composite.remove(world, b);
+                }
+            });
         });
 
-        // --- UI 按鈕事件 ---
-        document.getElementById('reset-btn').addEventListener('click', () => {
-            initLevel();
-        });
-
-        // 處理視窗大小改變 (簡單重整以確保版面不亂)
-        window.addEventListener('resize', () => {
-            // 實務上可以動態調整 canvas 大小，這裡為求穩定採用重新載入
-            // 但為了體驗流暢，僅在寬度變化過大時重整
-            if (Math.abs(window.innerWidth - width) > 100) {
-                location.reload();
+        // 碰撞特效 (畫面震動)
+        Events.on(engine, 'collisionStart', (event) => {
+            const pairs = event.pairs;
+            if (pairs.some(p => p.bodyA === bird || p.bodyB === bird)) {
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 200);
             }
         });
+
     </script>
 </body>
 

@@ -350,7 +350,7 @@
                                     <h3 class="text-xl font-bold mb-2 font-display">${item.name}</h3>
                                     <p class="text-sm opacity-60 leading-relaxed mb-6">${item.desc}</p>
                                 </div>
-                                <a href="${item.url}" target="_blank" class="flex items-center gap-2 text-sm font-bold text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-wider group">
+                                <a href="javascript:void(0)" onclick="openUrl('${item.url}')" class="flex items-center gap-2 text-sm font-bold text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-wider group">
                                     Visit Website
                                     <i data-lucide="external-link" class="w-4 h-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
                                 </a>
@@ -361,6 +361,14 @@
                 container.appendChild(sectionEl);
             });
             lucide.createIcons();
+        }
+
+        function openUrl(url) {
+            const newWindow = window.open(url, '_blank');
+            if (newWindow) {
+                // 嘗試將焦點帶回原視窗，實現「背景開啟」效果 (視瀏覽器設定可能有所不同)
+                window.focus();
+            }
         }
 
         function setTheme(theme) {
