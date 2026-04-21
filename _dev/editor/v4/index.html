@@ -6,10 +6,14 @@
     <title>iTW Editor — Scenario-Driven Web App Engine</title>
     <meta name="description" content="iTaiwan (.itw) 情境驅動編輯器：一個檔案就是一個專屬 Web 應用程式。支援簡報、圖片、試算表與文件四大場景。">
 
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a0f">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
 
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -21,24 +25,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
+    <!-- DOMPurify for XSS prevention (WS-1) -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+    <!-- PapaParse for robust CSV parsing (WS-2) -->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
     <!-- App Styles -->
     <link rel="stylesheet" href="styles.css">
-
-    <!-- Workspace view mode styles (injected here for clarity) -->
-    <style>
-        /* View mode layout control */
-        .editor-workspace.mode-blocks .source-pane { display: none; }
-        .editor-workspace.mode-blocks .blocks-pane { display: block; }
-        .editor-workspace.mode-blocks .preview-pane { display: none; }
-
-        .editor-workspace.mode-source .source-pane { display: flex; }
-        .editor-workspace.mode-source .blocks-pane { display: none; }
-        .editor-workspace.mode-source .preview-pane { display: none; }
-
-        .editor-workspace.mode-split .source-pane { display: none; }
-        .editor-workspace.mode-split .blocks-pane { display: block; flex: 1; }
-        .editor-workspace.mode-split .preview-pane { display: block; flex: 1; }
-    </style>
 </head>
 <body>
     <!-- ======================== LOADING SCREEN ======================== -->
@@ -116,74 +110,114 @@
 
                 <div class="icon-bar-spacer"></div>
 
+                <button class="icon-bar-btn" id="btn-zen" title="Zen Mode 沉浸寫作">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
                 <button class="icon-bar-btn" id="btn-settings" title="設定">
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </nav>
 
-            <!-- ── LEFT CONTEXT PANEL ── -->
+            <!-- ── LEFT CONTEXT PANEL (Multi-view) ── -->
             <aside class="context-panel" id="context-panel">
-                <div class="panel-section">
-                    <div class="panel-section-title">區塊大綱 BLOCKS</div>
+
+                <!-- Panel View: Outline -->
+                <div class="panel-view" id="panel-outline">
+                    <div class="panel-section">
+                        <div class="panel-section-title">區塊大綱 BLOCKS</div>
+                    </div>
+                    <div class="block-list" id="block-list">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div class="panel-section" style="border-bottom:none;">
+                        <button class="add-block-btn" id="add-block-panel" style="width:100%;">
+                            <i class="fa-solid fa-plus"></i> 新增區塊
+                        </button>
+                    </div>
                 </div>
-                <div class="block-list" id="block-list">
-                    <!-- Dynamically populated -->
+
+                <!-- Panel View: Assets / Media Inbox (WS-5) -->
+                <div class="panel-view hidden" id="panel-assets">
+                    <div class="panel-section">
+                        <div class="panel-section-title">素材庫 ASSETS</div>
+                    </div>
+                    <div class="assets-inbox">
+                        <div class="inbox-dropzone" id="inbox-dropzone">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>拖曳圖片至此上傳</span>
+                        </div>
+                        <div class="inbox-tags" id="inbox-tags"></div>
+                        <div class="inbox-grid" id="inbox-grid">
+                            <!-- Dynamically populated thumbnails -->
+                        </div>
+                    </div>
                 </div>
-                <div class="panel-section" style="border-bottom:none;">
-                    <button class="add-block-btn" id="add-block-panel" style="width:100%;">
-                        <i class="fa-solid fa-plus"></i> 新增區塊
-                    </button>
+
+                <!-- Panel View: AI Assistant (WS-8) -->
+                <div class="panel-view hidden" id="panel-ai">
+                    <div class="panel-section">
+                        <div class="panel-section-title">AI 助手 ASSISTANT</div>
+                    </div>
+                    <div class="ai-panel-content">
+                        <div class="ai-input-group">
+                            <label>URL 擷取</label>
+                            <div class="ai-input-row">
+                                <input type="text" id="ai-url-input" placeholder="貼上網址擷取內容...">
+                                <button class="ai-action-btn" id="ai-url-fetch" title="擷取"><i class="fa-solid fa-download"></i></button>
+                            </div>
+                        </div>
+                        <div class="ai-input-group">
+                            <label>關鍵字搜尋</label>
+                            <div class="ai-input-row">
+                                <input type="text" id="ai-search-input" placeholder="搜尋關鍵字...">
+                                <button class="ai-action-btn" id="ai-search-btn" title="搜尋"><i class="fa-solid fa-magnifying-glass"></i></button>
+                            </div>
+                        </div>
+                        <div class="ai-input-group">
+                            <label>AI 指令</label>
+                            <textarea id="ai-prompt-input" rows="3" placeholder="輸入指令，例如：幫我寫一段產品介紹..."></textarea>
+                        </div>
+                        <div class="ai-actions">
+                            <button class="action-btn primary ai-gen-btn" id="ai-generate-btn">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> 生成
+                            </button>
+                            <select id="ai-model-select" class="ai-model-select">
+                                <option value="sim">模擬模式</option>
+                                <option value="phi3">Phi-3 (WebGPU)</option>
+                                <option value="qwen">Qwen2.5 (WASM)</option>
+                            </select>
+                        </div>
+                        <div class="ai-result" id="ai-result">
+                            <div class="ai-result-placeholder">
+                                <i class="fa-solid fa-robot"></i>
+                                <span>AI 生成結果將顯示在這裡</span>
+                            </div>
+                        </div>
+                        <div class="ai-result-actions hidden" id="ai-result-actions">
+                            <button class="action-btn primary" id="ai-insert-btn">
+                                <i class="fa-solid fa-plus"></i> 插入至文件
+                            </button>
+                            <button class="action-btn secondary" id="ai-copy-btn">
+                                <i class="fa-regular fa-copy"></i> 複製
+                            </button>
+                            <button class="action-btn secondary" id="ai-discard-btn">
+                                <i class="fa-solid fa-trash"></i> 捨棄
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </aside>
 
             <!-- ── EDITOR MAIN ── -->
             <main class="editor-main">
 
-                <!-- Toolbar -->
-                <div class="editor-toolbar">
-                    <div class="tb-group">
-                        <button class="tb-btn" data-action="bold" title="粗體 (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
-                        <button class="tb-btn" data-action="italic" title="斜體 (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
-                    </div>
-                    <div class="tb-divider"></div>
-                    <div class="tb-group">
-                        <button class="tb-btn" data-action="h1" title="標題 1">H1</button>
-                        <button class="tb-btn" data-action="h2" title="標題 2">H2</button>
-                        <button class="tb-btn" data-action="h3" title="標題 3">H3</button>
-                    </div>
-                    <div class="tb-divider"></div>
-                    <div class="tb-group">
-                        <button class="tb-btn" data-action="ul" title="無序列表"><i class="fa-solid fa-list-ul"></i></button>
-                        <button class="tb-btn" data-action="ol" title="有序列表"><i class="fa-solid fa-list-ol"></i></button>
-                        <button class="tb-btn" data-action="quote" title="引用"><i class="fa-solid fa-quote-left"></i></button>
-                        <button class="tb-btn" data-action="code" title="程式碼"><i class="fa-solid fa-code"></i></button>
-                    </div>
-                    <div class="tb-divider"></div>
-                    <div class="tb-group">
-                        <button class="tb-btn" data-action="link" title="連結"><i class="fa-solid fa-link"></i></button>
-                        <button class="tb-btn" data-action="image" title="圖片"><i class="fa-solid fa-image"></i></button>
-                        <button class="tb-btn" data-action="table" title="表格"><i class="fa-solid fa-table"></i></button>
-                        <button class="tb-btn" data-action="hr" title="分隔線"><i class="fa-solid fa-minus"></i></button>
-                    </div>
-
-                    <div class="tb-spacer"></div>
-
-                    <!-- View Mode Switcher -->
-                    <div class="view-switch">
-                        <button class="view-switch-btn active" id="view-blocks" title="區塊視圖">
-                            <i class="fa-solid fa-cubes"></i> 區塊
-                        </button>
-                        <button class="view-switch-btn" id="view-source" title="原始碼">
-                            <i class="fa-solid fa-code"></i> 原始碼
-                        </button>
-                        <button class="view-switch-btn" id="view-split" title="分割預覽">
-                            <i class="fa-solid fa-columns"></i> 分割
-                        </button>
-                    </div>
+                <!-- Dynamic Toolbar (WS-3 — rebuilt per scenario) -->
+                <div class="editor-toolbar" id="editor-toolbar">
+                    <!-- Toolbar is dynamically built by ToolbarManager -->
                 </div>
 
                 <!-- Workspace -->
-                <div class="editor-workspace mode-blocks">
+                <div class="editor-workspace mode-blocks" id="editor-workspace">
 
                     <!-- Source Code View -->
                     <div class="source-pane">
@@ -198,6 +232,13 @@
 
                     <!-- Block View -->
                     <div class="blocks-pane" id="blocks-pane">
+                        <!-- Golden-triangle overlay for Visual (WS-5) -->
+                        <div class="guide-overlay hidden" id="guide-overlay">
+                            <div class="guide-line guide-h guide-h1"></div>
+                            <div class="guide-line guide-h guide-h2"></div>
+                            <div class="guide-line guide-v guide-v1"></div>
+                            <div class="guide-line guide-v guide-v2"></div>
+                        </div>
                         <div class="blocks-container" id="blocks-container">
                             <!-- Dynamically populated by app.js -->
                         </div>
@@ -231,6 +272,11 @@
                         </span>
                     </div>
                     <div class="status-right">
+                        <span class="status-item" id="constraint-indicator" style="display:none;">
+                            <i class="fa-solid fa-lock" style="color:var(--warning);font-size:10px;"></i>
+                            約束模式
+                        </span>
+                        <span class="status-sep"></span>
                         <span class="status-item">
                             <i class="fa-solid fa-hard-drive" style="font-size:10px;"></i>
                             Local-First
@@ -240,6 +286,15 @@
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <!-- ======================== ZEN MODE OVERLAY (WS-7) ======================== -->
+    <div id="zen-overlay" class="zen-overlay hidden">
+        <div class="zen-exit-hint" id="zen-exit-hint">按 ESC 退出沉浸模式</div>
+        <div class="zen-editor-wrap">
+            <textarea id="zen-textarea" class="zen-textarea" spellcheck="false" placeholder="專注寫作..."></textarea>
+            <div class="zen-stats" id="zen-stats">0 字</div>
         </div>
     </div>
 
@@ -291,12 +346,80 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="action-btn secondary" id="template-cancel-btn" onclick="closeTemplateDialog()">取消</button>
+                <button class="action-btn secondary" id="template-cancel-btn">取消</button>
                 <button class="action-btn primary" id="template-create-btn">
                     <i class="fa-solid fa-plus"></i> 建立
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- ======================== TA SETTINGS DIALOG (WS-4) ======================== -->
+    <div class="modal-overlay" id="ta-modal">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-bullseye"></i> 受眾與時長設定</h3>
+                <button class="modal-close" id="ta-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="ta-form">
+                    <div class="form-group">
+                        <label>目標受眾 (TA)</label>
+                        <div class="radio-group" id="ta-audience">
+                            <label class="radio-card"><input type="radio" name="ta-aud" value="investor" checked><span><i class="fa-solid fa-building-columns"></i> 投資人</span></label>
+                            <label class="radio-card"><input type="radio" name="ta-aud" value="client"><span><i class="fa-solid fa-handshake"></i> 客戶</span></label>
+                            <label class="radio-card"><input type="radio" name="ta-aud" value="internal"><span><i class="fa-solid fa-users"></i> 內部團隊</span></label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>演說時長</label>
+                        <div class="radio-group" id="ta-duration">
+                            <label class="radio-card"><input type="radio" name="ta-dur" value="5"><span>5 分鐘</span></label>
+                            <label class="radio-card"><input type="radio" name="ta-dur" value="10" checked><span>10 分鐘</span></label>
+                            <label class="radio-card"><input type="radio" name="ta-dur" value="20"><span>20 分鐘</span></label>
+                        </div>
+                    </div>
+                    <div class="ta-suggestion" id="ta-suggestion">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <span>建議投影片數量: <strong>8-12</strong> 頁</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn secondary" id="ta-cancel-btn">跳過</button>
+                <button class="action-btn primary" id="ta-apply-btn">
+                    <i class="fa-solid fa-check"></i> 套用
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== WCAG RESULTS DIALOG (WS-5) ======================== -->
+    <div class="modal-overlay" id="wcag-modal">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-universal-access"></i> WCAG 配色檢測</h3>
+                <button class="modal-close" id="wcag-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="wcag-results" class="wcag-results">
+                    <p class="wcag-placeholder">點擊「檢測」分析當前畫布配色</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-btn secondary" id="wcag-close-btn">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== ADD BLOCK MENU (floating) ======================== -->
+    <div class="block-menu hidden" id="block-menu">
+        <div class="block-menu-item" data-type="MD"><i class="fa-solid fa-paragraph"></i> Markdown</div>
+        <div class="block-menu-item" data-type="CSV"><i class="fa-solid fa-table"></i> 試算表 CSV</div>
+        <div class="block-menu-item" data-type="JSON"><i class="fa-solid fa-brackets-curly"></i> 元數據 JSON</div>
+        <div class="block-menu-item" data-type="HTML"><i class="fa-solid fa-code"></i> 自訂 HTML</div>
+        <div class="block-menu-item" data-type="SLIDE"><i class="fa-solid fa-rectangle-list"></i> 投影片 SLIDE</div>
+        <div class="block-menu-item" data-type="IMG"><i class="fa-solid fa-image"></i> 圖片 IMG</div>
     </div>
 
     <!-- App Script -->
