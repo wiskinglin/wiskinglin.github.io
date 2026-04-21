@@ -36,6 +36,7 @@
                     animation: {
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
                         'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'blob': 'blob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)',
                     },
                     keyframes: {
                         fadeIn: {
@@ -45,6 +46,12 @@
                         slideUp: {
                             '0%': { transform: 'translateY(20px)', opacity: '0' },
                             '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
                         }
                     }
                 }
@@ -55,28 +62,31 @@
     <style>
         :root {
             --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
+            --bg-secondary-rgb: 30, 41, 59;
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.2);
             --card-border: rgba(255, 255, 255, 0.1);
         }
 
         .theme-light {
             --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
+            --bg-secondary-rgb: 255, 255, 255;
             --text-primary: #0f172a;
             --text-secondary: #64748b;
             --accent: #4f46e5;
+            --accent-glow: rgba(79, 70, 229, 0.15);
             --card-border: rgba(0, 0, 0, 0.05);
         }
 
         .theme-design {
             --bg-primary: #000000;
-            --bg-secondary: #111111;
+            --bg-secondary-rgb: 17, 17, 17;
             --text-primary: #ffffff;
             --text-secondary: #a1a1aa;
             --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.2);
             --card-border: rgba(245, 158, 11, 0.2);
         }
 
@@ -87,26 +97,81 @@
         }
 
         .glass-hero {
-            background: radial-gradient(circle at 50% 0%, var(--accent) 0%, transparent 70%);
-            opacity: 0.15;
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
             pointer-events: none;
         }
 
+        .glass-hero::before, .glass-hero::after {
+            content: "";
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            max-width: 800px;
+            max-height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 60%);
+            opacity: 0.15;
+            filter: blur(80px);
+            animation: blob 15s infinite alternate;
+        }
+
+        .glass-hero::before {
+            top: -20%;
+            left: -10%;
+            animation-delay: 0s;
+        }
+
+        .glass-hero::after {
+            bottom: -20%;
+            right: -10%;
+            animation-duration: 20s;
+            animation-direction: alternate-reverse;
+        }
+
         .resource-card {
-            background: var(--bg-secondary);
+            background: rgba(var(--bg-secondary-rgb), 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), inset 1px 0 0 rgba(255, 255, 255, 0.02);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .resource-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            opacity: 0;
+            transition: opacity 0.4s, transform 0.4s;
+            transform: scaleY(0);
+            transform-origin: center;
         }
 
         .resource-card:hover {
-            transform: translateY(-4px) scale(1.02);
+            transform: translateY(-6px) scale(1.02);
             border-color: var(--accent);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(var(--bg-secondary-rgb), 0.7);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px var(--accent-glow);
+        }
+
+        .resource-card:hover::before {
+            opacity: 1;
+            transform: scaleY(1);
         }
 
         .sticky-nav {
             background: rgba(var(--bg-primary-rgb), 0.7);
-            backdrop-blur: 16px;
+            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px);
         }
 
         .theme-btn {
@@ -175,7 +240,7 @@
         <!-- Header -->
         <header class="mb-16 animate-slide-up">
             <h1 class="font-display text-4xl sm:text-6xl font-extrabold mb-6 tracking-tight">
-                Design <span class="text-indigo-500">First.</span>
+                Design <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">First.</span>
             </h1>
             <p class="text-lg sm:text-xl opacity-60 max-w-2xl leading-relaxed">
                 精心挑選的全球頂尖數位設計工作室、傳奇設計師與創意開發者清單。現代網頁工藝與使用者體驗的最高標竿。
@@ -345,14 +410,14 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 resource-grid">
                         ${section.items.map(item => `
-                            <div class="resource-card p-6 rounded-2xl flex flex-col justify-between">
+                            <div class="resource-card p-6 rounded-2xl flex flex-col justify-between group/card">
                                 <div>
-                                    <h3 class="text-xl font-bold mb-2 font-display">${item.name}</h3>
+                                    <h3 class="text-xl font-bold mb-2 font-display transition-colors duration-300 group-hover/card:text-[var(--accent)]">${item.name}</h3>
                                     <p class="text-sm opacity-60 leading-relaxed mb-6">${item.desc}</p>
                                 </div>
-                                <a href="javascript:void(0)" onclick="openUrl('${item.url}')" class="flex items-center gap-2 text-sm font-bold text-indigo-500 hover:text-indigo-400 transition-colors uppercase tracking-wider group">
+                                <a href="javascript:void(0)" onclick="openUrl('${item.url}')" style="color: var(--accent);" class="flex items-center gap-2 text-sm font-bold hover:opacity-80 transition-all uppercase tracking-wider group/link">
                                     Visit Website
-                                    <i data-lucide="external-link" class="w-4 h-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
+                                    <i data-lucide="external-link" class="w-4 h-4 transform group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform"></i>
                                 </a>
                             </div>
                         `).join('')}
