@@ -466,8 +466,9 @@
 </div>
 
 <script type="module">
-    import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
-    env.allowLocalModels = false;
+    // ── AI 模組：動態載入，確保相機功能不受影響 ──
+    let AutoModel, AutoProcessor, RawImage, env;
+    let aiAvailable = false;
 
     const video = document.getElementById('camera-stream');
     const overlay = document.getElementById('overlay');
@@ -498,28 +499,36 @@
     // AI 狀態
     let model = null;
     let processor = null;
-    let foregroundCanvas = null; // 存儲去背後的去背圖 (透明)
+    let foregroundCanvas = null;
     let currentBackgroundColor = '#E6F0F9';
 
-    // iOS 偵測與環境設置
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    
-    // 強化環境配置以適應行動裝置
-    env.useBrowserCache = true;
-    if (isIOS) {
-        // iOS 上降低並行執行緒以節省記憶體，並停用 WebGPU (目前 iOS 支援不穩)
-        env.backends.onnx.wasm.numThreads = 1;
-    }
 
-    // 啟動時靜默加載模型
+    // 靜默載入 AI 模組與模型（不阻擋相機功能）
     async function loadAIModel() {
         if (model) return;
         try {
+            // 動態載入 Transformers.js，失敗時相機仍可正常使用
+            if (!aiAvailable) {
+                const transformers = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1');
+                AutoModel = transformers.AutoModel;
+                AutoProcessor = transformers.AutoProcessor;
+                RawImage = transformers.RawImage;
+                env = transformers.env;
+                env.allowLocalModels = false;
+
+                // iOS 環境優化
+                try {
+                    if (isIOS && env.backends?.onnx?.wasm) {
+                        env.backends.onnx.wasm.numThreads = 1;
+                    }
+                } catch (e) { /* 靜默忽略 */ }
+
+                aiAvailable = true;
+            }
+
             // 偵測裝置與適配策略
             let device = 'wasm';
-            let dtype = 'fp32'; // WebGPU 預設使用 fp32
-
-            // 停用 iOS 的 WebGPU 以防止崩潰
             if (!isIOS && navigator.gpu) {
                 try {
                     const adapter = await navigator.gpu.requestAdapter();
@@ -529,12 +538,10 @@
                 }
             }
 
-            // 如果使用 WASM (行動端常見)，不指定 dtype 讓它自動使用量化版 (較小且省記憶體)
             const options = {
                 config: { model_type: 'custom' },
                 device: device,
             };
-            
             if (device === 'webgpu') {
                 options.dtype = 'fp32';
             }
@@ -551,7 +558,6 @@
             console.log(`AI Model Ready on ${device}`);
         } catch (e) {
             console.error('AI Model Load Failed', e);
-            aiStatus.textContent = "模型載入失敗，請重新整理頁面。";
         }
     }
     loadAIModel();
@@ -677,9 +683,18 @@
     // AI 去背處理
     async function processRemoveBackground(blob) {
         aiLoading.classList.remove('hidden');
+        aiStatus.textContent = "正在載入 AI 模型...";
+
+        // 嘗試載入 AI 模組（如果還沒載入）
         if (!model || !processor) {
-            aiStatus.textContent = "正在載入 AI 模型...";
             await loadAIModel();
+        }
+
+        // 如果 AI 仍然不可用，跳過去背
+        if (!model || !processor) {
+            aiLoading.classList.add('hidden');
+            hintText.textContent = 'AI 模型未就緒，顯示原始照片';
+            return;
         }
         aiStatus.textContent = "AI 正在去背中...";
 

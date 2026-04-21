@@ -836,14 +836,6 @@
         import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
         env.allowLocalModels = false;
 
-        // iOS 偵測與環境優化
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        env.useBrowserCache = true;
-        if (isIOS) {
-            // iOS 上降低執行緒以避免記憶體溢出
-            env.backends.onnx.wasm.numThreads = 1;
-        }
-
         // ── State ──
         let model = null;
         let processor = null;
@@ -932,8 +924,11 @@
 
             // iOS 偵測與環境設置
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            env.useBrowserCache = true;
-            if (isIOS) env.backends.onnx.wasm.numThreads = 1;
+            try {
+                if (isIOS && env.backends?.onnx?.wasm) {
+                    env.backends.onnx.wasm.numThreads = 1;
+                }
+            } catch (e) { /* 靜默忽略 */ }
 
             // 偵測裝置與適配策略
             let device = 'wasm';
