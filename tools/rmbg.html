@@ -834,8 +834,15 @@
 
     <script type="module">
         import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
-
         env.allowLocalModels = false;
+
+        // iOS 偵測與環境優化
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        env.useBrowserCache = true;
+        if (isIOS) {
+            // iOS 上降低執行緒以避免記憶體溢出
+            env.backends.onnx.wasm.numThreads = 1;
+        }
 
         // ── State ──
         let model = null;
@@ -923,22 +930,25 @@
             progressFill.classList.remove('indeterminate');
             progressFill.style.width = '0%';
 
-            // 偵測 WebGPU 支援
-            let useWebGPU = false;
-            try {
-                if (navigator.gpu) {
+            // iOS 偵測與環境設置
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            env.useBrowserCache = true;
+            if (isIOS) env.backends.onnx.wasm.numThreads = 1;
+
+            // 偵測裝置與適配策略
+            let device = 'wasm';
+            if (!isIOS && navigator.gpu) {
+                try {
                     const adapter = await navigator.gpu.requestAdapter();
-                    if (adapter) {
-                        useWebGPU = true;
-                    }
+                    if (adapter) device = 'webgpu';
+                } catch (e) {
+                    device = 'wasm';
                 }
-            } catch (e) {
-                // WebGPU 不可用，使用 WASM 即可
             }
 
-            const deviceLabel = useWebGPU ? '🚀 WebGPU' : '🔧 CPU (WASM)';
+            const deviceLabel = device === 'webgpu' ? '🚀 WebGPU' : '🔧 CPU (WASM)';
             deviceBadge.textContent = deviceLabel;
-            if (useWebGPU) {
+            if (device === 'webgpu') {
                 deviceBadge.classList.add('webgpu');
                 deviceBadge.classList.remove('gpu');
             }
@@ -959,11 +969,11 @@
                 const modelOptions = {
                     config: { model_type: 'custom' },
                     progress_callback: progressCallback,
+                    device: device
                 };
 
-                // 如支援 WebGPU，啟用 fp32；否則回退 WASM（預設載入量化版 44.4MB）
-                if (useWebGPU) {
-                    modelOptions.device = 'webgpu';
+                // 如支援 WebGPU，啟用 fp32
+                if (device === 'webgpu') {
                     modelOptions.dtype = 'fp32';
                 }
 
@@ -983,7 +993,7 @@
                     }
                 });
 
-                const deviceName = useWebGPU ? 'WebGPU' : 'WASM';
+                const deviceName = device === 'webgpu' ? 'WebGPU' : 'WASM';
                 setStatus('success', `模型載入完成（${deviceName}）！請上傳圖片進行去背。`);
                 deviceBadge.textContent = `✅ ${deviceName} 就緒`;
             } catch (error) {

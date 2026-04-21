@@ -501,22 +501,43 @@
     let foregroundCanvas = null; // 存儲去背後的去背圖 (透明)
     let currentBackgroundColor = '#E6F0F9';
 
+    // iOS 偵測與環境設置
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    // 強化環境配置以適應行動裝置
+    env.useBrowserCache = true;
+    if (isIOS) {
+        // iOS 上降低並行執行緒以節省記憶體，並停用 WebGPU (目前 iOS 支援不穩)
+        env.backends.onnx.wasm.numThreads = 1;
+    }
+
     // 啟動時靜默加載模型
     async function loadAIModel() {
         if (model) return;
         try {
-            // 偵測 WebGPU
+            // 偵測裝置與適配策略
             let device = 'wasm';
-            if (navigator.gpu) {
-                const adapter = await navigator.gpu.requestAdapter();
-                if (adapter) device = 'webgpu';
+            let dtype = 'fp32'; // WebGPU 預設使用 fp32
+
+            // 停用 iOS 的 WebGPU 以防止崩潰
+            if (!isIOS && navigator.gpu) {
+                try {
+                    const adapter = await navigator.gpu.requestAdapter();
+                    if (adapter) device = 'webgpu';
+                } catch (e) {
+                    device = 'wasm';
+                }
             }
 
+            // 如果使用 WASM (行動端常見)，不指定 dtype 讓它自動使用量化版 (較小且省記憶體)
             const options = {
                 config: { model_type: 'custom' },
                 device: device,
             };
-            if (device === 'webgpu') options.dtype = 'fp32';
+            
+            if (device === 'webgpu') {
+                options.dtype = 'fp32';
+            }
 
             model = await AutoModel.from_pretrained('briaai/RMBG-1.4', options);
             processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4', {
@@ -527,9 +548,10 @@
                     size: { width: 1024, height: 1024 }
                 }
             });
-            console.log('AI Model Ready');
+            console.log(`AI Model Ready on ${device}`);
         } catch (e) {
             console.error('AI Model Load Failed', e);
+            aiStatus.textContent = "模型載入失敗，請重新整理頁面。";
         }
     }
     loadAIModel();
