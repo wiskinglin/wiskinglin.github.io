@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACG Universe — POC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* ===== Themes ===== */
+        :root {
+            --bg: #fff5f5; --card-bg: #fff; --text: #1a1a2e; --muted: #666;
+            --accent: #e11d48; --accent2: #6366f1; --panel: #e11d48; --glow: rgba(225,29,72,0.08);
+        }
+        .theme-alt {
+            --bg: #0a0a1a; --card-bg: rgba(22,22,41,0.7); --text: #f0e6ff; --muted: #8b7faa;
+            --accent: #f43f5e; --accent2: #818cf8; --panel: #f43f5e; --glow: rgba(244,63,94,0.2);
+        }
+        .theme-contrast {
+            --bg: #050505; --card-bg: rgba(15,15,15,0.8); --text: #00ff88; --muted: #005533;
+            --accent: #00ff88; --accent2: #00ccff; --panel: #00ff88; --glow: rgba(0,255,136,0.12);
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg); color: var(--text);
+            transition: background 0.4s, color 0.4s;
+            overflow-x: hidden;
+        }
+
+        /* ===== Nav ===== */
+        .nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            height: 52px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 20px;
+            background: color-mix(in srgb, var(--bg) 80%, transparent);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 2px solid var(--panel);
+        }
+        .klio-logo {
+            font-family: 'Inter', sans-serif; font-size: 1.2rem; font-weight: 900;
+            color: #0f172a !important; text-decoration: none; letter-spacing: -0.05em;
+            padding: 4px 14px; border-radius: 8px; background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s; display: inline-block;
+        }
+        .klio-logo:hover {
+            transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .theme-sw { display: flex; gap: 5px; }
+        .theme-sw button {
+            width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent;
+            cursor: pointer; font-size: 10px; transition: transform 0.2s, border-color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-sw button:hover { transform: scale(1.15); }
+        .theme-sw button.on { border-color: var(--accent); }
+        .b1 { background: #fce7f3; color: #e11d48; }
+        .b2 { background: #1a0a2e; color: #f43f5e; }
+        .b3 { background: #001a0d; color: #00ff88; }
+
+        /* ===== Hero — Full viewport cinematic opening ===== */
+        .hero {
+            height: auto; padding: 100px 20px 48px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 40%, var(--glow), transparent 70%);
+        }
+        /* Speed lines */
+        .speed-bg {
+            position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+        }
+        .speed-bg .line {
+            position: absolute; height: 2px; background: var(--panel);
+            opacity: 0.06; transform-origin: center center;
+        }
+        .hero h1 {
+            font-size: clamp(48px, 10vw, 90px); font-weight: 900;
+            letter-spacing: 0.04em; text-align: center;
+            position: relative; line-height: 1.1;
+            text-shadow: 0 0 60px var(--glow);
+        }
+        .hero h1 span { color: var(--accent); }
+        .hero .tagline {
+            font-family: 'Space Grotesk'; font-size: clamp(14px,2vw,18px);
+            color: var(--muted); margin-top: 16px; letter-spacing: 0.15em;
+            text-transform: uppercase; position: relative;
+        }
+        .scroll-hint { display: none; }
+
+        /* ===== Manga Panel Grid — Asymmetric layout ===== */
+        .panel-section {
+            padding: 0 20px 64px; max-width: 1200px; margin: 0 auto;
+        }
+        /* Section banner — wide, dramatic */
+        .section-banner {
+            position: relative; padding: 48px 32px; margin-bottom: 32px;
+            border: 3px solid var(--panel); border-radius: 8px;
+            overflow: hidden;
+            opacity: 0; transform: scale(0.94);
+            transition: opacity 0.6s, transform 0.6s cubic-bezier(0.16,1,0.3,1);
+        }
+        .section-banner.vis { opacity: 1; transform: scale(1); }
+        .section-banner::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 80% 30%, var(--glow), transparent 60%);
+        }
+        .section-banner h2 {
+            font-size: clamp(32px, 6vw, 52px); font-weight: 900;
+            position: relative; line-height: 1.15;
+        }
+        .section-banner .sub {
+            font-family: 'Space Grotesk'; font-size: 13px; color: var(--muted);
+            margin-top: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+            position: relative;
+        }
+
+        /* Manga-style panel grid — key differentiator */
+        .manga-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+        /* Different card sizes for manga panel feel */
+        .manga-grid .card:nth-child(1) { grid-column: span 7; }
+        .manga-grid .card:nth-child(2) { grid-column: span 5; }
+        .manga-grid .card:nth-child(3) { grid-column: span 4; }
+        .manga-grid .card:nth-child(4) { grid-column: span 8; }
+        .manga-grid .card:nth-child(5) { grid-column: span 6; }
+        .manga-grid .card:nth-child(6) { grid-column: span 6; }
+        .manga-grid .card:nth-child(7) { grid-column: span 5; }
+        .manga-grid .card:nth-child(8) { grid-column: span 7; }
+
+        @media (max-width: 768px) {
+            .manga-grid { grid-template-columns: 1fr; }
+            .manga-grid .card { grid-column: span 1 !important; }
+        }
+
+        /* ===== Card — Manga Panel style ===== */
+        .card {
+            position: relative;
+            background: var(--card-bg);
+            border: 3px solid color-mix(in srgb, var(--panel) 40%, transparent);
+            border-radius: 6px;
+            padding: 28px 24px 22px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            /* Scroll animation — each card slides in from different direction */
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1),
+                        border-color 0.3s, box-shadow 0.3s, background 0.3s;
+        }
+        /* Alternate entry directions for manga dynamism */
+        .card.from-left { transform: translateX(-40px) rotate(-1.5deg); }
+        .card.from-right { transform: translateX(40px) rotate(1.5deg); }
+        .card.from-bottom { transform: translateY(40px); }
+        .card.vis {
+            opacity: 1; transform: translateX(0) translateY(0) rotate(0deg);
+        }
+
+        .card:hover {
+            border-color: var(--panel);
+            box-shadow: 0 0 30px var(--glow), inset 0 0 30px rgba(0,0,0,0.1);
+            background: color-mix(in srgb, var(--card-bg) 90%, var(--accent) 10%);
+        }
+
+        /* Dialogue bubble style label */
+        .card-label {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 10px; border-radius: 10px;
+            margin-bottom: 10px; letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .theme-alt .card-label { color: #fff; }
+
+        .card h3 {
+            font-size: 20px; font-weight: 900;
+            margin-bottom: 8px; line-height: 1.25;
+        }
+        .card p {
+            font-size: 15px; color: var(--muted); line-height: 1.75;
+            margin-bottom: 16px; flex-grow: 1;
+        }
+        .card-link {
+            font-family: 'Space Grotesk'; font-size: 12px; font-weight: 700;
+            color: var(--accent); text-decoration: none; text-transform: uppercase;
+            letter-spacing: 0.06em; transition: opacity 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .card-link:hover { opacity: 0.7; }
+        .card-link i { font-size: 10px; }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center; padding: 48px 20px;
+            border-top: 3px solid var(--panel);
+            max-width: 1200px; margin: 0 auto;
+        }
+        .footer p { font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="../index.html" class="klio-logo">KLIO.</a>
+        <div class="theme-sw">
+            <button class="b1 on" onclick="setTheme('default')" title="賽璐璐"><i class="fas fa-palette"></i></button>
+            <button class="b2" onclick="setTheme('alt')" title="深夜動畫"><i class="fas fa-moon"></i></button>
+            <button class="b3" onclick="setTheme('contrast')" title="電競霓虹"><i class="fas fa-bolt"></i></button>
+        </div>
+    </nav>
+
+    <!-- Cinematic Hero -->
+    <section class="hero">
+        <div class="speed-bg" id="speedBg"></div>
+        <h1>ACG <span>Universe</span></h1>
+        <div class="tagline">Anime · Comics · Games</div>
+        <div class="scroll-hint">
+            <span>Scroll to explore</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <main id="feed"></main>
+
+    <footer class="footer"><p>✦ 持續探索，永不停歇 ✦</p></footer>
+
+    <script>
+        const data = [
+            {
+                title: "🇯🇵 日本 — 遊戲設計",
+                sub: "Game Studios of Japan",
+                items: [
+                    { name: "Nintendo (任天堂)", tag: "Platform", desc: "全球遊戲產業領導者，強調玩法創新與老少咸宜。從《薩爾達》到《馬力歐》，定義了整個遊戲產業。", url: "https://www.nintendo.co.jp" },
+                    { name: "FromSoftware", tag: "Action RPG", desc: "魂系遊戲開創者，以高難度與破碎化敘事美學著稱。《艾爾登法環》重新定義了開放世界 RPG。", url: "https://www.fromsoftware.jp" },
+                    { name: "SQUARE ENIX", tag: "RPG", desc: "以《最終幻想》、《勇者鬥惡龍》聞名的 RPG 巨頭。", url: "https://www.jp.square-enix.com" },
+                    { name: "CAPCOM", tag: "Action", desc: "擁有《惡靈古堡》、《魔物獵人》等強力 IP，以極致的打擊感聞名。", url: "https://www.capcom.co.jp" }
+                ]
+            },
+            {
+                title: "🇯🇵 日本 — 動畫製作",
+                sub: "Animation Studios of Japan",
+                items: [
+                    { name: "Studio Ghibli", tag: "Film", desc: "宮崎駿創立，手繪美學與人文關懷的殿堂級工作室。《千與千尋》永遠改變了動畫的定義。", url: "https://www.ghibli.jp" },
+                    { name: "ufotable", tag: "Action", desc: "以《鬼滅之刃》震撼全球，將 3D 背景與 2D 動效完美結合。", url: "http://www.ufotable.com" },
+                    { name: "MAPPA", tag: "All-rounder", desc: "產量與質量極高，代表作《咒術迴戰》、《鏈鋸人》、《進擊的巨人 Final》。", url: "http://www.mappa.co.jp" },
+                    { name: "Kyoto Animation", tag: "Drama", desc: "以細膩的人物動作與光影氛圍著稱，如《紫羅蘭永恆花園》。", url: "https://www.kyotoanimation.co.jp" }
+                ]
+            },
+            {
+                title: "🇺🇸 美國 — 動畫製作",
+                sub: "Animation Studios of USA",
+                items: [
+                    { name: "Pixar (皮克斯)", tag: "3D Film", desc: "3D 動畫先驅，擅長深刻的情感與高科技結合。每部作品都是里程碑。", url: "https://www.pixar.com" },
+                    { name: "Sony Pictures Animation", tag: "Film", desc: "《蜘蛛人：新宇宙》開創了混合媒介的視覺新紀元。", url: "https://sonypicturesanimation.com" }
+                ]
+            }
+        ];
+
+        // Generate speed lines in hero
+        (function() {
+            const bg = document.getElementById('speedBg');
+            for (let i = 0; i < 30; i++) {
+                const line = document.createElement('div');
+                line.className = 'line';
+                const angle = (Math.random() - 0.5) * 40 + 90; // roughly vertical
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const w = 100 + Math.random() * 500;
+                line.style.cssText = `
+                    left: ${x}%; top: ${y}%;
+                    width: ${w}px;
+                    transform: rotate(${angle}deg);
+                `;
+                bg.appendChild(line);
+            }
+        })();
+
+        const directions = ['from-left', 'from-right', 'from-bottom'];
+
+        function render() {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = '';
+
+            data.forEach((section) => {
+                const sec = document.createElement('div');
+                sec.className = 'panel-section';
+
+                const banner = document.createElement('div');
+                banner.className = 'section-banner obs';
+                banner.innerHTML = `<h2>${section.title}</h2><div class="sub">${section.sub}</div>`;
+                sec.appendChild(banner);
+
+                const grid = document.createElement('div');
+                grid.className = 'manga-grid';
+
+                section.items.forEach((item, i) => {
+                    const dir = directions[i % 3];
+                    const card = document.createElement('div');
+                    card.className = `card ${dir} obs`;
+                    card.style.transitionDelay = `${i * 0.08}s`;
+                    card.innerHTML = `
+                        <div>
+                            <span class="card-label">${item.tag}</span>
+                            <h3>${item.name}</h3>
+                            <p>${item.desc}</p>
+                        </div>
+                        <a href="${item.url}" target="_blank" rel="noopener" class="card-link">
+                            Visit Official <i class="fas fa-arrow-up-right-from-square"></i>
+                        </a>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                sec.appendChild(grid);
+                feed.appendChild(sec);
+            });
+
+            initObs();
+        }
+
+        function initObs() {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); } });
+            }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+            document.querySelectorAll('.obs').forEach(el => io.observe(el));
+        }
+
+        function setTheme(t) {
+            document.body.classList.remove('theme-alt','theme-contrast');
+            if (t !== 'default') document.body.classList.add('theme-' + t);
+            document.querySelectorAll('.theme-sw button').forEach(b => b.classList.remove('on'));
+            document.querySelector('.b' + (t === 'default' ? '1' : t === 'alt' ? '2' : '3')).classList.add('on');
+            localStorage.setItem('acg-theme', t);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTheme(localStorage.getItem('acg-theme') || 'default');
+            render();
+        });
+    </script>
+</body>
+</html>
