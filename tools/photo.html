@@ -279,6 +279,53 @@
             color: #000;
         }
 
+        /* ===== 背景顏色切換 ===== */
+        .color-row {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        .color-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .color-btn.active {
+            border-color: #fff;
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* AI 處理中 Overlay */
+        .ai-loading {
+            position: absolute;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* 開啟相機（初始畫面） */
         .start-overlay {
             position: absolute;
@@ -391,6 +438,16 @@
     <!-- 底部控制 -->
     <div class="bottom-ui" id="bottom-ui" style="display:none">
         <p class="hint-text" id="hint-text">請將頭部與肩膀對準框線</p>
+        
+        <!-- 背景顏色選取 (拍照後顯示) -->
+        <div class="color-row hidden" id="color-row">
+            <div class="color-btn active" style="background:#E6F0F9" data-color="#E6F0F9"></div>
+            <div class="color-btn" style="background:#FFFFFF" data-color="#FFFFFF"></div>
+            <div class="color-btn" style="background:#FFF0F5" data-color="#FFF0F5"></div>
+            <div class="color-btn" style="background:#D8F3DC" data-color="#D8F3DC"></div>
+            <div class="color-btn" style="background:#FDF6E3" data-color="#FDF6E3"></div>
+        </div>
+
         <div class="shutter-row" id="shutter-row">
             <button class="timer-btn" id="btn-timer" title="倒數 5 秒拍照">5s</button>
             <button class="shutter-ring" id="btn-capture" title="拍照"></button>
@@ -400,9 +457,18 @@
             <button class="action-btn btn-download" id="btn-download">下載照片</button>
         </div>
     </div>
+
+    <!-- AI 處理中遮罩 -->
+    <div class="ai-loading hidden" id="ai-loading">
+        <div class="spinner"></div>
+        <p id="ai-status">AI 去背處理中...</p>
+    </div>
 </div>
 
-<script>
+<script type="module">
+    import { AutoModel, AutoProcessor, RawImage, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.1';
+    env.allowLocalModels = false;
+
     const video = document.getElementById('camera-stream');
     const overlay = document.getElementById('overlay');
     const resultImage = document.getElementById('result-image');
@@ -417,14 +483,78 @@
     const bottomUI = document.getElementById('bottom-ui');
     const hintText = document.getElementById('hint-text');
     const actionRow = document.getElementById('action-row');
+    const colorRow = document.getElementById('color-row');
     const shutterRow = document.getElementById('shutter-row');
     const viewfinder = document.getElementById('viewfinder');
     const countdownOverlay = document.getElementById('countdown-overlay');
     const countdownNum = document.getElementById('countdown-num');
+    const aiLoading = document.getElementById('ai-loading');
+    const aiStatus = document.getElementById('ai-status');
 
     let stream = null;
     let currentFacingMode = 'user';
     let countdownTimer = null;
+
+    // AI 狀態
+    let model = null;
+    let processor = null;
+    let foregroundCanvas = null; // 存儲去背後的去背圖 (透明)
+    let currentBackgroundColor = '#E6F0F9';
+
+    // iOS 偵測與環境設置
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    // 強化環境配置以適應行動裝置
+    env.useBrowserCache = true;
+    if (isIOS) {
+        // iOS 上降低並行執行緒以節省記憶體，並停用 WebGPU (目前 iOS 支援不穩)
+        env.backends.onnx.wasm.numThreads = 1;
+    }
+
+    // 啟動時靜默加載模型
+    async function loadAIModel() {
+        if (model) return;
+        try {
+            // 偵測裝置與適配策略
+            let device = 'wasm';
+            let dtype = 'fp32'; // WebGPU 預設使用 fp32
+
+            // 停用 iOS 的 WebGPU 以防止崩潰
+            if (!isIOS && navigator.gpu) {
+                try {
+                    const adapter = await navigator.gpu.requestAdapter();
+                    if (adapter) device = 'webgpu';
+                } catch (e) {
+                    device = 'wasm';
+                }
+            }
+
+            // 如果使用 WASM (行動端常見)，不指定 dtype 讓它自動使用量化版 (較小且省記憶體)
+            const options = {
+                config: { model_type: 'custom' },
+                device: device,
+            };
+            
+            if (device === 'webgpu') {
+                options.dtype = 'fp32';
+            }
+
+            model = await AutoModel.from_pretrained('briaai/RMBG-1.4', options);
+            processor = await AutoProcessor.from_pretrained('briaai/RMBG-1.4', {
+                config: {
+                    do_normalize: true, do_pad: false, do_rescale: true, do_resize: true,
+                    image_mean: [0.5, 0.5, 0.5], feature_extractor_type: 'ImageFeatureExtractor',
+                    image_std: [1, 1, 1], resample: 2, rescale_factor: 0.00392156862745098,
+                    size: { width: 1024, height: 1024 }
+                }
+            });
+            console.log(`AI Model Ready on ${device}`);
+        } catch (e) {
+            console.error('AI Model Load Failed', e);
+            aiStatus.textContent = "模型載入失敗，請重新整理頁面。";
+        }
+    }
+    loadAIModel();
 
     // 動態調整 overlay canvas 尺寸以匹配容器實際像素
     function resizeOverlay() {
@@ -525,9 +655,72 @@
         await startCamera(newMode);
     });
 
+    // 背景合成邏輯
+    function composeResult() {
+        if (!foregroundCanvas) return;
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = foregroundCanvas.width;
+        finalCanvas.height = foregroundCanvas.height;
+        const ctx = finalCanvas.getContext('2d');
+
+        // 填入背景色
+        ctx.fillStyle = currentBackgroundColor;
+        ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+        // 畫上人物
+        ctx.drawImage(foregroundCanvas, 0, 0);
+
+        // 更新預覽
+        resultImage.src = finalCanvas.toDataURL('image/jpeg', 0.95);
+    }
+
+    // AI 去背處理
+    async function processRemoveBackground(blob) {
+        aiLoading.classList.remove('hidden');
+        if (!model || !processor) {
+            aiStatus.textContent = "正在載入 AI 模型...";
+            await loadAIModel();
+        }
+        aiStatus.textContent = "AI 正在去背中...";
+
+        try {
+            const image = await RawImage.fromBlob(blob);
+            const { pixel_values } = await processor(image);
+            const { output } = await model({ input: pixel_values });
+            const mask = await RawImage.fromTensor(output[0].mul(255).to('uint8')).resize(image.width, image.height);
+
+            const img = new Image();
+            const url = URL.createObjectURL(blob);
+            img.src = url;
+            await new Promise(r => img.onload = r);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const pixelData = ctx.getImageData(0, 0, img.width, img.height);
+            for (let i = 0; i < mask.data.length; ++i) {
+                pixelData.data[4 * i + 3] = mask.data[i];
+            }
+            ctx.putImageData(pixelData, 0, 0);
+            
+            foregroundCanvas = canvas;
+            composeResult();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            console.error(e);
+            alert("AI 去背失敗，改用原始照片。");
+            const url = URL.createObjectURL(blob);
+            resultImage.src = url;
+            // 如果失敗，就把原始圖當成結果
+        } finally {
+            aiLoading.classList.add('hidden');
+        }
+    }
+
     // 共用拍照邏輯
-    function doCapture() {
-        // 高解析度擷取 canvas（7:9 比例，至少 600x750）
+    async function doCapture() {
         const CAPTURE_W = 1050;
         const CAPTURE_H = 1350;
         const canvas = document.createElement('canvas');
@@ -535,82 +728,77 @@
         canvas.height = CAPTURE_H;
         const ctx = canvas.getContext('2d');
 
-        // --- 計算 object-fit:cover 下 video 的顯示幾何 ---
         const app = document.querySelector('.app');
         const appRect = app.getBoundingClientRect();
         const vfRect = viewfinder.getBoundingClientRect();
 
-        const vidW = video.videoWidth;   // 原始影片像素寬
-        const vidH = video.videoHeight;  // 原始影片像素高
-        const cw = appRect.width;        // 容器寬
-        const ch = appRect.height;       // 容器高
+        const vidW = video.videoWidth;
+        const vidH = video.videoHeight;
+        const cw = appRect.width;
+        const ch = appRect.height;
 
         const videoRatio = vidW / vidH;
         const containerRatio = cw / ch;
 
-        // object-fit:cover 的實際顯示尺寸與偏移量
         let displayW, displayH, displayX, displayY;
         if (videoRatio > containerRatio) {
-            // 影片較寬 → 高度填滿，左右被裁
             displayH = ch;
             displayW = ch * videoRatio;
             displayX = (cw - displayW) / 2;
             displayY = 0;
         } else {
-            // 影片較高 → 寬度填滿，上下被裁
             displayW = cw;
             displayH = cw / videoRatio;
             displayX = 0;
             displayY = (ch - displayH) / 2;
         }
 
-        // --- 取景框在容器內的位置 ---
         const vfLeft   = vfRect.left - appRect.left;
         const vfTop    = vfRect.top  - appRect.top;
         const vfWidth  = vfRect.width;
         const vfHeight = vfRect.height;
 
-        // --- 映射到原始影片座標 ---
         let srcX, srcY, srcW, srcH;
-
         srcY = ((vfTop - displayY) / displayH) * vidH;
         srcH = (vfHeight / displayH) * vidH;
         srcW = (vfWidth / displayW) * vidW;
 
         if (currentFacingMode === 'user') {
-            // CSS scaleX(-1) 鏡像：視覺 X 對應到原始影片的反向 X
             srcX = ((cw - vfLeft - vfWidth - displayX) / displayW) * vidW;
-            // 輸出也做鏡像以符合使用者視覺
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
         } else {
             srcX = ((vfLeft - displayX) / displayW) * vidW;
         }
 
-        // 安全夾緊，防止超出影片邊界
         srcX = Math.max(0, srcX);
         srcY = Math.max(0, srcY);
         srcW = Math.min(srcW, vidW - srcX);
         srcH = Math.min(srcH, vidH - srcY);
 
-        // 從原始影片裁切取景框範圍，繪製到輸出 canvas
         ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, CAPTURE_W, CAPTURE_H);
 
-        // 顯示結果（JPG 高品質，確保 >500KB）
-        resultImage.src = canvas.toDataURL('image/jpeg', 0.95);
-        resultImage.style.display = 'block';
+        // 轉換為 Blob 以供 AI 處理
+        canvas.toBlob(async (blob) => {
+            // 隱藏輔助線與相機元素
+            overlay.style.display = 'none';
+            video.style.opacity = '0';
+            viewfinder.style.display = 'none';
+            countdownOverlay.classList.add('hidden');
 
-        // 隱藏輔助線與相機元素
-        overlay.style.display = 'none';
-        video.style.opacity = '0';
-        viewfinder.style.display = 'none';
-        countdownOverlay.classList.add('hidden');
+            // 切換按鈕狀態
+            shutterRow.classList.add('hidden');
+            btnSwitch.classList.add('hidden');
+            actionRow.classList.remove('hidden');
+            colorRow.classList.remove('hidden');
+            hintText.textContent = '預覽照片並選擇背景顏色';
 
-        // 切換按鈕狀態
-        shutterRow.classList.add('hidden');
-        btnSwitch.classList.add('hidden');
-        actionRow.classList.remove('hidden');
-        hintText.textContent = '預覽照片';
+            resultImage.src = canvas.toDataURL('image/jpeg', 0.95);
+            resultImage.style.display = 'block';
+            
+            // 啟動 AI 去背
+            await processRemoveBackground(blob);
+        }, 'image/png');
     }
 
     // 即時拍照
@@ -619,7 +807,6 @@
     // 倒數 5 秒拍照
     btnTimer.addEventListener('click', () => {
         let remaining = 5;
-        // 禁用按鈕
         btnCapture.disabled = true;
         btnTimer.disabled = true;
         btnSwitch.disabled = true;
@@ -628,7 +815,6 @@
 
         function tick() {
             countdownNum.style.animation = 'none';
-            // force reflow to restart animation
             void countdownNum.offsetWidth;
             countdownNum.textContent = remaining;
             countdownNum.style.animation = 'countPop 0.9s ease-out forwards';
@@ -658,16 +844,28 @@
         shutterRow.classList.remove('hidden');
         btnSwitch.classList.remove('hidden');
         actionRow.classList.add('hidden');
+        colorRow.classList.add('hidden');
         hintText.textContent = '請將頭部與肩膀對準框線';
+        foregroundCanvas = null;
         resizeOverlay();
     });
 
     // 下載照片
     btnDownload.addEventListener('click', () => {
         const link = document.createElement('a');
-        link.download = '2inch_photo.jpg';
+        link.download = `2inch_photo_${currentBackgroundColor.replace('#','')}.jpg`;
         link.href = resultImage.src;
         link.click();
+    });
+
+    // 背景顏色點擊
+    document.querySelectorAll('.color-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentBackgroundColor = btn.dataset.color;
+            composeResult();
+        });
     });
 </script>
 </body>
