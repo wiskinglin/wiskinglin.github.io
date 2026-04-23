@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KLIO TV — Proof of Concept</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --tv-frame: #1a1a1a;
+            --tv-inner: #0f0f0f;
+            --accent: #f59e0b;
+            --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 50%, #111 0%, #000 100%);
+        }
+
+        /* Ambient Lighting */
+        .ambient-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.05) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* TV Container */
+        .tv-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90vw;
+            max-width: 1200px;
+        }
+
+        /* The TV Frame */
+        .tv-set {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: var(--tv-frame);
+            border-radius: 40px;
+            box-shadow: 
+                0 50px 100px -20px rgba(0,0,0,0.5),
+                0 30px 60px -30px rgba(0,0,0,0.6),
+                inset 0 2px 4px rgba(255,255,255,0.1),
+                inset 0 -2px 10px rgba(0,0,0,0.5);
+            border: 8px solid #222;
+            overflow: hidden;
+        }
+
+        /* The Screen Area */
+        .tv-screen {
+            position: absolute;
+            top: 5%;
+            left: 3%;
+            right: 3%;
+            bottom: 5%;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,0,0,1);
+        }
+
+        /* CRT Effects Overlay */
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            opacity: 0.3;
+        }
+
+        .screen-flicker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 6;
+            background: rgba(255,255,255,0.02);
+            opacity: 0;
+            animation: flicker 0.1s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0; }
+            50% { opacity: 0.05; }
+            100% { opacity: 0; }
+        }
+
+        /* Iframe */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Static/Noise Channel */
+        .noise {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: 0;
+            z-index: 4;
+            pointer-events: none;
+            mix-blend-mode: screen;
+            overflow: hidden;
+        }
+
+        .noise::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.2;
+            animation: noise-anim 0.2s steps(10) infinite;
+        }
+
+        @keyframes noise-anim {
+            0% { transform: translate(0, 0); }
+            10% { transform: translate(-5%, -5%); }
+            20% { transform: translate(-10%, 5%); }
+            30% { transform: translate(5%, -10%); }
+            40% { transform: translate(-5%, 15%); }
+            50% { transform: translate(-10%, 5%); }
+            60% { transform: translate(15%, 0); }
+            70% { transform: translate(0, 10%); }
+            80% { transform: translate(-15%, 0); }
+            90% { transform: translate(10%, 5%); }
+            100% { transform: translate(5%, 0); }
+        }
+
+        .noise.active {
+            opacity: 1;
+        }
+
+        /* Remote Control / Dashboard */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            gap: 20px;
+            padding: 20px 40px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .channel-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: #111;
+            color: #666;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .channel-btn:hover {
+            color: #fff;
+            border-color: var(--accent);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.2);
+        }
+
+        .channel-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .power-btn {
+            background: #ff4757;
+            color: white;
+            border-color: #ff4757;
+        }
+        
+        .power-btn:hover {
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
+        }
+
+        /* Channel Info Overlay */
+        .channel-info {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 1.2rem;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            border: 1px solid var(--accent);
+        }
+
+        .channel-info.show {
+            opacity: 1;
+        }
+
+        /* Loading Spinner */
+        .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            color: var(--accent);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tv-set { border-radius: 20px; }
+            .controls { padding: 10px 20px; gap: 10px; }
+            .channel-btn { width: 40px; height: 40px; font-size: 0.8rem; }
+        }
+
+        /* Power Off State */
+        .tv-screen.off iframe, 
+        .tv-screen.off .screen-overlay,
+        .tv-screen.off .screen-flicker {
+            display: none;
+        }
+        .tv-screen.off {
+            background: #000;
+        }
+        .tv-screen.off::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 100px #fff;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+
+    <div class="tv-container">
+        <div class="tv-set">
+            <div class="tv-screen" id="screen">
+                <div class="channel-info" id="channelInfo">CH 01</div>
+                <div class="loader" id="loader"><i class="fas fa-circle-notch fa-spin"></i></div>
+                <div class="noise" id="noise"></div>
+                <iframe id="tvIframe" src="../bookmark/designFirst.html"></iframe>
+                <div class="screen-overlay"></div>
+                <div class="screen-flicker"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="channel-btn power-btn" onclick="togglePower()" title="Power"><i class="fas fa-power-off"></i></button>
+            <button class="channel-btn active" onclick="changeChannel(1, '../bookmark/designFirst.html', 'Design First')">01</button>
+            <button class="channel-btn" onclick="changeChannel(2, '../bookmark/tech_rocks.html', 'Tech Rocks')">02</button>
+            <button class="channel-btn" onclick="changeChannel(3, '../bookmark/animeComicsGame.html', 'ACG Hub')">03</button>
+            <button class="channel-btn" onclick="changeChannel(4, 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1', 'YouTube Live')">04</button>
+            <button class="channel-btn" onclick="changeChannel(5, 'https://en.wikipedia.org/wiki/Main_Page', 'Wiki Knowledge')">05</button>
+        </div>
+    </div>
+
+    <script>
+        const iframe = document.getElementById('tvIframe');
+        const screen = document.getElementById('screen');
+        const noise = document.getElementById('noise');
+        const info = document.getElementById('channelInfo');
+        const loader = document.getElementById('loader');
+        const buttons = document.querySelectorAll('.channel-btn:not(.power-btn)');
+
+        let isPowerOn = true;
+
+        function changeChannel(num, url, name) {
+            if (!isPowerOn) return;
+
+            // Update buttons
+            buttons.forEach(btn => btn.classList.remove('active'));
+            buttons[num-1].classList.add('active');
+
+            // Show noise transition
+            noise.classList.add('active');
+            iframe.style.opacity = '0';
+            loader.style.opacity = '1';
+
+            // Update info
+            info.textContent = `CH ${num.toString().padStart(2, '0')}: ${name}`;
+            info.classList.add('show');
+
+            setTimeout(() => {
+                iframe.src = url;
+            }, 300);
+
+            // Hide noise after load
+            iframe.onload = () => {
+                setTimeout(() => {
+                    noise.classList.remove('active');
+                    iframe.style.opacity = '1';
+                    loader.style.opacity = '0';
+                    
+                    // Auto hide info after 3s
+                    setTimeout(() => {
+                        info.classList.remove('show');
+                    }, 2000);
+                }, 500);
+            };
+        }
+
+        function togglePower() {
+            isPowerOn = !isPowerOn;
+            if (isPowerOn) {
+                screen.classList.remove('off');
+                iframe.style.display = 'block';
+                changeChannel(1, '../bookmark/designFirst.html', 'Design First');
+            } else {
+                screen.classList.add('off');
+                iframe.style.display = 'none';
+                info.classList.remove('show');
+            }
+        }
+
+        // Initial reveal
+        setTimeout(() => {
+            info.classList.add('show');
+            setTimeout(() => info.classList.remove('show'), 3000);
+        }, 1000);
+    </script>
+</body>
+</html>
