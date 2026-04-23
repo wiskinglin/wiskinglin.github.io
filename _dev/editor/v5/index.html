@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iTW Editor v5 — WYSIWYG Canvas</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app" class="app-shell">
+        <!-- ======== HEADER ======== -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="header-logo">iTW</div>
+                <div class="header-title-group">
+                    <h1 class="header-app-name">iTW Editor</h1>
+                    <span class="header-version">v5.0</span>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="file-pill">
+                    <input type="text" id="file-name" value="Untitled Document" spellcheck="false">
+                </div>
+            </div>
+
+            <div class="header-right">
+                <button class="action-btn secondary" id="btn-new" title="New Document">
+                    <i class="fa-solid fa-file"></i> 新增
+                </button>
+                <button class="action-btn primary" id="btn-save" title="Save Document">
+                    <i class="fa-solid fa-floppy-disk"></i> 儲存
+                </button>
+            </div>
+        </header>
+
+        <!-- ======== MAIN BODY ======== -->
+        <div class="app-body">
+            
+            <!-- ── LEFT TOOLBAR (Tools) ── -->
+            <nav class="tool-bar">
+                <div class="tool-group-title">工具</div>
+                <button class="tool-btn active" data-tool="select" title="選取 (V)">
+                    <i class="fa-solid fa-arrow-pointer"></i>
+                    <span>選取</span>
+                </button>
+                <button class="tool-btn" id="btn-add-text" data-tool="text" title="新增文字方塊 (T)">
+                    <i class="fa-solid fa-font"></i>
+                    <span>文字</span>
+                </button>
+                <button class="tool-btn" id="btn-add-shape" data-tool="shape" title="新增矩形 (R)">
+                    <i class="fa-regular fa-square"></i>
+                    <span>形狀</span>
+                </button>
+            </nav>
+
+            <!-- ── EDITOR MAIN (Canvas) ── -->
+            <main class="editor-main">
+                <div class="canvas-wrapper" id="canvas-wrapper">
+                    <!-- The WYSIWYG Canvas -->
+                    <div class="canvas-board" id="canvas-board">
+                        <!-- Elements will be injected here -->
+                    </div>
+                </div>
+            </main>
+
+            <!-- ── RIGHT PANEL (Properties) ── -->
+            <aside class="properties-panel" id="properties-panel">
+                <div class="panel-header">屬性設定</div>
+                <div class="panel-content" id="properties-content">
+                    <div class="empty-state">
+                        <i class="fa-regular fa-object-ungroup"></i>
+                        <p>請選取畫布上的元素</p>
+                    </div>
+                    
+                    <!-- Dynamic property controls will go here -->
+                    <div class="prop-group hidden" id="prop-text-group">
+                        <label>文字內容</label>
+                        <textarea id="prop-text-content" rows="3"></textarea>
+                        
+                        <label>字體大小</label>
+                        <input type="number" id="prop-font-size" min="8" max="144" value="16">
+                        
+                        <label>文字顏色</label>
+                        <input type="color" id="prop-color" value="#000000">
+                    </div>
+                    
+                    <div class="prop-group hidden" id="prop-shape-group">
+                        <label>背景顏色</label>
+                        <input type="color" id="prop-bg-color" value="#e0e0e0">
+                    </div>
+                    
+                    <div class="prop-group hidden" id="prop-common-group">
+                        <div class="row">
+                            <div class="col">
+                                <label>X 座標</label>
+                                <input type="number" id="prop-x">
+                            </div>
+                            <div class="col">
+                                <label>Y 座標</label>
+                                <input type="number" id="prop-y">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label>寬度</label>
+                                <input type="number" id="prop-w">
+                            </div>
+                            <div class="col">
+                                <label>高度</label>
+                                <input type="number" id="prop-h">
+                            </div>
+                        </div>
+                        
+                        <button class="action-btn danger mt-3" id="btn-delete-element" style="width: 100%;">
+                            <i class="fa-solid fa-trash"></i> 刪除元素
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
