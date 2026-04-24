@@ -1,331 +1,123 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iTW Editor — Scenario-Driven Web App Engine</title>
-    <meta name="description" content="iTaiwan (.itw) 情境驅動編輯器：一個檔案就是一個專屬 Web 應用程式。支援簡報、圖片、試算表與文件四大場景。">
-
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0a0a0f">
-
-    <!-- Google Fonts -->
+    <title>iTW Editor V5</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
-
-    <!-- Font Awesome 6 -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <!-- Marked.js for Markdown rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
-
-    <!-- highlight.js for code blocks -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
-    <!-- DOMPurify for XSS prevention (WS-1) -->
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
-
-    <!-- PapaParse for robust CSV parsing (WS-2) -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-    <!-- App Styles -->
-    <link rel="stylesheet" href="styles.css?v=5.1">
+    <link rel="stylesheet" type="text/css" href="styles.css?v=2">
 </head>
-<body>
-    <!-- ======================== LOADING SCREEN ======================== -->
-    <div id="app-loader" class="app-loader">
-        <div class="loader-content">
-            <div class="loader-logo">
-                <div class="loader-logo-inner">iTW</div>
-            </div>
-            <h2 class="loader-title">iTW Editor</h2>
-            <p class="loader-subtitle">Scenario-Driven Web App Engine</p>
-            <div class="loader-bar-track">
-                <div class="loader-bar-fill" id="loader-bar"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== APP SHELL ======================== -->
-    <div id="app" class="app-shell hidden">
-
-        <!-- ======== HEADER ======== -->
-        <header class="app-header">
-            <div class="header-left">
-                <div class="header-logo">iTW</div>
-                <div class="header-title-group">
-                    <h1 class="header-app-name">iTW Editor</h1>
-                    <span class="header-version">v5.0</span>
+<body class="dark-theme">
+    <div id="app" class="app-shell">
+        <header class="glass-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <div class="logo-blob"></div>
+                    <span class="logo-text-inner">V5</span>
                 </div>
+                <h1 class="logo-text">iTW <span>Editor</span></h1>
             </div>
-
-            <div class="header-center">
-                <div class="file-pill">
-                    <i class="fa-regular fa-file-lines"></i>
-                    <input type="text" id="file-name" value="untitled.itw" spellcheck="false">
-                    <span class="unsaved-dot" id="unsaved-dot" title="未儲存"></span>
+            
+            <div class="document-title-area">
+                <div class="title-wrapper">
+                    <input type="text" id="doc-title" value="Untitled Intelligence" spellcheck="false" class="doc-title-input">
+                    <div class="title-underline"></div>
                 </div>
+                <span class="status-indicator saved" id="save-status"><i class="fa-solid fa-cloud"></i> Synced</span>
             </div>
-
-            <div class="header-right">
-                <!-- Scenario Badge -->
-                <span class="scenario-badge hidden" id="scenario-badge" data-scenario="">
-                    <i class="fa-solid fa-file"></i> —
-                </span>
-
-                <!-- Action Buttons -->
-                <button class="h-btn" id="btn-new" title="新增文件 (Ctrl+N)">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
-                <button class="h-btn" id="btn-open" title="開啟檔案 (Ctrl+O)">
-                    <i class="fa-solid fa-folder-open"></i>
-                </button>
-                <button class="h-btn" id="btn-save" title="儲存 (Ctrl+S)">
-                    <i class="fa-regular fa-floppy-disk"></i>
-                </button>
-                <button class="h-btn primary" id="btn-export" title="匯出 .itw">
-                    <i class="fa-solid fa-download"></i>
-                    <span>匯出</span>
+            
+            <div class="header-actions">
+                <button class="btn-icon" title="Toggle Theme" id="theme-toggle"><i class="fa-solid fa-moon"></i></button>
+                <button class="btn-primary" id="export-btn">
+                    <span>Present</span>
+                    <i class="fa-solid fa-play"></i>
                 </button>
             </div>
         </header>
 
-        <!-- ======== MAIN BODY ======== -->
-        <div class="app-body">
-
-            <!-- ── LEFT ICON BAR ── -->
-            <nav class="icon-bar">
-                <button class="icon-bar-btn active" data-panel="outline" title="區塊大綱">
-                    <i class="fa-solid fa-layer-group"></i>
-                </button>
-
-                <div class="icon-bar-spacer"></div>
-
-                <button class="icon-bar-btn" id="btn-zen" title="Zen Mode 沉浸寫作">
-                    <i class="fa-solid fa-expand"></i>
-                </button>
+        <main class="app-main">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar glass-sidebar">
+                <div class="nav-group">
+                    <button class="nav-item active" data-tool="text" title="Document Mode">
+                        <i class="fa-solid fa-align-left"></i>
+                        <span class="tooltip">Document</span>
+                    </button>
+                    <button class="nav-item" data-tool="slide" title="Presentation Mode">
+                        <i class="fa-solid fa-chalkboard"></i>
+                        <span class="tooltip">Deck</span>
+                    </button>
+                    <button class="nav-item" data-tool="table" title="DataGrid Mode">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span class="tooltip">DataGrid</span>
+                    </button>
+                    <button class="nav-item" data-tool="image" title="Visual Mode">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span class="tooltip">Visual</span>
+                    </button>
+                </div>
+                
+                <div class="nav-group bottom">
+                    <button class="nav-item" title="Settings">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
             </nav>
 
-            <!-- ── LEFT CONTEXT PANEL (Multi-view) ── -->
-            <aside class="context-panel" id="context-panel">
+            <!-- WYSIWYG Canvas -->
+            <div class="canvas-area" id="canvas-area">
+                <!-- Background ambient glow -->
+                <div class="ambient-glow glow-1"></div>
+                <div class="ambient-glow glow-2"></div>
 
-                <!-- Panel View: Outline -->
-                <div class="panel-view" id="panel-outline">
-                    <div class="panel-section">
-                        <div class="panel-section-title">區塊大綱 BLOCKS</div>
-                    </div>
-                    <div class="block-list" id="block-list">
-                        <!-- Dynamically populated -->
-                    </div>
-                    <div class="panel-section" style="border-bottom:none;">
-                        <button class="add-block-btn" id="add-block-panel" style="width:100%;">
-                            <i class="fa-solid fa-plus"></i> 新增區塊
-                        </button>
+                <div class="canvas-document" id="canvas-document">
+                    <div class="itw-block text-block" contenteditable="true" data-type="MD">
+                        <h1 class="block-title">Visionary Thoughts</h1>
+                        <p class="block-text">Start typing your ideas here. This canvas is entirely WYSIWYG, focusing on pure creation.</p>
                     </div>
                 </div>
+            </div>
 
-
+            <!-- AI Assistant Panel (Slide-out) -->
+            <aside class="ai-panel glass-panel" id="ai-panel">
+                <div class="ai-header">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Engine</h3>
+                    <button class="btn-icon" id="close-ai"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="ai-body">
+                    <div class="ai-module">
+                        <label>Web Extraction (Jina)</label>
+                        <div class="input-group">
+                            <input type="text" id="ai-url-input" placeholder="https://..." class="glass-input">
+                            <button id="ai-extract-btn" class="btn-primary small"><i class="fa-solid fa-download"></i></button>
+                        </div>
+                    </div>
+                    <div class="ai-module">
+                        <label>Chat / Generation</label>
+                        <textarea id="ai-prompt-input" rows="4" placeholder="Ask AI to generate or summarize content..." class="glass-input"></textarea>
+                        <button id="ai-gen-btn" class="btn-primary w-full" style="margin-top: 8px;"><i class="fa-solid fa-bolt"></i> Generate</button>
+                    </div>
+                    <div class="ai-result" id="ai-result">
+                        <!-- AI stream output goes here -->
+                    </div>
+                </div>
             </aside>
-
-            <!-- ── EDITOR MAIN ── -->
-            <main class="editor-main">
-
-                <!-- Dynamic Toolbar (WS-3 — rebuilt per scenario) -->
-                <div class="editor-toolbar" id="editor-toolbar">
-                    <!-- Toolbar is dynamically built by ToolbarManager -->
-                </div>
-
-                <!-- Workspace -->
-                <div class="editor-workspace mode-blocks" id="editor-workspace">
-
-                    <!-- Editor Content Pane (WYSIWYG Mode) -->
-                    <div class="blocks-pane" id="blocks-pane" style="display:flex; flex:1; overflow:auto;">
-                        <!-- Golden-triangle overlay for Visual (WS-5) -->
-                        <div class="guide-overlay hidden" id="guide-overlay">
-                            <div class="guide-line guide-h guide-h1"></div>
-                            <div class="guide-line guide-h guide-h2"></div>
-                            <div class="guide-line guide-v guide-v1"></div>
-                            <div class="guide-line guide-v guide-v2"></div>
-                        </div>
-                        <div class="blocks-container" id="blocks-container" style="width: 100%; max-width: 1000px; margin: 0 auto;">
-                            <!-- Dynamically populated by app.js -->
-                        </div>
-                    </div>
-
-                    <!-- Source and Preview panes removed for general users -->
-                    <div class="source-pane hidden" style="display:none;"><textarea id="source-editor" class="source-editor"></textarea></div>
-                    <div class="preview-pane hidden" id="preview-pane" style="display:none;"><div id="preview-content"></div></div>
-                </div>
-
-                <!-- Status Bar -->
-                <div class="status-bar">
-                    <div class="status-left">
-                        <span class="status-item">
-                            <span class="status-dot ready"></span>
-                            <span id="scenario-status">General</span>
-                        </span>
-                        <span class="status-sep"></span>
-                        <span class="status-item">
-                            <span id="block-count">0</span> 區塊
-                        </span>
-                        <span class="status-sep"></span>
-                        <span class="status-item">
-                            <span id="char-count">0</span> 字元
-                        </span>
-                    </div>
-                    <div class="status-right">
-                        <span class="status-item" id="constraint-indicator" style="display:none;">
-                            <i class="fa-solid fa-lock" style="color:var(--warning);font-size:10px;"></i>
-                            約束模式
-                        </span>
-                        <span class="status-sep"></span>
-                        <span class="status-item">
-                            <i class="fa-solid fa-hard-drive" style="font-size:10px;"></i>
-                            Local-First
-                        </span>
-                        <span class="status-sep"></span>
-                        <span class="status-item">iTW v5.0</span>
-                    </div>
-                </div>
-            </main>
-        </div>
+        </main>
     </div>
 
-    <!-- ======================== ZEN MODE OVERLAY (WS-7) ======================== -->
-    <div id="zen-overlay" class="zen-overlay hidden">
-        <div class="zen-exit-hint" id="zen-exit-hint">按 ESC 退出沉浸模式</div>
-        <div class="zen-editor-wrap">
-            <textarea id="zen-textarea" class="zen-textarea" spellcheck="false" placeholder="專注寫作..."></textarea>
-            <div class="zen-stats" id="zen-stats">0 字</div>
-        </div>
+    <!-- Floating Format Toolbar -->
+    <div id="format-toolbar" class="format-toolbar glass-panel hidden">
+        <button data-format="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+        <button data-format="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+        <div class="divider"></div>
+        <button data-format="h1" title="Heading 1">H1</button>
+        <button data-format="h2" title="Heading 2">H2</button>
     </div>
 
-    <!-- ======================== TEMPLATE DIALOG ======================== -->
-    <div class="modal-overlay" id="template-modal">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> 建立新文件</h3>
-                <button class="modal-close" id="template-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="template-grid">
-                    <!-- Pitch Deck -->
-                    <div class="template-card" data-scenario="deck">
-                        <div class="template-icon"><i class="fa-solid fa-display"></i></div>
-                        <div class="template-name">簡報 Pitch Deck</div>
-                        <div class="template-desc">募資簡報、產品發表、年度報告、教學投影片、工作坊引導簡報</div>
-                        <span class="template-priority p0">P0 優先</span>
-                    </div>
-                    <!-- Visual Content -->
-                    <div class="template-card" data-scenario="visual">
-                        <div class="template-icon"><i class="fa-solid fa-image"></i></div>
-                        <div class="template-name">圖片 Visual Content</div>
-                        <div class="template-desc">社群貼文、YT 封面、行銷 Banner、活動海報、品牌 Logo、名片</div>
-                        <span class="template-priority p0">P0 優先</span>
-                    </div>
-                    <!-- DataGrid -->
-                    <div class="template-card" data-scenario="datagrid">
-                        <div class="template-icon"><i class="fa-solid fa-table"></i></div>
-                        <div class="template-name">試算表 DataGrid</div>
-                        <div class="template-desc">預算規劃、專案追蹤、庫存盤點、財務報表、ROI 計算機</div>
-                        <span class="template-priority p1">P1</span>
-                    </div>
-                    <!-- Document -->
-                    <div class="template-card" data-scenario="document">
-                        <div class="template-icon"><i class="fa-solid fa-file-lines"></i></div>
-                        <div class="template-name">文件 Document</div>
-                        <div class="template-desc">商業企劃書、履歷表、會議記錄、合約、報價單、講義</div>
-                        <span class="template-priority p1">P1</span>
-                    </div>
-                    <!-- Blank -->
-                    <div class="template-card" data-scenario="blank" style="grid-column: span 2;">
-                        <div class="template-icon" style="background:rgba(255,255,255,0.05);color:var(--n-500);">
-                            <i class="fa-solid fa-file"></i>
-                        </div>
-                        <div class="template-name">空白文件</div>
-                        <div class="template-desc">從頭開始，自由組合 MD / CSV / JSON / HTML / SLIDE 區塊</div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="action-btn secondary" id="template-cancel-btn">取消</button>
-                <button class="action-btn primary" id="template-create-btn">
-                    <i class="fa-solid fa-plus"></i> 建立
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== TA SETTINGS DIALOG (WS-4) ======================== -->
-    <div class="modal-overlay" id="ta-modal">
-        <div class="modal-card modal-sm">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-bullseye"></i> 受眾與時長設定</h3>
-                <button class="modal-close" id="ta-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="ta-form">
-                    <div class="form-group">
-                        <label>目標受眾 (TA)</label>
-                        <div class="radio-group" id="ta-audience">
-                            <label class="radio-card"><input type="radio" name="ta-aud" value="investor" checked><span><i class="fa-solid fa-building-columns"></i> 投資人</span></label>
-                            <label class="radio-card"><input type="radio" name="ta-aud" value="client"><span><i class="fa-solid fa-handshake"></i> 客戶</span></label>
-                            <label class="radio-card"><input type="radio" name="ta-aud" value="internal"><span><i class="fa-solid fa-users"></i> 內部團隊</span></label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>演說時長</label>
-                        <div class="radio-group" id="ta-duration">
-                            <label class="radio-card"><input type="radio" name="ta-dur" value="5"><span>5 分鐘</span></label>
-                            <label class="radio-card"><input type="radio" name="ta-dur" value="10" checked><span>10 分鐘</span></label>
-                            <label class="radio-card"><input type="radio" name="ta-dur" value="20"><span>20 分鐘</span></label>
-                        </div>
-                    </div>
-                    <div class="ta-suggestion" id="ta-suggestion">
-                        <i class="fa-solid fa-lightbulb"></i>
-                        <span>建議投影片數量: <strong>8-12</strong> 頁</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="action-btn secondary" id="ta-cancel-btn">跳過</button>
-                <button class="action-btn primary" id="ta-apply-btn">
-                    <i class="fa-solid fa-check"></i> 套用
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ======================== WCAG RESULTS DIALOG (WS-5) ======================== -->
-    <div class="modal-overlay" id="wcag-modal">
-        <div class="modal-card modal-sm">
-            <div class="modal-header">
-                <h3><i class="fa-solid fa-universal-access"></i> WCAG 配色檢測</h3>
-                <button class="modal-close" id="wcag-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="wcag-results" class="wcag-results">
-                    <p class="wcag-placeholder">點擊「檢測」分析當前畫布配色</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="action-btn secondary" id="wcag-close-btn">關閉</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="block-menu hidden" id="block-menu">
-        <div class="block-menu-item" data-type="MD"><i class="fa-solid fa-font"></i> 新增文字 (Text)</div>
-        <div class="block-menu-item" data-type="SLIDE"><i class="fa-solid fa-rectangle-list"></i> 新增頁面 (Page)</div>
-        <div class="block-menu-item" data-type="CSV"><i class="fa-solid fa-table"></i> 新增圖表 (Chart/Table)</div>
-        <div class="block-menu-item" data-type="IMG"><i class="fa-solid fa-image"></i> 新增圖片 (Image)</div>
-        <div class="block-menu-item" data-type="HTML"><i class="fa-solid fa-code"></i> 自訂組件 (Component)</div>
-    </div>
-
-    <!-- App Script -->
-    <script src="app.js?v=5.1"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>
