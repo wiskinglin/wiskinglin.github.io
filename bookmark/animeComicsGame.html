@@ -1,390 +1,985 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="theme-dark">
-
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACG Universe - Global Animation, Comics & Games</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                        display: ['Space Grotesk', 'sans-serif'],
-                    },
-                    colors: {
-                        acg: {
-                            50: '#fff1f2',
-                            100: '#ffe4e6',
-                            200: '#fecdd3',
-                            300: '#fda4af',
-                            400: '#fb7185',
-                            500: '#f43f5e',
-                            600: '#e11d48',
-                            700: '#be123c',
-                            800: '#9f1239',
-                            900: '#881337',
-                            accent: '#f43f5e'
-                        }
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
+    <title>ACG Universe — KLIO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* ===== Themes ===== */
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent: #f43f5e;
-            --card-border: rgba(255, 255, 255, 0.1);
+            --bg: #fff5f5; --card-bg: #fff; --text: #1a1a2e; --muted: #666;
+            --accent: #e11d48; --accent2: #6366f1; --panel: #e11d48; --glow: rgba(225,29,72,0.08);
+        }
+        .theme-alt {
+            --bg: #0a0a1a; --card-bg: rgba(22,22,41,0.7); --text: #f0e6ff; --muted: #8b7faa;
+            --accent: #f43f5e; --accent2: #818cf8; --panel: #f43f5e; --glow: rgba(244,63,94,0.2);
+        }
+        .theme-contrast {
+            --bg: #050505; --card-bg: rgba(15,15,15,0.8); --text: #00ff88; --muted: #005533;
+            --accent: #00ff88; --accent2: #00ccff; --panel: #00ff88; --glow: rgba(0,255,136,0.12);
         }
 
-        .theme-light {
-            --bg-primary: #f8fafc;
-            --bg-secondary: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --accent: #e11d48;
-            --card-border: rgba(0, 0, 0, 0.05);
-        }
-
-        .theme-cyber {
-            --bg-primary: #050505;
-            --bg-secondary: #0f0f0f;
-            --text-primary: #00ff41;
-            --text-secondary: #008f11;
-            --accent: #00ff41;
-            --card-border: rgba(0, 255, 65, 0.2);
-        }
-
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            transition: background-color 0.4s ease, color 0.4s ease;
+            font-family: 'Noto Sans TC', sans-serif;
+            background: var(--bg); color: var(--text);
+            transition: background 0.4s, color 0.4s;
+            overflow-x: hidden;
         }
 
-        .glass-hero {
-            background: radial-gradient(circle at 50% 0%, var(--accent) 0%, transparent 70%);
-            opacity: 0.1;
-            pointer-events: none;
+        /* ===== Nav ===== */
+        .nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            height: 52px; display: flex; align-items: center;
+            justify-content: space-between; padding: 0 20px;
+            background: color-mix(in srgb, var(--bg) 80%, transparent);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 2px solid var(--panel);
+        }
+        .klio-logo {
+            font-family: 'Inter', sans-serif; font-size: 1.2rem; font-weight: 900;
+            color: #0f172a !important; text-decoration: none; letter-spacing: -0.05em;
+            padding: 4px 14px; border-radius: 8px; background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s; display: inline-block;
+        }
+        .klio-logo:hover {
+            transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .theme-sw { display: flex; gap: 5px; }
+        .theme-sw button {
+            width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent;
+            cursor: pointer; font-size: 10px; transition: transform 0.2s, border-color 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-sw button:hover { transform: scale(1.15); }
+        .theme-sw button.on { border-color: var(--accent); }
+        .b1 { background: #fce7f3; color: #e11d48; }
+        .b2 { background: #1a0a2e; color: #f43f5e; }
+        .b3 { background: #001a0d; color: #00ff88; }
+
+        /* ===== Hero — Full viewport cinematic opening ===== */
+        .hero {
+            height: auto; padding: 100px 20px 48px; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 50% 40%, var(--glow), transparent 70%);
+        }
+        /* Speed lines */
+        .speed-bg {
+            position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+        }
+        .speed-bg .line {
+            position: absolute; height: 2px; background: var(--panel);
+            opacity: 0.06; transform-origin: center center;
+        }
+        .hero h1 {
+            font-size: clamp(48px, 10vw, 90px); font-weight: 900;
+            letter-spacing: 0.04em; text-align: center;
+            position: relative; line-height: 1.1;
+            text-shadow: 0 0 60px var(--glow);
+        }
+        .hero h1 span { color: var(--accent); }
+        .hero .tagline {
+            font-family: 'Space Grotesk'; font-size: clamp(14px,2vw,18px);
+            color: var(--muted); margin-top: 16px; letter-spacing: 0.15em;
+            text-transform: uppercase; position: relative;
+        }
+        .scroll-hint { display: none; }
+
+        /* ===== Manga Panel Grid — Asymmetric layout ===== */
+        .panel-section {
+            padding: 0 20px 64px; max-width: 1200px; margin: 0 auto;
+        }
+        /* Section banner — wide, dramatic */
+        .section-banner {
+            position: relative; padding: 48px 32px; margin-bottom: 32px;
+            border: 3px solid var(--panel); border-radius: 8px;
+            overflow: hidden;
+            opacity: 0; transform: scale(0.94);
+            transition: opacity 0.6s, transform 0.6s cubic-bezier(0.16,1,0.3,1);
+        }
+        .section-banner.vis { opacity: 1; transform: scale(1); }
+        .section-banner::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at 80% 30%, var(--glow), transparent 60%);
+        }
+        .section-banner h2 {
+            font-size: clamp(32px, 6vw, 52px); font-weight: 900;
+            position: relative; line-height: 1.15;
+        }
+        .section-banner .sub {
+            font-family: 'Space Grotesk'; font-size: 13px; color: var(--muted);
+            margin-top: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+            position: relative;
         }
 
-        .resource-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--card-border);
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        /* Manga-style panel grid — key differentiator */
+        .manga-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+        /* Different card sizes for manga panel feel */
+        .manga-grid .card:nth-child(8n+1) { grid-column: span 7; }
+        .manga-grid .card:nth-child(8n+2) { grid-column: span 5; }
+        .manga-grid .card:nth-child(8n+3) { grid-column: span 4; }
+        .manga-grid .card:nth-child(8n+4) { grid-column: span 8; }
+        .manga-grid .card:nth-child(8n+5) { grid-column: span 6; }
+        .manga-grid .card:nth-child(8n+6) { grid-column: span 6; }
+        .manga-grid .card:nth-child(8n+7) { grid-column: span 5; }
+        .manga-grid .card:nth-child(8n+8) { grid-column: span 7; }
+
+        @media (max-width: 768px) {
+            .manga-grid { grid-template-columns: 1fr; }
+            .manga-grid .card { grid-column: span 1 !important; }
         }
 
-        .resource-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            border-color: var(--accent);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        /* ===== Card — Manga Panel style ===== */
+        .card {
+            position: relative;
+            background: var(--card-bg);
+            border: 3px solid color-mix(in srgb, var(--panel) 40%, transparent);
+            border-radius: 6px;
+            padding: 28px 24px 22px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            /* Scroll animation — each card slides in from different direction */
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1),
+                        border-color 0.3s, box-shadow 0.3s, background 0.3s;
+        }
+        /* Alternate entry directions for manga dynamism */
+        .card.from-left { transform: translateX(-40px) rotate(-1.5deg); }
+        .card.from-right { transform: translateX(40px) rotate(1.5deg); }
+        .card.from-bottom { transform: translateY(40px); }
+        .card.vis {
+            opacity: 1; transform: translateX(0) translateY(0) rotate(0deg);
         }
 
-        .theme-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.2s;
+        .card:hover {
+            border-color: var(--panel);
+            box-shadow: 0 0 30px var(--glow), inset 0 0 30px rgba(0,0,0,0.1);
+            background: color-mix(in srgb, var(--card-bg) 90%, var(--accent) 10%);
         }
 
-        .theme-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .theme-btn.active {
-            border-color: var(--accent);
-        }
-
-        .section-header::after {
-            content: '';
-            display: block;
-            width: 40px;
-            height: 3px;
+        /* Dialogue bubble style label */
+        .card-label {
+            display: inline-block;
             background: var(--accent);
-            margin-top: 8px;
+            color: #fff;
+            font-size: 10px; font-weight: 700;
+            padding: 2px 10px; border-radius: 10px;
+            margin-bottom: 10px; letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
+        .theme-alt .card-label { color: #fff; }
 
-        @media (max-width: 640px) {
-            .resource-grid {
-                grid-template-columns: 1fr;
-            }
+        .card h3 {
+            font-size: 20px; font-weight: 900;
+            margin-bottom: 8px; line-height: 1.25;
         }
+        .card p {
+            font-size: 15px; color: var(--muted); line-height: 1.75;
+            margin-bottom: 16px; flex-grow: 1;
+        }
+        .card-link {
+            font-family: 'Space Grotesk'; font-size: 12px; font-weight: 700;
+            color: var(--accent); text-decoration: none; text-transform: uppercase;
+            letter-spacing: 0.06em; transition: opacity 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .card-link:hover { opacity: 0.7; }
+        .card-link i { font-size: 10px; }
+
+        /* ===== Footer ===== */
+        .footer {
+            text-align: center; padding: 48px 20px;
+            border-top: 3px solid var(--panel);
+            max-width: 1200px; margin: 0 auto;
+        }
+        .footer p { font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
     </style>
 </head>
-
-<body class="font-sans antialiased">
-    <div class="fixed inset-0 glass-hero z-[-1]"></div>
-
-    <nav class="fixed top-0 w-full z-50 border-b border-white/5 backdrop-blur-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center gap-3">
-                    <a href="../../index.html" class="font-display font-bold text-xl tracking-tight hover:opacity-80 transition-opacity">
-                        <span class="text-rose-500">ACG.</span> UNIVERSE
-                    </a>
-                </div>
-                
-                <div class="flex items-center gap-4">
-                    <div class="flex gap-2 p-1 rounded-full border border-white/10 bg-black/20">
-                        <button onclick="setTheme('dark')" id="btn-dark" class="theme-btn bg-slate-900" title="Dark Mode"></button>
-                        <button onclick="setTheme('light')" id="btn-light" class="theme-btn bg-slate-100" title="Light Mode"></button>
-                        <button onclick="setTheme('cyber')" id="btn-cyber" class="theme-btn bg-green-500" title="Cyber Mode"></button>
-                    </div>
-                    <a href="../../index.html" class="text-sm font-medium opacity-60 hover:opacity-100 transition-opacity hidden sm:block">Back Home</a>
-                </div>
-            </div>
+<body>
+    <nav class="nav">
+        <a href="../index.html" class="klio-logo">KLIO.</a>
+        <div class="theme-sw">
+            <button class="b1 on" onclick="setTheme('default')" title="賽璐璐"><i class="fas fa-palette"></i></button>
+            <button class="b2" onclick="setTheme('alt')" title="深夜動畫"><i class="fas fa-moon"></i></button>
+            <button class="b3" onclick="setTheme('contrast')" title="電競霓虹"><i class="fas fa-bolt"></i></button>
         </div>
     </nav>
 
-    <main class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <header class="mb-16 animate-slide-up">
-            <h1 class="font-display text-4xl sm:text-6xl font-extrabold mb-6 tracking-tight">
-                ACG <span class="text-rose-500">Universe.</span>
-            </h1>
-            <p class="text-lg sm:text-xl opacity-60 max-w-2xl leading-relaxed">
-                全球知名遊戲設計、動畫製作及漫畫出版機構名單。涵蓋日本、美國、全球，總計 100 個指標性品牌。
-            </p>
-        </header>
-
-        <div id="content-area" class="space-y-20"></div>
-    </main>
-
-    <footer class="py-10 border-t border-white/5">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-sm opacity-40 font-display uppercase tracking-widest">
-                Explore the Infinite Imagination
-            </p>
+    <!-- Cinematic Hero -->
+    <section class="hero">
+        <div class="speed-bg" id="speedBg"></div>
+        <h1>ACG <span>Universe</span></h1>
+        <div class="tagline">Anime · Comics · Games</div>
+        <div class="scroll-hint">
+            <span>Scroll to explore</span>
+            <i class="fas fa-chevron-down"></i>
         </div>
-    </footer>
+    </section>
+
+    <main id="feed"></main>
+
+    <footer class="footer"><p>✦ 持續探索，永不停歇 ✦</p></footer>
 
     <script>
         const data = [
             {
-                category: "🇯🇵 日本 - 遊戲設計",
-                items: [
-                    { name: "Nintendo (任天堂)", desc: "全球遊戲產業領導者，強調玩法創新與老少咸宜的精神", url: "https://www.nintendo.co.jp" },
-                    { name: "Sony Interactive Entertainment (SIE)", desc: "PlayStation 品牌擁有者，致力於高品質 3A 大作", url: "https://www.playstation.com" },
-                    { name: "SQUARE ENIX", desc: "以《最終幻想》、《勇者鬥惡龍》聞名的 RPG 巨頭", url: "https://www.jp.square-enix.com" },
-                    { name: "CAPCOM (卡普空)", desc: "擁有《惡靈古堡》、《魔物獵人》等強力動作遊戲 IP", url: "https://www.capcom.co.jp" },
-                    { name: "SEGA", desc: "從街機時代到《索尼克》，具備深厚的硬體與軟體開發背景", url: "https://www.sega.jp" },
-                    { name: "Bandai Namco Entertainment", desc: "結合動漫 IP 與遊戲開發，如《艾爾登法環》、《鐵拳》", url: "https://www.bandainamcoent.co.jp" },
-                    { name: "FromSoftware", desc: "魂系遊戲開創者，以高難度與破碎化敘事美學著稱", url: "https://www.fromsoftware.jp" },
-                    { name: "PlatinumGames (白金工作室)", desc: "極致動作遊戲的代表，作品如《魔兵驚天錄》、《尼爾：自動人形》", url: "https://www.platinumgames.co.jp" },
-                    { name: "Kojima Productions", desc: "小島秀夫創立，強調電影化敘事與社會連結的實驗性作品", url: "https://www.kojimaproductions.jp" },
-                    { name: "Atlus", desc: "《女神異聞錄》系列開發者，擅長時尚的美術風格與都市奇幻", url: "https://www.atlus.co.jp" },
-                    { name: "Level-5", desc: "擅長全方位多媒體開發，如《雷頓教授》、《妖怪手錶》", url: "https://www.level5.co.jp" },
-                    { name: "Cygames", desc: "日本手遊巨頭，以極致的美術表現與《賽馬娘》聞名", url: "https://www.cygames.co.jp" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Nintendo (任天堂)",
+                                                "desc": "全球遊戲產業領導者，強調玩法創新與老少咸宜的精神",
+                                                "url": "https://www.nintendo.co.jp",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "Sony Interactive Entertainment (SIE)",
+                                                "desc": "PlayStation 品牌擁有者，致力於高品質 3A 大作",
+                                                "url": "https://www.playstation.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "SQUARE ENIX",
+                                                "desc": "以《最終幻想》、《勇者鬥惡龍》聞名的 RPG 巨頭",
+                                                "url": "https://www.jp.square-enix.com",
+                                                "tag": "RPG"
+                                    },
+                                    {
+                                                "name": "CAPCOM (卡普空)",
+                                                "desc": "擁有《惡靈古堡》、《魔物獵人》等強力動作遊戲 IP",
+                                                "url": "https://www.capcom.co.jp",
+                                                "tag": "Action"
+                                    },
+                                    {
+                                                "name": "SEGA",
+                                                "desc": "從街機時代到《索尼克》，具備深厚的硬體與軟體開發背景",
+                                                "url": "https://www.sega.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Bandai Namco Entertainment",
+                                                "desc": "結合動漫 IP 與遊戲開發，如《艾爾登法環》、《鐵拳》",
+                                                "url": "https://www.bandainamcoent.co.jp",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "FromSoftware",
+                                                "desc": "魂系遊戲開創者，以高難度與破碎化敘事美學著稱",
+                                                "url": "https://www.fromsoftware.jp",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "PlatinumGames (白金工作室)",
+                                                "desc": "極致動作遊戲的代表，作品如《魔兵驚天錄》、《尼爾：自動人形》",
+                                                "url": "https://www.platinumgames.co.jp",
+                                                "tag": "Action"
+                                    },
+                                    {
+                                                "name": "Kojima Productions",
+                                                "desc": "小島秀夫創立，強調電影化敘事與社會連結的實驗性作品",
+                                                "url": "https://www.kojimaproductions.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Atlus",
+                                                "desc": "《女神異聞錄》系列開發者，擅長時尚的美術風格與都市奇幻",
+                                                "url": "https://www.atlus.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Level-5",
+                                                "desc": "擅長全方位多媒體開發，如《雷頓教授》、《妖怪手錶》",
+                                                "url": "https://www.level5.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Cygames",
+                                                "desc": "日本手遊巨頭，以極致的美術表現與《賽馬娘》聞名",
+                                                "url": "https://www.cygames.co.jp",
+                                                "tag": "Mobile"
+                                    }
+                        ],
+                        "title": "🇯🇵 日本 - 遊戲設計",
+                        "sub": "Game Studios of Japan"
             },
             {
-                category: "🇯🇵 日本 - 動畫製作",
-                items: [
-                    { name: "Studio Ghibli (吉卜力)", desc: "宮崎駿創立，手繪美學與人文關懷的殿堂級工作室，如《千與千尋》、《龍貓》", url: "https://www.ghibli.jp" },
-                    { name: "ufotable", desc: "以《鬼滅之刃》震撼全球，將 3D 背景與 2D 動效完美結合，代表作還有《Fate》系列", url: "http://www.ufotable.com" },
-                    { name: "MAPPA", desc: "產量與質量極高的頂尖公司，代表作《咒術迴戰》、《鏈鋸人》、《進擊的巨人 Final》", url: "http://www.mappa.co.jp" },
-                    { name: "Kyoto Animation (京阿尼)", desc: "以細膩的人物動作與光影氛圍著稱，如《紫羅蘭永恆花園》、《吹響吧！上低音號》", url: "https://www.kyotoanimation.co.jp" },
-                    { name: "Bones (骨頭社)", desc: "強調動作流暢度與戰鬥分鏡，如《鋼之鍊金術師》、《我的英雄學院》", url: "https://www.bones.co.jp" },
-                    { name: "Production I.G", desc: "科幻與運動題材龍頭，代表作為《攻殼機動隊》、《排球少年》、《怪獸8號》", url: "https://www.production-ig.co.jp" },
-                    { name: "Wit Studio (霸權社)", desc: "《進擊的巨人》前三季製作方製作方，近年代表作《SPY×FAMILY 間諜家家酒》、《國王排名》", url: "https://www.witstudio.co.jp" },
-                    { name: "Sunrise (日昇)", desc: "萬代南夢宮旗下，鋼彈系列的發源地，機器人動畫權威，如《Code Geass》", url: "https://www.bn-p.jp" },
-                    { name: "Toei Animation (東映)", desc: "歷史悠久，擁有《七龍珠》、《航海王》、《灌籃高手》等重量級 IP", url: "https://www.toei-anim.co.jp" },
-                    { name: "Madhouse", desc: "風格多樣化，作品包含《一拳超人》、《葬送的芙莉蓮》、《獵人》", url: "https://www.madhouse.co.jp" },
-                    { name: "Studio Trigger (扳機社)", desc: "風格強烈、充滿爆發力的動態表現，如《迷宮飯》、《電馭叛客：邊緣行者》", url: "https://www.st-trigger.co.jp" },
-                    { name: "A-1 Pictures", desc: "索尼旗下主力，擅長高品質改編，如《刀劍神域》、《輝夜姬想讓人告白》", url: "https://a1p.jp" },
-                    { name: "CloverWorks", desc: "作品精緻時尚，代表作《孤獨搖滾！》、《SPY×FAMILY 間諜家家酒》", url: "https://cloverworks.co.jp" },
-                    { name: "Science SARU", desc: "實驗性強且富有韻律感，代表作《膽大黨》、《別對映像研出手！》", url: "https://www.sciencesaru.com" },
-                    { name: "OLM", desc: "長壽系列《寶可夢》製作方，近年佳作《藥師少女的獨語》、《黑暗集會》", url: "https://www.olm.co.jp" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Studio Ghibli (吉卜力)",
+                                                "desc": "宮崎駿創立，手繪美學與人文關懷的殿堂級工作室，如《千與千尋》、《龍貓》",
+                                                "url": "https://www.ghibli.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "ufotable",
+                                                "desc": "以《鬼滅之刃》震撼全球，將 3D 背景與 2D 動效完美結合，代表作還有《Fate》系列",
+                                                "url": "http://www.ufotable.com",
+                                                "tag": "3D Animation"
+                                    },
+                                    {
+                                                "name": "MAPPA",
+                                                "desc": "產量與質量極高的頂尖公司，代表作《咒術迴戰》、《鏈鋸人》、《進擊的巨人 Final》",
+                                                "url": "http://www.mappa.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Kyoto Animation (京阿尼)",
+                                                "desc": "以細膩的人物動作與光影氛圍著稱，如《紫羅蘭永恆花園》、《吹響吧！上低音號》",
+                                                "url": "https://www.kyotoanimation.co.jp",
+                                                "tag": "Action"
+                                    },
+                                    {
+                                                "name": "Bones (骨頭社)",
+                                                "desc": "強調動作流暢度與戰鬥分鏡，如《鋼之鍊金術師》、《我的英雄學院》",
+                                                "url": "https://www.bones.co.jp",
+                                                "tag": "Action"
+                                    },
+                                    {
+                                                "name": "Production I.G",
+                                                "desc": "科幻與運動題材龍頭，代表作為《攻殼機動隊》、《排球少年》、《怪獸8號》",
+                                                "url": "https://www.production-ig.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Wit Studio (霸權社)",
+                                                "desc": "《進擊的巨人》前三季製作方製作方，近年代表作《SPY×FAMILY 間諜家家酒》、《國王排名》",
+                                                "url": "https://www.witstudio.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Sunrise (日昇)",
+                                                "desc": "萬代南夢宮旗下，鋼彈系列的發源地，機器人動畫權威，如《Code Geass》",
+                                                "url": "https://www.bn-p.jp",
+                                                "tag": "Animation"
+                                    },
+                                    {
+                                                "name": "Toei Animation (東映)",
+                                                "desc": "歷史悠久，擁有《七龍珠》、《航海王》、《灌籃高手》等重量級 IP",
+                                                "url": "https://www.toei-anim.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Madhouse",
+                                                "desc": "風格多樣化，作品包含《一拳超人》、《葬送的芙莉蓮》、《獵人》",
+                                                "url": "https://www.madhouse.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Studio Trigger (扳機社)",
+                                                "desc": "風格強烈、充滿爆發力的動態表現，如《迷宮飯》、《電馭叛客：邊緣行者》",
+                                                "url": "https://www.st-trigger.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "A-1 Pictures",
+                                                "desc": "索尼旗下主力，擅長高品質改編，如《刀劍神域》、《輝夜姬想讓人告白》",
+                                                "url": "https://a1p.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "CloverWorks",
+                                                "desc": "作品精緻時尚，代表作《孤獨搖滾！》、《SPY×FAMILY 間諜家家酒》",
+                                                "url": "https://cloverworks.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Science SARU",
+                                                "desc": "實驗性強且富有韻律感，代表作《膽大黨》、《別對映像研出手！》",
+                                                "url": "https://www.sciencesaru.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "OLM",
+                                                "desc": "長壽系列《寶可夢》製作方，近年佳作《藥師少女的獨語》、《黑暗集會》",
+                                                "url": "https://www.olm.co.jp",
+                                                "tag": "Studio"
+                                    }
+                        ],
+                        "title": "🇯🇵 日本 - 動畫製作",
+                        "sub": "Animation Studios of Japan"
             },
             {
-                category: "🇯🇵 日本 - 漫畫出版",
-                items: [
-                    { name: "Shueisha (集英社)", desc: "擁有《週刊少年Jump》，全球最強大的漫畫出版社", url: "https://www.shueisha.co.jp" },
-                    { name: "Kodansha (講談社)", desc: "擁有多元風格，代表作為《進擊的巨人》、《週刊少年Magazine》", url: "https://www.kodansha.co.jp" },
-                    { name: "Shogakukan (小學館)", desc: "代表作《柯南》、《哆啦A夢》，面向全年齡層", url: "https://www.shogakukan.co.jp" },
-                    { name: "Kadokawa (角川)", desc: "跨媒體製作先鋒，輕小說與漫畫聯動的霸主", url: "https://www.kadokawa.co.jp" },
-                    { name: "Square Enix (Gangan)", desc: "遊戲商跨足漫畫，擁有《鋼之鍊金術師》等大作", url: "https://magazine.jp.square-enix.com" },
-                    { name: "Hakusensha (白泉社)", desc: "少女漫畫殿堂，代表作《烙印勇士》、《水果籃子》", url: "https://www.hakusensha.co.jp" },
-                    { name: "Akita Shoten (秋田書店)", desc: "以《刃牙》、《弱虫ペダル》等硬派作品聞名", url: "https://www.akitashoten.co.jp" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Shueisha (集英社)",
+                                                "desc": "擁有《週刊少年Jump》，全球最強大的漫畫出版社",
+                                                "url": "https://www.shueisha.co.jp",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Kodansha (講談社)",
+                                                "desc": "擁有多元風格，代表作為《進擊的巨人》、《週刊少年Magazine》",
+                                                "url": "https://www.kodansha.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Shogakukan (小學館)",
+                                                "desc": "代表作《柯南》、《哆啦A夢》，面向全年齡層",
+                                                "url": "https://www.shogakukan.co.jp",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Kadokawa (角川)",
+                                                "desc": "跨媒體製作先鋒，輕小說與漫畫聯動的霸主",
+                                                "url": "https://www.kadokawa.co.jp",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Square Enix (Gangan)",
+                                                "desc": "遊戲商跨足漫畫，擁有《鋼之鍊金術師》等大作",
+                                                "url": "https://magazine.jp.square-enix.com",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Hakusensha (白泉社)",
+                                                "desc": "少女漫畫殿堂，代表作《烙印勇士》、《水果籃子》",
+                                                "url": "https://www.hakusensha.co.jp",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Akita Shoten (秋田書店)",
+                                                "desc": "以《刃牙》、《弱虫ペダル》等硬派作品聞名",
+                                                "url": "https://www.akitashoten.co.jp",
+                                                "tag": "Studio"
+                                    }
+                        ],
+                        "title": "🇯🇵 日本 - 漫畫出版",
+                        "sub": "Manga Publishers of Japan"
             },
             {
-                category: "🇺🇸 美國 - 遊戲設計",
-                items: [
-                    { name: "Epic Games", desc: "Unreal Engine 開發者與《要塞英雄》創作者", url: "https://www.epicgames.com" },
-                    { name: "Electronic Arts (EA)", desc: "運動與模擬遊戲巨頭，如《FIFA/FC》、《模擬市民》", url: "https://www.ea.com" },
-                    { name: "Activision Blizzard", desc: "擁有《決勝時刻》與《魔獸世界》的重量級廠家", url: "https://www.activisionblizzard.com" },
-                    { name: "Rockstar Games", desc: "以開放世界《GTA》、《碧血狂殺》重新定義遊戲工業", url: "https://www.rockstargames.com" },
-                    { name: "Naughty Dog", desc: "索尼第一方，敘事藝術的極致，如《最後生還者》", url: "https://www.naughtydog.com" },
-                    { name: "Valve", desc: "Steam 平台與《戰慄時空》開發者，影響力遍及軟硬體", url: "https://www.valvesoftware.com" },
-                    { name: "Bungie", desc: "《最後一戰》與《天命》開發者，擅長射擊手感", url: "https://www.bungie.net" },
-                    { name: "Insomniac Games", desc: "以《漫威蜘蛛人》聞名，開發節奏明快且技術力強", url: "https://insomniac.games" },
-                    { name: "Bethesda Game Studios", desc: "角色扮演遊戲傳奇，如《上古卷軸》、《異塵餘生》", url: "https://bethesda.net" },
-                    { name: "Riot Games", desc: "《英雄聯盟》開發者，成功轉型為跨媒體娛樂商", url: "https://www.riotgames.com" },
-                    { name: "Roblox Corporation", desc: "引領元宇宙與沙盒遊戲創作趨勢", url: "https://www.roblox.com" },
-                    { name: "Supergiant Games", desc: "獨立遊戲界的天花板，代表作《哈迪斯 (Hades)》", url: "https://www.supergiantgames.com" },
-                    { name: "Santa Monica Studio", desc: "索尼第一方，以《戰神》系列展現極致視覺表現", url: "https://sms.playstation.com" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Epic Games",
+                                                "desc": "Unreal Engine 開發者與《要塞英雄》創作者",
+                                                "url": "https://www.epicgames.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Electronic Arts (EA)",
+                                                "desc": "運動與模擬遊戲巨頭，如《FIFA/FC》、《模擬市民》",
+                                                "url": "https://www.ea.com",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "Activision Blizzard",
+                                                "desc": "擁有《決勝時刻》與《魔獸世界》的重量級廠家",
+                                                "url": "https://www.activisionblizzard.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Rockstar Games",
+                                                "desc": "以開放世界《GTA》、《碧血狂殺》重新定義遊戲工業",
+                                                "url": "https://www.rockstargames.com",
+                                                "tag": "Open World"
+                                    },
+                                    {
+                                                "name": "Naughty Dog",
+                                                "desc": "索尼第一方，敘事藝術的極致，如《最後生還者》",
+                                                "url": "https://www.naughtydog.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Valve",
+                                                "desc": "Steam 平台與《戰慄時空》開發者，影響力遍及軟硬體",
+                                                "url": "https://www.valvesoftware.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Bungie",
+                                                "desc": "《最後一戰》與《天命》開發者，擅長射擊手感",
+                                                "url": "https://www.bungie.net",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Insomniac Games",
+                                                "desc": "以《漫威蜘蛛人》聞名，開發節奏明快且技術力強",
+                                                "url": "https://insomniac.games",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Bethesda Game Studios",
+                                                "desc": "角色扮演遊戲傳奇，如《上古卷軸》、《異塵餘生》",
+                                                "url": "https://bethesda.net",
+                                                "tag": "RPG"
+                                    },
+                                    {
+                                                "name": "Riot Games",
+                                                "desc": "《英雄聯盟》開發者，成功轉型為跨媒體娛樂商",
+                                                "url": "https://www.riotgames.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Roblox Corporation",
+                                                "desc": "引領元宇宙與沙盒遊戲創作趨勢",
+                                                "url": "https://www.roblox.com",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "Supergiant Games",
+                                                "desc": "獨立遊戲界的天花板，代表作《哈迪斯 (Hades)》",
+                                                "url": "https://www.supergiantgames.com",
+                                                "tag": "Indie"
+                                    },
+                                    {
+                                                "name": "Santa Monica Studio",
+                                                "desc": "索尼第一方，以《戰神》系列展現極致視覺表現",
+                                                "url": "https://sms.playstation.com",
+                                                "tag": "Studio"
+                                    }
+                        ],
+                        "title": "🇺🇸 美國 - 遊戲設計",
+                        "sub": "Game Studios of USA"
             },
             {
-                category: "🇺🇸 美國 - 動畫製作",
-                items: [
-                    { name: "Pixar (皮克斯)", desc: "3D 動畫先驅，擅長深刻的情感與高科技結合", url: "https://www.pixar.com" },
-                    { name: "Walt Disney Animation Studios", desc: "百年老店，定義了現代動畫的基礎", url: "https://www.disneyanimation.com" },
-                    { name: "DreamWorks Animation (夢工廠)", desc: "幽默與大眾化敘事，如《史瑞克》、《馴龍高手》", url: "https://www.dreamworks.com" },
-                    { name: "Sony Pictures Animation", desc: "《蜘蛛人：新宇宙》開創了混合媒介的視覺新紀元", url: "https://sonypicturesanimation.com" },
-                    { name: "Illumination", desc: "以《小小兵》、《瑪利歐》成為全球商業票房保障", url: "https://www.illumination.com" },
-                    { name: "Warner Bros. Animation", desc: "擁有 DC 英雄與經典卡通如《兔巴哥》", url: "https://www.warnerbros.com" },
-                    { name: "Nickelodeon Animation", desc: "美國電視動畫巨頭，如《海綿寶寶》", url: "https://www.nickanimation.com" },
-                    { name: "Laika", desc: "定格動畫 (Stop-motion) 的現代代表，如《第十四道門》", url: "https://www.laika.com" },
-                    { name: "Cartoon Network Studios", desc: "獨特的美式卡通風格，如《探險活寶》", url: "https://www.cartoonnetwork.com" },
-                    { name: "Titmouse, Inc.", desc: "獨立且極具創意的成人動畫工作室", url: "https://titmouse.net" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Pixar (皮克斯)",
+                                                "desc": "3D 動畫先驅，擅長深刻的情感與高科技結合",
+                                                "url": "https://www.pixar.com",
+                                                "tag": "3D Animation"
+                                    },
+                                    {
+                                                "name": "Walt Disney Animation Studios",
+                                                "desc": "百年老店，定義了現代動畫的基礎",
+                                                "url": "https://www.disneyanimation.com",
+                                                "tag": "Animation"
+                                    },
+                                    {
+                                                "name": "DreamWorks Animation (夢工廠)",
+                                                "desc": "幽默與大眾化敘事，如《史瑞克》、《馴龍高手》",
+                                                "url": "https://www.dreamworks.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Sony Pictures Animation",
+                                                "desc": "《蜘蛛人：新宇宙》開創了混合媒介的視覺新紀元",
+                                                "url": "https://sonypicturesanimation.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Illumination",
+                                                "desc": "以《小小兵》、《瑪利歐》成為全球商業票房保障",
+                                                "url": "https://www.illumination.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Warner Bros. Animation",
+                                                "desc": "擁有 DC 英雄與經典卡通如《兔巴哥》",
+                                                "url": "https://www.warnerbros.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Nickelodeon Animation",
+                                                "desc": "美國電視動畫巨頭，如《海綿寶寶》",
+                                                "url": "https://www.nickanimation.com",
+                                                "tag": "Animation"
+                                    },
+                                    {
+                                                "name": "Laika",
+                                                "desc": "定格動畫 (Stop-motion) 的現代代表，如《第十四道門》",
+                                                "url": "https://www.laika.com",
+                                                "tag": "Animation"
+                                    },
+                                    {
+                                                "name": "Cartoon Network Studios",
+                                                "desc": "獨特的美式卡通風格，如《探險活寶》",
+                                                "url": "https://www.cartoonnetwork.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Titmouse, Inc.",
+                                                "desc": "獨立且極具創意的成人動畫工作室",
+                                                "url": "https://titmouse.net",
+                                                "tag": "Indie"
+                                    }
+                        ],
+                        "title": "🇺🇸 美國 - 動畫製作",
+                        "sub": "Animation Studios of USA"
             },
             {
-                category: "🇺🇸 美國 - 漫畫出版",
-                items: [
-                    { name: "Marvel Comics", desc: "漫威英雄宇宙，美漫文化的核心", url: "https://www.marvel.com" },
-                    { name: "DC Comics", desc: "擁有超人、蝙蝠俠，歷史悠久且風格嚴肅", url: "https://www.dc.com" },
-                    { name: "Image Comics", desc: "給予創作者高度自由，代表作《陰屍路》、《再生俠》", url: "https://imagecomics.com" },
-                    { name: "IDW Publishing", desc: "擅長跨授權漫畫，如《忍者龜》、《變形金剛》", url: "https://www.idwpublishing.com" },
-                    { name: "Dark Horse Comics", desc: "獨立出版龍頭，如《地獄怪客》、《維琴河》", url: "https://www.darkhorse.com" },
-                    { name: "VIZ Media", desc: "北美最大的日本漫畫發行商", url: "https://www.viz.com" },
-                    { name: "Boom! Studios", desc: "知名獨立美漫發行商，如《探險活寶》漫畫版", url: "https://www.boom-studios.com" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Marvel Comics",
+                                                "desc": "漫威英雄宇宙，美漫文化的核心",
+                                                "url": "https://www.marvel.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "DC Comics",
+                                                "desc": "擁有超人、蝙蝠俠，歷史悠久且風格嚴肅",
+                                                "url": "https://www.dc.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Image Comics",
+                                                "desc": "給予創作者高度自由，代表作《陰屍路》、《再生俠》",
+                                                "url": "https://imagecomics.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "IDW Publishing",
+                                                "desc": "擅長跨授權漫畫，如《忍者龜》、《變形金剛》",
+                                                "url": "https://www.idwpublishing.com",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Dark Horse Comics",
+                                                "desc": "獨立出版龍頭，如《地獄怪客》、《維琴河》",
+                                                "url": "https://www.darkhorse.com",
+                                                "tag": "Indie"
+                                    },
+                                    {
+                                                "name": "VIZ Media",
+                                                "desc": "北美最大的日本漫畫發行商",
+                                                "url": "https://www.viz.com",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Boom! Studios",
+                                                "desc": "知名獨立美漫發行商，如《探險活寶》漫畫版",
+                                                "url": "https://www.boom-studios.com",
+                                                "tag": "Indie"
+                                    }
+                        ],
+                        "title": "🇺🇸 美國 - 漫畫出版",
+                        "sub": "Comic Publishers of USA"
             },
             {
-                category: "🌍 全球 - 遊戲設計",
-                items: [
-                    { name: "Ubisoft (法國)", desc: "擁有《刺客教條》、《極地戰嚎》等開放世界系列", url: "https://www.ubisoft.com" },
-                    { name: "CD Projekt Red (波蘭)", desc: "《巫師》與《電馭叛客2077》開發者，敘事深度極佳", url: "https://www.cdprojektred.com" },
-                    { name: "Tencent Games (中國)", desc: "全球營收最高，專注於手遊與全球併購", url: "https://www.tencent.com" },
-                    { name: "NetEase Games (中國)", desc: "擁有《第五人格》、《陰陽師》及多項國際授權", url: "https://www.neteasegames.com" },
-                    { name: "miHoYo (中國)", desc: "以《原神》橫掃全球，頂尖的 ACG 式內容開發", url: "https://hoyoverse.com" },
-                    { name: "Supercell (芬蘭)", desc: "手遊界神話，如《部落衝突》、《皇室戰爭》", url: "https://supercell.com" },
-                    { name: "Remedy Entertainment (芬蘭)", desc: "擅長心理驚悚與連貫敘事，如《心靈殺手2》", url: "https://www.remedygames.com" },
-                    { name: "Larian Studios (比利時)", desc: "以《柏德之門3》重新定義現代 CRPG", url: "https://larian.com" },
-                    { name: "Mojang Studios (瑞典)", desc: "傳奇沙盒遊戲《Minecraft》的開發者", url: "https://www.mojang.com" },
-                    { name: "Guerrilla Games (荷蘭)", desc: "索尼旗下，代表作《地平線：期待黎明》", url: "https://www.guerrilla-games.com" },
-                    { name: "Krafton (韓國)", desc: "《絕地求生 (PUBG)》母公司", url: "https://www.krafton.com" },
-                    { name: "Pearl Abyss (韓國)", desc: "以《黑色沙漠》展現其自研引擎實力", url: "https://www.pearlabyss.com" },
-                    { name: "BioWare (加拿大)", desc: "RPG 敘事巨頭，代表作《質量效應》、《闇龍紀元》", url: "https://www.bioware.com" },
-                    { name: "Playdead (丹麥)", desc: "獨立遊戲神話，氣氛營造絕佳，代表作《LIMBO》", url: "https://playdead.com" },
-                    { name: "Arkane Studios (法國)", desc: "沉浸式模擬大師，代表作《冤罪殺機》、《死亡循環》", url: "https://www.arkane-studios.com" },
-                    { name: "Crytek (德國)", desc: "頂尖技術力展現，CryEngine 引擎與《末日之戰》", url: "https://www.crytek.com" },
-                    { name: "Media Molecule (英國)", desc: "專注於玩家創造力，代表作《小小大星球》、《Dreams》", url: "https://www.mediamolecule.com" },
-                    { name: "IO Interactive (丹麥)", desc: "潛行遊戲專家，締造了經典的《刺客任務 (Hitman)》", url: "https://ioi.dk" },
-                    { name: "Nexon (韓國)", desc: "韓國線上遊戲巨擘，代表作《楓之谷》、《跑跑卡丁車》", url: "https://www.nexon.com" },
-                    { name: "Creative Assembly (英國)", desc: "歷史戰略權威，《全軍破敵 (Total War)》系列開發商", url: "https://www.creative-assembly.com" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Ubisoft (法國)",
+                                                "desc": "擁有《刺客教條》、《極地戰嚎》等開放世界系列",
+                                                "url": "https://www.ubisoft.com",
+                                                "tag": "Open World"
+                                    },
+                                    {
+                                                "name": "CD Projekt Red (波蘭)",
+                                                "desc": "《巫師》與《電馭叛客2077》開發者，敘事深度極佳",
+                                                "url": "https://www.cdprojektred.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Tencent Games (中國)",
+                                                "desc": "全球營收最高，專注於手遊與全球併購",
+                                                "url": "https://www.tencent.com",
+                                                "tag": "Mobile"
+                                    },
+                                    {
+                                                "name": "NetEase Games (中國)",
+                                                "desc": "擁有《第五人格》、《陰陽師》及多項國際授權",
+                                                "url": "https://www.neteasegames.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "miHoYo (中國)",
+                                                "desc": "以《原神》橫掃全球，頂尖的 ACG 式內容開發",
+                                                "url": "https://hoyoverse.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Supercell (芬蘭)",
+                                                "desc": "手遊界神話，如《部落衝突》、《皇室戰爭》",
+                                                "url": "https://supercell.com",
+                                                "tag": "Mobile"
+                                    },
+                                    {
+                                                "name": "Remedy Entertainment (芬蘭)",
+                                                "desc": "擅長心理驚悚與連貫敘事，如《心靈殺手2》",
+                                                "url": "https://www.remedygames.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Larian Studios (比利時)",
+                                                "desc": "以《柏德之門3》重新定義現代 CRPG",
+                                                "url": "https://larian.com",
+                                                "tag": "RPG"
+                                    },
+                                    {
+                                                "name": "Mojang Studios (瑞典)",
+                                                "desc": "傳奇沙盒遊戲《Minecraft》的開發者",
+                                                "url": "https://www.mojang.com",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "Guerrilla Games (荷蘭)",
+                                                "desc": "索尼旗下，代表作《地平線：期待黎明》",
+                                                "url": "https://www.guerrilla-games.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Krafton (韓國)",
+                                                "desc": "《絕地求生 (PUBG)》母公司",
+                                                "url": "https://www.krafton.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Pearl Abyss (韓國)",
+                                                "desc": "以《黑色沙漠》展現其自研引擎實力",
+                                                "url": "https://www.pearlabyss.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "BioWare (加拿大)",
+                                                "desc": "RPG 敘事巨頭，代表作《質量效應》、《闇龍紀元》",
+                                                "url": "https://www.bioware.com",
+                                                "tag": "RPG"
+                                    },
+                                    {
+                                                "name": "Playdead (丹麥)",
+                                                "desc": "獨立遊戲神話，氣氛營造絕佳，代表作《LIMBO》",
+                                                "url": "https://playdead.com",
+                                                "tag": "Indie"
+                                    },
+                                    {
+                                                "name": "Arkane Studios (法國)",
+                                                "desc": "沉浸式模擬大師，代表作《冤罪殺機》、《死亡循環》",
+                                                "url": "https://www.arkane-studios.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Crytek (德國)",
+                                                "desc": "頂尖技術力展現，CryEngine 引擎與《末日之戰》",
+                                                "url": "https://www.crytek.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Media Molecule (英國)",
+                                                "desc": "專注於玩家創造力，代表作《小小大星球》、《Dreams》",
+                                                "url": "https://www.mediamolecule.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "IO Interactive (丹麥)",
+                                                "desc": "潛行遊戲專家，締造了經典的《刺客任務 (Hitman)》",
+                                                "url": "https://ioi.dk",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "Nexon (韓國)",
+                                                "desc": "韓國線上遊戲巨擘，代表作《楓之谷》、《跑跑卡丁車》",
+                                                "url": "https://www.nexon.com",
+                                                "tag": "Game"
+                                    },
+                                    {
+                                                "name": "Creative Assembly (英國)",
+                                                "desc": "歷史戰略權威，《全軍破敵 (Total War)》系列開發商",
+                                                "url": "https://www.creative-assembly.com",
+                                                "tag": "Studio"
+                                    }
+                        ],
+                        "title": "🌍 全球 - 遊戲設計",
+                        "sub": "Game Studios of Global"
             },
             {
-                category: "🌍 全球 - 動畫製作",
-                items: [
-                    { name: "Aardman (英國)", desc: "黏土動畫傳奇，如《笑笑羊》、《落跑雞》", url: "https://www.aardman.com" },
-                    { name: "Cartoon Saloon (愛爾蘭)", desc: "融合傳統與幾何美學，如《海洋幻想曲》、《狼行者》", url: "https://www.cartoonsaloon.ie" },
-                    { name: "Fortiche Production (法國)", desc: "與 Riot 合作《奧術》一戰成名，極致的藝術感", url: "https://forticheprod.com" },
-                    { name: "Mikros Animation (法國)", desc: "提供高品質 3D 動畫代工與原創服務", url: "https://www.mikrosanimation.com" },
-                    { name: "The SPA Studios (西班牙)", desc: "頂尖 2D 動畫工作室，代表作《克勞斯：聖誕節的秘密》", url: "https://thespastudios.com" },
-                    { name: "Weta FX (紐西蘭)", desc: "世界級特效與動畫公司，多次榮獲奧斯卡獎項", url: "https://www.wetafx.co.nz" },
-                    { name: "Animal Logic (澳洲)", desc: "頂尖動畫與特效製作，曾參與《樂高玩電影》", url: "https://www.animallogic.com" },
-                    { name: "Brown Bag Films (愛爾蘭)", desc: "屢獲殊榮的 3D 工作室，專注於高品質兒童動畫", url: "https://www.brownbagfilms.com" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Aardman (英國)",
+                                                "desc": "黏土動畫傳奇，如《笑笑羊》、《落跑雞》",
+                                                "url": "https://www.aardman.com",
+                                                "tag": "Animation"
+                                    },
+                                    {
+                                                "name": "Cartoon Saloon (愛爾蘭)",
+                                                "desc": "融合傳統與幾何美學，如《海洋幻想曲》、《狼行者》",
+                                                "url": "https://www.cartoonsaloon.ie",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Fortiche Production (法國)",
+                                                "desc": "與 Riot 合作《奧術》一戰成名，極致的藝術感",
+                                                "url": "https://forticheprod.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Mikros Animation (法國)",
+                                                "desc": "提供高品質 3D 動畫代工與原創服務",
+                                                "url": "https://www.mikrosanimation.com",
+                                                "tag": "3D Animation"
+                                    },
+                                    {
+                                                "name": "The SPA Studios (西班牙)",
+                                                "desc": "頂尖 2D 動畫工作室，代表作《克勞斯：聖誕節的秘密》",
+                                                "url": "https://thespastudios.com",
+                                                "tag": "2D Animation"
+                                    },
+                                    {
+                                                "name": "Weta FX (紐西蘭)",
+                                                "desc": "世界級特效與動畫公司，多次榮獲奧斯卡獎項",
+                                                "url": "https://www.wetafx.co.nz",
+                                                "tag": "Animation"
+                                    },
+                                    {
+                                                "name": "Animal Logic (澳洲)",
+                                                "desc": "頂尖動畫與特效製作，曾參與《樂高玩電影》",
+                                                "url": "https://www.animallogic.com",
+                                                "tag": "Animation"
+                                    },
+                                    {
+                                                "name": "Brown Bag Films (愛爾蘭)",
+                                                "desc": "屢獲殊榮的 3D 工作室，專注於高品質兒童動畫",
+                                                "url": "https://www.brownbagfilms.com",
+                                                "tag": "3D Animation"
+                                    }
+                        ],
+                        "title": "🌍 全球 - 動畫製作",
+                        "sub": "Animation Studios of Global"
             },
             {
-                category: "🌍 全球 - 漫畫/網路漫畫平台",
-                items: [
-                    { name: "Naver Webtoon (韓國)", desc: "引領條漫趨勢，全球最大的條漫平台", url: "https://www.webtoons.com" },
-                    { name: "Kakao Page (韓國)", desc: "韓國網漫與網文兩大龍龍頭之一", url: "https://page.kakao.com" },
-                    { name: "Delcourt (法國)", desc: "法國最大的獨立漫畫出版社，歐美法漫代表", url: "https://www.editions-delcourt.fr" },
-                    { name: "2000 AD (英國)", desc: "英國硬核科幻漫畫代表，如《判官爵德》", url: "https://2000ad.com" },
-                    { name: "Tapastic (國際)", desc: "創作者驅動的條漫與輕小說分享平台", url: "https://tapas.io" },
-                    { name: "Bilibili Comics (中國)", desc: "強勢崛起的漫畫海外推廣與原創平台", url: "https://www.bilibilicomics.com" },
-                    { name: "Lezhin Comics (韓國)", desc: "韓國知名優質且多元題材的網路條漫平台", url: "https://www.lezhin.com" },
-                    { name: "Dargaud (法國)", desc: "歷史悠久的漫畫出版社，出版多部經典歐陸漫畫", url: "https://www.dargaud.com" },
-                    { name: "Panini Comics (義大利)", desc: "歐洲出版巨頭，主要的美漫與日漫代理發行商", url: "https://www.panini.com" }
-                ]
+                        "items": [
+                                    {
+                                                "name": "Naver Webtoon (韓國)",
+                                                "desc": "引領條漫趨勢，全球最大的條漫平台",
+                                                "url": "https://www.webtoons.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Kakao Page (韓國)",
+                                                "desc": "韓國網漫與網文兩大龍龍頭之一",
+                                                "url": "https://page.kakao.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Delcourt (法國)",
+                                                "desc": "法國最大的獨立漫畫出版社，歐美法漫代表",
+                                                "url": "https://www.editions-delcourt.fr",
+                                                "tag": "Indie"
+                                    },
+                                    {
+                                                "name": "2000 AD (英國)",
+                                                "desc": "英國硬核科幻漫畫代表，如《判官爵德》",
+                                                "url": "https://2000ad.com",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Tapastic (國際)",
+                                                "desc": "創作者驅動的條漫與輕小說分享平台",
+                                                "url": "https://tapas.io",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Bilibili Comics (中國)",
+                                                "desc": "強勢崛起的漫畫海外推廣與原創平台",
+                                                "url": "https://www.bilibilicomics.com",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Lezhin Comics (韓國)",
+                                                "desc": "韓國知名優質且多元題材的網路條漫平台",
+                                                "url": "https://www.lezhin.com",
+                                                "tag": "Studio"
+                                    },
+                                    {
+                                                "name": "Dargaud (法國)",
+                                                "desc": "歷史悠久的漫畫出版社，出版多部經典歐陸漫畫",
+                                                "url": "https://www.dargaud.com",
+                                                "tag": "Comics"
+                                    },
+                                    {
+                                                "name": "Panini Comics (義大利)",
+                                                "desc": "歐洲出版巨頭，主要的美漫與日漫代理發行商",
+                                                "url": "https://www.panini.com",
+                                                "tag": "Comics"
+                                    }
+                        ],
+                        "title": "🌍 全球 - 漫畫/網路漫畫平台",
+                        "sub": "Comic Platforms of Global"
             }
-        ];
+];
 
-        function initContent() {
-            const container = document.getElementById('content-area');
-            data.forEach((section, idx) => {
-                const sectionEl = document.createElement('section');
-                sectionEl.className = 'animate-slide-up';
-                sectionEl.style.animationDelay = `${idx * 0.1}s`;
-                
-                sectionEl.innerHTML = `
-                    <h2 class="section-header font-display text-2xl font-bold mb-8 uppercase tracking-wider opacity-80">
-                        ${section.category}
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 resource-grid">
-                        ${section.items.map(item => `
-                            <div class="resource-card p-6 rounded-2xl flex flex-col justify-between">
-                                <div>
-                                    <h3 class="text-xl font-bold mb-2 font-display">${item.name}</h3>
-                                    <p class="text-sm opacity-60 leading-relaxed mb-6">${item.desc}</p>
-                                </div>
-                                <a href="javascript:void(0)" onclick="openUrl('${item.url}')" class="flex items-center gap-2 text-sm font-bold text-rose-500 hover:text-rose-400 transition-colors uppercase tracking-wider group">
-                                    Visit Official
-                                    <i data-lucide="external-link" class="w-4 h-4 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"></i>
-                                </a>
-                            </div>
-                        `).join('')}
-                    </div>
+        // Generate speed lines in hero
+        (function() {
+            const bg = document.getElementById('speedBg');
+            for (let i = 0; i < 30; i++) {
+                const line = document.createElement('div');
+                line.className = 'line';
+                const angle = (Math.random() - 0.5) * 40 + 90; // roughly vertical
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const w = 100 + Math.random() * 500;
+                line.style.cssText = `
+                    left: ${x}%; top: ${y}%;
+                    width: ${w}px;
+                    transform: rotate(${angle}deg);
                 `;
-                container.appendChild(sectionEl);
-            });
-            lucide.createIcons();
-        }
-
-        function openUrl(url) {
-            const newWindow = window.open(url, '_blank');
-            if (newWindow) {
-                window.focus();
+                bg.appendChild(line);
             }
+        })();
+
+        const directions = ['from-left', 'from-right', 'from-bottom'];
+
+        function render() {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = '';
+
+            data.forEach((section) => {
+                const sec = document.createElement('div');
+                sec.className = 'panel-section';
+
+                const banner = document.createElement('div');
+                banner.className = 'section-banner obs';
+                banner.innerHTML = `<h2>${section.title}</h2><div class="sub">${section.sub}</div>`;
+                sec.appendChild(banner);
+
+                const grid = document.createElement('div');
+                grid.className = 'manga-grid';
+
+                section.items.forEach((item, i) => {
+                    const dir = directions[i % 3];
+                    const card = document.createElement('div');
+                    card.className = `card ${dir} obs`;
+                    card.style.transitionDelay = `${i * 0.08}s`;
+                    card.innerHTML = `
+                        <div>
+                            <span class="card-label">${item.tag}</span>
+                            <h3>${item.name}</h3>
+                            <p>${item.desc}</p>
+                        </div>
+                        <a href="${item.url}" target="_blank" rel="noopener" class="card-link">
+                            Visit Official <i class="fas fa-arrow-up-right-from-square"></i>
+                        </a>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                sec.appendChild(grid);
+                feed.appendChild(sec);
+            });
+
+            initObs();
         }
 
-        function setTheme(theme) {
-            document.documentElement.className = `theme-${theme}`;
-            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(`btn-${theme}`);
-            if(activeBtn) activeBtn.classList.add('active');
-            localStorage.setItem('acg-theme', theme);
+        function initObs() {
+            const io = new IntersectionObserver((entries) => {
+                entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); io.unobserve(e.target); } });
+            }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+            document.querySelectorAll('.obs').forEach(el => io.observe(el));
+        }
+
+        function setTheme(t) {
+            document.body.classList.remove('theme-alt','theme-contrast');
+            if (t !== 'default') document.body.classList.add('theme-' + t);
+            document.querySelectorAll('.theme-sw button').forEach(b => b.classList.remove('on'));
+            document.querySelector('.b' + (t === 'default' ? '1' : t === 'alt' ? '2' : '3')).classList.add('on');
+            localStorage.setItem('acg-theme', t);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            initContent();
-            const savedTheme = localStorage.getItem('acg-theme') || 'dark';
-            setTheme(savedTheme);
+            setTheme(localStorage.getItem('acg-theme') || 'default');
+            render();
         });
     </script>
 </body>
-
 </html>
