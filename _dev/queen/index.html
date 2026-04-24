@@ -157,7 +157,7 @@
     <div class="container">
         <div class="header">
             <h1>Queen Engine</h1>
-            <p style="color: #94a3b8;">5000-Word Deep Knowledge Synthesis & Streaming</p>
+            <p style="color: #94a3b8;">Local WebGPU Knowledge Synthesis & Streaming</p>
         </div>
 
         <div class="glass-panel">
@@ -176,7 +176,9 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
         const generateBtn = document.getElementById('generateBtn');
         const promptInput = document.getElementById('promptInput');
         const statusText = document.getElementById('statusText');
@@ -186,9 +188,42 @@
         let audioQueue = [];
         let isPlaying = false;
         let currentAudio = null;
-        let eventSource = null;
+        let engine = null;
+        
+        // Use a lightweight LLM good at instructions
+        const selectedModel = "Qwen2-1.5B-Instruct-q4f16_1-MLC";
 
-        generateBtn.addEventListener('click', () => {
+        // Initialize WebLLM
+        async function initEngine() {
+            if (engine) return;
+            spinner.style.display = 'block';
+            statusText.textContent = 'Loading Local AI Model (First time takes a while to download)...';
+            generateBtn.disabled = true;
+
+            const initProgressCallback = (report) => {
+                statusText.textContent = `Loading Model: ${report.text}`;
+            };
+
+            try {
+                engine = await webllm.CreateMLCEngine(
+                    selectedModel,
+                    { initProgressCallback: initProgressCallback }
+                );
+                statusText.textContent = 'Model loaded and ready! (Running locally via WebGPU)';
+                spinner.style.display = 'none';
+                generateBtn.disabled = false;
+            } catch (err) {
+                console.error(err);
+                statusText.textContent = 'Error loading model. Does your browser support WebGPU?';
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Initialize on page load
+        initEngine();
+
+        generateBtn.addEventListener('click', async () => {
+            if (!engine) return;
             const prompt = promptInput.value.trim();
             if (!prompt) return;
 
@@ -200,50 +235,83 @@
                 currentAudio.pause();
                 currentAudio = null;
             }
-            if (eventSource) {
-                eventSource.close();
-            }
 
             generateBtn.disabled = true;
             spinner.style.display = 'block';
-            statusText.textContent = 'Connecting...';
-
-            // Start SSE stream
-            const url = `/generate_stream?prompt=${encodeURIComponent(prompt)}`;
-            eventSource = new EventSource(url);
+            statusText.textContent = 'Generating deep knowledge synthesis...';
 
             let rawMarkdown = '';
+            let sentenceBuffer = '';
+            let audioIndex = 0;
 
-            eventSource.onmessage = (event) => {
-                const data = JSON.parse(event.data);
+            try {
+                const messages = [
+                    { role: "system", content: "你是一個專業的知識合成引擎(Queen Engine)，擅長進行深度分析。請以發散、收斂、結構化的方式進行回答，並使用繁體中文。" },
+                    { role: "user", content: prompt }
+                ];
 
-                if (data.type === 'status') {
-                    statusText.textContent = data.message;
-                } else if (data.type === 'text') {
-                    // Accumulate markdown and render
-                    rawMarkdown += data.content;
+                const chunks = await engine.chat.completions.create({
+                    messages,
+                    temperature: 0.7,
+                    stream: true,
+                });
+
+                for await (const chunk of chunks) {
+                    const content = chunk.choices[0]?.delta?.content || "";
+                    rawMarkdown += content;
+                    sentenceBuffer += content;
                     contentArea.innerHTML = marked.parse(rawMarkdown);
-                    // Scroll to bottom
                     window.scrollTo(0, document.body.scrollHeight);
-                } else if (data.type === 'audio') {
-                    // Queue audio
-                    audioQueue.push(data.url);
-                    playNextAudio();
-                } else if (data.type === 'done') {
-                    eventSource.close();
-                    spinner.style.display = 'none';
-                    statusText.textContent = 'Generation and synthesis completed.';
-                    generateBtn.disabled = false;
-                }
-            };
 
-            eventSource.onerror = (err) => {
-                console.error("SSE Error:", err);
-                eventSource.close();
+                    // Check for sentence boundaries to trigger TTS
+                    if (/[。！？\n]/.test(content) && sentenceBuffer.trim().length > 10) {
+                        const textToSpeak = sentenceBuffer.trim();
+                        sentenceBuffer = ''; // reset buffer
+                        
+                        // Async call to backend for TTS
+                        fetch('/tts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: textToSpeak, index: audioIndex++ })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.url) {
+                                audioQueue.push(data.url);
+                                playNextAudio();
+                            }
+                        })
+                        .catch(err => console.error("TTS Error:", err));
+                    }
+                }
+
+                // Process remaining buffer
+                if (sentenceBuffer.trim().length > 0) {
+                    const textToSpeak = sentenceBuffer.trim();
+                    fetch('/tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: textToSpeak, index: audioIndex++ })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.url) {
+                            audioQueue.push(data.url);
+                            playNextAudio();
+                        }
+                    });
+                }
+
+                spinner.style.display = 'none';
+                statusText.textContent = 'Generation completed.';
+                generateBtn.disabled = false;
+
+            } catch (err) {
+                console.error("Generation Error:", err);
                 spinner.style.display = 'none';
                 statusText.textContent = 'Error occurred during generation.';
                 generateBtn.disabled = false;
-            };
+            }
         });
 
         function playNextAudio() {
@@ -255,7 +323,6 @@
             
             currentAudio.play().catch(e => {
                 console.error("Audio playback failed:", e);
-                // If playback fails (e.g. user didn't interact with document), skip to next
                 isPlaying = false;
                 playNextAudio();
             });
