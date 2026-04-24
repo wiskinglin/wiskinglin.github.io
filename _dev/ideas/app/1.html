@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>龍蝦人工智慧代理時代的台灣新青安房貸事件正在發生</title>
+  <style>
+    /* 核心變數設定與全域平滑過渡 */
+    :root {
+      --bg-color: #f8f9fa;
+      --text-color: #333333;
+      --content-width: 800px;
+      --line-height: 2;
+      --padding-x: 2rem;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Helvetica Neue', Helvetica, Arial, 'PingFang TC', '微軟正黑體', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      transition: background-color 1s ease, color 1s ease;
+    }
+
+    /* 區塊基礎設定：讓每個段落都至少佔滿整個螢幕高度 */
+    .stage {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem var(--padding-x);
+      box-sizing: border-box;
+    }
+
+    /* 內容容器：控制寬度與行高來製造壓迫感 */
+    .content {
+      max-width: var(--content-width);
+      line-height: var(--line-height);
+      margin: 0 auto;
+      width: 100%;
+      transition: max-width 1s ease, line-height 1s ease, transform 1s ease;
+    }
+
+    h1, h2 {
+      margin-bottom: 1.5rem;
+      line-height: 1.3;
+    }
+
+    h1 { font-size: 2.5rem; text-align: center; }
+    h2 { font-size: 1.8rem; border-bottom: 2px solid currentColor; padding-bottom: 0.5rem; display: inline-block; }
+    p { font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+    /* 首頁引言區 */
+    .hero-section {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 0 20px;
+    }
+    .subtitle {
+      color: #7f8c8d;
+      font-size: 1.2rem;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-15px); }
+      60% { transform: translateY(-7px); }
+    }
+
+    /* --- 主題 1：養 (Nurture) - 預設狀態 --- */
+    body.theme-nurture {
+      --bg-color: #f8f9fa;
+      --text-color: #2c3e50;
+      --content-width: 800px;
+      --line-height: 2;
+    }
+
+    /* --- 主題 2：套 (Trap) - 空間壓縮、幽閉感 --- */
+    body.theme-trap {
+      --bg-color: #1e272e;
+      --text-color: #d2dae2;
+      --content-width: 600px;
+      --line-height: 1.6;
+    }
+    body.theme-trap .subtitle { color: #808e9b; }
+
+    /* --- 主題 3：殺 (Kill) - 極度窒息、警告色 --- */
+    body.theme-kill {
+      --bg-color: #0b0000;
+      --text-color: #ff4d4d;
+      --content-width: 450px;
+      --line-height: 1.4;
+    }
+
+    /* 故障閃爍特效 (殺階段標題) */
+    @keyframes glitch {
+      0% { text-shadow: 2px 0 0 rgba(255,0,0,0.8), -2px 0 0 rgba(0,0,255,0.8); }
+      20% { text-shadow: -2px 0 0 rgba(255,0,0,0.8), 2px 0 0 rgba(0,0,255,0.8); }
+      40% { text-shadow: 2px 0 0 rgba(255,0,0,0.8), -2px 0 0 rgba(0,0,255,0.8); }
+      60% { text-shadow: -2px 0 0 rgba(255,0,0,0.8), 2px 0 0 rgba(0,0,255,0.8); }
+      80% { text-shadow: 2px 0 0 rgba(255,0,0,0.8), -2px 0 0 rgba(0,0,255,0.8); }
+      100% { text-shadow: -2px 0 0 rgba(255,0,0,0.8), 2px 0 0 rgba(0,0,255,0.8); }
+    }
+    body.theme-kill h2 {
+      animation: glitch 0.3s infinite alternate;
+      border-color: #ff4d4d;
+    }
+
+    /* 互動按鈕設計 */
+    .trap-btn-container {
+      text-align: center;
+      margin: 3rem 0;
+    }
+    .trap-btn {
+      background-color: #ff4757;
+      color: white;
+      border: none;
+      padding: 1.2rem 2rem;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    .trap-btn:hover {
+      background-color: #ff6b81;
+      transform: scale(1.05);
+    }
+    .trap-btn:disabled {
+      background-color: #57606f;
+      color: #a4b0be;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* 鎖定的內容 */
+    .locked-area {
+      opacity: 0.1;
+      filter: blur(5px);
+      pointer-events: none;
+      transition: opacity 1.5s ease, filter 1.5s ease;
+    }
+    body.is-unlocked .locked-area {
+      opacity: 1;
+      filter: blur(0);
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body class="theme-nurture">
+
+  <main id="story-container">
+    
+    <header class="hero-section stage" data-theme="nurture">
+      <div class="content">
+        <h1>龍蝦人工智慧代理時代的台灣新青安房貸事件正在發生</h1>
+        <p>你以為自己是站在科技與時代浪潮上的衝浪客，但退潮後仔細一看，我們其實都只是別人魚塭裡，被「養、套、殺」劇本精心餵養的那群魚。這場從虛擬雲端燒到台灣實體房地產的風暴，正以極度殘酷的姿態真實上演。</p>
+        <p class="subtitle">↓ 向下滾動，進入系統...</p>
+      </div>
+    </header>
+
+    <section class="stage" data-theme="nurture">
+      <div class="content">
+        <h2>一、 讓你免費試吃到飽的 AI 工具，就是下一個準備收割的屠宰場</h2>
+        <p>現在大家都在瘋 AI 代理（AI Agents），我們開心地註冊 Cursor 幫忙寫企劃、用 n8n 串接各種自動化流程、甚至大量依賴各種外部的 AI 服務來處理每天的繁雜工作。</p>
+        <p>剛開始，這些服務就像是大賣場裡無限量供應的免費試吃，給你極大的方便跟超低的門檻，讓你覺得自己的生產力瞬間大爆發。這就是完美的<strong>「養」</strong>。</p>
+        
+        <div class="trap-btn-container">
+          <button id="trapButton" class="trap-btn">同意條款並領取免費無限 Token / 試算新青安超低月付</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="locked-area">
+      
+      <section class="stage" data-theme="trap">
+        <div class="content">
+          <h2>二、 新青安的低利糖衣，寬限期滿後的殘酷現實</h2>
+          <p>當你的工作習慣、甚至是整間公司的營運流程，已經完完全全依賴這些 AI 工具時，<strong>「套」</strong>就完成了。這時候服務商開始收網：無預警限制你的使用次數、大幅調漲每個月的訂閱費用。因為你已經無法輕易把整個工作流程「砍掉重練」，只能硬著頭皮把信用卡刷下去。</p>
+          <p>把視角切換回台灣的實體世界，「新青安房貸」背後的運作邏輯，跟這些 AI 軟體的收費套路簡直一模一樣。政策剛推出時，那精美的低利率跟長達五年的寬限期，就像是政府發送的「限時超殺優惠碼」，直接引爆了全台灣人的買房焦慮。</p>
+          <p>幾年過去，當初那批捏著大腿勉強「上車」的購屋族，現在迎來了交屋潮。這時大家才發現，銀行因為放款水位滿了開始限縮額度，原本以為可以貸好貸滿的成數大縮水，算好的自備款瞬間多出幾百萬的缺口。空間越來越小，壓力越來越大。</p>
+        </div>
+      </section>
+
+      <section class="stage" data-theme="kill">
+        <div class="content">
+          <h2>三、 歷史總是不斷重演的收割迴圈</h2>
+          <p>更可怕的還在後頭，那個名為「寬限期」的保護傘終究會到期。當只需繳利息的好日子結束，本金連同利息的龐大房貸瞬間砸下來，許多家庭每個月的現金流根本吃不消。面對繳不出錢、甚至房屋面臨法拍「斷頭」的危機，這就是血淋淋的<strong>「殺」</strong>。</p>
+          <p>從虛擬的 AI 訂閱制到實體的房地產市場，資本市場的運作邏輯從未改變。「養套殺」不是什麼意外，而是一套經過精心計算的商業陷阱。主導遊戲規則的人，總是利用資訊落差跟眼前的甜頭，讓你產生深深的依賴。</p>
+          <p>當你投入的金錢與時間成本高到無法抽身時，莊家就會無情地改變規則。不管是面對雲端上一套超級好用的軟體，還是手上那張花光積蓄換來的房屋權狀，保持清醒的獨立思考，隨時準備好退場備案，才是唯一能保護自己的生存法則。</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // 取得互動按鈕
+    const trapBtn = document.getElementById('trapButton');
+    let isUnlocked = false;
+
+    // 按鈕點擊事件：模擬被「套牢」的瞬間
+    trapBtn.addEventListener('click', () => {
+      isUnlocked = true;
+      document.body.classList.add('is-unlocked');
+      trapBtn.textContent = '已綁定信用卡 / 貸款已核准 (無法取消)';
+      trapBtn.disabled = true;
+      
+      // 點擊後強制畫面滾動到下一階段（套）
+      setTimeout(() => {
+        const trapSection = document.querySelector('[data-theme="trap"]');
+        trapSection.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    });
+
+    // 滾動偵測器：動態切換網頁佈景主題
+    const stages = document.querySelectorAll('.stage');
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -40% 0px', // 調整觸發範圍，讓文字進入視角中央時才變色
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const theme = entry.target.getAttribute('data-theme');
+          
+          // 如果還沒解鎖，就不允許進入 kill 階段的視覺
+          if (!isUnlocked && (theme === 'trap' || theme === 'kill')) {
+            return;
+          }
+
+          // 移除所有主題 class，換上當前的主題
+          document.body.classList.remove('theme-nurture', 'theme-trap', 'theme-kill');
+          document.body.classList.add(`theme-${theme}`);
+        }
+      });
+    }, observerOptions);
+
+    stages.forEach(stage => {
+      observer.observe(stage);
+    });
+  </script>
+</body>
+</html>

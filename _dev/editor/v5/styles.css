@@ -1112,12 +1112,12 @@ html, body {
 .editor-workspace.mode-split .blocks-pane { display: block; flex: 1; }
 .editor-workspace.mode-split .preview-pane { display: block; flex: 1; }
 
-/* Source View (raw .itw text) */
+.preview-pane {
+    display: none !important;
+}
+
 .source-pane {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
+    display: none !important;
 }
 
 .source-editor {
@@ -1178,39 +1178,61 @@ html, body {
 
 /* Individual Block */
 .block-card {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    overflow: hidden;
-    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--r-md);
+    overflow: visible;
+    position: relative;
+    transition: box-shadow var(--dur-fast), background var(--dur-fast);
 }
 
 .block-card:hover {
-    border-color: var(--border-hover);
+    box-shadow: 0 0 0 1px var(--border);
 }
 
 .block-card.focused {
-    border-color: var(--pri-500);
-    box-shadow: 0 0 0 2px rgba(99,102,241,0.1);
+    background: var(--surface-2);
+    box-shadow: 0 0 0 1px var(--pri-500);
 }
 
 /* SLIDE-specific card styling */
 .block-card.slide-card {
-    border-left: 3px solid var(--acc-400);
+    border: none;
+    box-shadow: var(--shadow-md);
+    background: #ffffff; /* White canvas for slides */
+    color: #111118;
+    margin-bottom: 24px;
+    padding: 32px;
 }
 
-.block-card.slide-card .block-header {
-    background: rgba(139,92,246,0.06);
+.block-card.slide-card h1, 
+.block-card.slide-card h2, 
+.block-card.slide-card h3, 
+.block-card.slide-card p, 
+.block-card.slide-card div, 
+.block-card.slide-card span {
+    color: #111118 !important;
 }
 
 .block-header {
+    position: absolute;
+    top: -28px;
+    right: 0;
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 4px 8px;
     background: var(--surface-3);
-    border-bottom: 1px solid var(--border);
-    cursor: move;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    opacity: 0;
+    transition: opacity var(--dur-fast);
+    z-index: 10;
+}
+
+.block-card:hover .block-header,
+.block-card.focused .block-header {
+    opacity: 1;
 }
 
 .block-drag-handle {
@@ -1222,17 +1244,11 @@ html, body {
 .block-drag-handle:active { cursor: grabbing; }
 
 .block-type-label {
-    font-size: 10px;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
+    display: none; /* Hide dev-centric tag */
 }
 
 .block-namespace {
-    font-size: 10px;
-    color: var(--n-500);
-    font-family: var(--font-mono);
+    display: none; /* Hide dev-centric namespace */
 }
 
 /* Layout selector in SLIDE header (WS-4) */
@@ -1252,11 +1268,8 @@ html, body {
 .layout-selector:focus { border-color: var(--pri-400); }
 
 .block-actions {
-    margin-left: auto;
     display: flex;
     gap: 4px;
-    opacity: 0;
-    transition: opacity var(--dur-fast);
 }
 
 .block-card:hover .block-actions { opacity: 1; }

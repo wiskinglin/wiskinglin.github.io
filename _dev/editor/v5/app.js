@@ -456,25 +456,10 @@ const ToolbarManager = {
             DOM.toolbar.appendChild(group);
         }
 
-        // Spacer + View switch
+        // Spacer
         const spacer = document.createElement('div');
         spacer.className = 'tb-spacer';
         DOM.toolbar.appendChild(spacer);
-
-        const viewSwitch = document.createElement('div');
-        viewSwitch.className = 'view-switch';
-        viewSwitch.innerHTML = `
-            <button class="view-switch-btn ${AppState.viewMode === 'blocks' ? 'active' : ''}" id="view-blocks" title="區塊視圖">
-                <i class="fa-solid fa-cubes"></i> 區塊
-            </button>
-            <button class="view-switch-btn ${AppState.viewMode === 'source' ? 'active' : ''}" id="view-source" title="原始碼">
-                <i class="fa-solid fa-code"></i> 原始碼
-            </button>
-            <button class="view-switch-btn ${AppState.viewMode === 'split' ? 'active' : ''}" id="view-split" title="分割預覽">
-                <i class="fa-solid fa-columns"></i> 分割
-            </button>
-        `;
-        DOM.toolbar.appendChild(viewSwitch);
 
         // Wire toolbar events
         this._wireToolbarEvents();
@@ -503,10 +488,6 @@ const ToolbarManager = {
     },
 
     _wireToolbarEvents() {
-        // View mode buttons
-        document.getElementById('view-blocks')?.addEventListener('click', () => setViewMode('blocks'));
-        document.getElementById('view-source')?.addEventListener('click', () => setViewMode('source'));
-        document.getElementById('view-split')?.addEventListener('click', () => setViewMode('split'));
 
         // All toolbar buttons
         DOM.toolbar.querySelectorAll('.tb-btn[data-action]').forEach(btn => {
@@ -571,6 +552,9 @@ function renderBlockCards() {
     DOM.blocksContainer.innerHTML = '';
 
     AppState.blocks.forEach((block, index) => {
+        // Skip rendering raw data/metadata blocks for normal users
+        if (block.type === 'JSON' || block.type === 'THEME') return;
+        
         const card = createBlockCard(block, index);
         DOM.blocksContainer.appendChild(card);
     });
@@ -650,19 +634,21 @@ function createBlockCard(block, index) {
     // Focus management
     card.addEventListener('click', () => setActiveBlock(block.id));
 
-    // Wire up textarea edits
-    const textarea = card.querySelector('textarea');
-    if (textarea) {
-        textarea.addEventListener('input', () => {
-            block.content = textarea.value;
+    // Wire up WYSIWYG contenteditable edits
+    const editable = card.querySelector('.rendered-content[contenteditable="true"]');
+    if (editable) {
+        editable.addEventListener('input', () => {
+            // Basic cleanup of placeholder
+            let val = editable.innerHTML;
+            if (val.includes('placeholder')) val = editable.innerText;
+            block.content = val;
             markDirty();
-            updateOutlinePanel();
             if (AppState.viewMode === 'split') {
                 syncBlocksToSource();
                 updatePreview();
             }
         });
-        textarea.addEventListener('focus', () => setActiveBlock(block.id));
+        editable.addEventListener('focus', () => setActiveBlock(block.id));
     }
 
     // Wire up DataGrid cell edits (WS-6)
@@ -704,18 +690,19 @@ function renderBlockContent(block) {
 }
 
 function renderMarkdownBlock(block) {
-    if (block.id === AppState.activeBlockId) {
-        return `<textarea spellcheck="false">${escapeHtml(block.content)}</textarea>`;
-    }
     try {
-        let rendered = marked.parse(block.content || '');
+        let contentToParse = block.content || '';
+        let rendered = marked.parse(contentToParse);
         rendered = sanitize(rendered);
         rendered = resolveItwImages(rendered);
         // Apply data-highlight markers
         rendered = rendered.replace(/\{\{(\d[\d,.]*)\}\}/g, '<span class="data-highlight">$1</span>');
-        return `<div class="rendered-content">${rendered}</div>`;
+        
+        // Return a true WYSIWYG contenteditable area
+        if (!rendered.trim()) rendered = '<p class="placeholder" style="color: #9e9eb8; font-style: italic;">點擊此處開始輸入內容...</p>';
+        return `<div class="rendered-content" contenteditable="true" data-block-id="${block.id}" style="outline: none; min-height: 2em;">${rendered}</div>`;
     } catch {
-        return `<textarea spellcheck="false">${escapeHtml(block.content)}</textarea>`;
+        return `<div class="rendered-content" contenteditable="true" data-block-id="${block.id}">${escapeHtml(block.content)}</div>`;
     }
 }
 
@@ -770,7 +757,13 @@ function renderJSONBlock(block) {
 }
 
 function renderHTMLBlock(block) {
-    return `<textarea spellcheck="false">${escapeHtml(block.content)}</textarea>`;
+    let sanitized = block.content || '';
+    if (typeof DOMPurify !== 'undefined') {
+        // Configure DOMPurify to allow specific classes if needed, or just sanitize
+        sanitized = DOMPurify.sanitize(sanitized, { ALLOWED_TAGS: ['div', 'span', 'b', 'i', 'p', 'br', 'img', 'a', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'tbody', 'thead'], KEEP_CONTENT: true });
+    }
+    if (!sanitized.trim()) sanitized = '<p class="placeholder" style="color: #9e9eb8; font-style: italic;">點擊以編輯自訂組件內容...</p>';
+    return `<div class="rendered-content" contenteditable="true" data-block-id="${block.id}" style="outline: none; min-height: 2em; padding: 10px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 4px;">${sanitized}</div>`;
 }
 
 function renderIMGBlock(block) {
@@ -1023,6 +1016,9 @@ function updateOutlinePanel() {
     let slideIdx = 0;
 
     AppState.blocks.forEach((block, index) => {
+        // Skip rendering raw data/metadata blocks for normal users
+        if (block.type === 'JSON' || block.type === 'THEME') return;
+
         const item = document.createElement('div');
         item.className = `block-list-item${block.id === AppState.activeBlockId ? ' active' : ''}`;
         item.draggable = true;
@@ -1030,6 +1026,16 @@ function updateOutlinePanel() {
         const icon = getBlockIcon(block.type);
         const label = getBlockLabel(block);
         const typeTag = block.type.toLowerCase();
+        
+        // Map types to user-friendly labels
+        const typeNameMap = {
+            'MD': '文字',
+            'SLIDE': '頁面',
+            'CSV': '表格',
+            'HTML': '原始碼',
+            'IMG': '圖片'
+        };
+        const humanType = typeNameMap[block.type] || block.type;
 
         let beatHtml = '';
         if (isDeck && block.type === 'SLIDE' && slideIdx < beats.length) {
@@ -1041,7 +1047,7 @@ function updateOutlinePanel() {
             <i class="${icon}"></i>
             <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(label)}</span>
             ${beatHtml}
-            <span class="block-type-tag ${typeTag}">${block.type}</span>
+            <span class="block-type-tag ${typeTag}">${humanType}</span>
         `;
 
         item.addEventListener('click', () => {
@@ -1127,11 +1133,21 @@ function getBlockIcon(type) {
 }
 
 function getBlockLabel(block) {
-    if (block.namespace) return `${block.type}:${block.namespace}`;
-    const firstLine = (block.content || '').split('\n')[0].trim();
+    const typeNameMap = {
+        'MD': '文字',
+        'SLIDE': '頁面',
+        'CSV': '表格',
+        'HTML': '組件',
+        'IMG': '圖片'
+    };
+    const humanType = typeNameMap[block.type] || block.type;
+    
+    if (block.namespace) return `${humanType} ${block.namespace}`;
+    
+    const firstLine = (block.content || '').replace(/<[^>]+>/g, '').split('\n')[0].trim();
     if (firstLine.startsWith('#')) return firstLine.replace(/^#+\s*/, '');
     if (firstLine.length > 30) return firstLine.substring(0, 30) + '...';
-    return firstLine || `(${block.type} 區塊)`;
+    return firstLine || `(空白${humanType})`;
 }
 
 
