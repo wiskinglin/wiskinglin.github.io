@@ -1,6 +1,11 @@
 # Personal Notes
 
 ## 2026-W18 (2026/04/27 - 2026/05/03)
+### 2026-04-27 (Mon) 16:51
+📖 **[Anime.js | JavaScript Animation Engine](https://animejs.com/)**
+- **摘要**: 一個輕量且功能強大的 JavaScript 動畫引擎。支援 CSS 屬性、SVG、DOM 屬性與 JS 物件動畫，具備直觀的 API、Timeline 序列控制、滾動觀測器 (Scroll Observer) 以及 SVG 形狀變形 (Morphing) 等專業功能。
+
+
 ### 2026-04-27 (Mon) 11:30
 📖 **[facefusion/facefusion: Industry leading face manipulation platform](https://github.com/facefusion/facefusion)**
 - **摘要**: FaceFusion 是一個頂尖的開源人臉操作平台，整合了換臉 (FaceSwap)、唇形同步 (Lip-sync) 與臉部增強等技術。支援高效的多執行緒與顯示卡加速，並提供直觀的安裝器與完整文件，是目前開發最活躍且功能最強大的開源深偽 (Deepfake) 工具之一。
