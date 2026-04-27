@@ -1,131 +1,123 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iTW Editor v5 — WYSIWYG Canvas</title>
-    
+    <title>iTW Editor V5</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css?v=2">
 </head>
-<body>
+<body class="dark-theme">
     <div id="app" class="app-shell">
-        <!-- ======== HEADER ======== -->
-        <header class="app-header">
-            <div class="header-left">
-                <div class="header-logo">iTW</div>
-                <div class="header-title-group">
-                    <h1 class="header-app-name">iTW Editor</h1>
-                    <span class="header-version">v5.0</span>
+        <header class="glass-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <div class="logo-blob"></div>
+                    <span class="logo-text-inner">V5</span>
                 </div>
+                <h1 class="logo-text">iTW <span>Editor</span></h1>
             </div>
-
-            <div class="header-center">
-                <div class="file-pill">
-                    <input type="text" id="file-name" value="Untitled Document" spellcheck="false">
+            
+            <div class="document-title-area">
+                <div class="title-wrapper">
+                    <input type="text" id="doc-title" value="Untitled Intelligence" spellcheck="false" class="doc-title-input">
+                    <div class="title-underline"></div>
                 </div>
+                <span class="status-indicator saved" id="save-status"><i class="fa-solid fa-cloud"></i> Synced</span>
             </div>
-
-            <div class="header-right">
-                <button class="action-btn secondary" id="btn-new" title="New Document">
-                    <i class="fa-solid fa-file"></i> 新增
-                </button>
-                <button class="action-btn primary" id="btn-save" title="Save Document">
-                    <i class="fa-solid fa-floppy-disk"></i> 儲存
+            
+            <div class="header-actions">
+                <button class="btn-icon" title="Toggle Theme" id="theme-toggle"><i class="fa-solid fa-moon"></i></button>
+                <button class="btn-primary" id="export-btn">
+                    <span>Present</span>
+                    <i class="fa-solid fa-play"></i>
                 </button>
             </div>
         </header>
 
-        <!-- ======== MAIN BODY ======== -->
-        <div class="app-body">
-            
-            <!-- ── LEFT TOOLBAR (Tools) ── -->
-            <nav class="tool-bar">
-                <div class="tool-group-title">工具</div>
-                <button class="tool-btn active" data-tool="select" title="選取 (V)">
-                    <i class="fa-solid fa-arrow-pointer"></i>
-                    <span>選取</span>
-                </button>
-                <button class="tool-btn" id="btn-add-text" data-tool="text" title="新增文字方塊 (T)">
-                    <i class="fa-solid fa-font"></i>
-                    <span>文字</span>
-                </button>
-                <button class="tool-btn" id="btn-add-shape" data-tool="shape" title="新增矩形 (R)">
-                    <i class="fa-regular fa-square"></i>
-                    <span>形狀</span>
-                </button>
+        <main class="app-main">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar glass-sidebar">
+                <div class="nav-group">
+                    <button class="nav-item active" data-tool="text" title="Document Mode">
+                        <i class="fa-solid fa-align-left"></i>
+                        <span class="tooltip">Document</span>
+                    </button>
+                    <button class="nav-item" data-tool="slide" title="Presentation Mode">
+                        <i class="fa-solid fa-chalkboard"></i>
+                        <span class="tooltip">Deck</span>
+                    </button>
+                    <button class="nav-item" data-tool="table" title="DataGrid Mode">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span class="tooltip">DataGrid</span>
+                    </button>
+                    <button class="nav-item" data-tool="image" title="Visual Mode">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span class="tooltip">Visual</span>
+                    </button>
+                </div>
+                
+                <div class="nav-group bottom">
+                    <button class="nav-item" title="Settings">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
             </nav>
 
-            <!-- ── EDITOR MAIN (Canvas) ── -->
-            <main class="editor-main">
-                <div class="canvas-wrapper" id="canvas-wrapper">
-                    <!-- The WYSIWYG Canvas -->
-                    <div class="canvas-board" id="canvas-board">
-                        <!-- Elements will be injected here -->
+            <!-- WYSIWYG Canvas -->
+            <div class="canvas-area" id="canvas-area">
+                <!-- Background ambient glow -->
+                <div class="ambient-glow glow-1"></div>
+                <div class="ambient-glow glow-2"></div>
+
+                <div class="canvas-document" id="canvas-document">
+                    <div class="itw-block text-block" contenteditable="true" data-type="MD">
+                        <h1 class="block-title">Visionary Thoughts</h1>
+                        <p class="block-text">Start typing your ideas here. This canvas is entirely WYSIWYG, focusing on pure creation.</p>
                     </div>
                 </div>
-            </main>
+            </div>
 
-            <!-- ── RIGHT PANEL (Properties) ── -->
-            <aside class="properties-panel" id="properties-panel">
-                <div class="panel-header">屬性設定</div>
-                <div class="panel-content" id="properties-content">
-                    <div class="empty-state">
-                        <i class="fa-regular fa-object-ungroup"></i>
-                        <p>請選取畫布上的元素</p>
-                    </div>
-                    
-                    <!-- Dynamic property controls will go here -->
-                    <div class="prop-group hidden" id="prop-text-group">
-                        <label>文字內容</label>
-                        <textarea id="prop-text-content" rows="3"></textarea>
-                        
-                        <label>字體大小</label>
-                        <input type="number" id="prop-font-size" min="8" max="144" value="16">
-                        
-                        <label>文字顏色</label>
-                        <input type="color" id="prop-color" value="#000000">
-                    </div>
-                    
-                    <div class="prop-group hidden" id="prop-shape-group">
-                        <label>背景顏色</label>
-                        <input type="color" id="prop-bg-color" value="#e0e0e0">
-                    </div>
-                    
-                    <div class="prop-group hidden" id="prop-common-group">
-                        <div class="row">
-                            <div class="col">
-                                <label>X 座標</label>
-                                <input type="number" id="prop-x">
-                            </div>
-                            <div class="col">
-                                <label>Y 座標</label>
-                                <input type="number" id="prop-y">
-                            </div>
+            <!-- AI Assistant Panel (Slide-out) -->
+            <aside class="ai-panel glass-panel" id="ai-panel">
+                <div class="ai-header">
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> AI Engine</h3>
+                    <button class="btn-icon" id="close-ai"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="ai-body">
+                    <div class="ai-module">
+                        <label>Web Extraction (Jina)</label>
+                        <div class="input-group">
+                            <input type="text" id="ai-url-input" placeholder="https://..." class="glass-input">
+                            <button id="ai-extract-btn" class="btn-primary small"><i class="fa-solid fa-download"></i></button>
                         </div>
-                        <div class="row">
-                            <div class="col">
-                                <label>寬度</label>
-                                <input type="number" id="prop-w">
-                            </div>
-                            <div class="col">
-                                <label>高度</label>
-                                <input type="number" id="prop-h">
-                            </div>
-                        </div>
-                        
-                        <button class="action-btn danger mt-3" id="btn-delete-element" style="width: 100%;">
-                            <i class="fa-solid fa-trash"></i> 刪除元素
-                        </button>
+                    </div>
+                    <div class="ai-module">
+                        <label>Chat / Generation</label>
+                        <textarea id="ai-prompt-input" rows="4" placeholder="Ask AI to generate or summarize content..." class="glass-input"></textarea>
+                        <button id="ai-gen-btn" class="btn-primary w-full" style="margin-top: 8px;"><i class="fa-solid fa-bolt"></i> Generate</button>
+                    </div>
+                    <div class="ai-result" id="ai-result">
+                        <!-- AI stream output goes here -->
                     </div>
                 </div>
             </aside>
-        </div>
+        </main>
     </div>
-    <script src="app.js"></script>
+
+    <!-- Floating Format Toolbar -->
+    <div id="format-toolbar" class="format-toolbar glass-panel hidden">
+        <button data-format="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+        <button data-format="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+        <div class="divider"></div>
+        <button data-format="h1" title="Heading 1">H1</button>
+        <button data-format="h2" title="Heading 2">H2</button>
+    </div>
+
+    <script src="app.js?v=2"></script>
 </body>
 </html>
