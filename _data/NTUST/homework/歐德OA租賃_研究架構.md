@@ -171,62 +171,116 @@
 
 ---
 
-## ⬜ 文獻搜尋紀錄
+## 文獻搜尋紀錄（文獻/ 資料夾 — 26 篇分析）
 
-> 以下為 Google Scholar 搜尋後整理的候選文獻。請到 WOS / 台科大圖書館下載全文，確認是否有完整的操作型定義與量表。
+> 目標架構：PSS/服務化 (IV) → 組織採購行為 (MV) → 採購意願 (DV)，知覺風險 (MoV)
+> 篩選標準：有完整 IV/DV/MV/MoV + 假設有引用 + 有操作型定義與量表 + 1990年後 + Q1/Q2
 
-### 候選文獻 1 ⭐（最接近）
+### 🟢 高度適用（有完整研究架構 + 量表 + 假設引用）
 
-- **論文**：Bağcı, R. B. (2026). Investigating Price Premiums for Sustainable Product–Service Systems: A Behavioral Reasoning Perspective on the Perceived Benefits and Switching Costs. *Business Strategy and the Environment*.
-- **期刊**：Business Strategy and the Environment (IF: 13.4, **Q1**)
-- **方法**：SEM 結構方程模型，235 位企業經理人問卷
+#### 候選 1 ⭐：Online Pharmacy — UTAUT + Perceived Trust as Moderator
+- **論文**：Saraswat, S. (2025). The moderating role of perceived trust in predicting the adoption intention of consumers toward online pharmacies. *IJPHM*, 19(4).
 - **研究架構**：
-  - **IV**: Sustainability Orientation（永續導向）→ 可類比為「PSS/服務化方案類型」
-  - **MV**: Customer Attitude（顧客態度）→ 作為中介
-  - **DV**: Willingness to Pay Premium（付費意願）→ 可類比為「採購意願」
-  - **MoV**: Perceived Benefits / Switching Costs（知覺利益/轉換成本）→ 可類比為「知覺風險」
-- **優點**：✅ B2B 情境 ✅ PSS 主題 ✅ SEM 實證 ✅ Q1 期刊 ✅ 有完整假設引用
-- **需確認**：⬜ 操作型定義是否完整 ⬜ 量表問項是否具體列出
-- **搜尋用關鍵字**：`"product service system" "perceived benefits" "switching costs" "willingness to pay"`
-
-### 候選文獻 2
-
-- **論文**：Lee, S. E., Jung, H. J., & Lee, K. H. (2021). Motivating Collaborative Consumption in Fashion: Consumer Benefits, Perceived Risks, Service Trust, and Usage Intention of Online Fashion Rental Services. *Sustainability*, 13(4), 1804.
-- **期刊**：Sustainability (MDPI) (IF: 3.9, **Q1/Q2**)
-- **方法**：問卷調查，SEM 分析
-- **研究架構**：
-  - **IV**: Perceived Benefits（知覺利益：功能性/享樂性/經濟性）
-  - **MV**: Service Trust（服務信任）→ 中介
-  - **DV**: Usage Intention（使用意願）→ 類比「採購意願」
-  - **MoV**: Perceived Risks（知覺風險：品質風險/財務風險/社會風險）→ 干擾
-- **優點**：✅ 租賃模式 ✅ 知覺風險作為變數 ✅ 有假設引用 ✅ 量表明確
-- **缺點**：❌ B2C 消費者端（非 B2B 組織採購）
-- **需確認**：⬜ 量表問項格式是否完整
-- **搜尋用關鍵字**：`"fashion rental" "perceived risk" "usage intention" "service trust"`
-
-### 候選文獻 3
-
-- **論文**：Lee, S. H. N., & Chow, P. S. (2020). Investigating consumer attitudes and intentions toward online fashion renting retailing. *Journal of Retailing and Consumer Services*, 52, 101892.
-- **期刊**：Journal of Retailing and Consumer Services (IF: 10.4, **Q1**)
-- **方法**：問卷調查，PLS-SEM
-- **研究架構**：
-  - **IV**: Consumer Motivations（消費者動機：環境意識/時尚意識/價格意識）
-  - **MV**: Attitude（態度）→ 中介
+  - **IV**: Effort Expectancy, Performance Expectancy, Social Influence
+  - **MV**: Consumer Perception / Attitude（消費者態度）— 中介
   - **DV**: Adoption Intention（採用意願）
-  - **MoV**: Perceived Risk（知覺風險）→ 可能作為干擾
-- **優點**：✅ 租賃主題 ✅ Q1 高 IF 期刊 ✅ PLS-SEM 實證 ✅ 態度作為中介
-- **缺點**：❌ B2C 端 ❌ 時尚產業（但架構可遷移）
-- **需確認**：⬜ 量表問項 ⬜ 假設引用完整性
-- **搜尋用關鍵字**：`"fashion renting" "attitude" "adoption intention" "perceived risk"`
+  - **MoV**: **Perceived Trust（知覺信任）— 干擾變數** ✅
+- **假設**：H1-H8+，包含干擾效果假設，每個假設都有文獻引用
+- **量表**：SEM 結構方程，有 CFA 驗證
+- **適用評估**：
+  - ✅ **有明確的干擾變數**
+  - ✅ 有 UTAUT 理論基礎，假設皆有引用
+  - ✅ 2025年，最新
+  - ✅ Perceived Trust 與 Perceived Risk 概念互為正反面，可對應轉換
+  - ⚠️ 非 B2B 情境，但架構可遷移
 
-### 建議搜尋方向（進一步）
+#### 候選 2 ⭐：GenAI Museum — Value-based Adoption Model
+- **論文**：Hao, X., Xu, J., & Wang, Y. (2025). How generative AI shapes user perceived value and adoption intention in digital museum experiences. *npj Heritage Science*, 13, 608.
+- **研究架構**：
+  - **IV**: 10 個前因變數（含 Perceived Risk, Perceived Usefulness 等）
+  - **MV**: **Perceived Value（知覺價值）— 中介** ✅
+  - **DV**: **Adoption Intention（採用意願）** ✅
+  - **MoV**: Perceived Innovativeness + Interactivity — 干擾 PV→AI
+- **假設**：H1-H13，每個都有文獻引用
+- **量表**：50 題 5-point Likert，所有量表皆引用自既有研究
+- **適用評估**：
+  - ✅ 完整中介路徑：前因 → PV(MV) → AI(DV)
+  - ✅ 有干擾效果：MoV 干擾 PV→AI 關係
+  - ✅ 量表最完整（50 題，全部有引用來源）
+  - ✅ 2025年
+  - ⚠️ Perceived Risk 在此文是前因變數（→PV），不是干擾變數
+  - ⚠️ 非 B2B 情境
 
-以下期刊常發 PSS/服務化 + B2B 採購行為的實證研究，可到 WOS 用關鍵字組合搜尋：
+#### 候選 3：Fintech Adoption — Trust as Mediator in Cyber Risk
+- **論文**：(2025). Decentralized fintech platforms adoption intention in cyber risk environment among GenZ. *Computers in Human Behavior Reports*, 18, 100687.
+- **研究架構**：
+  - **IV**: Digital Literacy, Social Influence, Perceived Security, Risk Tolerance
+  - **MV**: **Trust in Technology — 中介** ✅
+  - **DV**: **Behavioral Intention（採用意願）** ✅
+  - **MoV**: ❌ 無明確干擾變數
+- **假設**：H1-H7，H7 為中介效果，皆有引用
+- **適用評估**：
+  - ✅ 知覺風險/安全是核心主題
+  - ✅ Trust 中介效果完整
+  - ✅ SEM 驗證
+  - ❌ **缺少 MoV（干擾變數）**
 
-| 期刊名稱 | IF | 排名 | 建議搜尋關鍵字組合 |
+#### 候選 4：先前搜尋 — Fashion Rental + Perceived Risk
+- **論文**：Lee, S. E., Jung, H. J., & Lee, K. H. (2021). Motivating Collaborative Consumption in Fashion. *Sustainability*, 13(4), 1804.
+- **研究架構**：
+  - **IV**: Perceived Benefits（功能性/享樂性/經濟性）
+  - **MV**: Service Trust（服務信任）— 中介
+  - **DV**: Usage Intention（使用意願）
+  - **MoV**: **Perceived Risks（知覺風險：品質/財務/社會）— 干擾** ✅
+- **適用評估**：
+  - ✅ **租賃模式 + 知覺風險作為干擾變數** — 最符合我們架構
+  - ✅ 量表明確
+  - ⚠️ B2C 消費者端
+  - 需確認：⬜ 是否已下載全文
+
+#### 候選 5：先前搜尋 — PSS Willingness to Pay Premium
+- **論文**：Bağcı, R. B. (2026). Investigating Price Premiums for Sustainable PSS. *Business Strategy and the Environment*.
+- **研究架構**：IV(永續導向) → MV(顧客態度) → DV(付費意願)，MoV(知覺利益/轉換成本)
+- **適用評估**：
+  - ✅ B2B + PSS + SEM + Q1 (IF:13.4)
+  - 需確認：⬜ 是否已下載全文
+
+
+### 🟡 部分適用（可作為 V推導或理論基礎的引用）
+
+| # | 論文 | 可用於 | 限制 |
 |:---|:---|:---|:---|
-| Industrial Marketing Management | 10.3 | Q1 | `"servitization" "adoption" "perceived risk" "B2B"` |
-| Journal of Business & Industrial Marketing | 4.2 | Q1 | `"product service system" "organizational buying" "purchase intention"` |
-| Journal of Cleaner Production | 11.1 | Q1 | `"PSS" "adoption" "perceived value" "perceived risk" survey` |
-| Journal of Business Research | 11.3 | Q1 | `"servitization" "perceived risk" "adoption intention" mediating` |
-| Service Business | 3.4 | Q2 | `"servitization" "B2B" "customer adoption" "risk"` |
+| 6 | PSS for office furniture (barriers & opportunities) | V推導 — 辦公家具 PSS 背景 | 無實證架構 |
+| 7 | Access-Based Consumption (Car Sharing) | IV 理論 — 使用權消費定義 | 質性研究 |
+| 8 | PSS for Furniture (Literature Review) | V推導 — PSS+家具文獻 | 文獻回顧 |
+| 9 | OBB - Integrative Framework (Johnston 1996) | MV 理論 — 組織採購行為框架 | 無量表 |
+| 10 | General Model for OBB (Webster & Wind 1972) | MV 理論 — OBB 經典模型 | 無操作型定義 |
+| 11 | Circular business models for PSS | IV 背景 — PSS 分類 | 無實證 |
+| 12 | Drivers of sustainability (green buying) | 架構參考 — TPB + 知覺風險 | 主題距離遠 |
+| 13 | ChatGPT adoption in higher education | 架構參考 — TAM + adoption | 非 PSS |
+| 14 | OBB in the digital era | 背景 — 數位化 OBB | 主題為 CSR |
+
+### 🔴 不適用（架構或主題不符）
+
+A Model of Industrial Buyer Behavior (1973)、Advancing OBB research、AI in procurement、Environmental topics survey、Supply chain stakeholders、Designing sustainable PSS for furniture (設計方法論)、QFD for PSS、Moving to sustainable servitization、OBB in new millennium、PSS review for secondary data、PSS in photovoltaic、Special Section OBB Introduction、Digitization impact on buying process、OBB across cultures — 共 14 篇，因缺少實證架構/量表或主題不符而排除。
+
+
+### 📊 綜合建議
+
+| 排序 | 論文 | 最大優勢 | 需補強 |
+|:---|:---|:---|:---|
+| **1st** | 候選 4 (Fashion Rental) | 知覺風險作為干擾變數 + 租賃主題 | 需下載全文確認量表 |
+| **2nd** | 候選 1 (Online Pharmacy) | 干擾變數最明確 + 假設最完整 | 非租賃主題 |
+| **3rd** | 候選 2 (GenAI Museum) | 量表最完整 (50題) + 中介路徑清晰 | PR 不是干擾而是前因 |
+| **4th** | 候選 5 (PSS Premium) | B2B + PSS + Q1 | 需下載全文 |
+
+
+---
+
+## 📎 參考資料
+
+- **作業規範**：`reference/作業規範.md`
+- **今周刊報導**：`reference/今周刊歐德家具.md`
+- **Word 繳交檔**：`Week7 團體作業2_King.docx`
+- **已下載文獻**：`文獻/` 資料夾（26 篇）
+- **候選文獻摘要**：`參考內容.md`
