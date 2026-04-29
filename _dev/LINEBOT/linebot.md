@@ -153,17 +153,74 @@ if __name__ == "__main__":
 
 ---
 
-## 階段三：穿透與設定 (Tailscale + LINE)
+## 階段三：環境穿透與 LINE 平台綁定 (詳細步驟)
 
-1.  **啟動 Funnel**：
+本階段是讓外部的 LINE 伺服器能成功連線到您家裡電腦的關鍵。
+
+### 1. 使用 Tailscale Funnel 開放對外通道
+Tailscale Funnel 能將本機的 `localhost:5000` 變成一個具備 HTTPS 的公網網址。
+
+1.  **檢查狀態**：確認電腦右下角的工作列中，Tailscale 已登入且顯示為 `Connected`。
+2.  **執行穿透指令**：
+    開啟一個新的終端機 (PowerShell 或 CMD)，輸入以下指令並保持視窗開啟：
     ```bash
     tailscale funnel 5000
     ```
-    取得對外網址（例如：`https://msi.tail7921f2.ts.net`）。
+3.  **確認網址**：
+    執行後，畫面上會出現一行 `https://[你的電腦名].[隨機編號].ts.net/`。
+    *   這就是您的 **公開伺服器網址**。
+    *   請嘗試將此網址貼到瀏覽器，若看到畫面上出現 `404 Not Found` (這是來自 Flask 的正確回應)，代表穿透已成功。
+4.  **注意**：此終端機視窗**不可關閉**，否則連線會中斷。
 
-2.  **LINE Webhook 設定**：
-    *   在 LINE Developers 後台將 Webhook URL 設為：`https://你的網址.ts.net/callback`。
-    *   點擊 **Verify** 確認連線成功。
+---
+
+### 2. LINE Developers Console 關鍵設定
+請開啟瀏覽器並登入 [LINE Developers Console](https://developers.line.biz/console/)。
+
+#### A. 取得與設定金鑰 (填入 app.py)
+1.  點擊進入您的 **Messaging API Channel**。
+2.  **Channel Secret**：
+    *   切換到 **Basic settings** 分頁。
+    *   往下捲動找到 `Channel secret`，點擊旁邊的複製按鈕。
+    *   填入 `app.py` 中的 `LINE_CHANNEL_SECRET`。
+3.  **Channel Access Token**：
+    *   切換到 **Messaging API** 分頁。
+    *   捲動到最底部的 `Channel access token`。
+    *   若為空，請點擊 **Issue** 產生；若已有，請點擊複製。
+    *   填入 `app.py` 中的 `LINE_CHANNEL_ACCESS_TOKEN`。
+4.  **重新啟動程式**：儲存 `app.py` 後，重新執行 `python app.py` 確保金鑰生效。
+
+#### B. 配置 Webhook (連通測試)
+1.  回到 **Messaging API** 分頁，找到 **Webhook URL** 欄位。
+2.  點擊 **Edit** 按鈕。
+3.  **填寫格式**：將您的 Tailscale 網址完整貼上，並在結尾加上 `/callback`。
+    *   範例：`https://msi.tail7921f2.ts.net/callback`
+4.  點擊 **Update** 儲存。
+5.  **重要開關**：在 Webhook URL 下方的 **Use webhook** 開關，請確認已切換為 **開啟 (綠色)**。
+6.  **連通測試**：點擊 **Verify** 按鈕。
+    *   若顯示 **Success**：代表 LINE 已經找到您的電腦，連線成功！
+    *   若顯示 **Error 500**：請檢查 `python app.py` 是否有錯誤訊息。
+    *   若顯示 **Error 404**：請檢查 Webhook URL 是否有漏打 `/callback`。
+
+---
+
+### 3. 關閉 LINE 預設自動回覆 (避免干擾)
+為了讓您的 AI 或儲存系統看起來更專業，建議關閉 LINE 官方預設的「罐頭回應」：
+1.  在 **Messaging API** 分頁中，找到 **LINE Official Account features** 區塊。
+2.  點擊 **Edit** 進入 **LINE Official Account Manager**。
+3.  在左側選單進入 **回應設定** (Response settings)：
+    *   **回應模式**：設為 `聊天機器人 (Bot)`。
+    *   **自動回應訊息**：設為 `停用`。
+    *   **Webhook**：設為 `啟用`。
+
+---
+
+## 測試與資料驗證
+
+現在，請拿出手機傳送訊息給您的官方帳號：
+1.  **傳送文字**：傳送 "你好，這是測試"，然後檢查 `data/linebot_records.db`。
+2.  **傳送圖片**：傳送一張照片，檢查本機 `data/images/` 資料夾是否出現對應的 `.jpg` 檔案。
+3.  **傳送網址**：傳送 `https://www.google.com`，驗證資料庫是否單獨提取了該網址。
 
 ---
 
