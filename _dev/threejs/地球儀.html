@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式 3D 地球儀 (Three.js)</title>
+    <!-- 引入 Google Fonts 以提升質感 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #050505;
+            font-family: 'Inter', sans-serif;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            cursor: grab;
+        }
+        #canvas-container:active {
+            cursor: grabbing;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #00ffcc;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .overlay {
+            position: absolute;
+            top: 30px;
+            left: 40px;
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            z-index: 5;
+        }
+        .overlay h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .overlay p {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 300;
+            opacity: 0.7;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+        .info-panel {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            pointer-events: none;
+            text-align: right;
+            font-weight: 300;
+        }
+        .info-panel span {
+            display: inline-block;
+            margin-left: 15px;
+        }
+        .info-panel .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+        <span>載入高解析度地球資源中...</span>
+    </div>
+    
+    <div class="overlay">
+        <h1>Global Network</h1>
+        <p>互動式 3D 地球儀。使用滑鼠拖曳進行旋轉，滾輪縮放視角。發光標記代表關鍵資料節點。</p>
+    </div>
+
+    <div class="info-panel">
+        <div><span class="dot" style="background: #00ffcc;"></span> 主要節點 (Taipei, Tokyo)</div>
+        <div><span class="dot" style="background: #ff3366;"></span> 次要節點 (New York)</div>
+        <div><span class="dot" style="background: #ffcc00;"></span> 歐洲節點 (London)</div>
+        <div><span class="dot" style="background: #9933ff;"></span> 大洋洲節點 (Sydney)</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <!-- 支援 ES Modules 的 Polyfill (適用舊瀏覽器) -->
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    
+    <!-- 設定 Import Map，從 unpkg 匯入 Three.js 核心與附加元件 -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. 基本場景設置
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        
+        // 稍微帶點深藍的宇宙背景
+        scene.background = new THREE.Color(0x020205);
+
+        // 設置相機
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 20); // 稍微從上往下看
+
+        // 設置渲染器
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        // 設定較為柔和的色調對映
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        container.appendChild(renderer.domElement);
+
+        // 2. 燈光設置
+        // 環境光：提供基本的暗部照明，避免背光處全黑
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.05);
+        scene.add(ambientLight);
+
+        // 方向光：模擬太陽光，產生晝夜交替感與陰影
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 3.0);
+        directionalLight.position.set(10, 3, 5); 
+        scene.add(directionalLight);
+
+        // 稍微補一個背光，讓暗部也有一點立體感
+        const backLight = new THREE.DirectionalLight(0x3366ff, 0.3);
+        backLight.position.set(-10, -3, -5);
+        scene.add(backLight);
+
+        // 3. 地球與宇宙模型建立
+        const earthGroup = new THREE.Group();
+        scene.add(earthGroup);
+
+        const radius = 5;
+        const segments = 64; // 提高細緻度
+        const geometry = new THREE.SphereGeometry(radius, segments, segments);
+
+        // 紋理加載器
+        const textureLoader = new THREE.TextureLoader();
+        // 使用 Three.js 官方範例的可靠貼圖
+        const textureBaseUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/';
+        
+        // 平行載入所有貼圖
+        Promise.all([
+            textureLoader.loadAsync(textureBaseUrl + 'earth_atmos_2048.jpg'),
+            textureLoader.loadAsync(textureBaseUrl + 'earth_specular_2048.jpg'),
+            textureLoader.loadAsync(textureBaseUrl + 'earth_normal_2048.jpg')
+        ]).then(([colorMap, specularMap, normalMap]) => {
+            // 隱藏載入提示
+            const loadingEl = document.getElementById('loading');
+            loadingEl.style.opacity = '0';
+            setTimeout(() => loadingEl.remove(), 800);
+
+            // 地球材質 (使用 MeshPhongMaterial 來產生海洋的反光效果)
+            const material = new THREE.MeshPhongMaterial({
+                map: colorMap,
+                specularMap: specularMap,
+                normalMap: normalMap,
+                specular: new THREE.Color(0x333333), // 反光顏色
+                shininess: 15 // 反光強度
+            });
+
+            const earth = new THREE.Mesh(geometry, material);
+            earthGroup.add(earth);
+
+            // 加入大氣層/雲層，讓地球更逼真
+            const cloudGeometry = new THREE.SphereGeometry(radius * 1.015, segments, segments);
+            textureLoader.load(textureBaseUrl + 'earth_clouds_1024.png', (cloudsMap) => {
+                const cloudMaterial = new THREE.MeshPhongMaterial({
+                    map: cloudsMap,
+                    transparent: true,
+                    opacity: 0.6,
+                    blending: THREE.AdditiveBlending, // 讓雲層疊加發亮
+                    side: THREE.DoubleSide,
+                    depthWrite: false
+                });
+                const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+                clouds.name = 'clouds'; // 命名以便在動畫中抓取
+                earthGroup.add(clouds);
+            });
+
+            // 加入發光標記與連線
+            addMarkersAndLines();
+        }).catch(err => {
+            console.error("載入貼圖失敗:", err);
+            const loadingEl = document.getElementById('loading');
+            loadingEl.innerHTML = "載入失敗，請檢查網路連線。";
+            
+            // 降級處理：如果貼圖載入失敗，給予一個幾何線框地球
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x00ffcc,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.3
+            });
+            const earth = new THREE.Mesh(geometry, material);
+            earthGroup.add(earth);
+            setTimeout(() => loadingEl.style.opacity = '0', 2000);
+        });
+
+        // 建立星空背景
+        createStarField();
+
+        function createStarField() {
+            const starsGeometry = new THREE.BufferGeometry();
+            const starsMaterial = new THREE.PointsMaterial({
+                color: 0xffffff,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.8,
+                sizeAttenuation: true
+            });
+            const starsVertices = [];
+            for (let i = 0; i < 3000; i++) {
+                const x = THREE.MathUtils.randFloatSpread(300);
+                const y = THREE.MathUtils.randFloatSpread(300);
+                const z = THREE.MathUtils.randFloatSpread(300);
+                // 確保星星在地球外圍的一定距離
+                if (Math.sqrt(x*x + y*y + z*z) > radius * 3) {
+                    starsVertices.push(x, y, z);
+                }
+            }
+            starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+            const starField = new THREE.Points(starsGeometry, starsMaterial);
+            scene.add(starField);
+        }
+
+        /**
+         * 經緯度轉三維座標函數
+         * Three.js 球體預設貼圖配置：
+         * - 緯度 0 度在 XY 平面 (Y=0)
+         * - 經度 0 度映射到 Z 軸正向
+         */
+        function calcPosFromLatLonRad(lat, lon, radius) {
+            const phi = (90 - lat) * (Math.PI / 180);
+            // 由於貼圖的中心點 (0經度) 通常對齊 Z 軸正向，所以偏移 90 度進行轉換
+            const theta = (lon + 90) * (Math.PI / 180);
+
+            const x = -(radius * Math.sin(phi) * Math.cos(theta));
+            const z = (radius * Math.sin(phi) * Math.sin(theta));
+            const y = (radius * Math.cos(phi));
+
+            return new THREE.Vector3(x, y, z);
+        }
+
+        // 保存所有光環以進行閃爍動畫
+        const pulsingRings = [];
+
+        function addMarkersAndLines() {
+            // 標記點數據 (以台北為中心，連線到世界各地)
+            const locations = [
+                { name: "Taipei", lat: 25.0330, lon: 121.5654, color: 0x00ffcc }, // 發送端
+                { name: "New York", lat: 40.7128, lon: -74.0060, color: 0xff3366 },
+                { name: "London", lat: 51.5074, lon: -0.1278, color: 0xffcc00 },
+                { name: "Tokyo", lat: 35.6762, lon: 139.6503, color: 0x00ffcc },
+                { name: "Sydney", lat: -33.8688, lon: 151.2093, color: 0x9933ff },
+                { name: "Cape Town", lat: -33.9249, lon: 18.4241, color: 0xffcc00 },
+                { name: "Sao Paulo", lat: -23.5505, lon: -46.6333, color: 0xff3366 }
+            ];
+
+            const points = [];
+
+            // 建立光暈標記
+            locations.forEach((loc, index) => {
+                const pos = calcPosFromLatLonRad(loc.lat, loc.lon, radius);
+                points.push(pos);
+
+                // 核心標記點 (Sphere)
+                const markerGeo = new THREE.SphereGeometry(0.08, 16, 16);
+                const markerMat = new THREE.MeshBasicMaterial({ color: loc.color });
+                const marker = new THREE.Mesh(markerGeo, markerMat);
+                marker.position.copy(pos);
+                earthGroup.add(marker);
+
+                // 發光外圈 (Ring)
+                const ringGeo = new THREE.RingGeometry(0.1, 0.2, 32);
+                const ringMat = new THREE.MeshBasicMaterial({ 
+                    color: loc.color, 
+                    transparent: true, 
+                    opacity: 0.8,
+                    side: THREE.DoubleSide
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.position.copy(pos);
+                
+                // 讓光環朝向球體外側 (法線方向)
+                const normal = pos.clone().normalize();
+                const lookAtPos = pos.clone().add(normal);
+                ring.lookAt(lookAtPos);
+                
+                earthGroup.add(ring);
+                pulsingRings.push(ring);
+            });
+
+            // 建立連線 (從台北出發連到其他城市)
+            const centerPos = points[0];
+            for (let i = 1; i < points.length; i++) {
+                const targetPos = points[i];
+                
+                // 計算控制點，讓線段呈現跨越地球的拋物線
+                const distance = centerPos.distanceTo(targetPos);
+                const midPoint = centerPos.clone().lerp(targetPos, 0.5);
+                
+                // 將中心控制點往外推，距離越遠推得越高
+                const curveHeight = radius + distance * 0.35;
+                midPoint.normalize().multiplyScalar(curveHeight);
+
+                const curve = new THREE.QuadraticBezierCurve3(
+                    centerPos,
+                    midPoint,
+                    targetPos
+                );
+
+                // 使用 TubeGeometry 畫出有粗細的線
+                const tubeGeo = new THREE.TubeGeometry(curve, 48, 0.02, 8, false);
+                const tubeMat = new THREE.MeshBasicMaterial({ 
+                    color: locations[i].color,
+                    transparent: true,
+                    opacity: 0.4,
+                    blending: THREE.AdditiveBlending
+                });
+                const tube = new THREE.Mesh(tubeGeo, tubeMat);
+                earthGroup.add(tube);
+            }
+        }
+
+        // 4. 互動控制
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // 啟用阻尼效果，讓滑動更平滑
+        controls.dampingFactor = 0.05;
+        controls.minDistance = radius * 1.5; // 限制縮放最小距離 (避免穿透地球)
+        controls.maxDistance = radius * 6;   // 限制縮放最大距離
+        controls.enablePan = false;          // 禁用右鍵平移
+
+        // 5. 動畫迴圈
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            const elapsedTime = clock.getElapsedTime();
+
+            // 地球自轉
+            if (earthGroup) {
+                // 給予一個非常緩慢的基礎自轉
+                earthGroup.rotation.y += 0.02 * delta; 
+                
+                // 雲層自轉稍微快一點，產生層次與流動感
+                const clouds = earthGroup.getObjectByName('clouds');
+                if (clouds) {
+                    clouds.rotation.y += 0.015 * delta; 
+                }
+            }
+
+            // 標記光環的呼吸燈閃爍效果
+            pulsingRings.forEach((ring, index) => {
+                // 利用 sin 波形讓透明度在 0.2 ~ 0.8 之間變化
+                ring.material.opacity = 0.5 + Math.sin(elapsedTime * 3 + index) * 0.3;
+                // 同時微調大小產生脈衝感
+                const scale = 1 + Math.sin(elapsedTime * 4 + index) * 0.2;
+                ring.scale.set(scale, scale, 1);
+            });
+
+            // 更新控制器
+            controls.update();
+
+            // 渲染場景
+            renderer.render(scene, camera);
+        }
+
+        // 啟動動畫
+        animate();
+
+        // 6. 響應視窗縮放
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+</html>

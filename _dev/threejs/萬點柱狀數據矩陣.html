@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>巨量數據視覺化 (Three.js InstancedMesh)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{overflow:hidden;background:#0b0f19;font-family:'Inter',sans-serif;color:#fff}
+        #loading{position:absolute;top:0;left:0;width:100%;height:100%;background:#0b0f19;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100;transition:opacity .8s}
+        .loader-ring{width:50px;height:50px;border:3px solid rgba(0,255,204,.1);border-top-color:#00ffcc;border-radius:50%;animation:spin .9s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loader-text{margin-top:18px;font-size:11px;letter-spacing:4px;color:#555;text-transform:uppercase}
+        .overlay{position:absolute;top:30px;left:40px;pointer-events:none;z-index:5}
+        .overlay h1{font-size:24px;font-weight:700;margin-bottom:6px;background:linear-gradient(135deg,#00ffcc,#3366ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .overlay p{font-size:13px;font-weight:300;color:rgba(255,255,255,.4);max-width:320px;line-height:1.7}
+        .stats{position:absolute;top:30px;right:40px;text-align:right;pointer-events:none;z-index:5;font-family:'JetBrains Mono',monospace}
+        .stats .row{display:flex;justify-content:flex-end;gap:10px;margin-bottom:6px;font-size:12px}
+        .stats .label{color:rgba(255,255,255,.3);letter-spacing:1px}
+        .stats .val{color:#00ffcc;font-weight:600;min-width:80px;text-align:right}
+        .control-bar{position:absolute;bottom:35px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:5}
+        .ctrl-btn{padding:10px 20px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.03);backdrop-filter:blur(10px);color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;font-weight:600;letter-spacing:1px;transition:all .3s;font-family:'Inter',sans-serif}
+        .ctrl-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2)}
+        .ctrl-btn.active{background:rgba(0,255,204,.1);border-color:#00ffcc;color:#00ffcc}
+        .hint{position:absolute;bottom:35px;right:40px;font-size:11px;color:rgba(255,255,255,.2);pointer-events:none;text-align:right;line-height:1.8}
+    </style>
+</head>
+<body>
+    <div id="loading"><div class="loader-ring"></div><div class="loader-text">Generating 10,000 Data Points</div></div>
+    <div class="overlay">
+        <h1>Data Visualization</h1>
+        <p>使用 InstancedMesh 高效渲染一萬個動態柱狀體。色彩與高度隨時間變化，模擬即時數據流。</p>
+    </div>
+    <div class="stats">
+        <div class="row"><span class="label">INSTANCES</span><span class="val">10,000</span></div>
+        <div class="row"><span class="label">GRID</span><span class="val">100 × 100</span></div>
+        <div class="row"><span class="label">PATTERN</span><span class="val" id="pattern-name">波浪</span></div>
+        <div class="row"><span class="label">FPS</span><span class="val" id="fps">60</span></div>
+    </div>
+    <div class="control-bar">
+        <button class="ctrl-btn active" data-pattern="wave">波浪 Wave</button>
+        <button class="ctrl-btn" data-pattern="ripple">漣漪 Ripple</button>
+        <button class="ctrl-btn" data-pattern="noise">雜訊 Noise</button>
+        <button class="ctrl-btn" data-pattern="spiral">螺旋 Spiral</button>
+    </div>
+    <div class="hint">拖曳旋轉 · 滾輪縮放</div>
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. 場景
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0b0f19);
+        scene.fog = new THREE.FogExp2(0x0b0f19, 0.012);
+
+        const camera = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 1, 500);
+        camera.position.set(50, 40, 60);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        document.body.appendChild(renderer.domElement);
+
+        // 2. 燈光
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2);
+        dirLight.position.set(20, 30, 10);
+        scene.add(dirLight);
+        const dirLight2 = new THREE.DirectionalLight(0x3366ff, 0.8);
+        dirLight2.position.set(-20, 10, -20);
+        scene.add(dirLight2);
+        scene.add(new THREE.AmbientLight(0x333355, 0.5));
+
+        // 3. 地面格線
+        const gridHelper = new THREE.GridHelper(100, 100, 0x111133, 0x111133);
+        gridHelper.position.y = -0.1;
+        scene.add(gridHelper);
+
+        // 4. InstancedMesh
+        const GRID = 100;
+        const COUNT = GRID * GRID;
+        const geo = new THREE.BoxGeometry(0.8, 1, 0.8);
+        geo.translate(0, 0.5, 0); // 從底部生長
+
+        const mat = new THREE.MeshPhongMaterial({ vertexColors: false });
+        const mesh = new THREE.InstancedMesh(geo, mat, COUNT);
+        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        scene.add(mesh);
+
+        // 初始化 color buffer
+        const colorArr = new Float32Array(COUNT * 3);
+        mesh.instanceColor = new THREE.InstancedBufferAttribute(colorArr, 3);
+
+        const dummy = new THREE.Object3D();
+        const color = new THREE.Color();
+
+        // 初始化矩陣位置
+        let i = 0;
+        for (let x = 0; x < GRID; x++) {
+            for (let z = 0; z < GRID; z++) {
+                dummy.position.set(x - GRID/2, 0, z - GRID/2);
+                dummy.scale.set(1, 1, 1);
+                dummy.updateMatrix();
+                mesh.setMatrixAt(i, dummy.matrix);
+                color.setHSL(0.55, 0.8, 0.5);
+                mesh.setColorAt(i, color);
+                i++;
+            }
+        }
+
+        // 5. 數據模式
+        let currentPattern = 'wave';
+        const patternNames = { wave: '波浪', ripple: '漣漪', noise: '雜訊', spiral: '螺旋' };
+
+        // Simple hash for noise-like pattern
+        function hash(x, z) {
+            let n = Math.sin(x * 127.1 + z * 311.7) * 43758.5453;
+            return n - Math.floor(n);
+        }
+
+        function getHeight(x, z, time, pattern) {
+            const cx = GRID / 2, cz = GRID / 2;
+            switch (pattern) {
+                case 'wave':
+                    return Math.sin(x * 0.2 + time) + Math.cos(z * 0.2 + time) + 2.5;
+                case 'ripple': {
+                    const dist = Math.sqrt((x - cx) ** 2 + (z - cz) ** 2);
+                    return Math.sin(dist * 0.3 - time * 3) * 2 + 3;
+                }
+                case 'noise':
+                    return (hash(x + Math.floor(time * 2), z) + hash(x, z + Math.floor(time * 3))) * 3 + 1;
+                case 'spiral': {
+                    const angle = Math.atan2(z - cz, x - cx);
+                    const dist = Math.sqrt((x - cx) ** 2 + (z - cz) ** 2);
+                    return Math.sin(angle * 3 + dist * 0.2 - time * 2) * 2 + 3;
+                }
+                default:
+                    return 1;
+            }
+        }
+
+        // 6. UI 控制
+        document.querySelectorAll('.ctrl-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPattern = btn.dataset.pattern;
+                document.getElementById('pattern-name').textContent = patternNames[currentPattern];
+            });
+        });
+
+        // 7. 控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.4;
+        controls.maxPolarAngle = Math.PI / 2.2;
+        controls.minDistance = 20;
+        controls.maxDistance = 120;
+
+        // 8. FPS
+        let frames = 0, lastFpsTime = performance.now();
+        const fpsEl = document.getElementById('fps');
+
+        // 9. 動畫
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
+
+            let idx = 0;
+            for (let x = 0; x < GRID; x++) {
+                for (let z = 0; z < GRID; z++) {
+                    const h = getHeight(x, z, time, currentPattern);
+                    mesh.getMatrixAt(idx, dummy.matrix);
+                    dummy.matrix.decompose(dummy.position, dummy.quaternion, dummy.scale);
+                    dummy.scale.y = Math.max(h, 0.1);
+                    dummy.updateMatrix();
+                    mesh.setMatrixAt(idx, dummy.matrix);
+
+                    // HSL 色彩映射 (高度 → 色相)
+                    const hue = (h / 6) * 0.6 + 0.45;
+                    color.setHSL(hue % 1, 0.85, 0.45 + h * 0.03);
+                    mesh.setColorAt(idx, color);
+                    idx++;
+                }
+            }
+            mesh.instanceMatrix.needsUpdate = true;
+            mesh.instanceColor.needsUpdate = true;
+
+            // FPS
+            frames++;
+            const now = performance.now();
+            if (now - lastFpsTime >= 1000) {
+                fpsEl.textContent = frames;
+                frames = 0;
+                lastFpsTime = now;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 10. 載入
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const el = document.getElementById('loading');
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 800);
+            }, 800);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

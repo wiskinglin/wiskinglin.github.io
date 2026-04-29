@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虛擬展間 — 第一人稱視角 (Three.js)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{overflow:hidden;background:#000;font-family:'Inter',sans-serif;color:#fff}
+        /* 鎖定前的遮罩與說明頁 */
+        #blocker{position:absolute;width:100%;height:100%;background:rgba(0,0,0,.85);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:10;transition:opacity .5s}
+        .enter-card{text-align:center;max-width:420px;padding:50px;border-radius:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+        .enter-card h1{font-size:28px;font-weight:700;letter-spacing:2px;margin-bottom:10px;background:linear-gradient(135deg,#fff,#888);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .enter-card .subtitle{font-size:14px;color:rgba(255,255,255,.4);margin-bottom:30px;line-height:1.6}
+        .enter-btn{display:inline-block;padding:14px 36px;border-radius:12px;background:linear-gradient(135deg,#00ffcc,#00aaff);color:#000;font-weight:700;font-size:14px;letter-spacing:1px;cursor:pointer;border:none;transition:transform .2s,box-shadow .2s;font-family:'Inter',sans-serif}
+        .enter-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(0,255,204,.3)}
+        .controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px;text-align:left}
+        .ctrl-item{display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(255,255,255,.35)}
+        .ctrl-item kbd{display:inline-block;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.08);font-size:11px;font-family:monospace;color:rgba(255,255,255,.6);min-width:32px;text-align:center}
+        /* HUD 覆蓋層 */
+        .hud{position:absolute;pointer-events:none;z-index:5}
+        .hud-tl{top:30px;left:35px}
+        .hud-tl .title{font-size:16px;font-weight:600;letter-spacing:1px;color:rgba(255,255,255,.7)}
+        .hud-tl .sub{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:2px;margin-top:4px}
+        .hud-tr{top:30px;right:35px;text-align:right}
+        .hud-tr div{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:4px}
+        .hud-tr .val{color:rgba(255,255,255,.6);font-weight:600}
+        .hud-bl{bottom:30px;left:35px}
+        .hud-bl div{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:1px;margin-bottom:3px}
+        .crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;opacity:0;transition:opacity .3s}
+        .crosshair::before,.crosshair::after{content:'';position:absolute;background:rgba(255,255,255,.4)}
+        .crosshair::before{width:20px;height:1px;top:0;left:-10px}
+        .crosshair::after{width:1px;height:20px;top:-10px;left:0}
+    </style>
+</head>
+<body>
+    <div id="blocker">
+        <div class="enter-card">
+            <h1>Virtual Showroom</h1>
+            <div class="subtitle">一個精心佈置的虛擬展間。點擊進入後，使用鍵盤與滑鼠在 3D 空間中自由漫步，近距離欣賞展品。</div>
+            <button class="enter-btn" id="enter-btn">進入展間</button>
+            <div class="controls-grid">
+                <div class="ctrl-item"><kbd>W</kbd> 前進</div>
+                <div class="ctrl-item"><kbd>S</kbd> 後退</div>
+                <div class="ctrl-item"><kbd>A</kbd> 左移</div>
+                <div class="ctrl-item"><kbd>D</kbd> 右移</div>
+                <div class="ctrl-item"><kbd>滑鼠</kbd> 環視</div>
+                <div class="ctrl-item"><kbd>ESC</kbd> 退出</div>
+            </div>
+        </div>
+    </div>
+    <div class="crosshair" id="crosshair"></div>
+    <div class="hud hud-tl"><div class="title">KLIO. GALLERY</div><div class="sub">Virtual Exhibition Space</div></div>
+    <div class="hud hud-tr">
+        <div>位置 X: <span class="val" id="pos-x">0.0</span></div>
+        <div>位置 Z: <span class="val" id="pos-z">0.0</span></div>
+        <div>展品數: <span class="val">20</span></div>
+    </div>
+    <div class="hud hud-bl">
+        <div>渲染引擎：Three.js r160</div>
+        <div>控制模式：PointerLock FPS</div>
+    </div>
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+        // 1. 場景
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a22);
+        scene.fog = new THREE.FogExp2(0x1a1a22, 0.008);
+
+        const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.5, 200);
+        camera.position.set(0, 8, 20);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.5;
+        document.body.appendChild(renderer.domElement);
+
+        // 2. 燈光 (明亮美術館式照明)
+        // 天花板投射燈 (多盞，高強度)
+        for (let i = -30; i <= 30; i += 15) {
+            for (let j = -30; j <= 30; j += 15) {
+                const spot = new THREE.PointLight(0xffeedd, 60, 40, 1.5);
+                spot.position.set(i, 12, j);
+                scene.add(spot);
+            }
+        }
+        // 全場均勻環境光 (確保沒有死黑角落)
+        scene.add(new THREE.AmbientLight(0xddddef, 1.2));
+        // 半球光 (天花板暖白 + 地板冷灰反射)
+        const hemiLight = new THREE.HemisphereLight(0xffeedd, 0x444466, 1.0);
+        hemiLight.position.set(0, 14, 0);
+        scene.add(hemiLight);
+
+        // 3. 地板 (反光大理石)
+        const floorGeo = new THREE.PlaneGeometry(100, 100);
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x555560, roughness: 0.2, metalness: 0.5
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // 天花板
+        const ceilMat = new THREE.MeshStandardMaterial({ color: 0x333340, roughness: 0.8 });
+        const ceil = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), ceilMat);
+        ceil.rotation.x = Math.PI / 2;
+        ceil.position.y = 14;
+        scene.add(ceil);
+
+        // 4. 牆壁
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x444450, roughness: 0.6 });
+        const wallPositions = [
+            { pos: [0, 7, -50], rot: [0, 0, 0] },
+            { pos: [0, 7, 50],  rot: [0, Math.PI, 0] },
+            { pos: [-50, 7, 0], rot: [0, Math.PI/2, 0] },
+            { pos: [50, 7, 0],  rot: [0, -Math.PI/2, 0] }
+        ];
+        wallPositions.forEach(w => {
+            const wall = new THREE.Mesh(new THREE.PlaneGeometry(100, 14), wallMat);
+            wall.position.set(...w.pos);
+            wall.rotation.set(...w.rot);
+            scene.add(wall);
+        });
+
+        // 5. 展品 (不同的幾何體類型 + 底座)
+        const exhibitGeometries = [
+            new THREE.TorusKnotGeometry(1, 0.35, 128, 16),
+            new THREE.IcosahedronGeometry(1.3, 0),
+            new THREE.OctahedronGeometry(1.3, 0),
+            new THREE.DodecahedronGeometry(1.2, 0),
+            new THREE.TorusGeometry(1, 0.4, 16, 50),
+            new THREE.ConeGeometry(1, 2.5, 6),
+            new THREE.BoxGeometry(1.8, 1.8, 1.8),
+            new THREE.TetrahedronGeometry(1.5, 0),
+            new THREE.CylinderGeometry(0.3, 1.2, 2, 8),
+            new THREE.SphereGeometry(1.2, 32, 32)
+        ];
+
+        const exhibitColors = [
+            0xff3366, 0x00ffcc, 0xffcc00, 0x9933ff, 0x3366ff,
+            0xff6600, 0x00ff88, 0xff0066, 0x33ccff, 0xffff00
+        ];
+
+        const exhibits = [];
+        // 放兩排，每排 5 個
+        const positions = [];
+        for (let row = 0; row < 2; row++) {
+            for (let col = 0; col < 5; col++) {
+                positions.push({
+                    x: (col - 2) * 12,
+                    z: row === 0 ? -12 : 12
+                });
+            }
+        }
+
+        positions.forEach((p, i) => {
+            // 底座
+            const pedestal = new THREE.Mesh(
+                new THREE.CylinderGeometry(1.5, 1.7, 1, 32),
+                new THREE.MeshStandardMaterial({ color: 0x555560, roughness: 0.3, metalness: 0.4 })
+            );
+            pedestal.position.set(p.x, 0.5, p.z);
+            pedestal.castShadow = true;
+            pedestal.receiveShadow = true;
+            scene.add(pedestal);
+
+            // 展品
+            const geoIdx = i % exhibitGeometries.length;
+            const mat = new THREE.MeshStandardMaterial({
+                color: exhibitColors[i],
+                metalness: 0.5,
+                roughness: 0.2,
+                emissive: exhibitColors[i],
+                emissiveIntensity: 0.15
+            });
+            const exhibit = new THREE.Mesh(exhibitGeometries[geoIdx], mat);
+            exhibit.position.set(p.x, 3, p.z);
+            exhibit.castShadow = true;
+            scene.add(exhibit);
+            exhibits.push(exhibit);
+
+            // 展品上方聚光燈
+            const spotLight = new THREE.SpotLight(exhibitColors[i], 30, 18, Math.PI/5, 0.4, 1.5);
+            spotLight.position.set(p.x, 13, p.z);
+            spotLight.target = exhibit;
+            scene.add(spotLight);
+        });
+
+        // 6. 控制器
+        const controls = new PointerLockControls(camera, document.body);
+        const blocker = document.getElementById('blocker');
+        const crosshair = document.getElementById('crosshair');
+
+        document.getElementById('enter-btn').addEventListener('click', () => controls.lock());
+        controls.addEventListener('lock', () => {
+            blocker.style.opacity = '0';
+            setTimeout(() => blocker.style.display = 'none', 500);
+            crosshair.style.opacity = '1';
+        });
+        controls.addEventListener('unlock', () => {
+            blocker.style.display = 'flex';
+            blocker.style.opacity = '1';
+            crosshair.style.opacity = '0';
+        });
+        scene.add(controls.getObject());
+
+        // 移動系統
+        let moveF = false, moveB = false, moveL = false, moveR = false;
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        let prevTime = performance.now();
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.code) {
+                case 'ArrowUp': case 'KeyW': moveF = true; break;
+                case 'ArrowDown': case 'KeyS': moveB = true; break;
+                case 'ArrowLeft': case 'KeyA': moveL = true; break;
+                case 'ArrowRight': case 'KeyD': moveR = true; break;
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            switch(e.code) {
+                case 'ArrowUp': case 'KeyW': moveF = false; break;
+                case 'ArrowDown': case 'KeyS': moveB = false; break;
+                case 'ArrowLeft': case 'KeyA': moveL = false; break;
+                case 'ArrowRight': case 'KeyD': moveR = false; break;
+            }
+        });
+
+        // 7. 動畫
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now();
+            const elapsed = clock.getElapsedTime();
+
+            // 展品旋轉與浮動
+            exhibits.forEach((ex, i) => {
+                ex.rotation.y = elapsed * 0.5 + i;
+                ex.rotation.x = Math.sin(elapsed * 0.7 + i) * 0.15;
+                ex.position.y = 3 + Math.sin(elapsed * 1.2 + i * 0.8) * 0.3;
+            });
+
+            // 移動邏輯
+            if (controls.isLocked) {
+                const delta = (time - prevTime) / 1000;
+                velocity.x -= velocity.x * 8 * delta;
+                velocity.z -= velocity.z * 8 * delta;
+                direction.z = Number(moveF) - Number(moveB);
+                direction.x = Number(moveR) - Number(moveL);
+                direction.normalize();
+                if (moveF || moveB) velocity.z -= direction.z * 200 * delta;
+                if (moveL || moveR) velocity.x -= direction.x * 200 * delta;
+                controls.moveRight(-velocity.x * delta);
+                controls.moveForward(-velocity.z * delta);
+
+                // 更新 HUD 座標
+                const pos = controls.getObject().position;
+                document.getElementById('pos-x').textContent = pos.x.toFixed(1);
+                document.getElementById('pos-z').textContent = pos.z.toFixed(1);
+
+                // 限制移動範圍
+                pos.x = THREE.MathUtils.clamp(pos.x, -45, 45);
+                pos.z = THREE.MathUtils.clamp(pos.z, -45, 45);
+            }
+            prevTime = time;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
