@@ -1,6 +1,95 @@
 # Personal Notes
 
 ## 2026-W18 (2026/04/27 - 2026/05/03)
+### 2026-04-29 (Wed) 19:22
+📖 **[程式版本 | GPT AI Assistant 更新日誌](https://memochou1993.github.io/gpt-ai-assistant-docs/update.html)**
+- **摘要**: GPT AI Assistant 的官方更新文件與版本說明。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[GitHub - OpenMOSS/MOSS-TTS-Nano: Multilingual tiny speech generation model](https://github.com/OpenMOSS/MOSS-TTS-Nano)**
+- **摘要**: 輕量級多語言語音生成模型 (0.1B 參數)，支援 CPU 即時推論。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[GitHub - k2-fsa/OmniVoice: High-Quality Voice Cloning TTS](https://github.com/k2-fsa/OmniVoice)**
+- **摘要**: 支援 600 多種語言的高品質人聲複製與文字轉語音工具。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[Anthropic Agent Skills: PDF, PPTX, DOCX, XLSX](https://github.com/anthropics/skills/tree/main/skills)**
+- **[PDF Skill](https://github.com/anthropics/skills/tree/main/skills/pdf)** / **[PPTX Skill](https://github.com/anthropics/skills/tree/main/skills/pptx)** / **[DOCX Skill](https://github.com/anthropics/skills/tree/main/skills/docx)** / **[XLSX Skill](https://github.com/anthropics/skills/tree/main/skills/xlsx)**
+- **摘要**: Anthropic 官方提供的 AI Agent 技能實作，包含對 PDF、PowerPoint、Word 與 Excel 檔案的處理能力。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[PDF: The Complete Guide to Building Skill for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf)**
+- **摘要**: 為 Claude 構建技能的完整指南手冊。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[Best Practices for Claude Code](https://code.claude.com/docs/en/best-practices)**
+- **摘要**: 使用 Claude Code 的最佳實踐與設計模式。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[GitHub - anthropics/skills: Public repository for Agent Skills](https://github.com/anthropics/skills)**
+- **摘要**: Anthropic 官方 Agent Skills 的公共倉庫，提供多種跨文件處理的技能範本。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[Firebase | Google's App Development Platform](https://firebase.google.com/)**
+- **摘要**: Google 的行動與 Web 應用程式開發平台，提供資料庫、認證、託管等雲端服務。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[OneSignal | Customer Engagement Platform](https://onesignal.com/)**
+- **摘要**: 領先的推播通知、Email 與簡訊發送平台。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[GitHub - openclaw/openclaw: Your own personal AI assistant](https://github.com/openclaw/openclaw)**
+- **摘要**: 一款強調隱私與跨平台的個人 AI 助手工具。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[GitHub - HelloRuru/claude-memory-engine: Claude Code 的記憶系統](https://github.com/HelloRuru/claude-memory-engine)**
+- **摘要**: 為 Claude Code 設計的記憶引擎，採用 Hooks 與 Markdown 實現，無相依性。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[GitHub - openclaw/clawhub: Skill Directory for OpenClaw](https://github.com/openclaw/clawhub)**
+- **摘要**: OpenClaw 的技能目錄與插件中心。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[Google Docs: AI Agent 相關文件](https://docs.google.com/document/d/1Tu7uZXVsQyUDGfMpdgbVki62srsjtCkZNkywRcFjgk8/edit?tab=t.0)**
+- **摘要**: (私人文件) 關於 AI Agent 的參考資料或專案文檔。
+
+### 2026-04-29 (Wed) 19:22
+📖 **[GitHub - memochou1993/gpt-ai-assistant: OpenAI + LINE + Vercel](https://github.com/memochou1993/gpt-ai-assistant)**
+- **摘要**: 基於 OpenAI、LINE 與 Vercel 的 GPT AI 助手。
+
+
+### 2026-04-29 (Wed) 19:21
+📖 **[GitHub - Lin-jun-xiang/agent-line-bot: Free Agent Line Bot with Web Search and AI tools](https://github.com/Lin-jun-xiang/agent-line-bot)**
+- **摘要**: 一個開源的 LINE Agent Bot，整合了網頁搜尋、Google 圖片搜尋、AI 圖片與影片生成等多樣化功能，支援多種 AI 模型串接。
+
+### 2026-04-29 (Wed) 19:21
+📖 **[GitHub - line/line-bot-sdk-nodejs: LINE Messaging API SDK for Node.js](https://github.com/line/line-bot-sdk-nodejs)**
+- **摘要**: LINE 官方提供的 Node.js 版 Messaging API SDK。方便開發者快速串接 LINE Bot 相關功能，如發送訊息、處理 Webhook 事件等。
+
+### 2026-04-29 (Wed) 19:21
+📖 **[GitHub - appium/appium: Cross-platform automation framework for all kinds of apps](https://github.com/appium/appium)**
+- **摘要**: 基於 W3C WebDriver 協議的跨平台自動化框架。支援原生、混合與行動網頁應用程式的自動化測試。
+
+### 2026-04-29 (Wed) 19:21
+📖 **[GitHub - microsoft/playwright: Framework for Web Testing and Automation](https://github.com/microsoft/playwright)**
+- **摘要**: 微軟開發的跨瀏覽器自動化測試框架。支援 Chromium, Firefox 與 WebKit，提供單一 API 進行高效的網頁測試與自動化操作。
+
+
+### 2026-04-29 (Wed) 19:20
+📖 **[GitHub - InstaPy/InstaPy: Instagram Bot - Tool for automated Instagram interactions](https://github.com/InstaPy/InstaPy)**
+- **摘要**: 著名的 Instagram 自動化工具（機器人）。透過 Selenium 模擬瀏覽器行為，實現自動點讚、追蹤、評論等社交互動，旨在幫助用戶提升帳號曝光度。
+
+### 2026-04-29 (Wed) 19:20
+📖 **[GitHub - subzeroid/instagrapi: The fastest and powerful Python library for Instagram Private API](https://github.com/subzeroid/instagrapi)**
+- **摘要**: 一個快速且功能強大的 Instagram 私人 API Python 函式庫。支援多種操作，包括發文、限時動態、私訊等，並整合了 HikerAPI SaaS。
+
+
+### 2026-04-29 (Wed) 19:19
+📖 **[GitHub - Datalux/Osintgram: Osintgram is a OSINT tool on Instagram.](https://github.com/Datalux/Osintgram)**
+- **摘要**: Osintgram 是一款針對 Instagram 的 OSINT（開源情報）工具。它提供了一個互動式 Shell，可透過使用者的暱稱對任何 Instagram 帳號進行分析，獲取包含追蹤者、標記照片、聯絡資訊等多樣化情資。
+
+
 ### 2026-04-27 (Mon) 16:51
 📖 **[Anime.js | JavaScript Animation Engine](https://animejs.com/)**
 - **摘要**: 一個輕量且功能強大的 JavaScript 動畫引擎。支援 CSS 屬性、SVG、DOM 屬性與 JS 物件動畫，具備直觀的 API、Timeline 序列控制、滾動觀測器 (Scroll Observer) 以及 SVG 形狀變形 (Morphing) 等專業功能。
