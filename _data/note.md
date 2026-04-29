@@ -1,6 +1,14 @@
 # Personal Notes
 
 ## 2026-W18 (2026/04/27 - 2026/05/03)
+### 2026-04-29 (Wed) 20:31
+📖 **[Sketchfab — Popular 3D Models](https://sketchfab.com/3d-models/popular)**
+- **摘要**: Sketchfab 是全球最大的 3D 模型發布與分享平台（現為 Epic Games 旗下），提供數百萬個可下載的 3D 模型，涵蓋角色、車輛、建築、動植物等 18+ 分類。支援網頁端即時 3D 預覽、AR/VR 展示，並提供企業級解決方案包含 3D 電商、3D 配置器與團隊協作管理。模型可透過 Fab 市集購買或免費下載。
+
+### 2026-04-29 (Wed) 20:31
+📖 **[Poly Haven — The Public 3D Asset Library](https://polyhaven.com/)**
+- **摘要**: Poly Haven 是一個完全免費 (CC0 授權) 的公共 3D 素材庫，提供高品質的 HDRI 環境貼圖 (16K+)、PBR 材質貼圖 (8K+) 以及超寫實 3D 模型，適用於視覺特效與次世代遊戲開發。所有素材皆由人工手工製作，無需註冊即可下載，並提供 Blender 與 Unreal Engine 插件整合。
+
 ### 2026-04-29 (Wed) 19:22
 📖 **[程式版本 | GPT AI Assistant 更新日誌](https://memochou1993.github.io/gpt-ai-assistant-docs/update.html)**
 - **摘要**: GPT AI Assistant 的官方更新文件與版本說明。

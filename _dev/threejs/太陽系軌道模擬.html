@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>太陽系軌道模擬 (Three.js)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{overflow:hidden;background:#000;font-family:'Inter',sans-serif;color:#fff}
+        #loading{position:absolute;top:0;left:0;width:100%;height:100%;background:#000;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100;transition:opacity 1s}
+        .loader-ring{width:50px;height:50px;border:3px solid rgba(255,170,0,.1);border-top-color:#ffaa00;border-radius:50%;animation:spin .9s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loader-text{margin-top:18px;font-size:11px;letter-spacing:4px;color:#555;text-transform:uppercase}
+        .overlay{position:absolute;top:30px;left:40px;pointer-events:none;z-index:5}
+        .overlay h1{font-size:24px;font-weight:700;margin-bottom:6px;background:linear-gradient(135deg,#ffaa00,#ff6600);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .overlay p{font-size:13px;font-weight:300;color:rgba(255,255,255,.4);max-width:320px;line-height:1.7}
+        .planet-info{position:absolute;top:30px;right:40px;text-align:right;pointer-events:none;z-index:5;font-family:'JetBrains Mono',monospace}
+        .planet-row{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:8px;font-size:12px}
+        .planet-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+        .planet-name{color:rgba(255,255,255,.5);min-width:60px;text-align:right}
+        .planet-dist{color:rgba(255,255,255,.25);font-size:10px}
+        .control-bar{position:absolute;bottom:35px;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;z-index:5;background:rgba(0,0,0,.5);backdrop-filter:blur(15px);padding:12px 24px;border-radius:14px;border:1px solid rgba(255,255,255,.06)}
+        .ctrl-label{font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.3);text-transform:uppercase;margin-right:8px}
+        .speed-btn{padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-size:12px;font-weight:600;transition:all .3s;font-family:'Inter',sans-serif}
+        .speed-btn:hover{background:rgba(255,255,255,.05)}
+        .speed-btn.active{background:rgba(255,170,0,.15);border-color:rgba(255,170,0,.4);color:#ffaa00}
+        .toggle-btn{padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.5);cursor:pointer;font-size:12px;font-weight:600;transition:all .3s;font-family:'Inter',sans-serif}
+        .toggle-btn:hover{background:rgba(255,255,255,.05)}
+        .toggle-btn.active{background:rgba(0,255,204,.1);border-color:rgba(0,255,204,.3);color:#00ffcc}
+        .hint{position:absolute;bottom:35px;right:40px;font-size:11px;color:rgba(255,255,255,.15);pointer-events:none;text-align:right;line-height:1.8}
+    </style>
+</head>
+<body>
+    <div id="loading"><div class="loader-ring"></div><div class="loader-text">Computing Orbits</div></div>
+    <div class="overlay">
+        <h1>Solar System</h1>
+        <p>太陽系軌道模擬。展示 Three.js Group 層級關係 (Hierarchy)：月球繞地球、行星繞太陽的相對旋轉架構。</p>
+    </div>
+    <div class="planet-info" id="planet-info"></div>
+    <div class="control-bar">
+        <span class="ctrl-label">速度</span>
+        <button class="speed-btn" data-speed="0.25">0.25×</button>
+        <button class="speed-btn active" data-speed="1">1×</button>
+        <button class="speed-btn" data-speed="3">3×</button>
+        <button class="speed-btn" data-speed="10">10×</button>
+        <div style="width:1px;height:24px;background:rgba(255,255,255,.1);margin:0 8px"></div>
+        <button class="toggle-btn active" id="btn-orbits">軌道線</button>
+        <button class="toggle-btn" id="btn-labels">名稱標籤</button>
+    </div>
+    <div class="hint">拖曳旋轉 · 滾輪縮放</div>
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. 場景
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x020206);
+
+        const camera = new THREE.PerspectiveCamera(50, innerWidth/innerHeight, 0.5, 2000);
+        camera.position.set(0, 60, 90);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        document.body.appendChild(renderer.domElement);
+
+        // 2. 星空
+        const starGeo = new THREE.BufferGeometry();
+        const starVerts = [];
+        for (let i = 0; i < 5000; i++) {
+            const r = THREE.MathUtils.randFloat(200, 800);
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            starVerts.push(r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
+        }
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starVerts, 3));
+        scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.4, transparent: true, opacity: 0.7 })));
+
+        // 3. 太陽 (多層結構：核心 + Shader 表面 + 多層光暈 + 日冕粒子)
+
+        // --- 太陽核心 Shader 材質 (模擬日表湍流) ---
+        const sunShaderMat = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uColor1: { value: new THREE.Color(0xffdd44) },
+                uColor2: { value: new THREE.Color(0xff6600) },
+                uColor3: { value: new THREE.Color(0xff2200) }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+                void main() {
+                    vUv = uv;
+                    vNormal = normalize(normalMatrix * normal);
+                    vPosition = position;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float uTime;
+                uniform vec3 uColor1;
+                uniform vec3 uColor2;
+                uniform vec3 uColor3;
+                varying vec2 vUv;
+                varying vec3 vNormal;
+                varying vec3 vPosition;
+
+                // Simplex-like noise
+                vec3 mod289(vec3 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
+                vec4 mod289(vec4 x) { return x - floor(x * (1.0/289.0)) * 289.0; }
+                vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+                vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+                float snoise(vec3 v) {
+                    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+                    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+                    vec3 i = floor(v + dot(v, C.yyy));
+                    vec3 x0 = v - i + dot(i, C.xxx);
+                    vec3 g = step(x0.yzx, x0.xyz);
+                    vec3 l = 1.0 - g;
+                    vec3 i1 = min(g.xyz, l.zxy);
+                    vec3 i2 = max(g.xyz, l.zxy);
+                    vec3 x1 = x0 - i1 + C.xxx;
+                    vec3 x2 = x0 - i2 + C.yyy;
+                    vec3 x3 = x0 - D.yyy;
+                    i = mod289(i);
+                    vec4 p = permute(permute(permute(
+                        i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                        + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                        + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+                    float n_ = 0.142857142857;
+                    vec3 ns = n_ * D.wyz - D.xzx;
+                    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+                    vec4 x_ = floor(j * ns.z);
+                    vec4 y_ = floor(j - 7.0 * x_);
+                    vec4 x = x_ * ns.x + ns.yyyy;
+                    vec4 y = y_ * ns.x + ns.yyyy;
+                    vec4 h = 1.0 - abs(x) - abs(y);
+                    vec4 b0 = vec4(x.xy, y.xy);
+                    vec4 b1 = vec4(x.zw, y.zw);
+                    vec4 s0 = floor(b0)*2.0 + 1.0;
+                    vec4 s1 = floor(b1)*2.0 + 1.0;
+                    vec4 sh = -step(h, vec4(0.0));
+                    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy;
+                    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww;
+                    vec3 p0 = vec3(a0.xy, h.x);
+                    vec3 p1 = vec3(a0.zw, h.y);
+                    vec3 p2 = vec3(a1.xy, h.z);
+                    vec3 p3 = vec3(a1.zw, h.w);
+                    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+                    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+                    vec4 m = max(0.6 - vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)), 0.0);
+                    m = m * m;
+                    return 42.0 * dot(m*m, vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+                }
+
+                void main() {
+                    // 多層 noise 疊加 (FBM)
+                    vec3 pos = vPosition * 0.4;
+                    float n = snoise(pos + uTime * 0.15) * 0.5
+                            + snoise(pos * 2.0 + uTime * 0.25) * 0.25
+                            + snoise(pos * 4.0 + uTime * 0.35) * 0.125;
+                    n = n * 0.5 + 0.5; // 映射到 0~1
+
+                    // 三色漸層混合
+                    vec3 col = mix(uColor1, uColor2, smoothstep(0.3, 0.6, n));
+                    col = mix(col, uColor3, smoothstep(0.55, 0.85, n));
+
+                    // 邊緣菲涅爾增亮 (Fresnel rim)
+                    float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
+                    col += vec3(1.0, 0.6, 0.1) * fresnel * 0.5;
+
+                    gl_FragColor = vec4(col, 1.0);
+                }
+            `
+        });
+
+        const sunGeo = new THREE.SphereGeometry(5, 64, 64);
+        const sun = new THREE.Mesh(sunGeo, sunShaderMat);
+        scene.add(sun);
+
+        // --- 多層光暈 (由內到外，越來越淡) ---
+        const glowLayers = [];
+        const glowConfigs = [
+            { radius: 6.0, color: 0xffaa00, opacity: 0.18 },
+            { radius: 7.5, color: 0xff8800, opacity: 0.10 },
+            { radius: 9.5, color: 0xff6600, opacity: 0.05 },
+            { radius: 13,  color: 0xff4400, opacity: 0.02 }
+        ];
+        glowConfigs.forEach(cfg => {
+            const gMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(cfg.radius, 32, 32),
+                new THREE.MeshBasicMaterial({
+                    color: cfg.color, transparent: true, opacity: cfg.opacity,
+                    side: THREE.BackSide, depthWrite: false, blending: THREE.AdditiveBlending
+                })
+            );
+            scene.add(gMesh);
+            glowLayers.push(gMesh);
+        });
+
+        // --- 日冕粒子環 ---
+        const coronaCount = 300;
+        const coronaGeo = new THREE.BufferGeometry();
+        const coronaPositions = new Float32Array(coronaCount * 3);
+        const coronaSizes = new Float32Array(coronaCount);
+        for (let i = 0; i < coronaCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const r = 5.5 + Math.random() * 4;
+            const ySpread = (Math.random() - 0.5) * 3;
+            coronaPositions[i * 3]     = Math.cos(angle) * r;
+            coronaPositions[i * 3 + 1] = ySpread;
+            coronaPositions[i * 3 + 2] = Math.sin(angle) * r;
+            coronaSizes[i] = 0.1 + Math.random() * 0.3;
+        }
+        coronaGeo.setAttribute('position', new THREE.BufferAttribute(coronaPositions, 3));
+        coronaGeo.setAttribute('size', new THREE.BufferAttribute(coronaSizes, 1));
+        const corona = new THREE.Points(coronaGeo, new THREE.PointsMaterial({
+            color: 0xffcc44, size: 0.25, transparent: true, opacity: 0.6,
+            blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+        }));
+        scene.add(corona);
+
+        // --- 光源 ---
+        const sunLight = new THREE.PointLight(0xffeedd, 1200, 600);
+        scene.add(sunLight);
+        scene.add(new THREE.AmbientLight(0x222244, 0.3));
+
+        // 4. 行星數據
+        const planetData = [
+            { name: '水星 Mercury', radius: 0.6, distance: 12, speed: 4.15, color: 0xaaaaaa, moons: [] },
+            { name: '金星 Venus',   radius: 1.0, distance: 18, speed: 1.62, color: 0xe8c060, moons: [] },
+            { name: '地球 Earth',   radius: 1.1, distance: 25, speed: 1.0,  color: 0x2266ff, moons: [
+                { name: '月球', radius: 0.3, distance: 3, speed: 13.4, color: 0x888888 }
+            ]},
+            { name: '火星 Mars',    radius: 0.8, distance: 33, speed: 0.53, color: 0xcc4422, moons: [
+                { name: '火衛一', radius: 0.15, distance: 2, speed: 20, color: 0x999988 }
+            ]},
+            { name: '木星 Jupiter', radius: 2.8, distance: 50, speed: 0.084, color: 0xd4a060, moons: [
+                { name: '木衛一', radius: 0.35, distance: 5, speed: 8, color: 0xccbb88 },
+                { name: '木衛二', radius: 0.3, distance: 6.5, speed: 5, color: 0xaabbcc }
+            ]},
+            { name: '土星 Saturn',  radius: 2.3, distance: 68, speed: 0.034, color: 0xddb87a, moons: [], hasRing: true },
+            { name: '天王星 Uranus',radius: 1.6, distance: 85, speed: 0.012, color: 0x66ccee, moons: [] },
+            { name: '海王星 Neptune',radius: 1.5, distance: 100, speed: 0.006, color: 0x3355ff, moons: [] }
+        ];
+
+        // 5. 建立行星系統
+        const orbitLines = [];
+        const planets = [];
+        let speedMultiplier = 1;
+
+        // 生成右上角行星資訊
+        const infoEl = document.getElementById('planet-info');
+        planetData.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'planet-row';
+            row.innerHTML = `<span class="planet-dist">${p.distance} AU</span><span class="planet-name">${p.name.split(' ')[0]}</span><div class="planet-dot" style="background:#${p.color.toString(16).padStart(6,'0')}"></div>`;
+            infoEl.appendChild(row);
+        });
+
+        planetData.forEach(data => {
+            // 軌道 Group
+            const orbit = new THREE.Group();
+            scene.add(orbit);
+
+            // 行星
+            const pGeo = new THREE.SphereGeometry(data.radius, 32, 32);
+            const pMat = new THREE.MeshStandardMaterial({ color: data.color, roughness: 0.6, metalness: 0.2 });
+            const planet = new THREE.Mesh(pGeo, pMat);
+            planet.position.x = data.distance;
+            orbit.add(planet);
+
+            // 土星光環
+            if (data.hasRing) {
+                const ringGeo = new THREE.RingGeometry(data.radius * 1.4, data.radius * 2.2, 64);
+                const ringMat = new THREE.MeshBasicMaterial({ color: 0xccbb88, side: THREE.DoubleSide, transparent: true, opacity: 0.5 });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = -Math.PI / 2.5;
+                ring.position.x = data.distance;
+                orbit.add(ring);
+            }
+
+            // 軌道線
+            const orbitCurve = new THREE.EllipseCurve(0, 0, data.distance, data.distance, 0, 2 * Math.PI, false, 0);
+            const orbitPts = orbitCurve.getPoints(128);
+            const orbitLineGeo = new THREE.BufferGeometry().setFromPoints(orbitPts);
+            const orbitLine = new THREE.Line(orbitLineGeo, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08 }));
+            orbitLine.rotation.x = -Math.PI / 2;
+            scene.add(orbitLine);
+            orbitLines.push(orbitLine);
+
+            // 衛星
+            data.moons.forEach(moonData => {
+                const moonOrbit = new THREE.Group();
+                moonOrbit.position.x = data.distance;
+                orbit.add(moonOrbit);
+
+                const mGeo = new THREE.SphereGeometry(moonData.radius, 16, 16);
+                const mMat = new THREE.MeshStandardMaterial({ color: moonData.color, roughness: 0.8 });
+                const moon = new THREE.Mesh(mGeo, mMat);
+                moon.position.x = moonData.distance;
+                moonOrbit.add(moon);
+
+                planets.push({ orbit: moonOrbit, speed: moonData.speed, mesh: moon });
+            });
+
+            planets.push({ orbit, speed: data.speed, mesh: planet });
+        });
+
+        // 6. 控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 15;
+        controls.maxDistance = 250;
+
+        // 7. UI
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                speedMultiplier = parseFloat(btn.dataset.speed);
+            });
+        });
+
+        let showOrbits = true;
+        document.getElementById('btn-orbits').addEventListener('click', function() {
+            this.classList.toggle('active');
+            showOrbits = this.classList.contains('active');
+            orbitLines.forEach(l => l.visible = showOrbits);
+        });
+
+        // 名稱標籤 (CSS2DRenderer 簡化 — 這裡用 DOM overlay)
+        const labelContainer = document.createElement('div');
+        labelContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4';
+        document.body.appendChild(labelContainer);
+        let showLabels = false;
+
+        const labelEls = [];
+        planetData.forEach((p, i) => {
+            const el = document.createElement('div');
+            el.textContent = p.name.split(' ')[0];
+            el.style.cssText = `position:absolute;font-size:11px;color:rgba(255,255,255,.5);font-family:'Inter',sans-serif;letter-spacing:1px;display:none`;
+            labelContainer.appendChild(el);
+            labelEls.push({ el, planetIdx: i });
+        });
+
+        document.getElementById('btn-labels').addEventListener('click', function() {
+            this.classList.toggle('active');
+            showLabels = this.classList.contains('active');
+            labelEls.forEach(l => l.el.style.display = showLabels ? 'block' : 'none');
+        });
+
+        // 8. 動畫
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+
+            // 太陽 Shader 動畫
+            const elapsed = clock.getElapsedTime();
+            sunShaderMat.uniforms.uTime.value = elapsed;
+            sun.rotation.y += 0.002;
+
+            // 光暈呼吸脈衝
+            glowLayers.forEach((g, i) => {
+                const pulse = 1 + Math.sin(elapsed * (1.5 - i * 0.3) + i) * 0.08;
+                g.scale.setScalar(pulse);
+                g.material.opacity = glowConfigs[i].opacity * (0.8 + Math.sin(elapsed * 2 + i * 1.5) * 0.3);
+            });
+
+            // 日冕粒子緩慢旋轉
+            corona.rotation.y += 0.003;
+
+            // 行星公轉
+            planets.forEach(p => {
+                p.orbit.rotation.y += p.speed * 0.01 * speedMultiplier;
+            });
+
+            // 更新標籤位置
+            if (showLabels) {
+                // 從 planetData 取得對應的 planets entry (只取行星，跳過衛星)
+                let planetIdx = 0;
+                planets.forEach(p => {
+                    // 只處理主行星 (distance > 10 表示它是主行星)
+                });
+                // 簡化做法：用行星的世界座標投影
+                labelEls.forEach((lbl, i) => {
+                    // 找到對應的行星 mesh (跳過衛星)
+                    const pEntry = planets.filter(pp => pp.mesh.geometry.parameters && pp.mesh.geometry.parameters.radius >= 0.5)[i];
+                    if (!pEntry) return;
+                    const worldPos = new THREE.Vector3();
+                    pEntry.mesh.getWorldPosition(worldPos);
+                    worldPos.project(camera);
+                    const x = (worldPos.x * 0.5 + 0.5) * innerWidth;
+                    const y = (-worldPos.y * 0.5 + 0.5) * innerHeight;
+                    lbl.el.style.left = x + 'px';
+                    lbl.el.style.top = (y - 20) + 'px';
+                    lbl.el.style.opacity = worldPos.z > 1 ? '0' : '0.5';
+                });
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // 9. 載入
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const el = document.getElementById('loading');
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 1000);
+            }, 800);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
