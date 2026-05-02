@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queen - Deep Knowledge Generator</title>
+    <!-- Use Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 2.5rem;
+            margin: 0;
+            background: -webkit-linear-gradient(45deg, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            height: 20px;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .content-area {
+            min-height: 300px;
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .content-area h3 {
+            color: #cbd5e1;
+            margin-top: 1.5em;
+        }
+
+        .highlight {
+            background: rgba(56, 189, 248, 0.2);
+            border-radius: 4px;
+            padding: 2px 4px;
+            transition: background 0.3s ease;
+        }
+
+        /* Markdown styles */
+        .content-area p { margin-bottom: 1em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Queen Engine</h1>
+            <p style="color: #94a3b8;">Local WebGPU Knowledge Synthesis & Streaming</p>
+        </div>
+
+        <div class="glass-panel">
+            <div class="input-group">
+                <input type="text" id="promptInput" placeholder="Enter a topic for deep analysis..." value="未來教育的變革與AI的融合">
+                <button id="generateBtn">Generate</button>
+            </div>
+            <div class="status-indicator">
+                <div class="spinner" id="spinner"></div>
+                <span id="statusText">Ready.</span>
+            </div>
+        </div>
+
+        <div class="glass-panel" style="flex: 1;">
+            <div id="contentArea" class="content-area"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+        const generateBtn = document.getElementById('generateBtn');
+        const promptInput = document.getElementById('promptInput');
+        const statusText = document.getElementById('statusText');
+        const spinner = document.getElementById('spinner');
+        const contentArea = document.getElementById('contentArea');
+
+        let audioQueue = [];
+        let isPlaying = false;
+        let currentAudio = null;
+        let engine = null;
+        
+        // Use a lightweight LLM good at instructions
+        const selectedModel = "Qwen2-1.5B-Instruct-q4f16_1-MLC";
+
+        // Initialize WebLLM
+        async function initEngine() {
+            if (engine) return;
+            spinner.style.display = 'block';
+            statusText.textContent = 'Loading Local AI Model (First time takes a while to download)...';
+            generateBtn.disabled = true;
+
+            const initProgressCallback = (report) => {
+                statusText.textContent = `Loading Model: ${report.text}`;
+            };
+
+            try {
+                engine = await webllm.CreateMLCEngine(
+                    selectedModel,
+                    { initProgressCallback: initProgressCallback }
+                );
+                statusText.textContent = 'Model loaded and ready! (Running locally via WebGPU)';
+                spinner.style.display = 'none';
+                generateBtn.disabled = false;
+            } catch (err) {
+                console.error(err);
+                statusText.textContent = 'Error loading model. Does your browser support WebGPU?';
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Initialize on page load
+        initEngine();
+
+        generateBtn.addEventListener('click', async () => {
+            if (!engine) return;
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+
+            // Reset UI and state
+            contentArea.innerHTML = '';
+            audioQueue = [];
+            isPlaying = false;
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
+            }
+
+            generateBtn.disabled = true;
+            spinner.style.display = 'block';
+            statusText.textContent = 'Generating deep knowledge synthesis...';
+
+            let rawMarkdown = '';
+            let sentenceBuffer = '';
+            let audioIndex = 0;
+
+            try {
+                const messages = [
+                    { role: "system", content: "你是一個專業的知識合成引擎(Queen Engine)，擅長進行深度分析。請以發散、收斂、結構化的方式進行回答，並使用繁體中文。" },
+                    { role: "user", content: prompt }
+                ];
+
+                const chunks = await engine.chat.completions.create({
+                    messages,
+                    temperature: 0.7,
+                    stream: true,
+                });
+
+                for await (const chunk of chunks) {
+                    const content = chunk.choices[0]?.delta?.content || "";
+                    rawMarkdown += content;
+                    sentenceBuffer += content;
+                    contentArea.innerHTML = marked.parse(rawMarkdown);
+                    window.scrollTo(0, document.body.scrollHeight);
+
+                    // Check for sentence boundaries to trigger TTS
+                    if (/[。！？\n]/.test(content) && sentenceBuffer.trim().length > 10) {
+                        const textToSpeak = sentenceBuffer.trim();
+                        sentenceBuffer = ''; // reset buffer
+                        
+                        // Async call to backend for TTS
+                        fetch('/tts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text: textToSpeak, index: audioIndex++ })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.url) {
+                                audioQueue.push(data.url);
+                                playNextAudio();
+                            }
+                        })
+                        .catch(err => console.error("TTS Error:", err));
+                    }
+                }
+
+                // Process remaining buffer
+                if (sentenceBuffer.trim().length > 0) {
+                    const textToSpeak = sentenceBuffer.trim();
+                    fetch('/tts', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: textToSpeak, index: audioIndex++ })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.url) {
+                            audioQueue.push(data.url);
+                            playNextAudio();
+                        }
+                    });
+                }
+
+                spinner.style.display = 'none';
+                statusText.textContent = 'Generation completed.';
+                generateBtn.disabled = false;
+
+            } catch (err) {
+                console.error("Generation Error:", err);
+                spinner.style.display = 'none';
+                statusText.textContent = 'Error occurred during generation.';
+                generateBtn.disabled = false;
+            }
+        });
+
+        function playNextAudio() {
+            if (isPlaying || audioQueue.length === 0) return;
+
+            isPlaying = true;
+            const audioUrl = audioQueue.shift();
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.play().catch(e => {
+                console.error("Audio playback failed:", e);
+                isPlaying = false;
+                playNextAudio();
+            });
+
+            currentAudio.onended = () => {
+                isPlaying = false;
+                currentAudio = null;
+                playNextAudio();
+            };
+        }
+    </script>
+</body>
+</html>

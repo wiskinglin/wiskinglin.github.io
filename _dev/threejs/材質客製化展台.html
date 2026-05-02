@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 產品展示與客製化 (Three.js)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{overflow:hidden;background:#f5f5f7;font-family:'Inter',sans-serif;color:#333}
+        #canvas-container{width:100vw;height:100vh;cursor:grab}
+        #canvas-container:active{cursor:grabbing}
+        #loading{position:absolute;top:0;left:0;width:100%;height:100%;background:#f5f5f7;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:100;transition:opacity .8s ease}
+        .loader-ring{width:50px;height:50px;border:3px solid rgba(0,0,0,.08);border-top-color:#333;border-radius:50%;animation:spin .9s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loader-text{margin-top:18px;font-size:13px;letter-spacing:3px;color:#999;text-transform:uppercase}
+        .overlay{position:absolute;top:35px;left:45px;pointer-events:none;z-index:5}
+        .overlay h1{font-size:26px;font-weight:700;letter-spacing:.5px;margin-bottom:6px;background:linear-gradient(135deg,#333,#888);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .overlay p{font-size:14px;font-weight:300;color:#888;max-width:300px;line-height:1.7}
+        .product-info{position:absolute;top:35px;right:45px;text-align:right;pointer-events:none;z-index:5}
+        .product-info .label{font-size:11px;letter-spacing:2px;color:#aaa;text-transform:uppercase;margin-bottom:4px}
+        .product-info .value{font-size:15px;font-weight:600;color:#555;margin-bottom:12px}
+        .control-panel{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:16px 28px;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.08);z-index:5}
+        .panel-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#aaa;margin-right:10px;font-weight:600}
+        .mat-btn{width:44px;height:44px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .3s ease;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        .mat-btn:hover{transform:scale(1.15)}
+        .mat-btn.active{border-color:#333;transform:scale(1.15)}
+        .mat-btn[data-mat="gold"]{background:linear-gradient(135deg,#ffd700,#b8860b)}
+        .mat-btn[data-mat="rose-gold"]{background:linear-gradient(135deg,#e8b4b8,#b76e79)}
+        .mat-btn[data-mat="chrome"]{background:linear-gradient(135deg,#e8e8e8,#aaa)}
+        .mat-btn[data-mat="glass"]{background:linear-gradient(135deg,#d4f1f9,#87ceeb)}
+        .mat-btn[data-mat="matte-black"]{background:linear-gradient(135deg,#444,#111)}
+        .mat-btn[data-mat="emerald"]{background:linear-gradient(135deg,#50c878,#2e8b57)}
+        .separator{width:1px;height:30px;background:#ddd;margin:0 8px}
+        .toggle-btn{padding:10px 18px;border-radius:10px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#555;transition:all .3s;font-family:'Inter',sans-serif}
+        .toggle-btn:hover{background:#f0f0f0}
+        .toggle-btn.active{background:#333;color:#fff;border-color:#333}
+        .hint{position:absolute;bottom:40px;right:45px;font-size:12px;color:#bbb;pointer-events:none;text-align:right;line-height:1.8}
+        .hint kbd{display:inline-block;padding:2px 6px;border-radius:4px;background:#eee;font-size:11px;color:#666;font-family:monospace}
+    </style>
+</head>
+<body>
+    <div id="loading"><div class="loader-ring"></div><div class="loader-text">Building Scene</div></div>
+    <div class="overlay"><h1>Product Configurator</h1><p>3D 精品手錶展示與材質客製化。拖曳旋轉產品，點擊下方按鈕即時切換表面材質與環境光源。</p></div>
+    <div class="product-info">
+        <div class="label">模型</div><div class="value">Luxury Chronograph</div>
+        <div class="label">當前材質</div><div class="value" id="current-mat">奢華黃金</div>
+        <div class="label">類型</div><div class="value">Procedural Geometry</div>
+    </div>
+    <div class="control-panel">
+        <span class="panel-label">材質</span>
+        <button class="mat-btn active" data-mat="gold" title="奢華黃金"></button>
+        <button class="mat-btn" data-mat="rose-gold" title="玫瑰金"></button>
+        <button class="mat-btn" data-mat="chrome" title="鏡面鉻"></button>
+        <button class="mat-btn" data-mat="glass" title="水晶玻璃"></button>
+        <button class="mat-btn" data-mat="matte-black" title="消光黑"></button>
+        <button class="mat-btn" data-mat="emerald" title="翡翠綠"></button>
+        <div class="separator"></div>
+        <span class="panel-label">選項</span>
+        <button class="toggle-btn active" id="btn-autorotate">自動旋轉</button>
+        <button class="toggle-btn" id="btn-wireframe">線框模式</button>
+        <button class="toggle-btn" id="btn-env">暗色環境</button>
+    </div>
+    <div class="hint"><kbd>左鍵拖曳</kbd> 旋轉 · <kbd>滾輪</kbd> 縮放 · <kbd>右鍵</kbd> 平移</div>
+    <div id="canvas-container"></div>
+    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+    <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f7);
+        let isDarkEnv = false;
+
+        const camera = new THREE.PerspectiveCamera(40, innerWidth/innerHeight, 0.1, 100);
+        camera.position.set(0, 4, 9);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // 燈光
+        const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+        keyLight.position.set(8, 10, 6); keyLight.castShadow = true;
+        keyLight.shadow.mapSize.set(2048, 2048); keyLight.shadow.bias = -0.001;
+        scene.add(keyLight);
+        scene.add(new THREE.DirectionalLight(0xccccff, 1.0).translateX(-6).translateY(4).translateZ(-4));
+        const rimLight = new THREE.DirectionalLight(0xffeedd, 1.5);
+        rimLight.position.set(0, 8, -10); scene.add(rimLight);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+        // 展示平台
+        const platformGeo = new THREE.CylinderGeometry(4, 4.2, 0.15, 64);
+        const platformMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.05, metalness: 0.1 });
+        const platform = new THREE.Mesh(platformGeo, platformMat);
+        platform.position.y = -2.1; platform.receiveShadow = true; scene.add(platform);
+        const edgeRing = new THREE.Mesh(new THREE.TorusGeometry(4.1, 0.02, 16, 100), new THREE.MeshBasicMaterial({ color: 0xcccccc }));
+        edgeRing.rotation.x = -Math.PI / 2; edgeRing.position.y = -2.02; scene.add(edgeRing);
+        const shadowPlane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.ShadowMaterial({ opacity: 0.08 }));
+        shadowPlane.rotation.x = -Math.PI / 2; shadowPlane.position.y = -2.17; shadowPlane.receiveShadow = true; scene.add(shadowPlane);
+
+        // 材質
+        const materials = {
+            'gold': new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.12 }),
+            'rose-gold': new THREE.MeshStandardMaterial({ color: 0xe8b4b8, metalness: 1, roughness: 0.18 }),
+            'chrome': new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 1, roughness: 0.02 }),
+            'glass': new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0, transmission: 0.95, thickness: 1.5, ior: 1.5, clearcoat: 1 }),
+            'matte-black': new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.3, roughness: 0.85 }),
+            'emerald': new THREE.MeshPhysicalMaterial({ color: 0x50c878, metalness: 0.1, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.1 })
+        };
+        const matNames = { 'gold':'奢華黃金','rose-gold':'玫瑰金','chrome':'鏡面鉻','glass':'水晶玻璃','matte-black':'消光黑','emerald':'翡翠綠' };
+
+        // 固定材質
+        const glassMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.0, roughness: 0.0, transmission: 0.92, thickness: 0.3, ior: 1.52, clearcoat: 1, transparent: true, opacity: 0.4 });
+        const dialMat = new THREE.MeshStandardMaterial({ color: 0x0a0a1a, roughness: 0.4, metalness: 0.2 });
+        const handMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, metalness: 0.9, roughness: 0.1, emissive: 0xaaddff, emissiveIntensity: 0.15 });
+        const markerMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xccddff, emissiveIntensity: 0.3 });
+
+        // ===== 建構手錶 =====
+        const watch = new THREE.Group();
+        const bodyParts = [];
+
+        const R = 1.5;   // 錶殼半徑
+        const T = 0.35;  // 錶殼厚度
+
+        // --- 錶殼外圈 ---
+        const caseGeo = new THREE.CylinderGeometry(R, R, T, 64);
+        const caseMesh = new THREE.Mesh(caseGeo, materials['gold']);
+        caseMesh.castShadow = true;
+        watch.add(caseMesh); bodyParts.push(caseMesh);
+
+        // 外圈凸緣 (bezel)
+        const bezelGeo = new THREE.TorusGeometry(R, 0.06, 16, 64);
+        const bezelTop = new THREE.Mesh(bezelGeo, materials['gold']);
+        bezelTop.rotation.x = Math.PI / 2; bezelTop.position.y = T / 2;
+        watch.add(bezelTop); bodyParts.push(bezelTop);
+        const bezelBot = bezelTop.clone();
+        bezelBot.position.y = -T / 2;
+        watch.add(bezelBot); bodyParts.push(bezelBot);
+
+        // bezel 刻度紋理 (60 個小凸點)
+        for (let i = 0; i < 60; i++) {
+            const a = (i / 60) * Math.PI * 2;
+            const dotGeo = new THREE.SphereGeometry(0.018, 8, 8);
+            const dot = new THREE.Mesh(dotGeo, materials['gold']);
+            dot.position.set(Math.cos(a) * R, T / 2 + 0.04, Math.sin(a) * R);
+            watch.add(dot); bodyParts.push(dot);
+        }
+
+        // --- 錶冠 (龍頭) ---
+        const crownGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.35, 16);
+        const crown = new THREE.Mesh(crownGeo, materials['gold']);
+        crown.rotation.z = Math.PI / 2; crown.position.set(R + 0.2, 0, 0);
+        crown.castShadow = true;
+        watch.add(crown); bodyParts.push(crown);
+        // 龍頭端面
+        const crownCapGeo = new THREE.SphereGeometry(0.12, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const crownCap = new THREE.Mesh(crownCapGeo, materials['gold']);
+        crownCap.rotation.z = -Math.PI / 2; crownCap.position.set(R + 0.37, 0, 0);
+        watch.add(crownCap); bodyParts.push(crownCap);
+
+        // --- 計時按鈕 (上下各一) ---
+        [0.35, -0.35].forEach(yOff => {
+            const btnGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.25, 12);
+            const btn = new THREE.Mesh(btnGeo, materials['gold']);
+            btn.rotation.z = Math.PI / 2;
+            btn.position.set(R + 0.12, yOff, 0);
+            watch.add(btn); bodyParts.push(btn);
+        });
+
+        // --- 錶面 (深色錶盤) ---
+        const dialGeo = new THREE.CylinderGeometry(R - 0.08, R - 0.08, 0.02, 64);
+        const dial = new THREE.Mesh(dialGeo, dialMat);
+        dial.position.y = T / 2 - 0.04;
+        watch.add(dial);
+
+        // --- 時標 (12 個) ---
+        for (let i = 0; i < 12; i++) {
+            const a = (i / 12) * Math.PI * 2;
+            const isMain = i % 3 === 0;
+            const len = isMain ? 0.2 : 0.12;
+            const w = isMain ? 0.04 : 0.02;
+            const mGeo = new THREE.BoxGeometry(w, 0.02, len);
+            const marker = new THREE.Mesh(mGeo, markerMat);
+            const dist = R - 0.25;
+            marker.position.set(Math.sin(a) * dist, T / 2 - 0.02, Math.cos(a) * dist);
+            marker.rotation.y = -a;
+            watch.add(marker);
+        }
+
+        // --- 分鐘刻度 (60 個細線) ---
+        for (let i = 0; i < 60; i++) {
+            if (i % 5 === 0) continue;
+            const a = (i / 60) * Math.PI * 2;
+            const mGeo = new THREE.BoxGeometry(0.01, 0.015, 0.06);
+            const tick = new THREE.Mesh(mGeo, new THREE.MeshStandardMaterial({ color: 0x666688 }));
+            const dist = R - 0.18;
+            tick.position.set(Math.sin(a) * dist, T / 2 - 0.02, Math.cos(a) * dist);
+            tick.rotation.y = -a;
+            watch.add(tick);
+        }
+
+        // --- 指針 ---
+        // 時針
+        const hourGeo = new THREE.BoxGeometry(0.06, 0.025, 0.7);
+        const hourHand = new THREE.Mesh(hourGeo, handMat);
+        hourHand.position.set(0, T / 2, 0.25);
+        hourHand.geometry.translate(0, 0, -0.15);
+        watch.add(hourHand);
+
+        // 分針
+        const minGeo = new THREE.BoxGeometry(0.04, 0.025, 1.0);
+        const minHand = new THREE.Mesh(minGeo, handMat);
+        minHand.position.set(0, T / 2 + 0.015, 0);
+        minHand.rotation.y = Math.PI * 0.6;
+        minHand.geometry.translate(0, 0, -0.3);
+        watch.add(minHand);
+
+        // 秒針
+        const secGeo = new THREE.BoxGeometry(0.015, 0.02, 1.15);
+        const secHand = new THREE.Mesh(secGeo, new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff2200, emissiveIntensity: 0.3 }));
+        secHand.position.set(0, T / 2 + 0.03, 0);
+        secHand.geometry.translate(0, 0, -0.35);
+        watch.add(secHand);
+
+        // 中心軸
+        const centerGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.08, 16);
+        const centerPin = new THREE.Mesh(centerGeo, handMat);
+        centerPin.position.y = T / 2 + 0.01;
+        watch.add(centerPin);
+
+        // --- 副錶盤 (3 個小圓) ---
+        [{ x: 0, z: -0.55 }, { x: 0.55, z: 0.2 }, { x: -0.55, z: 0.2 }].forEach((pos, idx) => {
+            // 凹陷環
+            const subRingGeo = new THREE.TorusGeometry(0.28, 0.015, 12, 32);
+            const subRing = new THREE.Mesh(subRingGeo, new THREE.MeshStandardMaterial({ color: 0x333355, metalness: 0.5, roughness: 0.3 }));
+            subRing.rotation.x = Math.PI / 2;
+            subRing.position.set(pos.x, T / 2 - 0.01, pos.z);
+            watch.add(subRing);
+
+            // 小指針
+            const subHandGeo = new THREE.BoxGeometry(0.02, 0.015, 0.22);
+            const subHand = new THREE.Mesh(subHandGeo, handMat);
+            subHand.position.set(pos.x, T / 2, pos.z);
+            subHand.rotation.y = idx * 1.2;
+            subHand.geometry.translate(0, 0, -0.05);
+            watch.add(subHand);
+        });
+
+        // --- 日期窗 ---
+        const dateWindowGeo = new THREE.BoxGeometry(0.22, 0.02, 0.16);
+        const dateWindow = new THREE.Mesh(dateWindowGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }));
+        dateWindow.position.set(0.85, T / 2 - 0.01, 0);
+        watch.add(dateWindow);
+
+        // --- 玻璃鏡面 ---
+        const glassGeo = new THREE.CylinderGeometry(R - 0.05, R - 0.05, 0.04, 64);
+        const glass = new THREE.Mesh(glassGeo, glassMat);
+        glass.position.y = T / 2 + 0.02;
+        watch.add(glass);
+
+        // --- 錶帶 (上下各一段) ---
+        function createStrap(yDir) {
+            const strap = new THREE.Group();
+            const segCount = 8;
+            for (let i = 0; i < segCount; i++) {
+                const segH = 0.3;
+                const w = 0.9 - i * 0.03;
+                const segGeo = new THREE.BoxGeometry(w, T * 0.8, segH);
+                // 圓角效果用 bevel
+                const seg = new THREE.Mesh(segGeo, materials['gold']);
+                seg.position.set(0, 0, yDir * (R + 0.1 + i * segH));
+                seg.castShadow = true;
+                strap.add(seg);
+                bodyParts.push(seg);
+
+                // 鏈節間隙
+                if (i < segCount - 1) {
+                    const gapGeo = new THREE.BoxGeometry(w - 0.15, T * 0.5, 0.04);
+                    const gap = new THREE.Mesh(gapGeo, materials['gold']);
+                    gap.position.set(0, 0, yDir * (R + 0.25 + i * segH));
+                    strap.add(gap);
+                    bodyParts.push(gap);
+                }
+            }
+            // 錶耳 (lug)
+            [-1, 1].forEach(side => {
+                const lugGeo = new THREE.BoxGeometry(0.12, 0.12, 0.3);
+                const lug = new THREE.Mesh(lugGeo, materials['gold']);
+                lug.position.set(side * 0.45, 0, yDir * (R + 0.05));
+                strap.add(lug); bodyParts.push(lug);
+            });
+            return strap;
+        }
+
+        watch.add(createStrap(1));
+        watch.add(createStrap(-1));
+
+        // --- 品牌文字環 (用小點排出 "KLIO" ) ---
+        const brandDots = [
+            // 簡化：在 12 點位置放幾個裝飾點
+            { x: -0.12, z: -0.8 }, { x: -0.06, z: -0.8 }, { x: 0, z: -0.8 }, { x: 0.06, z: -0.8 }, { x: 0.12, z: -0.8 }
+        ];
+        brandDots.forEach(p => {
+            const dGeo = new THREE.SphereGeometry(0.015, 8, 8);
+            const d = new THREE.Mesh(dGeo, markerMat);
+            d.position.set(p.x, T / 2, p.z);
+            watch.add(d);
+        });
+
+        // 擺放手錶：微微傾斜更有展示感
+        watch.rotation.x = -Math.PI / 2 + 0.3;
+        watch.rotation.z = 0.15;
+        watch.position.y = 0.2;
+        scene.add(watch);
+
+        // 環境反射
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        function genEnv() {
+            const s = new THREE.Scene();
+            s.add(new THREE.Mesh(new THREE.PlaneGeometry(20,20), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })));
+            s.children[0].position.y = 10; s.children[0].rotation.x = Math.PI/2;
+            s.background = new THREE.Color(isDarkEnv ? 0x111111 : 0xcccccc);
+            return pmrem.fromScene(s, 0.04).texture;
+        }
+        scene.environment = genEnv();
+
+        // 控制器
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.06;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 1.5;
+        controls.minDistance = 5;
+        controls.maxDistance = 20;
+        controls.maxPolarAngle = Math.PI / 1.8;
+        controls.target.set(0, 0.2, 0);
+
+        // UI 互動
+        let isWireframe = false;
+
+        document.querySelectorAll('.mat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mat-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const key = btn.dataset.mat;
+                const newMat = materials[key];
+                newMat.wireframe = isWireframe;
+                bodyParts.forEach(part => { part.material = newMat; });
+                document.getElementById('current-mat').textContent = matNames[key];
+            });
+        });
+
+        document.getElementById('btn-autorotate').addEventListener('click', function() {
+            this.classList.toggle('active');
+            controls.autoRotate = this.classList.contains('active');
+        });
+
+        document.getElementById('btn-wireframe').addEventListener('click', function() {
+            this.classList.toggle('active');
+            isWireframe = this.classList.contains('active');
+            bodyParts.forEach(part => { part.material.wireframe = isWireframe; });
+        });
+
+        document.getElementById('btn-env').addEventListener('click', function() {
+            this.classList.toggle('active');
+            isDarkEnv = this.classList.contains('active');
+            scene.background = new THREE.Color(isDarkEnv ? 0x111111 : 0xf5f5f7);
+            platformMat.color.set(isDarkEnv ? 0x222222 : 0xeeeeee);
+            scene.environment = genEnv();
+        });
+
+        // 動畫 (秒針轉動 + 浮動)
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+            // 秒針轉動
+            secHand.rotation.y = -t * (Math.PI / 30) * 2;
+            // 微微浮動
+            watch.position.y = 0.2 + Math.sin(t * 1.2) * 0.08;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const el = document.getElementById('loading');
+                el.style.opacity = '0';
+                setTimeout(() => el.remove(), 800);
+            }, 600);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

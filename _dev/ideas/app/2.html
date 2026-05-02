@@ -1,204 +1,249 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenDraft Pro - 沉浸式定稿編輯器</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
+    <title>2026 Concept Interactive Assembly</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700&display=swap');
+
+        :root {
+            --bg-color: #050608;
+            --accent-cyan: #00f0ff;
+            --panel-bg: #0f1115;
+        }
+
         body {
-            font-family: 'Noto Serif TC', serif;
-            transition: background-color 0.5s ease;
-        }
-
-        /* 隱藏原生外框與滾動條，設定為自適應高度所需 */
-        textarea {
-            outline: none !important;
-            box-shadow: none !important;
-            resize: none;
+            margin: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 50%, #11141a 0%, var(--bg-color) 80%);
+            color: #fff;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
             overflow: hidden;
-            /* 隱藏內部滾動，交由 JS 控制高度 */
         }
 
-        /* 專注模式 UI 隱藏動畫 */
-        .fade-transition {
-            transition: opacity 0.5s ease, transform 0.5s ease, filter 0.5s ease;
+        .hud-header {
+            position: absolute;
+            top: 40px;
+            left: 50px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
         }
 
-        .focus-active .ui-header {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(-20px);
+        .hud-title { font-size: 14px; font-weight: 700; color: var(--accent-cyan); }
+        .hud-subtitle { font-size: 10px; color: #555; margin-top: 5px; }
+
+        .stage {
+            position: relative;
+            width: 1000px;
+            height: 600px;
         }
 
-        .focus-active .status-bar {
-            opacity: 0;
-            pointer-events: none;
-            transform: translate(-50%, 30px);
-            filter: blur(4px);
+        svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
         }
 
-        /* 自訂反白顏色，提升閱讀體驗 */
-        ::selection {
-            background-color: #E5E7EB;
-            color: #111827;
+        .part {
+            transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform-origin: center;
+        }
+
+        /* Controls */
+        .control-panel {
+            position: absolute;
+            bottom: 50px;
+            width: 600px;
+            background: rgba(15, 17, 21, 0.8);
+            border: 1px solid #1f232b;
+            padding: 20px 30px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .slider-label {
+            font-size: 12px;
+            color: #888;
+            min-width: 80px;
+        }
+
+        input[type=range] {
+            flex-grow: 1;
+            appearance: none;
+            height: 2px;
+            background: #333;
+            outline: none;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 12px;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            border-radius: 2px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
         }
     </style>
 </head>
+<body>
 
-<body class="bg-[#F9F9F7] text-gray-800 min-h-screen flex flex-col relative selection:bg-gray-300">
+    <div class="hud-header">
+        <div class="hud-title">Aero-GT Concept View</div>
+        <div class="hud-subtitle">Interactive Component Matrix // v3.2</div>
+    </div>
 
-    <header
-        class="ui-header fade-transition p-6 flex justify-between items-center max-w-5xl w-full mx-auto fixed top-0 left-1/2 transform -translate-x-1/2 z-10 bg-[#F9F9F7]/90 backdrop-blur-sm transition-colors duration-500"
-        id="header-bg">
-        <div class="flex items-center gap-3">
-            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                </path>
-            </svg>
-            <h1 class="text-xl font-bold tracking-widest text-gray-800 font-sans">ZenDraft <span
-                    class="text-xs font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full ml-1">PRO</span></h1>
-        </div>
-        <div class="flex items-center gap-4">
-            <span id="saveStatus"
-                class="font-sans text-xs text-gray-400 opacity-0 transition-opacity duration-300">已自動儲存</span>
-            <button id="focusToggle"
-                class="font-sans px-5 py-2 bg-white border border-gray-200 hover:border-gray-400 rounded-full text-sm font-medium text-gray-600 transition-all shadow-sm hover:shadow">
-                進入專注模式
-            </button>
-        </div>
-    </header>
+    <div class="stage">
+        <svg viewBox="0 0 1000 600">
+            <defs>
+                <linearGradient id="paintGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#3a3d45" />
+                    <stop offset="50%" stop-color="#1f2126" />
+                    <stop offset="100%" stop-color="#0a0a0c" />
+                </linearGradient>
 
-    <main class="flex-grow flex justify-center items-start pt-32 pb-40 px-6 w-full max-w-4xl mx-auto z-0">
-        <textarea id="editor"
-            class="w-full bg-transparent text-xl md:text-2xl leading-[2] text-gray-800 placeholder-gray-300 min-h-[50vh]"
-            placeholder="在這裡開始您的 Final Draft... (支援自動存檔，按 Esc 退出專注模式)"></textarea>
-    </main>
+                <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="rgba(0, 240, 255, 0.4)" />
+                    <stop offset="50%" stop-color="rgba(0, 100, 150, 0.1)" />
+                    <stop offset="100%" stop-color="rgba(0, 20, 30, 0.6)" />
+                </linearGradient>
 
-    <footer
-        class="status-bar fade-transition fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-white/80 backdrop-blur-md border border-gray-100 shadow-[0_10px_40px_rgb(0,0,0,0.08)] rounded-full px-8 py-3.5 flex gap-8 text-sm text-gray-500 font-sans z-10">
-        <div class="flex flex-col items-center justify-center min-w-[3rem]">
-            <span id="wordCount" class="font-bold text-lg text-gray-800 leading-tight">0</span>
-            <span class="text-[10px] tracking-wider uppercase font-semibold mt-0.5">字數</span>
-        </div>
-        <div class="w-px h-8 bg-gray-200"></div>
-        <div class="flex flex-col items-center justify-center min-w-[3rem]">
-            <span id="charCount" class="font-bold text-lg text-gray-800 leading-tight">0</span>
-            <span class="text-[10px] tracking-wider uppercase font-semibold mt-0.5">字元</span>
-        </div>
-        <div class="w-px h-8 bg-gray-200"></div>
-        <div class="flex flex-col items-center justify-center min-w-[5rem]">
-            <span id="readTime" class="font-bold text-lg text-gray-800 leading-tight">0</span>
-            <span class="text-[10px] tracking-wider uppercase font-semibold mt-0.5">閱讀時間 (分)</span>
-        </div>
-    </footer>
+                <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="8" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+
+                <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="130%">
+                    <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000" flood-opacity="0.8"/>
+                </filter>
+
+                <g id="wheel-master">
+                    <circle cx="0" cy="0" r="55" fill="#080808" stroke="#111" stroke-width="4" filter="url(#dropShadow)" />
+                    <path d="M 25 -25 Q 40 0 25 25 L 35 15 Q 45 0 35 -15 Z" fill="#00f0ff" opacity="0.8" />
+                    <circle cx="0" cy="0" r="35" fill="#151515" stroke="#2a2a2a" stroke-width="2" />
+                    <line x1="0" y1="-35" x2="0" y2="35" stroke="#333" stroke-width="6" />
+                    <line x1="-35" y1="0" x2="35" y2="0" stroke="#333" stroke-width="6" />
+                    <line x1="-25" y1="-25" x2="25" y2="25" stroke="#333" stroke-width="6" />
+                    <line x1="-25" y1="25" x2="25" y2="-25" stroke="#333" stroke-width="6" />
+                    <circle cx="0" cy="0" r="10" fill="#00f0ff" filter="url(#neonGlow)" opacity="0.5"/>
+                </g>
+            </defs>
+
+            <ellipse id="groundLight" cx="500" cy="520" rx="400" ry="20" fill="url(#glassGrad)" opacity="0.3" filter="url(#neonGlow)"/>
+
+            <g id="chassis" class="part" transform-origin="500 480">
+                <path d="M 220 480 L 780 480 L 790 460 L 210 460 Z" fill="#111" filter="url(#dropShadow)"/>
+                <rect x="350" y="465" width="300" height="10" fill="#00f0ff" opacity="0.2" filter="url(#neonGlow)"/>
+            </g>
+
+            <g id="wheel-front" class="part" transform="translate(300, 480)">
+                <use href="#wheel-master" />
+            </g>
+            <g id="wheel-rear" class="part" transform="translate(740, 480)">
+                <use href="#wheel-master" />
+            </g>
+
+            <g id="body" class="part" transform-origin="500 400">
+                <path d="M 120 450 
+                         C 120 400, 200 360, 350 360 
+                         L 450 360
+                         C 550 250, 750 250, 880 330 
+                         C 920 360, 930 430, 920 450 
+                         Z" 
+                      fill="url(#paintGrad)" filter="url(#dropShadow)"/>
+                
+                <path d="M 130 420 Q 200 400 300 400" stroke="#00f0ff" stroke-width="3" fill="none" filter="url(#neonGlow)" />
+                
+                <path d="M 850 380 Q 890 390 910 410" stroke="#ff003c" stroke-width="4" fill="none" filter="url(#neonGlow)" />
+            </g>
+
+            <g id="glass" class="part" transform-origin="600 300">
+                <path d="M 380 355 L 530 260 C 650 260, 750 280, 820 335 L 750 355 Z" 
+                      fill="url(#glassGrad)" stroke="#00f0ff" stroke-width="1" stroke-opacity="0.5" filter="url(#dropShadow)"/>
+                <path d="M 400 345 L 530 265 L 580 265" stroke="#fff" stroke-width="1" fill="none" opacity="0.3"/>
+            </g>
+
+            <g id="door" class="part" transform-origin="550 380">
+                <path d="M 450 440 L 730 440 L 760 345 L 500 345 Z" fill="url(#paintGrad)" stroke="#111" stroke-width="2" filter="url(#dropShadow)"/>
+                <rect x="680" y="360" width="30" height="6" rx="3" fill="#111" />
+                <rect x="680" y="364" width="30" height="2" fill="#00f0ff" opacity="0.6"/>
+            </g>
+        </svg>
+    </div>
+
+    <div class="control-panel">
+        <div class="slider-label">ASSEMBLED</div>
+        <input type="range" id="explodeSlider" min="0" max="100" value="0">
+        <div class="slider-label" style="text-align: right; color: var(--accent-cyan);">EXPLODED</div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const editor = document.getElementById('editor');
-            const wordCountEl = document.getElementById('wordCount');
-            const charCountEl = document.getElementById('charCount');
-            const readTimeEl = document.getElementById('readTime');
-            const focusToggle = document.getElementById('focusToggle');
-            const saveStatus = document.getElementById('saveStatus');
-            const headerBg = document.getElementById('header-bg');
-            const body = document.body;
+        const slider = document.getElementById('explodeSlider');
+        const groundLight = document.getElementById('groundLight');
+        
+        // Advanced Configuration Matrix
+        // x, y = pixel translation based on slider
+        // s = scale modifier (creates depth)
+        // o = opacity drop (makes outer parts ghosted to see inside)
+        const explodeConfig = {
+            'body':        { x: -20,  y: -100, s: 1.05, o: 0.9 },
+            'glass':       { x: 30,   y: -220, s: 1.15, o: 0.7 },
+            'door':        { x: 180,  y: -40,  s: 1.25, o: 0.8 },
+            'wheel-front': { x: -120, y: 80,   s: 0.85, o: 1.0 },
+            'wheel-rear':  { x: 120,  y: 80,   s: 0.85, o: 1.0 },
+            'chassis':     { x: 0,    y: 30,   s: 0.95, o: 1.0 }
+        };
 
-            let saveTimeout;
+        // Cache DOM elements to prevent querying on every frame
+        const elements = {};
+        for (const id in explodeConfig) {
+            elements[id] = document.getElementById(id);
+        }
 
-            // 1. 自動擴展高度邏輯 (Auto-resize Canvas)
-            const autoResize = () => {
-                editor.style.height = 'auto'; // 先重置高度
-                editor.style.height = editor.scrollHeight + 'px'; // 根據內容設定新高度
-            };
+        // Base transform for wheels to keep them in place before translation
+        const baseWheelFront = "translate(300px, 480px)";
+        const baseWheelRear = "translate(740px, 480px)";
 
-            // 2. 數據統計邏輯
-            const updateStats = () => {
-                const text = editor.value;
+        slider.addEventListener('input', (e) => {
+            const progress = e.target.value / 100; // Normalized 0.0 to 1.0
+            
+            for (const id in explodeConfig) {
+                const config = explodeConfig[id];
+                const el = elements[id];
+                
+                // Calculate current interpolated values
+                const currentX = config.x * progress;
+                const currentY = config.y * progress;
+                const currentScale = 1 + ((config.s - 1) * progress);
+                const currentOpacity = 1 - ((1 - config.o) * progress);
 
-                // 計算字元數 (去除首尾空白)
-                charCountEl.textContent = text.trim().length;
+                // Build transform string
+                let transformStr = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
+                
+                // Hack to preserve absolute wheel positions while scaling/moving
+                if (id === 'wheel-front') transformStr = `${baseWheelFront} ` + transformStr;
+                if (id === 'wheel-rear') transformStr = `${baseWheelRear} ` + transformStr;
 
-                // 計算中文字數
-                const cjkMatches = text.match(/[\u4e00-\u9fa5]/g) || [];
-                const cjkCount = cjkMatches.length;
-
-                // 計算英文單字數 (去除中文與特殊標點後，以空白分割)
-                const textWithoutCjk = text.replace(/[\u4e00-\u9fa5\W_]+/g, ' ');
-                const englishWords = textWithoutCjk.trim().split(/\s+/).filter(word => word.length > 0);
-                const englishWordCount = englishWords.length;
-
-                const totalWords = cjkCount + englishWordCount;
-                wordCountEl.textContent = totalWords;
-
-                // 計算閱讀時間 (中文約300字/分，英文約200字/分)
-                const timeInMinutes = Math.ceil((cjkCount / 300) + (englishWordCount / 200));
-                readTimeEl.textContent = totalWords === 0 ? 0 : timeInMinutes;
-            };
-
-            // 3. 本地端自動存檔邏輯 (Auto-save to localStorage)
-            const triggerAutoSave = () => {
-                localStorage.setItem('zenDraft_content', editor.value);
-
-                // 顯示「已自動儲存」提示
-                saveStatus.style.opacity = '1';
-                clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(() => {
-                    saveStatus.style.opacity = '0';
-                }, 2000);
-            };
-
-            // 4. 專注模式切換邏輯
-            const toggleFocusMode = () => {
-                body.classList.toggle('focus-active');
-                if (body.classList.contains('focus-active')) {
-                    body.classList.replace('bg-[#F9F9F7]', 'bg-white');
-                    headerBg.classList.replace('bg-[#F9F9F7]/90', 'bg-white/90');
-                    focusToggle.textContent = '退出專注模式';
-                } else {
-                    body.classList.replace('bg-white', 'bg-[#F9F9F7]');
-                    headerBg.classList.replace('bg-white/90', 'bg-[#F9F9F7]/90');
-                    focusToggle.textContent = '進入專注模式';
-                }
-            };
-
-            // 綁定事件監聽器
-            editor.addEventListener('input', () => {
-                autoResize();
-                updateStats();
-                triggerAutoSave();
-            });
-
-            focusToggle.addEventListener('click', toggleFocusMode);
-
-            // 快捷鍵：ESC 退出專注模式
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && body.classList.contains('focus-active')) {
-                    toggleFocusMode();
-                }
-            });
-
-            // 視窗大小改變時重新計算高度
-            window.addEventListener('resize', autoResize);
-
-            // 初始化：載入本地進度
-            const savedContent = localStorage.getItem('zenDraft_content');
-            if (savedContent) {
-                editor.value = savedContent;
+                // Apply styles
+                el.style.transform = transformStr;
+                el.style.opacity = currentOpacity;
             }
 
-            // 初始執行一次高度與數據計算
-            autoResize();
-            updateStats();
-
-            // 自動聚焦
-            editor.focus();
+            // Dim the ground light as parts lift off
+            groundLight.style.opacity = 0.3 - (progress * 0.2);
+            groundLight.style.transform = `scale(${1 + (progress * 0.5)})`;
+            groundLight.style.transformOrigin = 'center';
         });
     </script>
 </body>
-
 </html>

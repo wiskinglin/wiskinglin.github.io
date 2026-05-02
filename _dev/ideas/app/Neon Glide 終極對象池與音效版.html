@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon Glide - 終極對象池與音效版</title>
+    <style>
+        :root {
+            --primary: #ff007f;
+            --secondary: #00f3ff;
+            --bg-color: #020205;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .glass-panel {
+            background: rgba(2, 2, 8, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 24px;
+            padding: 50px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 243, 255, 0.05);
+            pointer-events: auto;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        h1 {
+            margin: 0 0 15px 0;
+            font-size: 4rem;
+            background: linear-gradient(135deg, var(--primary), #ff66b2, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            font-weight: 900;
+            text-shadow: 0 0 30px rgba(255, 0, 127, 0.4);
+        }
+
+        p {
+            color: #8c8cbd;
+            font-size: 1.2rem;
+            margin-bottom: 35px;
+            line-height: 1.6;
+            letter-spacing: 1px;
+        }
+
+        button {
+            background: linear-gradient(45deg, #cc0066, var(--primary));
+            border: 2px solid transparent;
+            border-radius: 40px;
+            padding: 18px 60px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            box-shadow: 0 4px 25px rgba(255, 0, 127, 0.6);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 35px rgba(255, 0, 127, 0.8);
+            border: 2px solid var(--secondary);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        #hud {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: white;
+            z-index: 5;
+            font-size: 2rem;
+            font-weight: 900;
+            font-family: monospace;
+            text-shadow: 0 0 20px var(--secondary);
+            display: none;
+            letter-spacing: 3px;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none !important;
+        }
+
+        #scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.2));
+            background-size: 100% 4px;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="scanline"></div>
+    <div id="hud">SYNC: <span id="score">00000</span></div>
+
+    <div id="ui-layer">
+        <div class="glass-panel" id="start-screen">
+            <h1>Neon Glide</h1>
+            <p>// 系統就緒 // <br>滑動游標 / 觸控螢幕以規避幾何異常體。<br>戴上耳機體驗最佳合成音效。</p>
+            <button id="start-btn">Initialize</button>
+        </div>
+
+        <div class="glass-panel hidden" id="game-over-screen">
+            <h1>Critical Hit</h1>
+            <p>最終同步率: <br><span id="final-score"
+                    style="color: var(--secondary); font-weight: 900; font-size: 3rem; text-shadow: 0 0 20px var(--secondary);">0</span>
+            </p>
+            <button id="restart-btn">Reboot</button>
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // --- 架構變數 ---
+        let scene, camera, renderer;
+        let ship, shipHitbox;
+        let gameActive = false;
+        let score = 0;
+        let baseSpeed = 1.2;
+        let speedMultiplier = 1.0;
+
+        // --- 狀態變數 ---
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // --- 效能核心：對象池 (Object Pool) ---
+        const POOL_SIZE = 40; // 預先分配 40 個障礙物
+        const obstaclePool = [];
+        const sharedObstacleGeo = new THREE.BoxGeometry(1, 1, 1);
+        const sharedObstacleMat = new THREE.MeshPhongMaterial({
+            color: 0xff007f,
+            emissive: 0xff0044,
+            emissiveIntensity: 0.9,
+            shininess: 100
+        });
+
+        // --- 音效引擎 (Web Audio API) ---
+        let audioCtx, engineOscillator, engineGain;
+
+        // --- DOM ---
+        const scoreEl = document.getElementById('score');
+        const finalScoreEl = document.getElementById('final-score');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const hud = document.getElementById('hud');
+        const container = document.getElementById('game-container');
+
+        function initAudio() {
+            if (audioCtx) return; // 避免重複建立
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+
+            // 引擎聲合成器 (低頻鋸齒波模擬引擎聲)
+            engineOscillator = audioCtx.createOscillator();
+            engineOscillator.type = 'sawtooth';
+            engineOscillator.frequency.value = 50;
+
+            engineGain = audioCtx.createGain();
+            engineGain.gain.value = 0; // 初始靜音
+
+            // 加上低通濾波器讓聲音悶一點，更有在機艙內的感覺
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 400;
+
+            engineOscillator.connect(filter);
+            filter.connect(engineGain);
+            engineGain.connect(audioCtx.destination);
+
+            engineOscillator.start();
+        }
+
+        function playCrashSound() {
+            if (!audioCtx) return;
+            const crashOsc = audioCtx.createOscillator();
+            const crashGain = audioCtx.createGain();
+
+            crashOsc.type = 'square';
+            crashOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            crashOsc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+            crashGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            crashGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+            crashOsc.connect(crashGain);
+            crashGain.connect(audioCtx.destination);
+
+            crashOsc.start();
+            crashOsc.stop(audioCtx.currentTime + 0.5);
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x020205);
+            scene.fog = new THREE.FogExp2(0x020205, 0.022);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+            camera.position.set(0, 4, 12);
+            camera.lookAt(0, 0, -20);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xff007f, 2.5);
+            dirLight.position.set(10, 20, 10);
+            scene.add(dirLight);
+
+            const blueLight = new THREE.PointLight(0x00f3ff, 4, 60);
+            blueLight.position.set(-10, 2, -5);
+            scene.add(blueLight);
+
+            // 網格地板
+            const gridHelper = new THREE.GridHelper(300, 150, 0xff007f, 0x00f3ff);
+            gridHelper.position.y = -2;
+            gridHelper.material.transparent = true;
+            gridHelper.material.opacity = 0.4;
+            scene.add(gridHelper);
+
+            // 戰機模型
+            const shipGeometry = new THREE.TetrahedronGeometry(1.2);
+            const shipMaterial = new THREE.MeshPhongMaterial({
+                color: 0x00f3ff,
+                emissive: 0x00f3ff,
+                emissiveIntensity: 0.7,
+                wireframe: true,
+                wireframeLinewidth: 2
+            });
+            ship = new THREE.Mesh(shipGeometry, shipMaterial);
+            ship.scale.set(1, 0.35, 2);
+            ship.rotation.x = Math.PI / 4;
+            scene.add(ship);
+
+            shipHitbox = new THREE.Box3();
+
+            // 建立對象池 (預先分配記憶體，避免執行期卡頓)
+            for (let i = 0; i < POOL_SIZE; i++) {
+                let obs = new THREE.Mesh(sharedObstacleGeo, sharedObstacleMat);
+                obs.visible = false; // 初始隱藏
+                obs.userData.box = new THREE.Box3();
+                obs.userData.active = false;
+                scene.add(obs);
+                obstaclePool.push(obs);
+            }
+
+            window.addEventListener('resize', onWindowResize, false);
+            document.addEventListener('mousemove', onDocumentMouseMove, false);
+            document.addEventListener('touchmove', onDocumentTouchMove, { passive: false });
+
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', startGame);
+
+            animate();
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onDocumentTouchMove(event) {
+            event.preventDefault();
+            mouseX = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.touches[0].clientY / window.innerHeight) * 2 + 1;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function padZero(num, size) {
+            return num.toString().padStart(size, '0');
+        }
+
+        function startGame() {
+            initAudio(); // 必須在使用者互動後初始化 AudioContext
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            hud.style.display = 'block';
+
+            ship.material.color.setHex(0x00f3ff);
+            ship.material.emissive.setHex(0x00f3ff);
+            ship.material.wireframe = true;
+
+            score = 0;
+            speedMultiplier = 1.0;
+            scoreEl.innerText = padZero(0, 5);
+            ship.position.set(0, 0, 0);
+            camera.fov = 75;
+            camera.updateProjectionMatrix();
+
+            // 重置對象池
+            obstaclePool.forEach(obs => {
+                obs.visible = false;
+                obs.userData.active = false;
+            });
+
+            if (engineGain) engineGain.gain.setTargetAtTime(0.1, audioCtx.currentTime, 0.5);
+
+            gameActive = true;
+        }
+
+        function triggerGameOver() {
+            gameActive = false;
+            hud.style.display = 'none';
+            finalScoreEl.innerText = Math.floor(score);
+            gameOverScreen.classList.remove('hidden');
+
+            ship.material.wireframe = false;
+            ship.material.color.setHex(0xff0000);
+            ship.material.emissive.setHex(0xff1111);
+
+            playCrashSound();
+            if (engineGain) engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+
+            // 震動特效
+            let shake = 0;
+            let shakeInterval = setInterval(() => {
+                camera.position.x = (Math.random() - 0.5) * 0.8;
+                camera.position.y = 4 + (Math.random() - 0.5) * 0.8;
+                shake++;
+                if (shake > 8) {
+                    clearInterval(shakeInterval);
+                    camera.position.set(0, 4, 12);
+                }
+            }, 40);
+        }
+
+        // 從對象池中取出可用的障礙物
+        function spawnObstacle() {
+            if (!gameActive) return;
+
+            // 尋找未啟動的物件
+            let obs = obstaclePool.find(o => !o.userData.active);
+
+            if (obs) {
+                const width = Math.random() * 3 + 1;
+                const height = Math.random() * 16 + 4;
+                const depth = Math.random() * 3 + 1;
+                obs.scale.set(width, height, depth);
+
+                obs.position.x = (Math.random() - 0.5) * 60;
+                obs.position.y = height / 2 - 2;
+                obs.position.z = -140 - (Math.random() * 30);
+
+                obs.visible = true;
+                obs.userData.active = true;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 戰機動態控制
+            const targetX = mouseX * 22;
+            const targetY = mouseY * 7 + 1;
+
+            ship.position.x += (targetX - ship.position.x) * 0.12;
+            ship.position.y += (targetY - ship.position.y) * 0.12;
+
+            ship.rotation.z = (ship.position.x - targetX) * 0.08;
+            ship.rotation.x = (ship.position.y - targetY) * 0.05 + (Math.PI / 4);
+
+            // 地板滾動
+            scene.children.forEach(child => {
+                if (child.type === 'GridHelper') {
+                    child.position.z += (baseSpeed * speedMultiplier);
+                    if (child.position.z > 10) child.position.z = 0;
+                }
+            });
+
+            if (gameActive) {
+                // 分數計算與難度動態調整
+                score += 0.2 * speedMultiplier;
+                scoreEl.innerText = padZero(Math.floor(score), 5);
+
+                if (speedMultiplier < 4.0) {
+                    speedMultiplier += 0.0004;
+                }
+
+                // 動態視角：速度越快 FOV 越大，產生拉伸感
+                let targetFov = 75 + (speedMultiplier - 1) * 10;
+                camera.fov += (targetFov - camera.fov) * 0.05;
+                camera.updateProjectionMatrix();
+
+                // 音頻調變：引擎聲隨速度變高頻
+                if (engineOscillator) {
+                    engineOscillator.frequency.setTargetAtTime(50 + (speedMultiplier * 20), audioCtx.currentTime, 0.1);
+                }
+
+                // 生成邏輯
+                let spawnChance = 0.05 * (1 + (speedMultiplier - 1) * 0.3);
+                if (Math.random() < spawnChance) spawnObstacle();
+
+                // 碰撞盒更新
+                shipHitbox.setFromObject(ship);
+                shipHitbox.expandByScalar(-0.35); // 容錯率調整
+
+                // 對象池物件更新與碰撞偵測
+                for (let i = 0; i < obstaclePool.length; i++) {
+                    let obs = obstaclePool[i];
+                    if (obs.userData.active) {
+                        obs.position.z += (baseSpeed * speedMultiplier * 1.6);
+
+                        obs.userData.box.setFromObject(obs);
+
+                        if (shipHitbox.intersectsBox(obs.userData.box)) {
+                            triggerGameOver();
+                            break;
+                        }
+
+                        // 物件回收回對象池 (不銷毀)
+                        if (obs.position.z > 20) {
+                            obs.visible = false;
+                            obs.userData.active = false;
+                        }
+                    }
+                }
+            } else {
+                // 待機畫面
+                ship.position.x = Math.sin(Date.now() * 0.002) * 5;
+                ship.position.y = Math.cos(Date.now() * 0.001) * 2 + 2;
+                ship.rotation.y += 0.02;
+                ship.rotation.z = Math.sin(Date.now() * 0.001) * 0.8;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

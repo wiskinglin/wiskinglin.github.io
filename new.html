@@ -1,518 +1,773 @@
 <!DOCTYPE html>
 <html lang="zh-Hant" data-theme="agentic-web">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>What's New | KLIO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's New | KLIO</title>
 
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
 
-<!-- Tailwind (for layout utilities) -->
-<script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind (for layout utilities) -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Custom Theme CSS -->
-<link rel="stylesheet" href="themes/33-agentic-web.css">
+    <!-- Custom Theme CSS -->
+    <link rel="stylesheet" href="themes/33-agentic-web.css">
 
-<style>
-/* Basic resets and base styles not covered by the theme file */
-body {
-    font-family: 'Inter', 'Noto Sans TC', sans-serif;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
+    <style>
+        /* Basic resets and base styles not covered by the theme file */
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
 
-/* Hide the Agent Insight pseudo-element button in the bottom right */
-:root[data-theme="agentic-web"]::before {
-    display: none !important;
-}
+        /* Hide the Agent Insight pseudo-element button in the bottom right */
+        :root[data-theme="agentic-web"]::before {
+            display: none !important;
+        }
 
-/* KLIO Logo specific to this theme (Agentic Web) */
-.klio-logo {
-    position: fixed;
-    top: 24px;
-    left: 32px;
-    font-family: 'Inter', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: var(--theme-primary, #0f172a);
-    text-decoration: none;
-    letter-spacing: -0.05em;
-    z-index: 100;
-    padding: 6px 16px;
-    border-radius: 8px;
-    background: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.klio-logo:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
+        /* KLIO Logo specific to this theme (Agentic Web) */
+        .klio-logo {
+            position: fixed;
+            top: 24px;
+            left: 32px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--theme-primary, #0f172a);
+            text-decoration: none;
+            letter-spacing: -0.05em;
+            z-index: 100;
+            padding: 6px 16px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
 
-.main-container {
-    max-width: 900px;
-    margin: 100px auto 60px;
-    padding: 0 24px;
-}
+        .klio-logo:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
 
-.tag-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 12px;
-}
-.tag-feature {
-    background-color: #dbeafe;
-    color: #1e40af;
-}
-.tag-refactor {
-    background-color: #fce7f3;
-    color: #be185d;
-}
-.tag-docs {
-    background-color: #f3f4f6;
-    color: #4b5563;
-}
+        .main-container {
+            max-width: 900px;
+            margin: 100px auto 60px;
+            padding: 0 24px;
+        }
 
-ul.update-list {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 16px;
-    background: #f8fafc;
-    border-radius: 12px;
-    border: 1px solid #f1f5f9;
-    padding: 1.5rem;
-}
-ul.update-list li {
-    position: relative;
-    padding-left: 24px;
-    margin-bottom: 12px;
-    color: #475569;
-    font-size: 0.95rem;
-    line-height: 1.6;
-}
-ul.update-list li:last-child {
-    margin-bottom: 0;
-}
-ul.update-list li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: #3b82f6;
-    font-weight: bold;
-}
-</style>
+        .tag-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+
+        .tag-feature {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .tag-refactor {
+            background-color: #fce7f3;
+            color: #be185d;
+        }
+
+        .tag-docs {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+
+        ul.update-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            padding: 1.5rem;
+        }
+
+        ul.update-list li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+            color: #475569;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        ul.update-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        ul.update-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+    </style>
 </head>
+
 <body class="antialiased">
 
-<a href="index.html" class="klio-logo">KLIO.</a>
+    <a href="index.html" class="klio-logo">KLIO.</a>
 
-<div class="main-container">
-    
-    <!-- Hero Section -->
-    <header class="hero">
-        <div class="text-sm font-bold text-blue-600 mb-4 tracking-widest uppercase">Updates / Platform Log</div>
-        <h1>What's New</h1>
-        <p class="mt-4 text-lg text-slate-600">
-            歡迎來到 KLIO 平台更新日誌。這裡記錄了我們在產品功能、內容策展與視覺體驗上的每一次進化，與你共同探索知識閱讀的新高度。
-        </p>
-    </header>
+    <div class="main-container">
 
-    <main>
-        
-        <!-- 2026-04-21 Update: ACG Universe Expansion -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#f43f5e;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-21</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">ACG Universe Data Expansion</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Content & Curation</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>ACG 資料庫深度更新</strong>：在 <a href="bookmark/animeComicsGame.html" class="font-bold text-rose-600 hover:underline">ACG Universe</a> 中新增製作《寶可夢》、《藥師少女的獨語》的知名公司 OLM。同時針對各大工作室補齊知名著作標籤，包含《膽大黨》、《SPY×FAMILY 間諜家家酒》、《怪獸8號》等最新熱門作品。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-21 Update: iOS Compatibility Fix -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">Fix</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-21</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">iOS AI Processing Optimization</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-refactor">Optimization & UX</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>iOS 相容性修復</strong>：針對 iPhone 與 iPad 用戶，優化了 Photo 與 RMBG 工具的 AI 處理邏輯。透過停用 iOS 不穩定的 WebGPU 支援並限制執行緒記憶體主動避讓，解決了先前在 iOS Safari 上可能發生的崩潰或載入失敗問題，確保移動端去背體驗流暢穩定。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-21 Update: Photo Tool AI Upgrade -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-21</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Photo Tool AI Background Removal</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Tools / Features</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>證件照拍攝器 AI 升級</strong>：在 <a href="tools/photo.html" class="font-bold text-sky-600 hover:underline">Photo 拍攝器</a> 中導入 RMBG-1.4 視覺模型。現在拍完照片後會自動執行「智慧去背」，並提供 5 款專業背景色供即時預覽與切換，滿足證件照多樣化背景需求。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-20 Update: Document Markdown Bug Fixes -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">Fix</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Documentation Format Rendering Fix</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-refactor">Optimization & UX</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>Markdown 語法解析修復</strong>：優化了 <code>ITW_01_Product_and_UX.md</code> 中的粗體文字標記結構。將星號包裝於全形標點符號內（例如改為 <code>「**文字**」</code>），徹底解決受中文字元相連影響，導致部分瀏覽器或解析器無法正確渲染粗體字，且直接印出星號的排版問題。</li>
-                </ul>
-            </div>
-        </section>
-        <!-- 2026-04-20 Update: ITW Editor UX Matrices & Scenarios -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">ITW Editor UX Matrices & Scenarios</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Deep Research & Docs</span>
-                <ul class="update-list mt-2">
-                    <li><strong>ITW 產品願景與 UX 矩陣升級</strong>：精煉 <code>ITW_01_Product_and_UX.md</code>，針對四大畫布場景（簡報、圖片、試算表、文件）補充更具體的產出流程與細緻的代表場景設定，包含從商業提案、社群媒體到專案任務管理的產業級實作範本指南。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-20 Update: ITW Documentation Refactoring -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">ITW Documentation & Reader Updates</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Deep Research & Docs</span>
-                <ul class="update-list mt-2">
-                    <li><strong>ITW 格式檔案重構</strong>：將原本 5 份內容較為發散的 <code>.itw</code> 專案規格書，重新收斂並重構為 3 份邏輯分明的核心說明文檔。分別針對產品與體驗、檔案定義、以及瀏覽器端的 AI 推理架構設計。</li>
-                </ul>
-            </div>
+        <!-- Hero Section -->
+        <header class="hero">
+            <div class="text-sm font-bold text-blue-600 mb-4 tracking-widest uppercase">Updates / Platform Log</div>
+            <h1>What's New</h1>
+            <p class="mt-4 text-lg text-slate-600">
+                歡迎來到 KLIO 平台更新日誌。這裡記錄了我們在產品功能、內容策展與視覺體驗上的每一次進化，與你共同探索知識閱讀的新高度。
+            </p>
+        </header>
 
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">Optimization & Refactor</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>KLIO Docs 閱讀器更新</strong>：同步更新 <a href="_klio_docs/reader.html" class="font-bold text-sky-600 hover:underline">Docs Reader</a> 的目錄陣列，確保對應至最新版本的技術架構文件，免除失效連結並提升閱讀順暢度。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-20 Update: Centralized Knowledge Base & Agentic Ecosystem -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Central Knowledge Base & App Experiments</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Deep Research & Docs</span>
-                <ul class="update-list mt-2">
-                    <li><strong>KLIO 統一知識庫上線</strong>：大幅調整 <code>_klio_docs</code> 資料夾架構，導入「KLIO 核心平台」與「ITW 編輯器實作」的專案前綴命名標準，提升文件模組化與網頁閱讀體驗。</li>
-                    <li><strong>ITW 編輯器架構擴充</strong>：將原本分散的 AI Markdown 模組與 WebGPU 本地推理文件正式歸併至 ITW 編輯器體系，確立「瀏覽器原生 AI」的應用導向發展方針。</li>
-                </ul>
-            </div>
+        <main>
 
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Tools / Features</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>KLIO Docs Reader 路徑修復</strong>：修正因文件歸建與更名導致的 Reader 檔案抓取無效問題。</li>
-                    <li><strong>首頁選單佈局優化</strong>：將 DF 與 ACG 按鈕樣式標準化，保持全局視覺的一致性。</li>
-                    <li><strong>實驗性應用展演版優化</strong>：更新應用開發雛形，包括導入零 GC (Zero-GC) 物件池設計的 <code>Neon Glide: Apex Edition</code> 等專案測試網頁。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-20 Update: KLIO Docs & Neon Glide -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">KLIO Docs Reader & Neon Glide</div>
+            <!-- 2026-04-30 Update: DEV Workspace & Navigation -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#8b5cf6;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-30</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">DEV Workspace & Navigation Update</div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Features</span>
-                <ul class="update-list mt-2">
-                    <li><a href="_klio_docs/reader.html" class="font-bold text-sky-600 hover:underline">KLIO Docs 閱讀器</a>：全新打造的電子書風格 Markdown 動態閱讀器，自動抓取解析 <code>_klio_docs</code> 文件列表並支援多種主題與排版。</li>
-                    <li><strong>Neon Glide 遊戲</strong>：新增基於物件池 (Object Pooling) 與 Web Audio API 高效能架構的 Neon Glide 實驗性遊戲原型。</li>
-                </ul>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-refactor">Optimization & UX</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>專案架構重構</strong>：整併原 <code>_dev</code> 目錄結構，將資源蒐集移至 <code>_data/web_collect</code> 並將 AI 編輯器版本規範化為 v1 與 v2 。</li>
-                    <li><strong>部署流程優化</strong>：更新 Agent Deploy Workflow，確保主分支 (main) 的乾淨狀態，自動化排除 <code>_data</code> 目錄並防偏離追蹤。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-20 Update: ACG Universe -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#f43f5e;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">ACG Universe & Global Media Index</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Content</span>
-                <ul class="update-list mt-2">
-                    <li><a href="bookmark/animeComicsGame.html" class="font-bold text-rose-600 hover:underline">ACG Universe 書籤頁面</a>：彙整全球 100 個遊戲設計、動畫製作及漫畫出版的指標性品牌，涵蓋台、日、美及全球市場。</li>
-                    <li><strong>ACG 彩色導覽連結</strong>：在首頁導覽列新增 A(紅) C(綠) G(藍) 快速跳轉連結，優化次文化與創意產業資訊獲取動線。</li>
-                </ul>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Data Management</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>數據規範化命名</strong>：將 `2d.md` 重新命名為 `anime_comics_game.md`，建立更具描述性且一致的資料命名標準。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-20 Update -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#6366f1;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Design First & Navigation Refresh</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Features</span>
-                <ul class="update-list mt-2">
-                    <li><a href="bookmark/designFirst.html" class="font-bold text-indigo-600 hover:underline">Design First 入口網頁</a>：全新建立的全球頂尖設計資源導航頁，支援 Onyx、Paper 與 Canvas 三種動態色彩模式，提供極致的視覺美學與排版參考。</li>
-                    <li><strong>導覽列快捷按鈕 (DF & FLY)</strong>：首頁工具列全面更新，新增「DF」設計入口與「FLY」極速飛行遊戲捷徑，優化高頻工具的使用動線。</li>
-                </ul>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-refactor">Optimization & UX</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>首頁選單精簡化</strong>：移除冗餘的 Themes 與 Top Style 連結，並修正移動端書籤跳轉路徑，保持首頁視覺的純粹與精準。</li>
-                    <li><a href="tools/fly.html" class="font-bold text-indigo-600 hover:underline">Sky Fly 遊戲更新</a>：優化標題視覺與性能細節，並正式更名為 Sky Fly。</li>
-                </ul>
-            </div>
-        </section>
-        
-        <!-- 2026-04-16 Update -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#1e40af;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-16</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Game Theory & Nash Equilibrium</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Deep Research Reports</span>
-                <ul class="update-list mt-2">
-                    <li><a href="reports/20260416_nash_equilibrium.html" class="font-bold text-blue-600 hover:underline">賽局理論：純策略與混合策略推論 (Nash Equilibrium)</a>：新增支援 MathJax 數學公式與理論推導的深度報告，並整合至電腦與手機版的首頁資訊流。</li>
-                </ul>
-            </div>
-        </section>
-        <!-- 2026-04-16 -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#1e40af;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-16</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Designjoy Research & Agentic Workflow</div>
-                </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Workflows</span>
-                <ul class="update-list mt-2">
-                    <li><strong>Reports Agentic Workflow</strong>：整合 `reports_update.md` 工作流與專屬 Skills，實踐從 Markdown 草稿撰寫、圖文編排，直到跨平台 (PC & Mobile) HTML 報告生成的自動化發布機制。</li>
-                    <li><strong>Deploy Workflow 自動化部署</strong>：新增 `deploy.md` 流程，實現將從開發分支的專案自動整理至更新日誌，並合併回主分支的無縫部署體驗。</li>
-                </ul>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Deep Research Reports</span>
-                <ul class="update-list mt-2">
-                    <li><a href="reports/20260416_designjob.html" class="font-bold text-blue-600 hover:underline">Designjoy 創業洞察：單人設計服務的產品化革命</a>：探討一人設計公司如何運用訂閱制與自動化達到百萬美元營收。</li>
-                    <li><strong>技術與學術文件庫擴充</strong>：新增 NTUST 賽局理論課程筆記、LibreOffice 自動化操作腳本及 ITW 開發工具生態系架構文件。</li>
-                </ul>
-            </div>
 
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-refactor">Optimization & Tools</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><a href="tools/calculator.html" class="font-bold text-blue-600 hover:underline">CALCUKLIO 計算機介面優化</a>：調整算術運算子按鈕色彩對比度，提升極端光線下的視覺清晰度與易用性。</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- 2026-04-14 -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold" style="background:#1e40af;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">New</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-14</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">AI Tools & Research Expansion</div>
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Tools / Features</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>內部開發目次 (DEV Workspace)</strong>：全新建置 <a href="_dev/index.html" class="font-bold text-violet-600 hover:underline">DEV 總覽頁</a>，系統化整理 Editor 歷代版本、實驗性應用 (Ideas Apps)、Playwright 測試與 Three.js 雛形專案，提供高質感的沉浸式導覽體驗。</li>
+                        <li><strong>首頁導覽列升級</strong>：於 PC 及 Mobile 首頁頂部導覽列新增專屬的 <strong>DEV</strong> 快速入口，採用發光強調色標記，方便快速切換至內部開發環境。</li>
+                    </ul>
                 </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Tools</span>
-                <ul class="update-list mt-2">
-                    <li><a href="tools/calculator.html" class="font-bold text-blue-600 hover:underline">CALCUKLIO 智能計算機</a>：整合標準、科學、程式、日期與單位轉換等五大模式的主題化計算機，運用 Liquid Glass 介面設計提供專業級運算體驗。</li>
-                    <li><a href="tools/rmbg.html" class="font-bold text-blue-600 hover:underline">RMBG 背景移除</a>：運用底層 AutoModel 與 WebGPU 硬體加速技術，提供高效能且精準的影像即時去背工具。</li>
-                    <li><a href="tools/photo.html" class="font-bold text-blue-600 hover:underline">Photo 深度編輯</a>：整合多項影像處理濾鏡，實現前端直接處理高解析度的沉浸式互動。</li>
-                </ul>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-docs">Deep Research Reports</span>
-                <ul class="update-list mt-2">
-                    <li><a href="reports/20260414_localPWA.html" class="font-bold text-blue-600 hover:underline">Transformers.js PWA 離線 Web AI 深度研究</a></li>
-                    <li><a href="reports/20260411_theonecompany.html" class="font-bold text-blue-600 hover:underline">AI 輔助微型創業跨國研究報告</a></li>
-                    <li><a href="reports/20260411_perfect_food.html" class="font-bold text-blue-600 hover:underline">跨境健康機能食品市場趨勢深度解析</a></li>
-                    <li><a href="reports/20260408_NodeJS_Deep_Research_Report.html" class="font-bold text-blue-600 hover:underline">Node.js 深度研究與架構生態解析報告</a></li>
-                    <li><a href="reports/20260408_os.html" class="font-bold text-blue-600 hover:underline">2026 年全球作業系統市場格局與戰略</a></li>
-                    <li><a href="reports/20260407_US_Iran_War_Economic_Impact.html" class="font-bold text-blue-600 hover:underline">2026 美伊衝突後全球經濟衝擊分析</a></li>
-                    <li><a href="reports/20260407_AI_Anime_Character_Design.html" class="font-bold text-blue-600 hover:underline">AI 動漫角色設定深度分析</a></li>
-                </ul>
-            </div>
-        </section>
+            </section>
 
-        <!-- 2026-03-31 -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold">1</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-03-31</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Platform Upgrade & Mobile Experience</div>
+            <!-- 2026-04-29 Update: Three.js Experiments & Queen Engine & Data Expansion -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#8b5cf6;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-29</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Three.js Experiments & Queen Engine & Data Hub</div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">New Features</span>
-                <ul class="update-list mt-2">
-                    <li><strong>Mobile-First 閱讀體驗</strong>：全面升級行動裝置響應式設計，推出專為手機閱讀最佳化的報告介面，確保隨時皆有完美的閱讀流暢度。</li>
-                    <li><strong>Bento UI 視覺進化</strong>：首頁資訊板塊大幅煥新，導入高質感影像與精緻陰影層次，打造「Think Smart, Look Amazing」的高端視覺饗宴。</li>
-                    <li><strong>Top 50 UX/UI 策展</strong>：全新上線 50 款前衛設計風格展示庫，並新增「Curated Editorial」編輯精選 (GQ 風格) 互動原型。</li>
-                    <li><strong>全新沉浸式圖書館</strong>：推出結合 Bento Grid 風格的沉浸式閱讀器與圖書館介面，供使用者探索知識。</li>
-                </ul>
-            </div>
-            
-            <div class="insight-card p-6">
-                <span class="tag-badge tag-docs">UX / UI Imrpovement</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>色彩無障礙優化</strong>：全面稽核並升級 KLIO Color 30 組配色系統，確保全網域所有主題設計皆符合 WCAG 對比度最高標準。</li>
-                    <li><strong>閱讀無干擾設計</strong>：改善主題選擇器介面，實作隱藏滑出式選單，確保在切換深/淺主題時的視覺專注度。</li>
-                    <li><strong>品牌識別統一</strong>：全站研究報告與體驗工具全面導入「KLIO x AI」品牌標準字與導覽標誌。</li>
-                </ul>
-            </div>
-        </section>
 
-        <!-- 2026-03-30 -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold">2</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-03-30</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Content Expansion</div>
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Tools / Features</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>Three.js 互動實驗集</strong>：一次發布 6 款沉浸式 3D 網頁實驗，涵蓋 <a
+                                href="_dev/ideas/threejs/product_configurator.html"
+                                class="font-bold text-violet-600 hover:underline">產品展示配置器</a>、<a
+                                href="_dev/ideas/threejs/creative_portfolio.html"
+                                class="font-bold text-violet-600 hover:underline">創意作品集</a>、<a
+                                href="_dev/ideas/threejs/virtual_showroom.html"
+                                class="font-bold text-violet-600 hover:underline">虛擬展間</a>、<a
+                                href="_dev/ideas/threejs/data_visualization.html"
+                                class="font-bold text-violet-600 hover:underline">數據視覺化</a>、<a
+                                href="_dev/ideas/threejs/educational_simulation.html"
+                                class="font-bold text-violet-600 hover:underline">教育模擬</a> 及 <a
+                                href="_dev/ideas/threejs/web_game.html"
+                                class="font-bold text-violet-600 hover:underline">網頁遊戲</a> 六大場景，搭配 PBR 材質、動態光影與程序化資源生成。
+                        </li>
+                        <li><strong>Queen Engine 本地 AI 知識引擎</strong>：實作基於 WebGPU 的瀏覽器端 LLM 串流推理引擎，整合 FastAPI 後端與 WebLLM 前端介面，支援本地知識庫生成與 TTS 語音合成，實現完全離線的 AI 對話體驗。
+                        </li>
+                        <li><strong>ITW Editor v5 初始化</strong>：建立第五代編輯器骨架，導入全新設計系統 (Design System) 與基礎版面配置，為下一階段的模組化開發奠定基礎。
+                        </li>
+                        <li><strong>Retro TV UI 概念驗證</strong>：發布復古電視介面 POC，實作 CRT 螢幕效果、頻道切換動畫與掃描線濾鏡等視覺特效。
+                        </li>
+                        <li><strong>LINE BOT 技術文件</strong>：新增 LINE BOT 開發文件與整合指南，並更新 <code>.gitignore</code> 排除開發暫存檔案。
+                        </li>
+                    </ul>
                 </div>
-            </div>
-            
-            <div class="insight-card p-6 mb-6">
-                <span class="tag-badge tag-feature">Content & Tools</span>
-                <ul class="update-list mt-2">
-                    <li><strong>Gem 策展報告上線</strong>：於首頁推出全新由 AI 自動化 Pipeline 萃取的深度研究報告區段。</li>
-                    <li><strong>本地端編輯器強化</strong>：實作類似 Notion 的 Markdown 編輯介面，支援即時預覽與靈活的內容創作。</li>
-                </ul>
-            </div>
 
-            <div class="insight-card p-6">
-                <span class="tag-badge tag-refactor">Optimization</span>
-                <ul class="update-list mt-2 text-sm">
-                    <li><strong>首頁動線梳理</strong>：優化介面導覽，移除過期報告與冗餘介面按鈕，使版面配置更為俐落。</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- 2026-03-27 -->
-        <section class="section-card">
-            <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-                <div class="section-num flex items-center justify-center font-bold">3</div>
-                <div>
-                    <h2 class="section-title font-bold m-0 p-0 leading-none">2026-03-27</h2>
-                    <div class="text-sm text-slate-500 font-medium mt-1">Platform Launch</div>
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Content & Curation</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>2026 AI 應用趨勢分析</strong>：發布涵蓋通用推理、開發工具、AI 代理、影像生成、影片與語音六大領域的 AI 應用完整報告，同步建置 Mobile 響應式首頁資訊流。
+                        </li>
+                        <li><strong>NTUST 研究資料庫</strong>：匯入第七週課程研究素材、作業文件與參考文獻，系統化管理學術專案內容。
+                        </li>
+                        <li><strong>GitHub Repo 資源彙整</strong>：建立 <code>github_repo.md</code> 結構化資料庫，分類整理 AI Agent、社群自動化、UI/UX 開發等技術資源連結。
+                        </li>
+                        <li><strong>Tech Source 品牌資料庫</strong>：新增 <code>tech_source.md</code> 收錄官方品牌連結與社群媒體頻道資訊。
+                        </li>
+                    </ul>
                 </div>
-            </div>
-            
-            <div class="insight-card p-6">
-                <span class="tag-badge tag-feature">Platform Core</span>
-                <ul class="update-list mt-2">
-                    <li><strong>KLIO 平台正式上線</strong>：導入 Agentic Workflow 智能架構，首度推出全動態排版、多主題切換的網頁式研究報告體驗。</li>
-                    <li><strong>首波研究發佈</strong>：釋出初期知識庫內容與產業趨勢洞察。</li>
-                </ul>
-            </div>
-        </section>
 
-    </main>
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-refactor">Optimization & UX</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>Mobile 首頁響應式升級</strong>：實作行動裝置專用的首頁版面，確保 AI 分析報告與資訊流卡片在小螢幕上的最佳閱讀體驗。
+                        </li>
+                        <li><strong>冗餘服務清除</strong>：移除未使用的 Service 與相關設定檔，精簡專案架構與部署體積。
+                        </li>
+                        <li><strong>開發環境同步</strong>：完成 Playwright 及相關插件的 <code>node_modules</code> 依賴安裝與同步，確保自動化測試環境一致性。
+                        </li>
+                    </ul>
+                </div>
+            </section>
 
-</div>
+            <!-- 2026-04-23 Update: ITW Editor V4 & Bookmark Immersive Experience -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#10b981;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-23</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">ITW Editor V4 & Tech Source Hub</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Tools / Features</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>ITW Editor v5 (Major Refactor)</strong>：發布第五代編輯器核心，導入全新層級管理介面與範本導向設計，大幅簡化非工程人員的操作門檻。
+                        </li>
+                        <li><strong>Docs Reader 自動化升級</strong>：更新 <a href="_klio_docs/reader.html"
+                                class="font-bold text-indigo-600 hover:underline">Docs Reader</a>，優化 Markdown
+                            解析與目錄渲染邏輯，並同步發布 <a href="_klio_docs/klio_03_April_Summary.md"
+                                class="font-bold text-indigo-600 hover:underline">2026 年 4 月深度研究總結</a>。</li>
+                        <li><strong>ITW 編輯器 V4 核心升級</strong>：導入全新型態 V4 架構，實作 PWA Service Worker 離線環境支援、Block-based
+                            區塊解析器與強大的 Formula 試算引擎，並確立全新的專案目錄與設計系統。同時新增 <code>test.itw</code> 視覺化動態貼文模板。</li>
+                        <li><strong>沉浸式書籤體驗</strong>：全面翻新書籤模組 (Bookmark Module)，將 <a
+                                href="bookmark/animeComicsGame.html"
+                                class="font-bold text-emerald-600 hover:underline">ACG Universe</a>、<a
+                                href="bookmark/designFirst.html"
+                                class="font-bold text-emerald-600 hover:underline">Design First</a> 與全新建立的 <a
+                                href="bookmark/tech_rocks.html" class="font-bold text-emerald-600 hover:underline">Tech
+                                Rocks!</a> 轉化為劇院級滾動視覺 (Cinematic Scroll) 體驗，並導入 KLIO 全域品牌導航。</li>
+                        <li><strong>書籤模組重構 (POC)</strong>：發布 Bookmarks v3 核心設計提案，並建立 ACG、DesignFirst 及 TechSource 的實驗性
+                            POC 模板，預演下一代高密度資訊導航介面。</li>
+                        <li><strong>首頁資訊流整合</strong>：完成「龍蝦、AI 代理與新青安」深度報告在 <a href="index.html"
+                                class="font-bold text-indigo-600 hover:underline">PC 首頁</a> 與 <a href="m/index.html"
+                                class="font-bold text-indigo-600 hover:underline">Mobile 首頁</a> 的資訊流卡片整合，確保最新研究動態即時觸達。
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Content & Curation</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>Tech Source 科技資料庫</strong>：建置台灣頂尖科技品牌數據庫，涵蓋智慧型手機、個人電腦 (PC)、工業電腦 (IPC)
+                            與車用電子等領域，提供詳盡的市場定位描述與快速檢索功能。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-refactor">Optimization & UX</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>實驗性應用命名標準化</strong>：完成 <code>_dev/ideas/app/</code> 下 50
+                            餘款原型檔案的描述性命名（從編號轉為功能標題），提升原型庫的可檢索性。</li>
+                        <li><strong>工作流資源清理</strong>：移除冗餘的 POC 實驗文件，優化專案目錄結構，確保生產環境的精簡度。</li>
+                        <li><strong>資源架構重構</strong>：集中管理全站研究報告之圖片資源至統一目錄，優化引用的層級路徑；更新 Git 忽略清單以排除 Node 模組，保持原始碼庫整潔。</li>
+                    </ul>
+                </div>
+            </section>
+            <!-- 2026-04-22 Update: Lobster AI & Housing Report -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#1e40af;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-22</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Lobster AI & Housing Trap Report</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Deep Research Reports</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="reports/20260422_lobster_ai.html"
+                                class="font-bold text-blue-600 hover:underline">龍蝦、AI 代理與新青安：正在發生的「養套殺」時代劇本</a>：深度擴充內容至
+                            10 倍篇幅，剖析金融補貼與數位依賴的底層邏輯。</li>
+                        <li><strong>互動體驗優化</strong>：實作基於 <code>IntersectionObserver</code> 的動態主題切換（養、套、殺）與 Bento Grid
+                            側邊欄即時風險指標，並發布完全相容的 <a href="m/reports/m_20260422_lobster_ai.html"
+                                class="font-bold text-blue-600 hover:underline">行動優先版本</a>。</li>
+                    </ul>
+                </div>
+            </section>
+
+
+            <!-- 2026-04-21 Update: ACG Universe Expansion -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#f43f5e;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-21</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">ACG Universe Data Expansion</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Content & Curation</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>ACG 資料庫深度更新</strong>：在 <a href="bookmark/animeComicsGame.html"
+                                class="font-bold text-rose-600 hover:underline">ACG Universe</a>
+                            中新增製作《寶可夢》、《藥師少女的獨語》的知名公司 OLM。同時針對各大工作室補齊知名著作標籤，包含《膽大黨》、《SPY×FAMILY 間諜家家酒》、《怪獸8號》等最新熱門作品。
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-21 Update: iOS Compatibility Fix -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        Fix</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-21</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">iOS AI Processing Optimization</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-refactor">Optimization & UX</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>iOS 相容性修復</strong>：針對 iPhone 與 iPad 用戶，優化了 Photo 與 RMBG 工具的 AI 處理邏輯。透過停用 iOS 不穩定的
+                            WebGPU 支援並限制執行緒記憶體主動避讓，解決了先前在 iOS Safari 上可能發生的崩潰或載入失敗問題，確保移動端去背體驗流暢穩定。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-21 Update: Photo Tool AI Upgrade -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-21</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Photo Tool AI Background Removal</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Tools / Features</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>證件照拍攝器 AI 升級</strong>：在 <a href="tools/photo.html"
+                                class="font-bold text-sky-600 hover:underline">Photo 拍攝器</a> 中導入 RMBG-1.4
+                            視覺模型。現在拍完照片後會自動執行「智慧去背」，並提供 5 款專業背景色供即時預覽與切換，滿足證件照多樣化背景需求。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-20 Update: Document Markdown Bug Fixes -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        Fix</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Documentation Format Rendering Fix</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-refactor">Optimization & UX</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>Markdown 語法解析修復</strong>：優化了 <code>ITW_01_Product_and_UX.md</code>
+                            中的粗體文字標記結構。將星號包裝於全形標點符號內（例如改為
+                            <code>「**文字**」</code>），徹底解決受中文字元相連影響，導致部分瀏覽器或解析器無法正確渲染粗體字，且直接印出星號的排版問題。
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            <!-- 2026-04-20 Update: ITW Editor UX Matrices & Scenarios -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">ITW Editor UX Matrices & Scenarios</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Deep Research & Docs</span>
+                    <ul class="update-list mt-2">
+                        <li><strong>ITW 產品願景與 UX 矩陣升級</strong>：精煉
+                            <code>ITW_01_Product_and_UX.md</code>，針對四大畫布場景（簡報、圖片、試算表、文件）補充更具體的產出流程與細緻的代表場景設定，包含從商業提案、社群媒體到專案任務管理的產業級實作範本指南。
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-20 Update: ITW Documentation Refactoring -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">ITW Documentation & Reader Updates</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Deep Research & Docs</span>
+                    <ul class="update-list mt-2">
+                        <li><strong>ITW 格式檔案重構</strong>：將原本 5 份內容較為發散的 <code>.itw</code> 專案規格書，重新收斂並重構為 3
+                            份邏輯分明的核心說明文檔。分別針對產品與體驗、檔案定義、以及瀏覽器端的 AI 推理架構設計。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">Optimization & Refactor</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>KLIO Docs 閱讀器更新</strong>：同步更新 <a href="_klio_docs/reader.html"
+                                class="font-bold text-sky-600 hover:underline">Docs Reader</a>
+                            的目錄陣列，確保對應至最新版本的技術架構文件，免除失效連結並提升閱讀順暢度。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-20 Update: Centralized Knowledge Base & Agentic Ecosystem -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Central Knowledge Base & App Experiments
+                        </div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Deep Research & Docs</span>
+                    <ul class="update-list mt-2">
+                        <li><strong>KLIO 統一知識庫上線</strong>：大幅調整 <code>_klio_docs</code> 資料夾架構，導入「KLIO 核心平台」與「ITW
+                            編輯器實作」的專案前綴命名標準，提升文件模組化與網頁閱讀體驗。</li>
+                        <li><strong>ITW 編輯器架構擴充</strong>：將原本分散的 AI Markdown 模組與 WebGPU 本地推理文件正式歸併至 ITW 編輯器體系，確立「瀏覽器原生
+                            AI」的應用導向發展方針。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Tools / Features</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>KLIO Docs Reader 路徑修復</strong>：修正因文件歸建與更名導致的 Reader 檔案抓取無效問題。</li>
+                        <li><strong>首頁選單佈局優化</strong>：將 DF 與 ACG 按鈕樣式標準化，保持全局視覺的一致性。</li>
+                        <li><strong>實驗性應用展演版優化</strong>：更新應用開發雛形，包括導入零 GC (Zero-GC) 物件池設計的
+                            <code>Neon Glide: Apex Edition</code> 等專案測試網頁。
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-20 Update: KLIO Docs & Neon Glide -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#0ea5e9;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">KLIO Docs Reader & Neon Glide</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Features</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="_klio_docs/reader.html" class="font-bold text-sky-600 hover:underline">KLIO Docs
+                                閱讀器</a>：全新打造的電子書風格 Markdown 動態閱讀器，自動抓取解析 <code>_klio_docs</code> 文件列表並支援多種主題與排版。</li>
+                        <li><strong>Neon Glide 遊戲</strong>：新增基於物件池 (Object Pooling) 與 Web Audio API 高效能架構的 Neon Glide
+                            實驗性遊戲原型。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-refactor">Optimization & UX</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>專案架構重構</strong>：整併原 <code>_dev</code> 目錄結構，將資源蒐集移至 <code>_data/web_collect</code> 並將
+                            AI 編輯器版本規範化為 v1 與 v2 。</li>
+                        <li><strong>部署流程優化</strong>：更新 Agent Deploy Workflow，確保主分支 (main) 的乾淨狀態，自動化排除 <code>_data</code>
+                            目錄並防偏離追蹤。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-20 Update: ACG Universe -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#f43f5e;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">ACG Universe & Global Media Index</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Content</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="bookmark/animeComicsGame.html" class="font-bold text-rose-600 hover:underline">ACG
+                                Universe 書籤頁面</a>：彙整全球 100 個遊戲設計、動畫製作及漫畫出版的指標性品牌，涵蓋台、日、美及全球市場。</li>
+                        <li><strong>ACG 彩色導覽連結</strong>：在首頁導覽列新增 A(紅) C(綠) G(藍) 快速跳轉連結，優化次文化與創意產業資訊獲取動線。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Data Management</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>數據規範化命名</strong>：將 `2d.md` 重新命名為 `anime_comics_game.md`，建立更具描述性且一致的資料命名標準。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-20 Update -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#6366f1;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-20</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Design First & Navigation Refresh</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Features</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="bookmark/designFirst.html" class="font-bold text-indigo-600 hover:underline">Design
+                                First 入口網頁</a>：全新建立的全球頂尖設計資源導航頁，支援 Onyx、Paper 與 Canvas 三種動態色彩模式，提供極致的視覺美學與排版參考。</li>
+                        <li><strong>導覽列快捷按鈕 (DF & FLY)</strong>：首頁工具列全面更新，新增「DF」設計入口與「FLY」極速飛行遊戲捷徑，優化高頻工具的使用動線。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-refactor">Optimization & UX</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>首頁選單精簡化</strong>：移除冗餘的 Themes 與 Top Style 連結，並修正移動端書籤跳轉路徑，保持首頁視覺的純粹與精準。</li>
+                        <li><a href="tools/fly.html" class="font-bold text-indigo-600 hover:underline">Sky Fly
+                                遊戲更新</a>：優化標題視覺與性能細節，並正式更名為 Sky Fly。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-16 Update -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#1e40af;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-16</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Game Theory & Nash Equilibrium</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Deep Research Reports</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="reports/20260416_nash_equilibrium.html"
+                                class="font-bold text-blue-600 hover:underline">賽局理論：純策略與混合策略推論 (Nash
+                                Equilibrium)</a>：新增支援 MathJax 數學公式與理論推導的深度報告，並整合至電腦與手機版的首頁資訊流。</li>
+                    </ul>
+                </div>
+            </section>
+            <!-- 2026-04-16 -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#1e40af;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-16</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Designjoy Research & Agentic Workflow</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Workflows</span>
+                    <ul class="update-list mt-2">
+                        <li><strong>Reports Agentic Workflow</strong>：整合 `reports_update.md` 工作流與專屬 Skills，實踐從 Markdown
+                            草稿撰寫、圖文編排，直到跨平台 (PC & Mobile) HTML 報告生成的自動化發布機制。</li>
+                        <li><strong>Deploy Workflow 自動化部署</strong>：新增 `deploy.md`
+                            流程，實現將從開發分支的專案自動整理至更新日誌，並合併回主分支的無縫部署體驗。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Deep Research Reports</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="reports/20260416_designjob.html"
+                                class="font-bold text-blue-600 hover:underline">Designjoy
+                                創業洞察：單人設計服務的產品化革命</a>：探討一人設計公司如何運用訂閱制與自動化達到百萬美元營收。</li>
+                        <li><strong>技術與學術文件庫擴充</strong>：新增 NTUST 賽局理論課程筆記、LibreOffice 自動化操作腳本及 ITW 開發工具生態系架構文件。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-refactor">Optimization & Tools</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><a href="tools/calculator.html" class="font-bold text-blue-600 hover:underline">CALCUKLIO
+                                計算機介面優化</a>：調整算術運算子按鈕色彩對比度，提升極端光線下的視覺清晰度與易用性。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-04-14 -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold"
+                        style="background:#1e40af;color:white;border-radius:50%;width:40px;height:40px;flex-shrink:0;">
+                        New</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-04-14</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">AI Tools & Research Expansion</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Tools</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="tools/calculator.html" class="font-bold text-blue-600 hover:underline">CALCUKLIO
+                                智能計算機</a>：整合標準、科學、程式、日期與單位轉換等五大模式的主題化計算機，運用 Liquid Glass 介面設計提供專業級運算體驗。</li>
+                        <li><a href="tools/rmbg.html" class="font-bold text-blue-600 hover:underline">RMBG 背景移除</a>：運用底層
+                            AutoModel 與 WebGPU 硬體加速技術，提供高效能且精準的影像即時去背工具。</li>
+                        <li><a href="tools/photo.html" class="font-bold text-blue-600 hover:underline">Photo
+                                深度編輯</a>：整合多項影像處理濾鏡，實現前端直接處理高解析度的沉浸式互動。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-docs">Deep Research Reports</span>
+                    <ul class="update-list mt-2">
+                        <li><a href="reports/20260414_localPWA.html"
+                                class="font-bold text-blue-600 hover:underline">Transformers.js PWA 離線 Web AI 深度研究</a>
+                        </li>
+                        <li><a href="reports/20260411_theonecompany.html"
+                                class="font-bold text-blue-600 hover:underline">AI 輔助微型創業跨國研究報告</a></li>
+                        <li><a href="reports/20260411_perfect_food.html"
+                                class="font-bold text-blue-600 hover:underline">跨境健康機能食品市場趨勢深度解析</a></li>
+                        <li><a href="reports/20260408_NodeJS_Deep_Research_Report.html"
+                                class="font-bold text-blue-600 hover:underline">Node.js 深度研究與架構生態解析報告</a></li>
+                        <li><a href="reports/20260408_os.html" class="font-bold text-blue-600 hover:underline">2026
+                                年全球作業系統市場格局與戰略</a></li>
+                        <li><a href="reports/20260407_US_Iran_War_Economic_Impact.html"
+                                class="font-bold text-blue-600 hover:underline">2026 美伊衝突後全球經濟衝擊分析</a></li>
+                        <li><a href="reports/20260407_AI_Anime_Character_Design.html"
+                                class="font-bold text-blue-600 hover:underline">AI 動漫角色設定深度分析</a></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-03-31 -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold">1</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-03-31</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Platform Upgrade & Mobile Experience</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">New Features</span>
+                    <ul class="update-list mt-2">
+                        <li><strong>Mobile-First 閱讀體驗</strong>：全面升級行動裝置響應式設計，推出專為手機閱讀最佳化的報告介面，確保隨時皆有完美的閱讀流暢度。</li>
+                        <li><strong>Bento UI 視覺進化</strong>：首頁資訊板塊大幅煥新，導入高質感影像與精緻陰影層次，打造「Think Smart, Look
+                            Amazing」的高端視覺饗宴。</li>
+                        <li><strong>Top 50 UX/UI 策展</strong>：全新上線 50 款前衛設計風格展示庫，並新增「Curated Editorial」編輯精選 (GQ 風格) 互動原型。
+                        </li>
+                        <li><strong>全新沉浸式圖書館</strong>：推出結合 Bento Grid 風格的沉浸式閱讀器與圖書館介面，供使用者探索知識。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6">
+                    <span class="tag-badge tag-docs">UX / UI Imrpovement</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>色彩無障礙優化</strong>：全面稽核並升級 KLIO Color 30 組配色系統，確保全網域所有主題設計皆符合 WCAG 對比度最高標準。</li>
+                        <li><strong>閱讀無干擾設計</strong>：改善主題選擇器介面，實作隱藏滑出式選單，確保在切換深/淺主題時的視覺專注度。</li>
+                        <li><strong>品牌識別統一</strong>：全站研究報告與體驗工具全面導入「KLIO x AI」品牌標準字與導覽標誌。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-03-30 -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold">2</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-03-30</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Content Expansion</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6 mb-6">
+                    <span class="tag-badge tag-feature">Content & Tools</span>
+                    <ul class="update-list mt-2">
+                        <li><strong>Gem 策展報告上線</strong>：於首頁推出全新由 AI 自動化 Pipeline 萃取的深度研究報告區段。</li>
+                        <li><strong>本地端編輯器強化</strong>：實作類似 Notion 的 Markdown 編輯介面，支援即時預覽與靈活的內容創作。</li>
+                    </ul>
+                </div>
+
+                <div class="insight-card p-6">
+                    <span class="tag-badge tag-refactor">Optimization</span>
+                    <ul class="update-list mt-2 text-sm">
+                        <li><strong>首頁動線梳理</strong>：優化介面導覽，移除過期報告與冗餘介面按鈕，使版面配置更為俐落。</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 2026-03-27 -->
+            <section class="section-card">
+                <div class="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div class="section-num flex items-center justify-center font-bold">3</div>
+                    <div>
+                        <h2 class="section-title font-bold m-0 p-0 leading-none">2026-03-27</h2>
+                        <div class="text-sm text-slate-500 font-medium mt-1">Platform Launch</div>
+                    </div>
+                </div>
+
+                <div class="insight-card p-6">
+                    <span class="tag-badge tag-feature">Platform Core</span>
+                    <ul class="update-list mt-2">
+                        <li><strong>KLIO 平台正式上線</strong>：導入 Agentic Workflow 智能架構，首度推出全動態排版、多主題切換的網頁式研究報告體驗。</li>
+                        <li><strong>首波研究發佈</strong>：釋出初期知識庫內容與產業趨勢洞察。</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
 
 </body>
+
 </html>
