@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電動車交流馬達與動能回收模擬</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #111827;
+            /* Tailwind gray-900 */
+            color: #f3f4f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            width: 380px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar styling for webkit */
+        #ui-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #ui-panel::-webkit-scrollbar-thumb {
+            background-color: #4b5563;
+            border-radius: 3px;
+        }
+
+        .mode-btn {
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+            border-color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .generator-active {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5) !important;
+            border-color: #10b981 !important;
+            background-color: rgba(16, 185, 129, 0.2) !important;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #374151;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            font-size: 1.5rem;
+            color: #60a5fa;
+            font-weight: bold;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        .overlay-label {
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            text-shadow: 0px 0px 5px black;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+        }
+    </style>
+
+    <!-- Import maps polyfill -->
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/"
+        }
+      }
+    </script>
+</head>
+
+<body>
+
+    <div id="loading">載入 3D 引擎中...</div>
+    <div id="canvas-container"></div>
+
+    <!-- labels that follow 3d objects -->
+    <div id="label-battery" class="overlay-label">高壓電池 (DC)</div>
+    <div id="label-inverter" class="overlay-label">逆變器 (DC ↔ AC)</div>
+    <div id="label-motor" class="overlay-label">交流馬達</div>
+
+    <div id="ui-panel">
+        <h1 class="text-2xl font-bold mb-1 text-blue-400">EV 核心動力系統</h1>
+        <p class="text-xs text-gray-400 mb-6">交流馬達與動能回收模擬器</p>
+
+        <div class="mb-6">
+            <h2 class="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">運作模式切換</h2>
+            <div class="flex flex-col gap-3">
+                <button id="btn-motor"
+                    class="mode-btn active w-full py-3 px-4 rounded-lg border border-gray-600 flex items-center justify-between">
+                    <span class="font-bold text-blue-100">驅動模式 (電動機)</span>
+                    <span class="text-xs bg-blue-600 px-2 py-1 rounded text-white">加速</span>
+                </button>
+                <button id="btn-generator"
+                    class="mode-btn w-full py-3 px-4 rounded-lg border border-gray-600 flex items-center justify-between">
+                    <span class="font-bold text-gray-300">動能回收 (發電機)</span>
+                    <span class="text-xs bg-emerald-600 px-2 py-1 rounded text-white">煞車</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex justify-between items-end mb-2">
+                <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">轉速 (RPM)</h2>
+                <span id="speed-display" class="text-lg font-mono text-blue-400">15000</span>
+            </div>
+            <input type="range" id="speed-slider" class="slider" min="0" max="100" value="50">
+        </div>
+
+        <div id="info-motor" class="info-box border-blue-500">
+            <h3 class="font-bold text-blue-400 mb-2">💡 驅動科學原理 (Motor)</h3>
+            <p>1. <b>高壓電池</b>輸出直流電 (DC)。</p>
+            <p>2. <b>逆變器</b>將直流電轉換為三相交流電 (AC)。</p>
+            <p>3. 交流電進入<b>定子線圈</b>，產生隨時間變化的<b>旋轉磁場</b>（紅藍燈光代表磁極變化）。</p>
+            <p>4. 旋轉磁場吸引轉子上的磁鐵，帶動轉子輸出機械動能至車輪。</p>
+        </div>
+
+        <div id="info-generator" class="info-box border-emerald-500 hidden">
+            <h3 class="font-bold text-emerald-400 mb-2">⚡ 回收科學原理 (Generator)</h3>
+            <p>1. 駕駛放開油門，車輛的<b>慣性動能</b>由車輪反向帶動轉子旋轉。</p>
+            <p>2. 轉子磁鐵切過定子線圈，透過<b>電磁感應</b>產生交流電 (AC)。</p>
+            <p>3. <b>逆變器</b>擔任整流角色，將交流電轉換回直流電 (DC)。</p>
+            <p>4. 電能回流充電至<b>高壓電池</b>，同時對車輪產生電磁阻力達成煞車效果。</p>
+        </div>
+
+        <div class="mt-6 text-xs text-gray-500 text-center">
+            使用滑鼠拖曳旋轉視角，滾輪縮放。
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- State ---
+        let currentMode = 'motor'; // 'motor' or 'generator'
+        let speedMultiplier = 0.5; // 0 to 1
+        let baseSpeed = 0.25; // 提高以對應 30,000 RPM (原本 0.05 對應 6,000 RPM)
+        let time = 0;
+        let isSimulating = true;
+
+        // --- DOM Elements ---
+        const btnMotor = document.getElementById('btn-motor');
+        const btnGenerator = document.getElementById('btn-generator');
+        const infoMotor = document.getElementById('info-motor');
+        const infoGenerator = document.getElementById('info-generator');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedDisplay = document.getElementById('speed-display');
+        const loading = document.getElementById('loading');
+
+        // Label elements
+        const labelBattery = document.getElementById('label-battery');
+        const labelInverter = document.getElementById('label-inverter');
+        const labelMotor = document.getElementById('label-motor');
+
+        // --- Three.js Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x111827, 0.015);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 15, 35);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 + 0.2; // Allow slightly below horizon
+        controls.minDistance = 10;
+        controls.maxDistance = 60;
+        // Shift target to center the whole system visually
+        controls.target.set(0, 0, 0);
+
+        // --- Lighting ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
+
+        const pointLight = new THREE.PointLight(0x3b82f6, 1, 50);
+        pointLight.position.set(12, 5, 0); // Near motor
+        scene.add(pointLight);
+
+        // --- Materials ---
+        const batteryMat = new THREE.MeshPhongMaterial({ color: 0x374151, shininess: 50 });
+        const batteryAccentMat = new THREE.MeshPhongMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.2 });
+        const inverterMat = new THREE.MeshPhongMaterial({ color: 0x4b5563, shininess: 80, metalness: 0.5 });
+
+        const copperMat = new THREE.MeshPhongMaterial({ color: 0xb87333, shininess: 100, metalness: 0.8 });
+        const steelMat = new THREE.MeshPhongMaterial({ color: 0x9ca3af, shininess: 100, metalness: 0.9 });
+        const rotorMat = new THREE.MeshPhongMaterial({ color: 0xd1d5db, shininess: 80 });
+        const magnetNorthMat = new THREE.MeshPhongMaterial({ color: 0xef4444 });
+        const magnetSouthMat = new THREE.MeshPhongMaterial({ color: 0x3b82f6 });
+
+        const coilMatBase = new THREE.MeshPhongMaterial({ color: 0x222222, transparent: true, opacity: 0.9 });
+
+        // --- Build Scene Objects ---
+
+        // System coordinates
+        const POS_BATTERY = -15;
+        const POS_INVERTER = -5;
+        const POS_MOTOR = 10;
+
+        // 1. Battery
+        const batteryGroup = new THREE.Group();
+        batteryGroup.position.set(POS_BATTERY, 0, 0);
+        const battBody = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 8), batteryMat);
+        const battTop1 = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.5, 16), batteryAccentMat);
+        battTop1.position.set(-1.5, 2.25, 2);
+        const battTop2 = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.5, 16), new THREE.MeshPhongMaterial({ color: 0xef4444 }));
+        battTop2.position.set(-1.5, 2.25, -2);
+        batteryGroup.add(battBody, battTop1, battTop2);
+        scene.add(batteryGroup);
+
+        // 2. Inverter
+        const inverterGroup = new THREE.Group();
+        inverterGroup.position.set(POS_INVERTER, 0, 0);
+        const invBody = new THREE.Mesh(new THREE.BoxGeometry(4, 3, 5), inverterMat);
+        const fins = new THREE.Group();
+        for (let i = 0; i < 7; i++) {
+            const fin = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.5, 0.1), steelMat);
+            fin.position.set(0, 1.6, -1.5 + i * 0.5);
+            fins.add(fin);
+        }
+        inverterGroup.add(invBody, fins);
+        scene.add(inverterGroup);
+
+        // 3. Motor (AC Synchronous / Induction conceptual model)
+        const motorGroup = new THREE.Group();
+        motorGroup.position.set(POS_MOTOR, 0, 0);
+
+        // Motor Housing (Wireframe to see inside)
+        const housingGeo = new THREE.CylinderGeometry(5.2, 5.2, 8, 32);
+        const housingMat = new THREE.MeshBasicMaterial({ color: 0x6b7280, wireframe: true, transparent: true, opacity: 0.2 });
+        const housing = new THREE.Mesh(housingGeo, housingMat);
+        housing.rotation.z = Math.PI / 2;
+        motorGroup.add(housing);
+
+        // Stator Coils (6 coils for 3-phase, simplified)
+        const statorCoils = [];
+        const coilMaterials = [];
+        const numCoils = 6;
+        for (let i = 0; i < numCoils; i++) {
+            const angle = (i / numCoils) * Math.PI * 2;
+            const coilGeo = new THREE.CylinderGeometry(0.8, 0.8, 7.5, 16);
+            // Create a unique material for each coil to change color dynamically
+            const mat = coilMatBase.clone();
+            const coil = new THREE.Mesh(coilGeo, mat);
+
+            // Position in a ring
+            const radius = 3.8;
+            coil.position.set(0, Math.sin(angle) * radius, Math.cos(angle) * radius);
+            coil.rotation.z = Math.PI / 2;
+
+            motorGroup.add(coil);
+            statorCoils.push(coil);
+            coilMaterials.push(mat);
+        }
+
+        // Rotor
+        const rotorGroup = new THREE.Group();
+        const rotorCoreGeo = new THREE.CylinderGeometry(2.2, 2.2, 7.8, 32);
+        const rotorCore = new THREE.Mesh(rotorCoreGeo, steelMat);
+        rotorCore.rotation.z = Math.PI / 2;
+        rotorGroup.add(rotorCore);
+
+        // Permanent Magnets on Rotor (to visualize rotation easily)
+        const magnetN = new THREE.Mesh(new THREE.BoxGeometry(4.5, 1, 7.9), magnetNorthMat);
+        magnetN.position.y = 1.1; // offset from center
+        const magnetS = new THREE.Mesh(new THREE.BoxGeometry(4.5, 1, 7.9), magnetSouthMat);
+        magnetS.position.y = -1.1;
+        rotorGroup.add(magnetN, magnetS);
+
+        // Shaft
+        const shaftGeo = new THREE.CylinderGeometry(0.4, 0.4, 15, 16);
+        const shaft = new THREE.Mesh(shaftGeo, steelMat);
+        shaft.rotation.z = Math.PI / 2;
+        rotorGroup.add(shaft);
+
+        motorGroup.add(rotorGroup);
+        scene.add(motorGroup);
+
+        // 4. Energy Flow Particles (Lines + Spheres)
+        const particlesGroup = new THREE.Group();
+        scene.add(particlesGroup);
+
+        // Path definitions
+        const pathDC = new THREE.LineCurve3(new THREE.Vector3(POS_BATTERY + 3, 0, 0), new THREE.Vector3(POS_INVERTER - 2, 0, 0));
+        const pathAC = new THREE.LineCurve3(new THREE.Vector3(POS_INVERTER + 2, 0, 0), new THREE.Vector3(POS_MOTOR - 4, 0, 0));
+
+        // Draw physical cables
+        const tubeDC = new THREE.Mesh(new THREE.TubeGeometry(pathDC, 1, 0.2, 8, false), new THREE.MeshPhongMaterial({ color: 0xef4444 }));
+        const tubeAC1 = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(POS_INVERTER + 2, 0, 1), new THREE.Vector3(POS_MOTOR - 4, 0, 1)), 1, 0.1, 8, false), copperMat);
+        const tubeAC2 = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(POS_INVERTER + 2, 0, 0), new THREE.Vector3(POS_MOTOR - 4, 0, 0)), 1, 0.1, 8, false), copperMat);
+        const tubeAC3 = new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(new THREE.Vector3(POS_INVERTER + 2, 0, -1), new THREE.Vector3(POS_MOTOR - 4, 0, -1)), 1, 0.1, 8, false), copperMat);
+        scene.add(tubeDC, tubeAC1, tubeAC2, tubeAC3);
+
+        // Particle pool
+        const numParticles = 40;
+        const energyParticles = [];
+        const particleGeo = new THREE.SphereGeometry(0.4, 16, 16);
+
+        for (let i = 0; i < numParticles; i++) {
+            const particleMat = new THREE.MeshBasicMaterial({ color: 0x60a5fa });
+            const particle = new THREE.Mesh(particleGeo, particleMat);
+            // Add point light to particle for glow effect
+            const pLight = new THREE.PointLight(0x60a5fa, 0.5, 3);
+            particle.add(pLight);
+
+            particlesGroup.add(particle);
+            energyParticles.push({
+                mesh: particle,
+                mat: particleMat,
+                light: pLight,
+                progress: Math.random(), // 0 to 1 along the entire journey
+                isDC: Math.random() > 0.5 // Start randomly in DC or AC section
+            });
+        }
+
+        loading.style.display = 'none';
+
+        // --- Logic & Simulation ---
+
+        function updateSimulation() {
+            if (!isSimulating) return;
+
+            // Calculate current speed
+            // If slider is 0, speed is 0.
+            const actualSpeed = baseSpeed * speedMultiplier;
+            time += actualSpeed;
+
+            // Update RPM Display
+            const rpm = Math.round(speedMultiplier * 30000);
+            speedDisplay.innerText = rpm.toString();
+
+            // 1. Rotor Rotation
+            // In motor mode, rotor follows the stator field (synchronous assumption for simplicity).
+            // In generator mode, momentum drives the rotor.
+            let rotorAngle = time;
+
+            // Adjust rotation direction purely for visual effect if needed, but usually 
+            // forward is forward. Let's keep it spinning in one direction.
+            rotorGroup.rotation.x = rotorAngle;
+
+            // 2. Stator Coil Colors (Magnetic Field)
+            // 3-phase: Phase A (0, 180 deg), Phase B (120, 300), Phase C (240, 60)
+            const phases = [
+                Math.sin(time),                    // Phase A
+                Math.sin(time - (Math.PI * 2 / 3)), // Phase B
+                Math.sin(time - (Math.PI * 4 / 3))  // Phase C
+            ];
+
+            for (let i = 0; i < numCoils; i++) {
+                // Determine which phase this coil belongs to (0,1,2,0,1,2)
+                const phaseIdx = i % 3;
+                let intensity = phases[phaseIdx];
+
+                // Opposite coils have opposite magnetic polarity
+                if (i >= 3) intensity = -intensity;
+
+                // Map intensity [-1, 1] to Red (North) / Blue (South)
+                // In Generator Mode, colors change slightly to show "induced" vs "driven"
+                const color = new THREE.Color();
+                if (intensity > 0) {
+                    color.setRGB(intensity, 0, 0); // Red
+                } else {
+                    color.setRGB(0, 0, -intensity); // Blue
+                }
+
+                // If speed is 0, fade to off
+                if (speedMultiplier === 0) {
+                    color.setRGB(0.1, 0.1, 0.1);
+                }
+
+                coilMaterials[i].color.copy(color);
+                // Make it emissive to glow
+                coilMaterials[i].emissive.copy(color);
+                coilMaterials[i].emissiveIntensity = 0.5;
+            }
+
+            // 3. Energy Flow Particles
+            const particleSpeed = speedMultiplier * 0.1; // 提高以對應轉速增加 (原本 0.02)
+
+            energyParticles.forEach(p => {
+                if (speedMultiplier === 0) {
+                    p.mesh.visible = false;
+                    return;
+                }
+                p.mesh.visible = true;
+
+                // Determine direction
+                if (currentMode === 'motor') {
+                    // Flow: Battery -> Motor
+                    p.progress += particleSpeed;
+                    if (p.progress > 1) p.progress = 0;
+
+                    p.mat.color.setHex(0xef4444); // Red/Orange for driving energy
+                    p.light.color.setHex(0xef4444);
+                } else {
+                    // Flow: Motor -> Battery
+                    p.progress -= particleSpeed;
+                    if (p.progress < 0) p.progress = 1;
+
+                    p.mat.color.setHex(0x10b981); // Green for regen energy
+                    p.light.color.setHex(0x10b981);
+                }
+
+                // Position calculation
+                let pos = new THREE.Vector3();
+                if (p.progress < 0.5) {
+                    // DC section (Battery to Inverter)
+                    const localProg = p.progress * 2; // scale 0-0.5 to 0-1
+                    pathDC.getPoint(localProg, pos);
+                } else {
+                    // AC section (Inverter to Motor)
+                    const localProg = (p.progress - 0.5) * 2; // scale 0.5-1 to 0-1
+                    pathAC.getPoint(localProg, pos);
+
+                    // Add slight sine wave wobble to AC particles to signify alternating current
+                    if (currentMode === 'motor' || currentMode === 'generator') {
+                        const phase = (p.progress * 20) + time * 5;
+                        pos.z += Math.sin(phase) * 0.5;
+                        pos.y += Math.cos(phase) * 0.5;
+                    }
+                }
+                p.mesh.position.copy(pos);
+            });
+
+            // Update light color based on mode
+            if (currentMode === 'generator') {
+                pointLight.color.setHex(0x10b981); // Green ambient
+            } else {
+                pointLight.color.setHex(0x3b82f6); // Blue ambient
+            }
+        }
+
+        // --- HTML Label Positioning ---
+        function updateLabels() {
+            // Helper to project 3D to 2D
+            function toScreenPosition(obj3D, labelElem, yOffset = 5) {
+                const vector = new THREE.Vector3();
+                vector.copy(obj3D.position);
+                vector.y += yOffset; // float above object
+
+                vector.project(camera);
+
+                const x = (vector.x * .5 + .5) * window.innerWidth;
+                const y = -(vector.y * .5 - .5) * window.innerHeight;
+
+                // Hide if behind camera
+                if (vector.z > 1) {
+                    labelElem.style.display = 'none';
+                } else {
+                    labelElem.style.display = 'block';
+                    labelElem.style.left = `${x}px`;
+                    labelElem.style.top = `${y}px`;
+                }
+            }
+
+            toScreenPosition(batteryGroup, labelBattery);
+            toScreenPosition(inverterGroup, labelInverter, 3);
+            toScreenPosition(motorGroup, labelMotor, 6);
+        }
+
+        // --- Render Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            updateSimulation();
+            updateLabels();
+            renderer.render(scene, camera);
+        }
+
+        // --- Event Listeners ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            speedMultiplier = e.target.value / 100;
+        });
+
+        btnMotor.addEventListener('click', () => {
+            currentMode = 'motor';
+
+            // UI Updates
+            btnMotor.classList.add('active');
+            btnGenerator.classList.remove('generator-active', 'active');
+
+            // Swap text style classes
+            btnMotor.querySelector('span.font-bold').className = 'font-bold text-blue-100';
+            btnGenerator.querySelector('span.font-bold').className = 'font-bold text-gray-300';
+
+            infoMotor.classList.remove('hidden');
+            infoGenerator.classList.add('hidden');
+        });
+
+        btnGenerator.addEventListener('click', () => {
+            currentMode = 'generator';
+
+            // UI Updates
+            btnGenerator.classList.add('generator-active', 'active');
+            btnMotor.classList.remove('active');
+
+            // Swap text style classes
+            btnGenerator.querySelector('span.font-bold').className = 'font-bold text-emerald-100';
+            btnMotor.querySelector('span.font-bold').className = 'font-bold text-gray-300';
+
+            infoGenerator.classList.remove('hidden');
+            infoMotor.classList.add('hidden');
+        });
+
+        // Start animation
+        animate();
+
+    </script>
+</body>
+
+</html>

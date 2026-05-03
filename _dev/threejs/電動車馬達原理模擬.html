@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>電動車交流馬達與動能回充模擬</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js & OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050505;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .interactive {
+            pointer-events: auto;
+        }
+
+        /* 玻璃擬態 UI */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 能量流動動畫 */
+        .flow-arrow {
+            display: inline-block;
+            font-weight: bold;
+            letter-spacing: -2px;
+        }
+
+        @keyframes flowRight {
+            0% {
+                transform: translateX(-5px);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(5px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes flowLeft {
+            0% {
+                transform: translateX(5px);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(-5px);
+                opacity: 0;
+            }
+        }
+
+        .discharging .flow-arrow {
+            animation: flowRight 1s infinite;
+            color: #ef4444;
+        }
+
+        .charging .flow-arrow {
+            animation: flowLeft 1s infinite;
+            color: #22c55e;
+        }
+
+        .idle .flow-arrow {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Three.js 畫布容器 -->
+    <div id="canvas-container"></div>
+
+    <!-- UI 覆蓋層 -->
+    <div id="ui-layer" class="p-4 md:p-8">
+
+        <!-- 頂部資訊列 -->
+        <div class="flex justify-between items-start">
+            <div class="glass-panel p-4 md:p-6 w-full max-w-sm">
+                <h1 class="text-xl md:text-2xl font-bold mb-2 text-blue-400">EV 交流馬達物理模擬</h1>
+                <p class="text-xs text-gray-400 mb-4">滑鼠拖曳旋轉視角 / 滾輪縮放</p>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                        <span class="text-sm text-gray-300">轉子速度 (車輛實際速度)</span>
+                        <span id="ui-rotor-speed" class="font-mono font-bold text-lg text-cyan-400">0 RPM</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                        <span class="text-sm text-gray-300">定子磁場頻率 (控制端)</span>
+                        <span id="ui-stator-freq" class="font-mono font-bold text-lg text-yellow-400">0 Hz</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                        <span class="text-sm text-gray-300">系統功率 (能量流向)</span>
+                        <span id="ui-power" class="font-mono font-bold text-lg">0.0 kW</span>
+                    </div>
+
+                    <!-- 電池狀態與能量流動 -->
+                    <div id="energy-flow-container"
+                        class="mt-4 p-3 rounded bg-gray-800 flex justify-between items-center idle">
+                        <div class="flex flex-col items-center">
+                            <span class="text-2xl">🔋</span>
+                            <span class="text-xs mt-1">高壓電池</span>
+                        </div>
+                        <div id="flow-indicator" class="flex-1 text-center font-mono text-xl">
+                            -- -- --
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-2xl">⚙️</span>
+                            <span class="text-xs mt-1">驅動馬達</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 科學原理解說面板 -->
+            <div class="glass-panel p-4 hidden md:block w-80 text-sm">
+                <h2 class="font-bold text-lg mb-2 text-white">科學運作邏輯</h2>
+                <div id="desc-idle" class="text-gray-300">
+                    <p>等待操作。交流馬達透過改變定子（外圈）的電磁場頻率，來控制轉子（內圈）的轉速。</p>
+                </div>
+                <div id="desc-accel" class="text-gray-300 hidden">
+                    <p class="text-red-400 font-bold mb-1">【馬達模式 - 消耗電能】</p>
+                    <p>變頻器輸出交流電，使定子產生「旋轉磁場」(黃色箭頭)。</p>
+                    <p class="mt-1">此時磁場速度大於轉子速度（<span class="text-yellow-400">黃箭頭</span>領先<span
+                            class="text-cyan-400">青箭頭</span>），磁力拉動轉子加速，將電能轉換為機械能（動能）。</p>
+                </div>
+                <div id="desc-regen" class="text-gray-300 hidden">
+                    <p class="text-green-400 font-bold mb-1">【發電機模式 - 動能回充】</p>
+                    <p>車輛因慣性繼續前進，轉子被車輪帶動旋轉。</p>
+                    <p class="mt-1">系統刻意降低定子磁場頻率，使轉子轉速大於磁場轉速（<span class="text-cyan-400">青箭頭</span>領先<span
+                            class="text-yellow-400">黃箭頭</span>）。轉子切割定子磁力線，產生反電動勢，將機械能轉換回電能充入電池，同時產生煞車阻力。</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部控制按鈕 -->
+        <div class="flex justify-center pb-8 interactive">
+            <div class="glass-panel p-2 flex gap-4">
+                <button id="btn-brake"
+                    class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded shadow-lg transition-colors flex items-center gap-2">
+                    <span>⚡ 動能回充 (煞車)</span>
+                </button>
+                <button id="btn-coast"
+                    class="px-6 py-3 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded shadow-lg transition-colors flex items-center gap-2">
+                    <span>💨 滑行 (斷電)</span>
+                </button>
+                <button id="btn-accel"
+                    class="px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded shadow-lg transition-colors flex items-center gap-2">
+                    <span>🏎️ 踩下油門 (加速)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 物理與狀態變數 ---
+        const STATE = {
+            IDLE: 0,
+            ACCELERATING: 1,
+            REGEN: 2,
+            COASTING: 3
+        };
+
+        let currentState = STATE.IDLE;
+
+        let rotorVelocity = 0;      // 轉子實際角速度 (模擬車速)
+        let rotorAngle = 0;         // 轉子當前角度
+
+        let statorFrequency = 0;    // 定子磁場角速度 (由逆變器控制)
+        let statorAngle = 0;        // 磁場當前角度
+
+        const MAX_SPEED = 500;      // 最大轉速 (500 * 60 = 30,000 RPM)
+        const ACCEL_RATE = 50;      // 加速度 (調高以適應新上限)
+        const FRICTION = 2;         // 自然滑行阻力
+        const REGEN_DRAG = 40;      // 回充煞車阻力
+
+        // --- Three.js 基礎設置 ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(12, 10, 15);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxDistance = 30;
+        controls.minDistance = 5;
+
+        // --- 光源 ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(0, 10, 0);
+        scene.add(pointLight);
+
+        // --- 建立馬達模型 ---
+        const motorGroup = new THREE.Group();
+        scene.add(motorGroup);
+
+        // 1. 定子 (Stator) - 外部線圈 (12槽, 模擬三相)
+        const numSlots = 12;
+        const statorRadius = 4;
+        const statorCoils = [];
+        const phaseColors = [0xff0000, 0x00ff00, 0x0000ff]; // U, V, W 相位基礎色
+
+        const coilGeometry = new THREE.BoxGeometry(1, 1.5, 3);
+
+        for (let i = 0; i < numSlots; i++) {
+            const angle = (i / numSlots) * Math.PI * 2;
+
+            // 基礎材質
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                emissive: 0x000000,
+                emissiveIntensity: 0,
+                roughness: 0.7,
+                metalness: 0.5
+            });
+
+            const coil = new THREE.Mesh(coilGeometry, material);
+
+            // 放置於圓周上
+            coil.position.x = Math.cos(angle) * statorRadius;
+            coil.position.y = Math.sin(angle) * statorRadius;
+
+            // 旋轉朝向中心
+            coil.rotation.z = angle + Math.PI / 2;
+
+            // 記錄相位 (每4個槽為一個完整週期，模擬極對數)
+            coil.userData.phaseAngle = angle;
+
+            motorGroup.add(coil);
+            statorCoils.push(coil);
+        }
+
+        // 定子外殼
+        const casingGeo = new THREE.TorusGeometry(statorRadius + 0.8, 0.5, 16, 64);
+        const casingMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.2 });
+        const casing = new THREE.Mesh(casingGeo, casingMat);
+        motorGroup.add(casing);
+
+        // 2. 轉子 (Rotor) - 內部旋轉體
+        const rotorRadius = 2.8;
+        const rotorGroup = new THREE.Group();
+        motorGroup.add(rotorGroup);
+
+        const rotorGeo = new THREE.CylinderGeometry(rotorRadius, rotorRadius, 3.2, 32);
+        // 將圓柱放平以符合定子方向 (Z軸為軸心)
+        rotorGeo.rotateX(Math.PI / 2);
+
+        const rotorMat = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            metalness: 0.9,
+            roughness: 0.4
+        });
+        const rotorMesh = new THREE.Mesh(rotorGeo, rotorMat);
+        rotorGroup.add(rotorMesh);
+
+        // 在轉子上添加特徵紋理（模擬磁極或鼠籠條）以便觀察旋轉
+        const poleGeo = new THREE.BoxGeometry(rotorRadius * 2 + 0.2, 0.2, 3.3);
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x004444 });
+
+        // 十字交叉的標記代表轉子的磁軸
+        const pole1 = new THREE.Mesh(poleGeo, poleMat);
+        const pole2 = new THREE.Mesh(poleGeo, poleMat);
+        pole2.rotation.z = Math.PI / 2;
+        rotorGroup.add(pole1);
+        rotorGroup.add(pole2);
+
+        // 轉子軸心
+        const shaftGeo = new THREE.CylinderGeometry(0.5, 0.5, 8, 16);
+        shaftGeo.rotateX(Math.PI / 2);
+        const shaftMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, metalness: 1 });
+        const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+        rotorGroup.add(shaft);
+
+        // 3. 科學向量指標 (Arrows)
+        // 定子旋轉磁場 (RMF) 向量 (黃色)
+        const rmfDir = new THREE.Vector3(1, 0, 0);
+        const rmfOrigin = new THREE.Vector3(0, 0, 2.5); // 稍微往Z軸推，避免重疊
+        const rmfLength = 5.5;
+        const rmfArrow = new THREE.ArrowHelper(rmfDir, rmfOrigin, rmfLength, 0xffff00, 0.8, 0.5);
+        motorGroup.add(rmfArrow);
+
+        // 轉子磁軸/位置向量 (青色)
+        const rotorDir = new THREE.Vector3(1, 0, 0);
+        const rotorOrigin = new THREE.Vector3(0, 0, 2.5);
+        const rotorLength = 4.5;
+        const rotorArrow = new THREE.ArrowHelper(rotorDir, rotorOrigin, rotorLength, 0x00ffff, 0.8, 0.5);
+        motorGroup.add(rotorArrow);
+
+
+        // --- UI 更新邏輯 ---
+        const uiRotorSpeed = document.getElementById('ui-rotor-speed');
+        const uiStatorFreq = document.getElementById('ui-stator-freq');
+        const uiPower = document.getElementById('ui-power');
+        const flowContainer = document.getElementById('energy-flow-container');
+        const flowIndicator = document.getElementById('flow-indicator');
+
+        function updateUI() {
+            // 將內部角速度轉換為 RPM 和 Hz 以供顯示 (假設數值轉換)
+            const rpm = Math.abs(rotorVelocity * 60).toFixed(0);
+            const freq = Math.abs(statorFrequency * 10).toFixed(1);
+
+            uiRotorSpeed.innerText = `${rpm} RPM`;
+            uiStatorFreq.innerText = `${freq} Hz`;
+
+            // 計算功率 (簡化模型：扭矩 * 轉速)
+            // 扭矩取決於定子頻率與轉子速度的差 (Slip)
+            let slip = statorFrequency - rotorVelocity;
+            let power = (slip * rotorVelocity * 5).toFixed(1); // 乘 5 放大數值
+
+            if (currentState === STATE.COASTING || currentState === STATE.IDLE) {
+                power = "0.0";
+            }
+
+            uiPower.innerText = `${Math.abs(power)} kW`;
+
+            // 更新能量流動視覺
+            flowContainer.className = 'mt-4 p-3 rounded bg-gray-800 flex justify-between items-center';
+            if (currentState === STATE.ACCELERATING) {
+                flowContainer.classList.add('discharging');
+                flowIndicator.innerHTML = '<span class="flow-arrow text-red-500">>>>>></span>';
+                uiPower.className = "font-mono font-bold text-lg text-red-400";
+            } else if (currentState === STATE.REGEN) {
+                flowContainer.classList.add('charging');
+                flowIndicator.innerHTML = '<span class="flow-arrow text-green-500"><<<<<</span>';
+                uiPower.className = "font-mono font-bold text-lg text-green-400";
+            } else {
+                flowContainer.classList.add('idle');
+                flowIndicator.innerHTML = '<span class="text-gray-500">-- -- --</span>';
+                uiPower.className = "font-mono font-bold text-lg text-gray-300";
+            }
+        }
+
+        // --- 互動控制邏輯 ---
+        const btnAccel = document.getElementById('btn-accel');
+        const btnBrake = document.getElementById('btn-brake');
+        const btnCoast = document.getElementById('btn-coast');
+
+        function setDescriptions(state) {
+            document.getElementById('desc-idle').classList.add('hidden');
+            document.getElementById('desc-accel').classList.add('hidden');
+            document.getElementById('desc-regen').classList.add('hidden');
+
+            if (state === STATE.ACCELERATING) document.getElementById('desc-accel').classList.remove('hidden');
+            else if (state === STATE.REGEN) document.getElementById('desc-regen').classList.remove('hidden');
+            else document.getElementById('desc-idle').classList.remove('hidden');
+        }
+
+        // 切換控制邏輯
+        function updateButtonStyles() {
+            btnAccel.classList.remove('ring-4', 'ring-white', 'brightness-125');
+            btnBrake.classList.remove('ring-4', 'ring-white', 'brightness-125');
+            btnCoast.classList.remove('ring-4', 'ring-white', 'brightness-125');
+
+            if (currentState === STATE.ACCELERATING) {
+                btnAccel.classList.add('ring-4', 'ring-white', 'brightness-125');
+            } else if (currentState === STATE.REGEN) {
+                btnBrake.classList.add('ring-4', 'ring-white', 'brightness-125');
+            } else if (currentState === STATE.COASTING || currentState === STATE.IDLE) {
+                btnCoast.classList.add('ring-4', 'ring-white', 'brightness-125');
+            }
+        }
+
+        btnAccel.addEventListener('click', () => {
+            if (currentState === STATE.ACCELERATING) {
+                currentState = STATE.COASTING;
+            } else {
+                currentState = STATE.ACCELERATING;
+            }
+            setDescriptions(currentState);
+            updateButtonStyles();
+        });
+
+        btnBrake.addEventListener('click', () => {
+            if (currentState === STATE.REGEN) {
+                currentState = STATE.COASTING;
+            } else {
+                currentState = STATE.REGEN;
+            }
+            setDescriptions(currentState);
+            updateButtonStyles();
+        });
+
+        btnCoast.addEventListener('click', () => {
+            currentState = STATE.COASTING;
+            setDescriptions(STATE.COASTING);
+            updateButtonStyles();
+        });
+
+        // 初始化按鈕樣式
+        updateButtonStyles();
+
+        // --- 動畫與物理更新循環 ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+
+            // 1. 物理邏輯更新
+            if (currentState === STATE.ACCELERATING) {
+                // 馬達模式：定子頻率刻意比轉子速度快 (創造正滑差 Positive Slip)
+                statorFrequency = rotorVelocity + 2.5;
+                if (statorFrequency > MAX_SPEED) statorFrequency = MAX_SPEED;
+
+                // 轉子被磁場牽引加速
+                rotorVelocity += ACCEL_RATE * delta;
+                if (rotorVelocity > MAX_SPEED) rotorVelocity = MAX_SPEED;
+
+            } else if (currentState === STATE.REGEN) {
+                // 發電機模式：定子頻率刻意比轉子速度慢 (創造負滑差 Negative Slip)
+                // 實務上是透過 IGBT 控制讓磁場滯後轉子，產生制動轉矩
+                statorFrequency = Math.max(0, rotorVelocity - 3.0);
+
+                // 車輪(轉子)受到發電阻力而減速
+                rotorVelocity -= REGEN_DRAG * delta;
+                if (rotorVelocity < 0) {
+                    rotorVelocity = 0;
+                    statorFrequency = 0;
+                    currentState = STATE.IDLE;
+                }
+
+            } else {
+                // 滑行 / 待機：定子斷電，定子磁場跟隨轉子(或直接歸零)，轉子受自然阻力減速
+                statorFrequency = 0;
+                rotorVelocity -= FRICTION * delta;
+                if (rotorVelocity < 0) rotorVelocity = 0;
+            }
+
+            // 更新角度
+            statorAngle += statorFrequency * delta;
+            rotorAngle += rotorVelocity * delta;
+
+            // 2. 3D 物件更新
+            // 轉子旋轉
+            rotorGroup.rotation.z = rotorAngle;
+
+            // 定子線圈發光效果 (模擬三相交流電，產生旋轉磁場)
+            // 只有在加速或回充時才通電產生明顯磁場
+            const fieldIntensity = (currentState === STATE.ACCELERATING || currentState === STATE.REGEN) ? 1.0 : 0.0;
+
+            statorCoils.forEach((coil, index) => {
+                // 計算該線圈與當前旋轉磁場角度的相位差
+                // 使用極對數來創造旋轉波
+                const phaseDiff = coil.userData.phaseAngle - statorAngle;
+
+                // 取 Cos 模擬弦波交流電的強度變化
+                let intensity = Math.cos(phaseDiff);
+
+                // 若強度大於0，則該線圈導通發光
+                if (intensity > 0) {
+                    // 根據相位決定顏色 (U,V,W)
+                    const phaseColor = phaseColors[index % 3];
+                    coil.material.emissive.setHex(phaseColor);
+                    coil.material.emissiveIntensity = intensity * 2.0 * fieldIntensity;
+                } else {
+                    coil.material.emissiveIntensity = 0;
+                }
+            });
+
+            // 更新科學向量箭頭
+            if (fieldIntensity > 0) {
+                rmfArrow.visible = true;
+                // 磁場向量方向跟隨 statorAngle
+                const rmfX = Math.cos(statorAngle);
+                const rmfY = Math.sin(statorAngle);
+                rmfArrow.setDirection(new THREE.Vector3(rmfX, rmfY, 0).normalize());
+
+                // 長度根據頻率(電壓)微調
+                const len = 4.5 + (statorFrequency / MAX_SPEED) * 1.5;
+                rmfArrow.setLength(len, 0.8, 0.5);
+            } else {
+                rmfArrow.visible = false;
+            }
+
+            // 轉子位置向量 (永遠跟隨轉子)
+            const rotX = Math.cos(rotorAngle);
+            const rotY = Math.sin(rotorAngle);
+            rotorArrow.setDirection(new THREE.Vector3(rotX, rotY, 0).normalize());
+            // 如果車子在動，就顯示轉子箭頭
+            rotorArrow.visible = rotorVelocity > 0.1;
+
+            // 3. UI 更新
+            updateUI();
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // --- 響應式視窗調整 ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 啟動動畫
+        window.onload = () => {
+            animate();
+        };
+
+    </script>
+</body>
+
+</html>
