@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A4 悠遊卡專業排版編輯器</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        :root {
+            --card-width: 85.6mm;
+            --card-height: 54mm;
+            --page-width: 210mm;
+            --page-height: 297mm;
+            --margin-v: 13.5mm;
+            --margin-h: 19.4mm;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* A4 Preview */
+        .a4-page {
+            width: var(--page-width);
+            height: var(--page-height);
+            background: white;
+            padding: var(--margin-v) var(--margin-h);
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.15);
+            margin: 2rem auto;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .a4-grid {
+            display: grid;
+            grid-template-columns: repeat(2, var(--card-width));
+            grid-template-rows: repeat(5, var(--card-height));
+            gap: 0;
+        }
+
+        .card-slot {
+            width: var(--card-width);
+            height: var(--card-height);
+            position: relative;
+            overflow: hidden;
+            border: 0.1mm solid #e2e8f0;
+            background: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .card-slot:hover {
+            z-index: 10;
+            box-shadow: inset 0 0 0 2px #3b82f6;
+        }
+
+        /* Editor Modal */
+        .modal-overlay {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+        }
+
+        /* Card Workspace */
+        .card-workspace {
+            width: 85.6mm;
+            height: 54mm;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 0 1px #e2e8f0, 0 20px 50px rgba(0,0,0,0.2);
+            transform: scale(2.5); /* Scale up for editing */
+            transform-origin: center;
+        }
+
+        @media (max-width: 1000px) {
+            .card-workspace { transform: scale(1.5); }
+        }
+        @media (max-width: 600px) {
+            .card-workspace { transform: scale(1); }
+        }
+
+        .crop-mark {
+            position: absolute;
+            width: 4mm;
+            height: 4mm;
+            border: 0.1mm solid #cbd5e1;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+        .crop-tl { top: 0; left: 0; border-bottom: none; border-right: none; }
+        .crop-tr { top: 0; right: 0; border-bottom: none; border-left: none; }
+        .crop-bl { bottom: 0; left: 0; border-top: none; border-right: none; }
+        .crop-br { bottom: 0; right: 0; border-top: none; border-left: none; }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { background: white; }
+            .no-print { display: none !important; }
+            .a4-page { margin: 0; box-shadow: none; }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #3b82f6;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Icons
+        const Icons = {
+            Plus: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>,
+            Trash: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+            Rotate: () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+            Save: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>,
+            Layout: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
+            Print: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>,
+            Close: () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>,
+            Swap: () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg>
+        };
+
+        const INITIAL_CARD = {
+            layers: [],
+            isPortrait: false
+        };
+
+        function App() {
+            const [slots, setSlots] = useState(Array(10).fill(null).map(() => ({ ...INITIAL_CARD })));
+            const [editingIndex, setEditingIndex] = useState(null);
+            const [activeLayerIndex, setActiveLayerIndex] = useState(0);
+            const [currentCard, setCurrentCard] = useState(null);
+
+            // Dragging state
+            const [isDragging, setIsDragging] = useState(false);
+            const dragStartPos = useRef({ x: 0, y: 0 });
+            const initialLayerPos = useRef({ x: 0, y: 0 });
+            const workspaceRef = useRef(null);
+
+            const handleMouseDown = (e, idx) => {
+                if (idx !== undefined) setActiveLayerIndex(idx);
+                setIsDragging(true);
+                dragStartPos.current = { x: e.clientX, y: e.clientY };
+                const activeLayer = currentCard.layers[idx !== undefined ? idx : activeLayerIndex];
+                if (activeLayer) {
+                    initialLayerPos.current = { x: activeLayer.x, y: activeLayer.y };
+                }
+                e.preventDefault();
+            };
+
+            useEffect(() => {
+                const handleMouseMove = (e) => {
+                    if (!isDragging || editingIndex === null) return;
+                    
+                    const dx = e.clientX - dragStartPos.current.x;
+                    const dy = e.clientY - dragStartPos.current.y;
+                    
+                    // The workspace is scaled (default 2.5), so we need to adjust the delta
+                    // Also consider the card orientation (if portrait, X and Y might need swapping or negating depending on implementation)
+                    // But here we rotate the container, so relative movement is fine if we account for scale.
+                    const scaleFactor = window.innerWidth > 1000 ? 2.5 : (window.innerWidth > 600 ? 1.5 : 1.0);
+                    
+                    // If rotated 90deg, dx and dy need to be mapped
+                    let realDx = dx / scaleFactor;
+                    let realDy = dy / scaleFactor;
+
+                    if (currentCard.isPortrait) {
+                        const temp = realDx;
+                        realDx = realDy;
+                        realDy = -temp;
+                    }
+
+                    updateLayer(activeLayerIndex, {
+                        x: initialLayerPos.current.x + realDx,
+                        y: initialLayerPos.current.y + realDy
+                    });
+                };
+
+                const handleMouseUp = () => setIsDragging(false);
+
+                if (isDragging) {
+                    window.addEventListener('mousemove', handleMouseMove);
+                    window.addEventListener('mouseup', handleMouseUp);
+                }
+                return () => {
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    window.removeEventListener('mouseup', handleMouseUp);
+                };
+            }, [isDragging, activeLayerIndex, currentCard?.isPortrait]);
+
+            const openEditor = (index) => {
+                setEditingIndex(index);
+                setCurrentCard(JSON.parse(JSON.stringify(slots[index]))); // Deep copy
+                setActiveLayerIndex(0);
+            };
+
+            const closeEditor = () => {
+                setEditingIndex(null);
+                setCurrentCard(null);
+            };
+
+            const saveCard = () => {
+                const newSlots = [...slots];
+                newSlots[editingIndex] = currentCard;
+                setSlots(newSlots);
+                closeEditor();
+            };
+
+            const addLayer = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (res) => {
+                        const newLayer = {
+                            id: Date.now(),
+                            src: res.target.result,
+                            x: 0,
+                            y: 0,
+                            scale: 1,
+                            rotate: 0,
+                            opacity: 1
+                        };
+                        setCurrentCard(prev => ({
+                            ...prev,
+                            layers: [...prev.layers, newLayer]
+                        }));
+                        setActiveLayerIndex(currentCard.layers.length);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const updateLayer = (index, updates) => {
+                setCurrentCard(prev => {
+                    const newLayers = [...prev.layers];
+                    newLayers[index] = { ...newLayers[index], ...updates };
+                    return { ...prev, layers: newLayers };
+                });
+            };
+
+            const removeLayer = (index) => {
+                setCurrentCard(prev => ({
+                    ...prev,
+                    layers: prev.layers.filter((_, i) => i !== index)
+                }));
+                setActiveLayerIndex(0);
+            };
+
+            const handleApplyAll = () => {
+                if (window.confirm('確定要將當前卡片樣式套用到所有格子嗎？')) {
+                    setSlots(Array(10).fill(null).map(() => JSON.parse(JSON.stringify(currentCard))));
+                }
+            };
+
+            const clearAll = () => {
+                if (window.confirm('確定要清空所有卡片嗎？')) {
+                    setSlots(Array(10).fill(null).map(() => ({ ...INITIAL_CARD })));
+                }
+            };
+
+            // Render Card Content
+            const renderCard = (card, isPreview = false, onLayerMouseDown) => {
+                return (
+                    <div className="w-full h-full relative overflow-hidden bg-white">
+                        <div 
+                            className="w-full h-full relative transition-transform duration-500 ease-in-out"
+                            style={{ 
+                                transform: card.isPortrait ? 'rotate(90deg)' : 'none',
+                                transformOrigin: 'center',
+                                width: card.isPortrait ? '54mm' : '85.6mm',
+                                height: card.isPortrait ? '85.6mm' : '54mm',
+                                left: card.isPortrait ? 'calc(50% - 27mm)' : '0',
+                                top: card.isPortrait ? 'calc(50% - 42.8mm)' : '0',
+                            }}
+                        >
+                            {card.layers.map((layer, idx) => (
+                                <img
+                                    key={layer.id || idx}
+                                    src={layer.src}
+                                    onMouseDown={(e) => onLayerMouseDown && onLayerMouseDown(e, idx)}
+                                    className={`absolute cursor-move select-none ${activeLayerIndex === idx && !isPreview ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+                                    style={{
+                                        left: '50%',
+                                        top: '50%',
+                                        transform: `translate(-50%, -50%) translate(${layer.x}px, ${layer.y}px) rotate(${layer.rotate}deg) scale(${layer.scale})`,
+                                        opacity: layer.opacity,
+                                        width: isPreview ? 'auto' : '100%',
+                                        maxWidth: 'none',
+                                        zIndex: idx
+                                    }}
+                                />
+                            ))}
+                        </div>
+                        <div className="crop-mark crop-tl"></div>
+                        <div className="crop-mark crop-tr"></div>
+                        <div className="crop-mark crop-bl"></div>
+                        <div className="crop-mark crop-br"></div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="min-h-screen pb-20">
+                    {/* Toolbar */}
+                    <nav className="no-print sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
+                        <div className="max-w-7xl mx-auto flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-200">
+                                    <Icons.Layout />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold text-slate-800">悠遊卡排版編輯器</h1>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Premium 2x5 A4 Layout Tool</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button onClick={() => window.print()} className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-all">
+                                    <Icons.Print />
+                                    <span>立即列印</span>
+                                </button>
+                                <button onClick={clearAll} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                                    <Icons.Trash />
+                                </button>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* A4 Preview Container */}
+                    <main className="flex justify-center p-8 bg-slate-100 min-h-[calc(100vh-80px)]">
+                        <div className="a4-page shadow-2xl">
+                            <div className="a4-grid">
+                                {slots.map((card, idx) => (
+                                    <div key={idx} className="card-slot group" onClick={() => openEditor(idx)}>
+                                        {card.layers.length > 0 ? (
+                                            renderCard(card)
+                                        ) : (
+                                            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-slate-50 text-slate-300 group-hover:bg-blue-50 group-hover:text-blue-400 transition-colors">
+                                                <Icons.Plus />
+                                                <span className="text-[10px] font-bold uppercase">點擊編輯卡片 {idx + 1}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Editor Modal */}
+                    {editingIndex !== null && currentCard && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 modal-overlay no-print">
+                            <div className="bg-white w-full max-w-6xl h-full max-h-[90vh] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden animate-in fade-in zoom-in duration-300">
+                                
+                                {/* Left Side: Preview Workspace */}
+                                <div 
+                                    className="flex-1 bg-slate-900 flex items-center justify-center relative overflow-hidden p-12"
+                                    onMouseDown={(e) => handleMouseDown(e)}
+                                >
+                                    <div className="card-workspace" ref={workspaceRef}>
+                                        {renderCard(currentCard, false, handleMouseDown)}
+                                    </div>
+                                    <div className="absolute bottom-6 left-6 text-slate-500 text-xs font-mono">
+                                        PREVIEW MODE: 85.6mm x 54.0mm (Drag to Move)
+                                    </div>
+                                </div>
+
+                                {/* Right Side: Controls */}
+                                <div className="w-full md:w-80 lg:w-96 bg-white border-l border-slate-100 flex flex-col">
+                                    <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+                                        <h2 className="text-lg font-bold text-slate-800">編輯卡片 #{editingIndex + 1}</h2>
+                                        <button onClick={closeEditor} className="p-2 text-slate-400 hover:text-slate-600 rounded-full">
+                                            <Icons.Close />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                                        {/* Orientation Toggle */}
+                                        <div className="space-y-4">
+                                            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">版面方向</h3>
+                                            <div className="flex gap-2">
+                                                <button 
+                                                    onClick={() => setCurrentCard(prev => ({ ...prev, isPortrait: false }))}
+                                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border font-bold text-sm transition-all ${!currentCard.isPortrait ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                                                >
+                                                    橫式 (Horizontal)
+                                                </button>
+                                                <button 
+                                                    onClick={() => setCurrentCard(prev => ({ ...prev, isPortrait: true }))}
+                                                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border font-bold text-sm transition-all ${currentCard.isPortrait ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-100' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}
+                                                >
+                                                    直式 (Vertical)
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Layer Management */}
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">圖層管理</h3>
+                                                <label className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer flex items-center gap-1">
+                                                    <Icons.Plus />
+                                                    新增圖片
+                                                    <input type="file" className="hidden" accept="image/*" onChange={addLayer} />
+                                                </label>
+                                            </div>
+                                            
+                                            <div className="space-y-2">
+                                                {currentCard.layers.map((layer, idx) => (
+                                                    <div 
+                                                        key={layer.id} 
+                                                        onClick={() => setActiveLayerIndex(idx)}
+                                                        className={`group flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${activeLayerIndex === idx ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-slate-100 hover:border-slate-200'}`}
+                                                    >
+                                                        <div className="w-10 h-10 rounded-md overflow-hidden bg-slate-200 flex-shrink-0">
+                                                            <img src={layer.src} className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <span className="flex-1 text-sm font-medium text-slate-600 truncate">圖層 {idx + 1}</span>
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); removeLayer(idx); }}
+                                                            className="p-1.5 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <Icons.Trash />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                {currentCard.layers.length === 0 && (
+                                                    <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-2xl">
+                                                        <p className="text-sm text-slate-400">尚未新增任何圖層</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Transform Controls */}
+                                        {currentCard.layers[activeLayerIndex] && (
+                                            <div className="space-y-6 pt-6 border-t border-slate-50 animate-in slide-in-from-bottom-4 duration-300">
+                                                <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">細節調整</h3>
+                                                
+                                                <div className="space-y-4">
+                                                    {/* Scale */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between text-xs font-medium text-slate-400">
+                                                            <span>縮放比例 (Scale)</span>
+                                                            <span className="text-blue-600">{Math.round(currentCard.layers[activeLayerIndex].scale * 100)}%</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="0.1" max="5" step="0.01" 
+                                                            value={currentCard.layers[activeLayerIndex].scale} 
+                                                            onChange={(e) => updateLayer(activeLayerIndex, { scale: parseFloat(e.target.value) })}
+                                                        />
+                                                    </div>
+
+                                                    {/* Rotate */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between text-xs font-medium text-slate-400">
+                                                            <span>旋轉角度 (Rotation)</span>
+                                                            <span className="text-blue-600">{currentCard.layers[activeLayerIndex].rotate}°</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="-180" max="180" step="1" 
+                                                            value={currentCard.layers[activeLayerIndex].rotate} 
+                                                            onChange={(e) => updateLayer(activeLayerIndex, { rotate: parseInt(e.target.value) })}
+                                                        />
+                                                    </div>
+
+                                                    {/* Opacity */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between text-xs font-medium text-slate-400">
+                                                            <span>透明度 (Opacity)</span>
+                                                            <span className="text-blue-600">{Math.round(currentCard.layers[activeLayerIndex].opacity * 100)}%</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="0" max="1" step="0.01" 
+                                                            value={currentCard.layers[activeLayerIndex].opacity} 
+                                                            onChange={(e) => updateLayer(activeLayerIndex, { opacity: parseFloat(e.target.value) })}
+                                                        />
+                                                    </div>
+
+                                                    {/* X Offset */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between text-xs font-medium text-slate-400">
+                                                            <span>水平偏移 (X Offset)</span>
+                                                            <span className="text-blue-600">{currentCard.layers[activeLayerIndex].x}px</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="-300" max="300" step="1" 
+                                                            value={currentCard.layers[activeLayerIndex].x} 
+                                                            onChange={(e) => updateLayer(activeLayerIndex, { x: parseInt(e.target.value) })}
+                                                        />
+                                                    </div>
+
+                                                    {/* Y Offset */}
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between text-xs font-medium text-slate-400">
+                                                            <span>垂直偏移 (Y Offset)</span>
+                                                            <span className="text-blue-600">{currentCard.layers[activeLayerIndex].y}px</span>
+                                                        </div>
+                                                        <input 
+                                                            type="range" min="-300" max="300" step="1" 
+                                                            value={currentCard.layers[activeLayerIndex].y} 
+                                                            onChange={(e) => updateLayer(activeLayerIndex, { y: parseInt(e.target.value) })}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Footer Actions */}
+                                    <div className="p-6 border-t border-slate-100 bg-slate-50/50 space-y-3">
+                                        <button 
+                                            onClick={handleApplyAll}
+                                            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white border border-slate-200 text-slate-600 rounded-2xl text-sm font-bold hover:bg-slate-100 transition-all"
+                                        >
+                                            套用到所有卡片
+                                        </button>
+                                        <button 
+                                            onClick={saveCard}
+                                            className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-blue-600 text-white rounded-2xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all"
+                                        >
+                                            <Icons.Save />
+                                            儲存並回主畫面
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Instruction Footer */}
+                    <footer className="no-print fixed bottom-0 left-0 right-0 py-4 px-6 glass-card border-t border-slate-200 flex justify-center items-center gap-8 text-xs font-medium text-slate-500">
+                        <div className="flex items-center gap-2">
+                            <kbd className="px-2 py-1 bg-slate-100 border border-slate-200 rounded-md text-[10px]">點擊格子</kbd>
+                            <span>開啟詳細編輯器</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <kbd className="px-2 py-1 bg-slate-100 border border-slate-200 rounded-md text-[10px]">多圖層</kbd>
+                            <span>支援重疊多張圖片</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <kbd className="px-2 py-1 bg-slate-100 border border-slate-200 rounded-md text-[10px]">Ctrl + P</kbd>
+                            <span>精準 1:1 列印</span>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
