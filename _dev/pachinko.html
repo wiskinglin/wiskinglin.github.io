@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虛擬柏青哥 - 次世代彈珠機台體驗</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700;900&family=Outfit:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #030305;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ea;
+            --neon-purple: #b000ff;
+            --gold: #ffd700;
+            --surface: rgba(20, 20, 25, 0.4);
+            --surface-hover: rgba(30, 30, 40, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans TC', 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            /* Animated background elements */
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(176, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(0, 243, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(255, 0, 234, 0.05) 0%, transparent 60%);
+            background-attachment: fixed;
+        }
+
+        /* Abstract glowing grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) scale(3);
+            pointer-events: none;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0) scale(3); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px) scale(3); }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0; width: 100%;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4%;
+            background: rgba(3, 3, 5, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 3px;
+            position: relative;
+        }
+        .logo::after {
+            content: 'V-PACHINKO';
+            position: absolute;
+            left: 0; top: 0;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: blur(8px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .hud { display: flex; align-items: center; gap: 20px; }
+
+        .token-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 30px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.1), 0 0 15px rgba(255, 215, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .token-icon {
+            width: 24px; height: 24px;
+            background: radial-gradient(circle at 30% 30%, #fff, #e6c200, #998100);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .token-amount {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--gold);
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-refill {
+            background: linear-gradient(45deg, #ff00ea, #00f3ff);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+        
+        .btn-refill::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: rgba(255,255,255,0.2);
+            transform: rotate(45deg) translateY(-100%);
+            transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        
+        .btn-refill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(255, 0, 234, 0.5);
+        }
+        
+        .btn-refill:hover::before { transform: rotate(45deg) translateY(100%); }
+
+        /* Main Lobby */
+        #lobby-screen {
+            padding-top: 130px;
+            padding-bottom: 80px;
+            max-width: 1500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #a5a5a5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255,255,255,0.2);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            line-height: 1.6;
+        }
+
+        /* Machine Grid */
+        .machine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            width: 95%;
+            padding: 20px;
+        }
+
+        .machine-card {
+            position: relative;
+            background: var(--surface);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 2px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+
+        .card-inner {
+            background: #0d0d12;
+            border-radius: 18px;
+            padding: 30px 25px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* Holographic overlay */
+        .card-inner::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(125deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0.02) 60%, rgba(255,255,255,0) 100%);
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Glow effect container */
+        .machine-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--glow-color) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+            filter: blur(15px);
+        }
+
+        .machine-card:hover {
+            transform: translateY(-10px) rotateX(2deg) rotateY(-2deg);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+
+        .machine-card:hover::before { opacity: 0.6; }
+
+        .m-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px var(--glow-color);
+            display: inline-block;
+        }
+
+        .m-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #fff;
+            position: relative;
+            z-index: 3;
+            letter-spacing: 1px;
+        }
+
+        .m-desc {
+            font-size: 0.95rem;
+            color: #9090a0;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            flex-grow: 1;
+            z-index: 3;
+        }
+
+        .m-tags {
+            display: flex; gap: 10px; flex-wrap: wrap; z-index: 3;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #d0d0d0;
+        }
+
+        /* Specific styles */
+        .m1 { --glow-color: #00f3ff; }
+        .m2 { --glow-color: #ff3300; }
+        .m3 { --glow-color: #b000ff; }
+        .m4 { --glow-color: #ffd700; }
+        .m5 { --glow-color: #ff0055; }
+        .m6 { --glow-color: #ff0000; }
+        .m7 { --glow-color: #ff66b2; }
+        .m8 { --glow-color: #d2b48c; }
+
+        /* Game Screen */
+        #game-screen {
+            display: none;
+            padding-top: 100px;
+            min-height: 100vh;
+            flex-direction: column;
+            align-items: center;
+            background: #030305;
+        }
+
+        .game-header {
+            width: 100%; max-width: 800px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .btn-back {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-back:hover { background: rgba(255,255,255,0.1); }
+
+        .machine-marquee {
+            font-size: 2rem;
+            font-weight: 900;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px var(--theme-color), 0 0 20px var(--theme-color);
+            color: #fff;
+        }
+
+        /* The Arcade Cabinet Wrap */
+        .arcade-cabinet {
+            position: relative;
+            background: #111;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 
+                0 0 0 2px #222,
+                0 20px 50px rgba(0,0,0,0.8),
+                inset 0 0 40px rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid #333;
+        }
+
+        /* LED strip around canvas */
+        .arcade-cabinet::after {
+            content: '';
+            position: absolute;
+            top: 15px; left: 15px; right: 15px; bottom: 90px; /* leave room for button */
+            border-radius: 20px;
+            border: 3px solid var(--theme-color);
+            box-shadow: 0 0 15px var(--theme-color), inset 0 0 15px var(--theme-color);
+            pointer-events: none;
+            opacity: 0.8;
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; box-shadow: 0 0 10px var(--theme-color), inset 0 0 10px var(--theme-color); }
+            100% { opacity: 1; box-shadow: 0 0 25px var(--theme-color), inset 0 0 25px var(--theme-color); }
+        }
+
+        canvas {
+            background: #000;
+            border-radius: 15px;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            aspect-ratio: 500/700;
+            display: block;
+            z-index: 2;
+            position: relative;
+        }
+
+        .controls {
+            z-index: 5;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .btn-shoot {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff4d4d, #cc0000, #660000);
+            border: 4px solid #111;
+            box-shadow: 
+                0 10px 15px rgba(0,0,0,0.5),
+                inset 0 0 20px rgba(255,255,255,0.3),
+                0 0 0 6px #222,
+                0 0 0 8px var(--theme-color);
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform 0.1s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex; align-items: center; justify-content: center;
+            outline: none;
+        }
+        
+        .btn-shoot:active {
+            transform: scale(0.95);
+            background: radial-gradient(circle at 50% 50%, #e60000, #990000, #4d0000);
+            box-shadow: 
+                0 5px 10px rgba(0,0,0,0.5),
+                inset 0 0 30px rgba(0,0,0,0.6),
+                0 0 0 6px #222,
+                0 0 0 8px var(--theme-color);
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.8rem; }
+            header { padding: 0 15px; }
+            .token-display { padding: 6px 12px; }
+            .btn-refill { padding: 8px 16px; font-size: 0.8rem; }
+            .arcade-cabinet { padding: 15px; border-radius: 20px; border-width: 1px; width: 95%; }
+            .btn-shoot { width: 90px; height: 90px; font-size: 1rem; }
+            .arcade-cabinet::after { top: 10px; left: 10px; right: 10px; bottom: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">V-PACHINKO</div>
+        <div class="hud">
+            <div class="token-display">
+                <div class="token-icon"></div>
+                <div class="token-amount" id="token-balance">0</div>
+            </div>
+            <button class="btn-refill" id="refill-btn">
+                ⚡ MAX 補充
+            </button>
+        </div>
+    </header>
+
+    <main id="lobby-screen">
+        <div class="hero">
+            <h1>選擇你的機台</h1>
+            <p>極致物理引擎 × 賽博龐克美學，沉浸在無限聲光刺激的次世代彈珠體驗中。</p>
+        </div>
+
+        <div class="machine-grid">
+            <div class="machine-card m1" onclick="openMachine('m1', '深海大龍宮', '#00f3ff')">
+                <div class="card-inner">
+                    <span class="m-icon">🌊</span>
+                    <h2 class="m-title">深海大龍宮</h2>
+                    <p class="m-desc">經典王道，簡單直觀。畫面以海洋生物為主，中獎線路簡單，沒有複雜的規則，演出節奏輕快。</p>
+                    <div class="m-tags">
+                        <span class="tag">新手推薦</span>
+                        <span class="tag">海物語風格</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="machine-card m2" onclick="openMachine('m2', '世紀末霸者', '#ff3300')">
+                <div class="card-inner">
+                    <span class="m-icon">🔥</span>
+                    <h2 class="m-title">世紀末霸者</h2>
+                    <p class="m-desc">熱血格鬥，爆發力強。以末日荒野為背景，進入「確變」後會有連續的戰鬥動畫演出，主打極高連莊。</p>
+                    <div class="m-tags"><span class="tag">高爆發</span><span class="tag">熱血格鬥</span></div>
+                </div>
+            </div>
+
+            <div class="machine-card m3" onclick="openMachine('m3', '絕對防禦機甲', '#b000ff')">
+                <div class="card-inner">
+                    <span class="m-icon">🤖</span>
+                    <h2 class="m-title">絕對防禦機甲</h2>
+                    <p class="m-desc">科幻神作，華麗聲光。結合機甲出擊、紅色警報等經典元素。中獎時會有極具視覺衝擊的特效。</p>
+                    <div class="m-tags"><span class="tag">科幻機甲</span><span class="tag">特效華麗</span></div>
+                </div>
+            </div>
+
+            <div class="machine-card m4" onclick="openMachine('m4', '黃金魔戒騎士', '#ffd700')">
+                <div class="card-inner">
+                    <span class="m-icon">⚔️</span>
+                    <h2 class="m-title">黃金魔戒騎士</h2>
+                    <p class="m-desc">實體機關，豪華震撼。虛擬畫面上模擬出巨大的立體黃金劍掉落，主打一擊必殺。</p>
+                    <div class="m-tags"><span class="tag">重度聲光</span><span class="tag">黃金特效</span></div>
+                </div>
+            </div>
+
+            <div class="machine-card m5" onclick="openMachine('m5', '戰國傾奇大名', '#ff0055')">
+                <div class="card-inner">
+                    <span class="m-icon">🌸</span>
+                    <h2 class="m-title">戰國傾奇大名</h2>
+                    <p class="m-desc">歷史豪傑，大開大合。日本戰國時代背景，結合櫻花、和風搖滾樂與武將一騎當千的演出。</p>
+                    <div class="m-tags"><span class="tag">日本戰國</span><span class="tag">和風搖滾</span></div>
+                </div>
+            </div>
+
+            <div class="machine-card m6" onclick="openMachine('m6', '傳奇神偷', '#ff0000')">
+                <div class="card-inner">
+                    <span class="m-icon">🎭</span>
+                    <h2 class="m-title">傳奇神偷</h2>
+                    <p class="m-desc">飛車追逐，機關解謎。結合滑稽刺激的警匪追逐，帶有打字機特效與方向盤互動體驗。</p>
+                    <div class="m-tags"><span class="tag">劇情豐富</span><span class="tag">互動機關</span></div>
+                </div>
+            </div>
+
+            <div class="machine-card m7" onclick="openMachine('m7', '魔法少女的契約', '#ff66b2')">
+                <div class="card-inner">
+                    <span class="m-icon">✨</span>
+                    <h2 class="m-title">魔法少女的契約</h2>
+                    <p class="m-desc">反差神作，驚喜連連。平時是溫馨日常，進入模式後畫風突變為魔女結界，帶有強烈反差感。</p>
+                    <div class="m-tags"><span class="tag">劇情反轉</span><span class="tag">動漫風格</span></div>
+                </div>
+            </div>
+
+            <div class="machine-card m8" onclick="openMachine('m8', '昭和復古羽物', '#d2b48c')">
+                <div class="card-inner">
+                    <span class="m-icon">📻</span>
+                    <h2 class="m-title">昭和復古羽物</h2>
+                    <p class="m-desc">純粹物理，懷舊經典。無華麗液晶，完全依靠模擬小鋼珠掉入實體釘子陣的機率。</p>
+                    <div class="m-tags"><span class="tag">純粹物理</span><span class="tag">懷舊經典</span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="game-screen">
+        <div class="game-header">
+            <button class="btn-back" onclick="closeMachine()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                大廳
+            </button>
+            <div class="machine-marquee" id="marquee-title"></div>
+            <div style="width:80px"></div><!-- spacer -->
+        </div>
+        
+        <div class="arcade-cabinet" id="arcade-cabinet">
+            <!-- Canvas is logically 500x700 for physics consistency -->
+            <canvas id="pachinko-canvas" width="500" height="700"></canvas>
+            
+            <div class="controls">
+                <button class="btn-shoot" id="shoot-btn" onmousedown="startAutoShoot()" onmouseup="stopAutoShoot()" onmouseleave="stopAutoShoot()" ontouchstart="startAutoShoot()" ontouchend="stopAutoShoot()">SHOOT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let tokens = 0;
+        const balanceEl = document.getElementById('token-balance');
+
+        function updateBalance(amount) {
+            tokens += amount;
+            balanceEl.innerText = tokens.toLocaleString();
+            
+            balanceEl.style.transform = 'scale(1.3)';
+            balanceEl.style.color = '#fff';
+            balanceEl.style.textShadow = '0 0 20px rgba(255,255,255,0.8)';
+            setTimeout(() => {
+                balanceEl.style.transform = 'scale(1)';
+                balanceEl.style.color = 'var(--gold)';
+                balanceEl.style.textShadow = '0 0 5px rgba(255, 215, 0, 0.5)';
+            }, 150);
+        }
+
+        document.getElementById('refill-btn').addEventListener('click', () => {
+            if (tokens < 10000) {
+                updateBalance(10000 - tokens);
+            }
+        });
+
+        setTimeout(() => updateBalance(1000), 500);
+
+        // Navigation
+        function openMachine(machineId, title, color) {
+            document.getElementById('lobby-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+            
+            document.getElementById('marquee-title').innerText = title;
+            document.getElementById('marquee-title').style.textShadow = `0 0 10px ${color}, 0 0 20px ${color}`;
+            
+            // Apply theme color to arcade cabinet LED
+            document.getElementById('arcade-cabinet').style.setProperty('--theme-color', color);
+            
+            initPhysics(machineId, color);
+        }
+
+        function closeMachine() {
+            document.getElementById('lobby-screen').style.display = 'flex';
+            document.getElementById('game-screen').style.display = 'none';
+            stopPhysics();
+        }
+
+        // --- Premium Physics & Graphics Engine ---
+        const canvas = document.getElementById('pachinko-canvas');
+        const ctx = canvas.getContext('2d');
+        let animationId;
+        let balls = [];
+        let pegs = [];
+        let chackers = [];
+        let particles = [];
+        let currentMachineId = 'm1';
+        let themeColor = '#00f3ff';
+        let autoShootInterval = null;
+        
+        const BALL_RADIUS = 5;
+        const PEG_RADIUS = 2.5;
+        const GRAVITY = 0.25;
+        const BOUNCE = 0.55; 
+        const FRICTION = 0.99;
+
+        // Slot Machine State
+        const slots = {
+            spinning: false,
+            timer: 0,
+            reels: [7, 7, 7],
+            targetReels: [7, 7, 7],
+            message: "",
+            messageTimer: 0,
+            glowIntensity: 0,
+            spin: function() {
+                if (this.spinning) return;
+                this.spinning = true;
+                this.timer = 120;
+                this.message = "FEVER!";
+                this.messageTimer = 120;
+                
+                if (Math.random() < 0.15) { // 15% win rate
+                    const winNum = Math.floor(Math.random() * 9) + 1;
+                    this.targetReels = [winNum, winNum, winNum];
+                } else {
+                    this.targetReels = [
+                        Math.floor(Math.random() * 9) + 1,
+                        Math.floor(Math.random() * 9) + 1,
+                        Math.floor(Math.random() * 9) + 1
+                    ];
+                    if (this.targetReels[0] === this.targetReels[1] && this.targetReels[1] === this.targetReels[2]) {
+                        this.targetReels[2] = (this.targetReels[2] % 9) + 1;
+                    }
+                }
+            },
+            update: function() {
+                if (this.spinning) {
+                    this.timer--;
+                    this.glowIntensity = Math.abs(Math.sin(this.timer * 0.2)) * 20;
+                    
+                    if (this.timer > 80) {
+                        this.reels = [Math.floor(Math.random() * 9) + 1, Math.floor(Math.random() * 9) + 1, Math.floor(Math.random() * 9) + 1];
+                    } else if (this.timer > 40) {
+                        this.reels[0] = this.targetReels[0];
+                        this.reels[1] = Math.floor(Math.random() * 9) + 1;
+                        this.reels[2] = Math.floor(Math.random() * 9) + 1;
+                    } else if (this.timer > 0) {
+                        this.reels[1] = this.targetReels[1];
+                        this.reels[2] = Math.floor(Math.random() * 9) + 1;
+                    } else {
+                        this.reels[2] = this.targetReels[2];
+                        this.spinning = false;
+                        this.glowIntensity = 0;
+                        this.checkWin();
+                    }
+                }
+                if (this.messageTimer > 0) this.messageTimer--;
+            },
+            checkWin: function() {
+                if (this.reels[0] === this.reels[1] && this.reels[1] === this.reels[2]) {
+                    this.message = "JACKPOT! +1000";
+                    this.messageTimer = 180;
+                    updateBalance(1000);
+                    createExplosion(canvas.width/2, canvas.height/2, 100, '#ffd700');
+                } else {
+                    this.message = "MISS";
+                    this.messageTimer = 40;
+                }
+            },
+            draw: function(ctx) {
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2 - 20;
+                
+                // Outer glow & frame
+                ctx.shadowColor = themeColor;
+                ctx.shadowBlur = this.glowIntensity + 10;
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.strokeStyle = themeColor;
+                ctx.lineWidth = 3;
+                
+                // Draw techy frame
+                ctx.beginPath();
+                ctx.moveTo(cx - 100, cy - 40);
+                ctx.lineTo(cx + 100, cy - 40);
+                ctx.lineTo(cx + 110, cy - 30);
+                ctx.lineTo(cx + 110, cy + 30);
+                ctx.lineTo(cx + 100, cy + 40);
+                ctx.lineTo(cx - 100, cy + 40);
+                ctx.lineTo(cx - 110, cy + 30);
+                ctx.lineTo(cx - 110, cy - 30);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Numbers
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 45px Outfit';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                for (let i = 0; i < 3; i++) {
+                    const numColor = this.reels[i] === 7 ? '#ffd700' : '#fff';
+                    ctx.fillStyle = numColor;
+                    if(this.spinning && this.timer > (80 - i*40)) {
+                        ctx.shadowColor = numColor;
+                        ctx.shadowBlur = 15;
+                    } else {
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.fillText(this.reels[i], cx - 60 + (i * 60), cy);
+                }
+                ctx.shadowBlur = 0;
+
+                // Message
+                if (this.messageTimer > 0) {
+                    ctx.fillStyle = '#ffd700';
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 10;
+                    ctx.font = 'bold 26px Noto Sans TC';
+                    ctx.fillText(this.message, cx, cy + 75);
+                    ctx.shadowBlur = 0;
+                }
+            }
+        };
+
+        function createPegs() {
+            pegs = [];
+            chackers = [];
+            
+            const rows = 16;
+            const cols = 13;
+            const spacingX = canvas.width / cols;
+            const spacingY = (canvas.height - 250) / rows;
+            
+            for (let i = 1; i < rows; i++) {
+                const offset = (i % 2 === 0) ? spacingX / 2 : 0;
+                const pegsInRow = (i % 2 === 0) ? cols - 1 : cols;
+                
+                for (let j = 1; j < pegsInRow; j++) {
+                    // Carve out center space for slot
+                    if (i > 5 && i < 11 && j > 3 && j < 9) continue;
+                    // Carve out space for center chacker
+                    if (i > 12 && j > 4 && j < 8) continue;
+
+                    pegs.push({
+                        x: j * spacingX + offset,
+                        y: i * spacingY + 80
+                    });
+                }
+            }
+
+            // Main center chacker
+            chackers.push({
+                x: canvas.width / 2,
+                y: canvas.height - 120,
+                width: 60,
+                height: 30,
+                color: themeColor,
+                reward: 15,
+                triggerSlot: true
+            });
+            
+            // Side chackers
+            chackers.push({
+                x: canvas.width / 4,
+                y: canvas.height - 200,
+                width: 40,
+                height: 20,
+                color: '#ff00ea',
+                reward: 5,
+                triggerSlot: false
+            });
+            
+            chackers.push({
+                x: canvas.width * 3 / 4,
+                y: canvas.height - 200,
+                width: 40,
+                height: 20,
+                color: '#ff00ea',
+                reward: 5,
+                triggerSlot: false
+            });
+        }
+
+        function createExplosion(x, y, count, color) {
+            for(let i=0; i<count; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 1,
+                    decay: Math.random() * 0.02 + 0.02,
+                    color: color
+                });
+            }
+        }
+
+        function initPhysics(machineId, color) {
+            currentMachineId = machineId;
+            themeColor = color;
+            createPegs();
+            balls = [];
+            particles = [];
+            if (!animationId) {
+                updatePhysics();
+            }
+        }
+
+        function stopPhysics() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            stopAutoShoot();
+        }
+
+        function shootBall() {
+            if (tokens > 0) {
+                updateBalance(-1);
+                balls.push({
+                    x: 20 + Math.random() * 10, 
+                    y: 10,
+                    vx: 6 + Math.random() * 4, 
+                    vy: -1 + Math.random(),
+                    radius: BALL_RADIUS
+                });
+            } else {
+                alert('小鋼珠不足，請點擊上方按鈕補充！');
+                stopAutoShoot();
+            }
+        }
+
+        function startAutoShoot() {
+            shootBall(); // shoot one immediately
+            if(!autoShootInterval) {
+                autoShootInterval = setInterval(shootBall, 250); // 4 balls per sec
+            }
+        }
+
+        function stopAutoShoot() {
+            if(autoShootInterval) {
+                clearInterval(autoShootInterval);
+                autoShootInterval = null;
+            }
+        }
+
+        function drawBackground() {
+            // High-end dynamic mesh gradient background logic
+            let bgConfig = {
+                'm1': ['#001122', '#004488', '#00ffff'],
+                'm2': ['#220000', '#881100', '#ff5500'],
+                'm3': ['#110022', '#550088', '#b000ff'],
+                'm4': ['#221a00', '#665500', '#ffd700'],
+                'm5': ['#220011', '#880044', '#ff0077'],
+                'm6': ['#110000', '#550000', '#ff0000'],
+                'm7': ['#220022', '#880055', '#ff66b2'],
+                'm8': ['#1a110a', '#553311', '#d2b48c']
+            };
+            
+            let c = bgConfig[currentMachineId] || bgConfig['m1'];
+            
+            // Base fill
+            ctx.fillStyle = c[0];
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Dynamic blobs based on time
+            const t = Date.now() / 2000;
+            
+            const g1 = ctx.createRadialGradient(
+                canvas.width/2 + Math.sin(t)*100, canvas.height/2 + Math.cos(t)*100, 0,
+                canvas.width/2 + Math.sin(t)*100, canvas.height/2 + Math.cos(t)*100, 300
+            );
+            g1.addColorStop(0, c[1] + '80'); // 50% opacity hex
+            g1.addColorStop(1, 'transparent');
+            ctx.fillStyle = g1;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add grid overlay
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=40) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for(let i=0; i<canvas.height; i+=40) {
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+            }
+        }
+
+        function drawPegs() {
+            // Neon glowing pegs
+            ctx.shadowColor = themeColor;
+            ctx.shadowBlur = 5;
+            
+            pegs.forEach(peg => {
+                // outer ring
+                ctx.fillStyle = themeColor;
+                ctx.beginPath();
+                ctx.arc(peg.x, peg.y, PEG_RADIUS, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // inner core
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(peg.x, peg.y, PEG_RADIUS*0.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        function drawChackers() {
+            chackers.forEach(c => {
+                ctx.shadowColor = c.color;
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.strokeStyle = c.color;
+                ctx.lineWidth = 3;
+                
+                ctx.beginPath();
+                // Futuristic cup shape
+                ctx.moveTo(c.x - c.width / 2, c.y - c.height);
+                ctx.lineTo(c.x - c.width / 2 + 5, c.y);
+                ctx.lineTo(c.x + c.width / 2 - 5, c.y);
+                ctx.lineTo(c.x + c.width / 2, c.y - c.height);
+                
+                ctx.stroke();
+                ctx.fill();
+                
+                // Inner glow bar
+                ctx.fillStyle = c.color;
+                ctx.fillRect(c.x - c.width/2 + 8, c.y - 4, c.width - 16, 2);
+                
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        function drawBalls() {
+            balls.forEach(ball => {
+                const gradient = ctx.createRadialGradient(
+                    ball.x - 2, ball.y - 2, 0,
+                    ball.x, ball.y, ball.radius
+                );
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.4, '#dcdcdc');
+                gradient.addColorStop(1, '#666666');
+
+                ctx.fillStyle = gradient;
+                
+                // slight metallic shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 3;
+                ctx.shadowOffsetY = 2;
+
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+            });
+        }
+        
+        function drawParticles() {
+            for(let i=particles.length-1; i>=0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                
+                if(p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+                
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+            ctx.shadowBlur = 0;
+        }
+
+        function updatePhysics() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+
+            // Update Balls
+            for (let i = balls.length - 1; i >= 0; i--) {
+                let b = balls[i];
+                b.vy += GRAVITY;
+                b.x += b.vx;
+                b.y += b.vy;
+                b.vx *= FRICTION;
+                b.vy *= FRICTION;
+
+                // Wall collisions
+                if (b.x - b.radius < 0) {
+                    b.x = b.radius;
+                    b.vx *= -BOUNCE;
+                } else if (b.x + b.radius > canvas.width) {
+                    b.x = canvas.width - b.radius;
+                    b.vx *= -BOUNCE;
+                }
+                
+                // Top boundary roof (angled)
+                if (b.y - b.radius < 0) {
+                    b.y = b.radius;
+                    b.vy *= -BOUNCE;
+                }
+
+                // Peg Collisions
+                pegs.forEach(peg => {
+                    let dx = b.x - peg.x;
+                    let dy = b.y - peg.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    let minDist = b.radius + PEG_RADIUS;
+                    
+                    if (dist < minDist) {
+                        let nx = dx / dist;
+                        let ny = dy / dist;
+                        let overlap = minDist - dist;
+                        b.x += nx * overlap;
+                        b.y += ny * overlap;
+                        
+                        let p = 2 * (b.vx * nx + b.vy * ny) / (b.radius + PEG_RADIUS);
+                        b.vx = b.vx - p * b.radius * nx * BOUNCE;
+                        b.vy = b.vy - p * b.radius * ny * BOUNCE;
+                        
+                        // Add randomness for organic feel
+                        b.vx += (Math.random() - 0.5);
+                    }
+                });
+
+                // Chacker Collisions
+                let ballInChacker = false;
+                chackers.forEach(chacker => {
+                    if (b.x > chacker.x - chacker.width / 2 && 
+                        b.x < chacker.x + chacker.width / 2 && 
+                        b.y > chacker.y - chacker.height && 
+                        b.y < chacker.y + 5) {
+                        
+                        ballInChacker = true;
+                        updateBalance(chacker.reward);
+                        createExplosion(b.x, b.y, 20, chacker.color);
+                        
+                        if (chacker.triggerSlot) {
+                            slots.spin();
+                        }
+                    }
+                });
+
+                if (ballInChacker) {
+                    balls.splice(i, 1);
+                    continue;
+                }
+
+                if (b.y - b.radius > canvas.height) {
+                    balls.splice(i, 1);
+                }
+            }
+
+            slots.update();
+
+            // Render order
+            drawPegs();
+            drawChackers();
+            slots.draw(ctx);
+            drawBalls();
+            drawParticles();
+
+            animationId = requestAnimationFrame(updatePhysics);
+        }
+    </script>
+</body>
+</html>
