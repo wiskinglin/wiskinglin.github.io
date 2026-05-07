@@ -1,5 +1,14 @@
 # Personal Notes
 
+## 2026-W19 (2026/05/04 - 2026/05/10)
+### 2026-05-07 (Thu) 09:25
+📖 **[GitHub - nexu-io/open-design: 🎨 Local-first, open-source alternative to Anthropic's Claude Design.](https://github.com/nexu-io/open-design)**
+- **摘要**: 本地優先的開源 Claude Design 替代方案。內建 19 項技能與 71 套品牌級設計系統，支援生成網頁、桌面、行動端原型、簡報、圖片及影片等。提供沙盒預覽並支援 HTML/PDF/PPTX/MP4 導出，相容於 Claude Code, Cursor, Gemini 等多種 AI CLI 工具。
+
+### 2026-05-07 (Thu) 09:24
+📖 **[GitHub - getcompanion-ai/feynman · GitHub](https://github.com/getcompanion-ai/feynman)**
+- **摘要**: Feynman 是一個開源的 AI 研究助手，支援透過 AlphaXiv 搜尋論文、網頁搜尋、程式碼閱讀與實驗重現。它具備多代理架構（Researcher, Reviewer, Writer, Verifier），能自動化執行深度研究、文獻綜述與論文審核等複雜任務，並確保所有輸出皆有來源依據。
+
 ## 2026-W18 (2026/04/27 - 2026/05/03)
 ### 2026-04-29 (Wed) 20:31
 📖 **[Sketchfab — Popular 3D Models](https://sketchfab.com/3d-models/popular)**
