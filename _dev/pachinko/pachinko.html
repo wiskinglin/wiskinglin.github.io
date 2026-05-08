@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虛擬柏青哥 - 新世紀福音戰士</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Outfit:wght@500;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --eva-purple: #5A228B;
+            --eva-green: #76EE00;
+            --eva-red: #E60000;
+            --eva-orange: #FF6600;
+            --eva-dark: #0A0A0C;
+            --gold: #FFD700;
+            --surface: rgba(20, 20, 25, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', 'Outfit', sans-serif;
+            background-color: var(--eva-dark);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* NERV Hexagon Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                linear-gradient(30deg, rgba(118, 238, 0, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(118, 238, 0, 0.05) 87.5%, rgba(118, 238, 0, 0.05)),
+                linear-gradient(150deg, rgba(118, 238, 0, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(118, 238, 0, 0.05) 87.5%, rgba(118, 238, 0, 0.05)),
+                linear-gradient(30deg, rgba(118, 238, 0, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(118, 238, 0, 0.05) 87.5%, rgba(118, 238, 0, 0.05)),
+                linear-gradient(150deg, rgba(118, 238, 0, 0.05) 12%, transparent 12.5%, transparent 87%, rgba(118, 238, 0, 0.05) 87.5%, rgba(118, 238, 0, 0.05)),
+                linear-gradient(60deg, rgba(118, 238, 0, 0.05) 25%, transparent 25.5%, transparent 75%, rgba(118, 238, 0, 0.05) 75%, rgba(118, 238, 0, 0.05)),
+                linear-gradient(60deg, rgba(118, 238, 0, 0.05) 25%, transparent 25.5%, transparent 75%, rgba(118, 238, 0, 0.05) 75%, rgba(118, 238, 0, 0.05));
+            background-size: 80px 140px;
+            background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
+            z-index: -2;
+        }
+
+        /* Emergency Red Overlay (Activated via JS) */
+        #emergency-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(230, 0, 0, 0.2);
+            box-shadow: inset 0 0 100px rgba(230, 0, 0, 0.8);
+            border: 10px solid var(--eva-red);
+            z-index: -1;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .emergency-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 15rem;
+            font-weight: 900;
+            color: rgba(230, 0, 0, 0.15);
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 20px;
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4%;
+            background: linear-gradient(90deg, rgba(90, 34, 139, 0.8) 0%, rgba(10, 10, 12, 0.9) 100%);
+            border-bottom: 2px solid var(--eva-green);
+            box-shadow: 0 0 15px rgba(118, 238, 0, 0.3);
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--eva-green);
+            text-shadow: 0 0 5px var(--eva-green);
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-jp {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 0.9rem;
+            color: #ccc;
+            font-weight: 700;
+        }
+
+        .hud {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .token-display {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.1);
+        }
+
+        .token-icon {
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at 30% 30%, #fff, #e6c200, #998100);
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        .token-amount {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--gold);
+            transition: transform 0.1s;
+        }
+
+        .btn-refill {
+            background: var(--eva-orange);
+            border: 1px solid #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: #fff;
+            font-weight: 900;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 102, 0, 0.5);
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-refill:hover {
+            background: #fff;
+            color: var(--eva-orange);
+        }
+
+        /* Machine Wrap */
+        .machine-container {
+            margin-top: 30px;
+            margin-bottom: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .arcade-cabinet {
+            position: relative;
+            background: #151515;
+            padding: 20px;
+            border-radius: 8px;
+            border: 4px solid var(--eva-purple);
+            box-shadow:
+                0 0 0 2px #000,
+                0 20px 50px rgba(0, 0, 0, 0.8),
+                inset 0 0 30px rgba(90, 34, 139, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cabinet-header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: linear-gradient(180deg, #333, #111);
+            border: 2px solid #555;
+            border-radius: 4px;
+        }
+
+        .cabinet-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--eva-green);
+            text-shadow: 0 0 10px rgba(118, 238, 0, 0.8);
+            letter-spacing: 5px;
+        }
+
+        /* Canvas Wrapper for styling */
+        .canvas-wrap {
+            position: relative;
+            border: 3px solid #333;
+            border-radius: 4px;
+            padding: 5px;
+            background: #000;
+            box-shadow: 0 0 20px rgba(118, 238, 0, 0.2);
+        }
+
+        canvas {
+            background: #050508;
+            border-radius: 2px;
+            display: block;
+            width: 100%;
+            max-width: 480px;
+            height: auto;
+            aspect-ratio: 480/720;
+        }
+
+        /* Shoot Button Area */
+        .controls {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            padding: 10px 0;
+            background: #1a1a1a;
+            border-top: 2px solid var(--eva-purple);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .btn-shoot {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--eva-red), #990000, #330000);
+            border: 4px solid #111;
+            box-shadow:
+                0 10px 15px rgba(0, 0, 0, 0.8),
+                inset 0 0 15px rgba(255, 255, 255, 0.4),
+                0 0 0 4px #222,
+                0 0 0 6px var(--eva-red);
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            outline: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn-shoot:active {
+            transform: scale(0.95);
+            background: radial-gradient(circle at 50% 50%, #cc0000, #660000, #1a0000);
+            box-shadow:
+                0 4px 8px rgba(0, 0, 0, 0.8),
+                inset 0 0 25px rgba(0, 0, 0, 0.8),
+                0 0 0 4px #222,
+                0 0 0 6px var(--eva-red);
+        }
+
+        @media (max-width: 600px) {
+            .arcade-cabinet {
+                width: 95%;
+                padding: 10px;
+                border-width: 2px;
+            }
+
+            .cabinet-title {
+                font-size: 1.2rem;
+                letter-spacing: 2px;
+            }
+
+            .btn-shoot {
+                width: 80px;
+                height: 80px;
+                font-size: 0.9rem;
+            }
+
+            .emergency-text {
+                font-size: 5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="emergency-overlay">
+        <div class="emergency-text">EMERGENCY</div>
+    </div>
+
+    <header>
+        <div class="logo">
+            V-PACHINKO
+            <span class="logo-jp">新世紀エヴァンゲリオン</span>
+        </div>
+        <div class="hud">
+            <div class="token-display">
+                <div class="token-icon"></div>
+                <div class="token-amount" id="token-balance">0</div>
+            </div>
+            <button class="btn-refill" id="refill-btn">CHARGE</button>
+        </div>
+    </header>
+
+    <div class="machine-container">
+        <div class="arcade-cabinet">
+            <div class="cabinet-header">
+                <div class="cabinet-title">EVANGELION -17-</div>
+            </div>
+
+            <div class="canvas-wrap">
+                <canvas id="pachinko-canvas" width="480" height="720"></canvas>
+            </div>
+
+            <div class="controls">
+                <button class="btn-shoot" id="shoot-btn" onmousedown="startAutoShoot()" onmouseup="stopAutoShoot()"
+                    onmouseleave="stopAutoShoot()" ontouchstart="startAutoShoot()" ontouchend="stopAutoShoot()">
+                    SHOOT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let tokens = 0;
+        const balanceEl = document.getElementById('token-balance');
+        const emergencyOverlay = document.getElementById('emergency-overlay');
+
+        function updateBalance(amount) {
+            tokens += amount;
+            balanceEl.innerText = tokens.toLocaleString();
+
+            balanceEl.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                balanceEl.style.transform = 'scale(1)';
+            }, 100);
+        }
+
+        document.getElementById('refill-btn').addEventListener('click', () => {
+            if (tokens < 10000) updateBalance(10000 - tokens);
+        });
+
+        setTimeout(() => updateBalance(1000), 500);
+
+        // --- Physics & Graphics Engine ---
+        const canvas = document.getElementById('pachinko-canvas');
+        const ctx = canvas.getContext('2d');
+        let balls = [];
+        let pegs = [];
+        let chackers = [];
+        let particles = [];
+        let autoShootInterval = null;
+
+        const BALL_RADIUS = 5.5;
+        const PEG_RADIUS = 2.5;
+        const GRAVITY = 0.28;
+        const BOUNCE = 0.5;
+        const FRICTION = 0.99;
+
+        const COLOR_PURPLE = '#5A228B';
+        const COLOR_GREEN = '#76EE00';
+        const COLOR_RED = '#E60000';
+
+        // Slot Machine State (Evangelion Style)
+        const slots = {
+            spinning: false,
+            timer: 0,
+            reels: [1, 3, 5],
+            targetReels: [1, 3, 5],
+            message: "STANDBY",
+            messageColor: COLOR_GREEN,
+            feverMode: false,
+            spin: function () {
+                if (this.spinning) return;
+                this.spinning = true;
+                this.timer = 150;
+                this.message = "SYNCHRONIZING...";
+                this.messageColor = COLOR_PURPLE;
+
+                // EVA specific win logic
+                if (Math.random() < 0.20) { // 20% win rate
+                    const winNum = Math.floor(Math.random() * 9) + 1;
+                    this.targetReels = [winNum, winNum, winNum];
+                } else {
+                    this.targetReels = [
+                        Math.floor(Math.random() * 9) + 1,
+                        Math.floor(Math.random() * 9) + 1,
+                        Math.floor(Math.random() * 9) + 1
+                    ];
+                    if (this.targetReels[0] === this.targetReels[1] && this.targetReels[1] === this.targetReels[2]) {
+                        this.targetReels[2] = (this.targetReels[2] % 9) + 1;
+                    }
+                }
+            },
+            update: function () {
+                if (this.spinning) {
+                    this.timer--;
+
+                    if (this.timer > 90) {
+                        this.reels = [Math.floor(Math.random() * 9) + 1, Math.floor(Math.random() * 9) + 1, Math.floor(Math.random() * 9) + 1];
+                    } else if (this.timer > 45) {
+                        this.reels[0] = this.targetReels[0];
+                        this.reels[1] = Math.floor(Math.random() * 9) + 1;
+                        this.reels[2] = Math.floor(Math.random() * 9) + 1;
+                    } else if (this.timer > 0) {
+                        this.reels[1] = this.targetReels[1];
+                        this.reels[2] = Math.floor(Math.random() * 9) + 1;
+                        // Tension building
+                        if (this.reels[0] === this.reels[1]) {
+                            this.message = "REACH!";
+                            this.messageColor = COLOR_RED;
+                        }
+                    } else {
+                        this.reels[2] = this.targetReels[2];
+                        this.spinning = false;
+                        this.checkWin();
+                    }
+                }
+            },
+            checkWin: function () {
+                if (this.reels[0] === this.reels[1] && this.reels[1] === this.reels[2]) {
+                    this.message = "JACKPOT - LONG ST!";
+                    this.messageColor = COLOR_RED;
+                    updateBalance(2400); // ALL 2400 in EVA17
+                    createExplosion(canvas.width / 2, canvas.height / 2, 150, COLOR_RED);
+
+                    // Trigger Emergency Overlay
+                    emergencyOverlay.style.opacity = '1';
+                    setTimeout(() => { emergencyOverlay.style.opacity = '0'; }, 3000);
+
+                } else {
+                    this.message = "SYSTEM NORMAL";
+                    this.messageColor = COLOR_GREEN;
+                }
+            },
+            draw: function (ctx) {
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2 - 30;
+
+                // AT-Field / Hexagon Frame
+                ctx.strokeStyle = COLOR_PURPLE;
+                ctx.lineWidth = 2;
+                ctx.fillStyle = 'rgba(10, 0, 20, 0.8)';
+
+                // Draw octagon
+                ctx.beginPath();
+                ctx.moveTo(cx - 90, cy - 35);
+                ctx.lineTo(cx + 90, cy - 35);
+                ctx.lineTo(cx + 110, cy - 15);
+                ctx.lineTo(cx + 110, cy + 15);
+                ctx.lineTo(cx + 90, cy + 35);
+                ctx.lineTo(cx - 90, cy + 35);
+                ctx.lineTo(cx - 110, cy + 15);
+                ctx.lineTo(cx - 110, cy - 15);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Numbers
+                ctx.fillStyle = '#fff';
+                ctx.font = '900 45px Outfit';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                for (let i = 0; i < 3; i++) {
+                    const numColor = (this.reels[i] % 2 !== 0) ? COLOR_RED : COLOR_GREEN; // Odds are often red in pachinko
+                    ctx.fillStyle = numColor;
+
+                    if (this.spinning && this.timer > (90 - i * 45)) {
+                        ctx.shadowColor = numColor;
+                        ctx.shadowBlur = 15;
+                        ctx.globalAlpha = 0.5 + Math.random() * 0.5;
+                    } else {
+                        ctx.shadowBlur = 5;
+                        ctx.globalAlpha = 1.0;
+                    }
+                    ctx.fillText(this.reels[i], cx - 60 + (i * 60), cy + 2);
+                }
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1.0;
+
+                // Message Text (EVA typography style)
+                ctx.fillStyle = this.messageColor;
+                ctx.font = '900 18px "Noto Sans TC"';
+                ctx.fillText(this.message, cx, cy + 60);
+
+                // Top deco text
+                ctx.fillStyle = COLOR_GREEN;
+                ctx.font = '700 10px Outfit';
+                ctx.fillText("PROJECT E.V.A.", cx, cy - 45);
+            }
+        };
+
+        function createPegs() {
+            pegs = [];
+            chackers = [];
+
+            const rows = 16;
+            const cols = 13;
+            const spacingX = canvas.width / cols;
+            const spacingY = (canvas.height - 250) / rows;
+
+            for (let i = 1; i < rows; i++) {
+                const offset = (i % 2 === 0) ? spacingX / 2 : 0;
+                const pegsInRow = (i % 2 === 0) ? cols - 1 : cols;
+
+                for (let j = 1; j < pegsInRow; j++) {
+                    // Carve out center space for slot
+                    if (i > 5 && i < 11 && j > 2 && j < 10) continue;
+                    // Carve out space for center chacker
+                    if (i > 12 && j > 4 && j < 8) continue;
+
+                    pegs.push({
+                        x: j * spacingX + offset,
+                        y: i * spacingY + 80
+                    });
+                }
+            }
+
+            // Main center chacker (Start chacker)
+            chackers.push({
+                x: canvas.width / 2,
+                y: canvas.height - 120,
+                width: 70,
+                height: 25,
+                color: COLOR_RED,
+                reward: 15,
+                triggerSlot: true
+            });
+
+            // Side chackers (Wing/Sub chackers)
+            chackers.push({
+                x: canvas.width / 5,
+                y: canvas.height - 180,
+                width: 40,
+                height: 15,
+                color: COLOR_GREEN,
+                reward: 5,
+                triggerSlot: false
+            });
+
+            chackers.push({
+                x: canvas.width * 4 / 5,
+                y: canvas.height - 180,
+                width: 40,
+                height: 15,
+                color: COLOR_GREEN,
+                reward: 5,
+                triggerSlot: false
+            });
+        }
+
+        function createExplosion(x, y, count, color) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: (Math.random() - 0.5) * 12,
+                    life: 1,
+                    decay: Math.random() * 0.02 + 0.01,
+                    color: color
+                });
+            }
+        }
+
+        function shootBall() {
+            if (tokens > 0) {
+                updateBalance(-1);
+                balls.push({
+                    x: 20 + Math.random() * 10,
+                    y: 10,
+                    vx: 5.5 + Math.random() * 3, // Initial launch velocity to go over the curve
+                    vy: -1 + Math.random(),
+                    radius: BALL_RADIUS
+                });
+            } else {
+                stopAutoShoot();
+                // small visual warning could be added here
+            }
+        }
+
+        function startAutoShoot() {
+            shootBall();
+            if (!autoShootInterval) {
+                autoShootInterval = setInterval(shootBall, 250);
+            }
+        }
+
+        function stopAutoShoot() {
+            if (autoShootInterval) {
+                clearInterval(autoShootInterval);
+                autoShootInterval = null;
+            }
+        }
+
+        function drawBackground() {
+            // EVA Grid Background
+            ctx.fillStyle = '#050508';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // NERV Hexagon Pattern
+            ctx.strokeStyle = 'rgba(118, 238, 0, 0.05)';
+            ctx.lineWidth = 1;
+            const hexSize = 30;
+            const hexHeight = hexSize * Math.sqrt(3);
+
+            for (let y = 0; y < canvas.height + hexHeight; y += hexHeight) {
+                for (let x = 0; x < canvas.width + hexSize * 3; x += hexSize * 3) {
+                    drawHex(x, y, hexSize);
+                    drawHex(x + hexSize * 1.5, y + hexHeight / 2, hexSize);
+                }
+            }
+
+            // Decorative EVA UI elements on canvas
+            ctx.fillStyle = 'rgba(118, 238, 0, 0.3)';
+            ctx.font = '10px Outfit';
+            ctx.textAlign = 'left';
+            ctx.fillText("EVANGELION -17-", 10, 20);
+            ctx.fillText("SYNCHRO RATE", 10, 35);
+
+            // Draw a subtle red gradient at the bottom (danger zone)
+            const g = ctx.createLinearGradient(0, canvas.height - 100, 0, canvas.height);
+            g.addColorStop(0, 'rgba(230,0,0,0)');
+            g.addColorStop(1, 'rgba(230,0,0,0.15)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, canvas.height - 100, canvas.width, 100);
+        }
+
+        function drawHex(x, y, size) {
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle_deg = 60 * i;
+                const angle_rad = Math.PI / 180 * angle_deg;
+                const hx = x + size * Math.cos(angle_rad);
+                const hy = y + size * Math.sin(angle_rad);
+                if (i === 0) ctx.moveTo(hx, hy);
+                else ctx.lineTo(hx, hy);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        function drawPegs() {
+            pegs.forEach(peg => {
+                // outer ring
+                ctx.fillStyle = COLOR_GREEN;
+                ctx.beginPath();
+                ctx.arc(peg.x, peg.y, PEG_RADIUS, 0, Math.PI * 2);
+                ctx.fill();
+
+                // inner core
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(peg.x, peg.y, PEG_RADIUS * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawChackers() {
+            chackers.forEach(c => {
+                ctx.shadowColor = c.color;
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = 'rgba(20,0,30,0.9)';
+                ctx.strokeStyle = c.color;
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.moveTo(c.x - c.width / 2, c.y - c.height);
+                ctx.lineTo(c.x - c.width / 2 + 3, c.y);
+                ctx.lineTo(c.x + c.width / 2 - 3, c.y);
+                ctx.lineTo(c.x + c.width / 2, c.y - c.height);
+
+                ctx.stroke();
+                ctx.fill();
+
+                // Inner indicator
+                ctx.fillStyle = c.color;
+                ctx.beginPath();
+                ctx.arc(c.x, c.y - c.height / 2, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+            });
+        }
+
+        function drawBalls() {
+            balls.forEach(ball => {
+                const gradient = ctx.createRadialGradient(
+                    ball.x - 2, ball.y - 2, 0,
+                    ball.x, ball.y, ball.radius
+                );
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.3, '#cccccc');
+                gradient.addColorStop(1, '#555555');
+
+                ctx.fillStyle = gradient;
+
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 4;
+                ctx.shadowOffsetY = 2;
+
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+            });
+        }
+
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+            ctx.shadowBlur = 0;
+        }
+
+        function updatePhysics() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+
+            // Update Balls
+            for (let i = balls.length - 1; i >= 0; i--) {
+                let b = balls[i];
+                b.vy += GRAVITY;
+                b.x += b.vx;
+                b.y += b.vy;
+                b.vx *= FRICTION;
+                b.vy *= FRICTION;
+
+                // Wall collisions
+                if (b.x - b.radius < 0) {
+                    b.x = b.radius;
+                    b.vx *= -BOUNCE;
+                } else if (b.x + b.radius > canvas.width) {
+                    b.x = canvas.width - b.radius;
+                    b.vx *= -BOUNCE;
+                }
+
+                // Roof
+                if (b.y - b.radius < 0) {
+                    b.y = b.radius;
+                    b.vy *= -BOUNCE;
+                }
+
+                // Peg Collisions
+                pegs.forEach(peg => {
+                    let dx = b.x - peg.x;
+                    let dy = b.y - peg.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    let minDist = b.radius + PEG_RADIUS;
+
+                    if (dist < minDist) {
+                        let nx = dx / dist;
+                        let ny = dy / dist;
+                        let overlap = minDist - dist;
+                        b.x += nx * overlap;
+                        b.y += ny * overlap;
+
+                        let p = 2 * (b.vx * nx + b.vy * ny) / (b.radius + PEG_RADIUS);
+                        b.vx = b.vx - p * b.radius * nx * BOUNCE;
+                        b.vy = b.vy - p * b.radius * ny * BOUNCE;
+
+                        b.vx += (Math.random() - 0.5) * 0.8; // More chaotic bounce
+                    }
+                });
+
+                // Chacker Collisions
+                let ballInChacker = false;
+                chackers.forEach(chacker => {
+                    if (b.x > chacker.x - chacker.width / 2 &&
+                        b.x < chacker.x + chacker.width / 2 &&
+                        b.y > chacker.y - chacker.height &&
+                        b.y < chacker.y + 5) {
+
+                        ballInChacker = true;
+                        updateBalance(chacker.reward);
+                        createExplosion(b.x, b.y, 15, chacker.color);
+
+                        if (chacker.triggerSlot) {
+                            slots.spin();
+                        }
+                    }
+                });
+
+                if (ballInChacker) {
+                    balls.splice(i, 1);
+                    continue;
+                }
+
+                if (b.y - b.radius > canvas.height) {
+                    balls.splice(i, 1);
+                }
+            }
+
+            slots.update();
+
+            // Render order
+            drawPegs();
+            drawChackers();
+            slots.draw(ctx);
+            drawBalls();
+            drawParticles();
+
+            requestAnimationFrame(updatePhysics);
+        }
+
+        // Initialize immediately
+        createPegs();
+        updatePhysics();
+    </script>
+</body>
+
+</html>
