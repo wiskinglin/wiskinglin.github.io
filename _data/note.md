@@ -1,6 +1,14 @@
 # Personal Notes
 
 ## 2026-W19 (2026/05/04 - 2026/05/10)
+### 2026-05-08 (Fri) 11:18
+📖 **[GitHub - asgeirtj/system_prompts_leaks: Extracted system prompts from ChatGPT, Claude, Gemini, Grok, Perplexity, and more.](https://github.com/asgeirtj/system_prompts_leaks)**
+- **摘要**: 此倉庫彙整了各大主流 AI 模型（如 ChatGPT GPT-5.5 Thinking, Claude 4.7/4.6, Gemini 3.1 Pro/3 Flash, Grok 4.3 beta 等）被提取出的系統提示詞 (System Prompts)。這對於研究 AI 行為準則、安全機制以及提示工程 (Prompt Engineering) 具有極高的參考價值，且內容會隨模型更新持續維護。
+
+### 2026-05-08 (Fri) 11:18
+📖 **[GitHub - public-apis/public-apis: A collective list of free APIs · GitHub](https://github.com/public-apis/public-apis)**
+- **摘要**: 这是一个由社群維護的開源清單，收錄了大量免費且公開的 API，涵蓋動物、動漫、藝術、設計、區塊鏈、商業、加密貨幣、開發工具、娛樂、環境、金融、食物、地圖、政府、健康、音樂、新聞等 50+ 個分類。該倉庫在 GitHub 上擁有超過 40 萬 Stars，是開發者尋找測試數據、練習專案素材或整合第三方服務的寶庫。
+
 ### 2026-05-07 (Thu) 09:25
 📖 **[GitHub - nexu-io/open-design: 🎨 Local-first, open-source alternative to Anthropic's Claude Design.](https://github.com/nexu-io/open-design)**
 - **摘要**: 本地優先的開源 Claude Design 替代方案。內建 19 項技能與 71 套品牌級設計系統，支援生成網頁、桌面、行動端原型、簡報、圖片及影片等。提供沙盒預覽並支援 HTML/PDF/PPTX/MP4 導出，相容於 Claude Code, Cursor, Gemini 等多種 AI CLI 工具。
