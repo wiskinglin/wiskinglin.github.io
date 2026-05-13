@@ -1,5 +1,46 @@
 # Personal Notes
 
+## 2026-W20 (2026/05/11 - 2026/05/17)
+### 2026-05-13 (Wed) 09:41
+💡 **更多 2026 年強大且具特色的開源選擇**
+- **1. 討論區與論壇 (Forum & Reddit-like)**
+  - **NodeBB**: [NodeBB/NodeBB](https://github.com/NodeBB/NodeBB) - 基於 Node.js，反應極快，具現代感。
+  - **Lemmy**: [LemmyNet/lemmy](https://github.com/LemmyNet/lemmy) - 去中心化聯邦版的 Reddit。
+  - **Forem**: [forem/forem](https://github.com/forem/forem) - DEV.to 採用的後端，適合專業內容社群。
+- **2. 視覺與微網誌 (Visual & Microblogging)**
+  - **Misskey**: [misskey-dev/misskey](https://github.com/misskey-dev/misskey) - 日系華麗風，支援高度自定義。
+  - **PeerTube**: [Chocobozzz/PeerTube](https://github.com/Chocobozzz/PeerTube) - 開源版 YouTube，適合短影音牆。
+- **3. 大型社群網路 (Social Networking)**
+  - **Friendica**: [friendica/friendica](https://github.com/friendica/friendica) - 社交聯邦的瑞士軍刀，跨協議互通。
+  - **Diaspora***: [diaspora/diaspora](https://github.com/diaspora/diaspora) - 分散式社交網路始祖，強調隱私。
+- **4. 通訊群組與團隊通訊 (IM & Team Chat)**
+  - **Zulip**: [zulip/zulip](https://github.com/zulip/zulip) - 強大的主題執行緒功能，適合深度討論。
+  - **Mattermost**: [mattermost/mattermost](https://github.com/mattermost/mattermost) - 開源版 Slack，適合安全管理。
+  - **VoceChat**: [Privoce/VoceChat](https://github.com/Privoce/VoceChat) - 超輕量級私密聊天方案。
+- **5. 新聞網站與內容發佈 (News & CMS)**
+  - **Ghost**: [TryGhost/Ghost](https://github.com/TryGhost/Ghost) - 現代化出版首選，介面極美且 SEO 優化。
+  - **Strapi**: [strapi/strapi](https://github.com/strapi/strapi) - 靈活的 Headless CMS，自定義新聞欄位。
+  - **Newspack**: [Automattic/newspack-plugin](https://github.com/Automattic/newspack-plugin) - 為中小型新聞機構量身打造。
+- **摘要**: 補充了多個類別的開源替代方案，涵蓋 Reddit 風格論壇、日系社交平台、團隊通訊及專業新聞發佈系統。
+
+### 2026-05-13 (Wed) 09:40
+💡 **開源專案推薦：討論區、社交與通訊系統**
+- **1. 討論區系統 (Forum Systems)**
+  - **Flarum**: [flarum/flarum](https://github.com/flarum/flarum)
+  - **Discourse**: [discourse/discourse](https://github.com/discourse/discourse)
+  - **phpBB**: [phpbb/phpbb](https://github.com/phpbb/phpbb)
+  - **MyBB**: [mybb/mybb](https://github.com/mybb/mybb)
+  - **Simple Machines Forum (SMF)**: [SimpleMachines/SMF](https://github.com/SimpleMachines/SMF)
+- **2. 社交平台替代方案 (Social Media Alternatives)**
+  - **Pixelfed (類似 IG)**: [pixelfed/pixelfed](https://github.com/pixelfed/pixelfed)
+  - **HumHub (類似 FB)**: [humhub/humhub](https://github.com/humhub/humhub)
+  - **Mastodon (類似 FB/Twitter)**: [mastodon/mastodon](https://github.com/mastodon/mastodon)
+- **3. 即時通訊與群組 (Instant Messaging & Groups)**
+  - **Matrix / Element**: [matrix-org/synapse](https://github.com/matrix-org/synapse) / [vector-im/element-web](https://github.com/vector-im/element-web)
+  - **Rocket.Chat**: [RocketChat/Rocket.Chat](https://github.com/RocketChat/Rocket.Chat)
+  - **Signal**: [signalapp/Signal-Android](https://github.com/signalapp/Signal-Android)
+- **摘要**: 整理了一系列熱門的開源社群、討論區及通訊軟體儲存庫連結，提供 Docker 部署或對應環境安裝參考。
+
 ## 2026-W19 (2026/05/04 - 2026/05/10)
 ### 2026-05-08 (Fri) 11:18
 📖 **[GitHub - asgeirtj/system_prompts_leaks: Extracted system prompts from ChatGPT, Claude, Gemini, Grok, Perplexity, and more.](https://github.com/asgeirtj/system_prompts_leaks)**
