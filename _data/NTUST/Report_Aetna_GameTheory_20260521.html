@@ -2081,6 +2081,21 @@
         }
     </style>
     <style data-id="immersive-translate-input-injected-css"></style>
+    <!-- MathJax for rendering LaTeX math formulas -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
 </head>
 
 <body class="font-sans antialiased">
@@ -2682,12 +2697,29 @@
                         Signaling)」的舞台。在面對高管提問時,本土同業因為年資淺、不熟悉團險且無職災配套,無情地暴露了低品質訊號。反觀安泰人壽,除了以量身定制的職災方案直擊痛點外,在實務戰術上更巧妙運用了<strong>【草船借箭】的思維,利用絕對的硬體資訊優勢建立起對手無法跨越的專業壁壘。在將近30年前,安泰業務團隊即史無前例地自備單槍投影機與筆記型電腦進行視覺化簡報</strong>。在那個多數同業還在發放紙本傳單的年代,這種壓倒性的高科技專業體驗,讓安泰在對手完全無法理解與防備的維度上,輕鬆獲取了高層主管的信任與青睞。
                     </p>
 
-                    <h3 class="text-xs font-bold text-slate-800 mt-2">• Michael Spence 的訊號傳遞模型應用:</h3>
-                    <p class="text-xs text-slate-600 leading-relaxed text-justify editable-target">
-                        從訊號理論的角度來看,安泰的硬體設備投資與量身定制方案屬於典型的「昂貴訊號(Costly
-                        Signal)」。這類訊號之所以有效,是因為低品質的競爭者無法負擔模仿成本——他們既沒有專業知識來回答高管的深度提問,也缺乏資源準備視覺化簡報設備。這種「分離均衡(Separating
-                        Equilibrium)」讓買方得以有效區分高低品質賣方,徹底打破了檸檬市場的資訊僵局。
-                    </p>
+                    <h3 class="text-xs font-bold text-slate-800 mt-2">• Michael Spence 的訊號傳遞與完美貝氏均衡 (PBE) 推導:</h3>
+                    <div class="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-xl border border-slate-200/80">
+                        <div class="space-y-1.5 text-justify">
+                            <span class="font-bold text-corporate-600 block">1. 資訊不對稱與認知修正 (Beliefs Update)</span>
+                            <p class="text-[11px] text-slate-500 leading-normal editable-target">
+                                設保險公司有兩種類型 $\theta \in \{\theta_H, \theta_L\}$：高品質型態（$\theta_H$，能足額轉嫁企業職災責任）與低品質型態（$\theta_L$，僅提供低保費殘缺保障）。大宇高管在評選前對安泰是高品質的<strong>原始主觀認知 (Prior Belief)</strong> 為 $P(\theta_H) = p$。高品質賣方（安泰）選擇發送「昂貴訊號 $s_H$」（包含自備單槍投影與客製化職災防護方案），低品質同業選擇發送「廉價訊號 $s_L$」（僅用紙本傳單報價）。
+                            </p>
+                            <p class="text-[11px] text-slate-500 leading-normal editable-target">
+                                透過簡報會的篩選機制，大宇高管在觀察到訊號 $s$ 後，將其認知修正為<strong>條件機率 (Posterior Belief) $q(s)$</strong>：
+                                <br>$\bullet$ 觀察到 $s_H$ 時：$q(\theta_H | s_H) = \frac{p \cdot 1}{p \cdot 1 + (1-p) \cdot 0} = 1$ （完全確信）
+                                <br>$\bullet$ 觀察到 $s_L$ 時：$q(\theta_H | s_L) = 0$ （判定為低品質）
+                            </p>
+                        </div>
+                        <div class="space-y-1.5 text-justify border-l border-slate-200/80 pl-3">
+                            <span class="font-bold text-corporate-600 block">2. 分離均衡 (Separating Equilibrium) 條件</span>
+                            <p class="text-[11px] text-slate-500 leading-normal editable-target">
+                                賽局要達成穩定的<strong>分離均衡</strong>，必須滿足「激勵相容約束（Incentive Compatibility Constraint）」：高品質安泰的訊號成本 $C_H$ 須低於得標收益，而低品質同業若模仿 $s_H$，其模仿成本 $C_L'$ 須大於得標收益（$C_L' > \text{得標收益} > C_H$）。
+                            </p>
+                            <p class="text-[11px] text-slate-500 leading-normal editable-target">
+                                由於本土同業缺乏專業職災精算與高科技簡報硬體，其模仿成本 $C_L'$ 極高，故同業的最佳回應是選擇發送 $s_L$，安泰則選擇發送 $s_H$。高管觀察到訊號差異後，精準判定安泰具備真實高防護效用，從而願意支付兩倍保費，成功打破檸檬市場。
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 表4-1 -->
@@ -2990,28 +3022,26 @@
 
                 <!-- 深度理論與學術剖析卡片 -->
                 <div class="grid grid-cols-2 gap-4 my-2 text-xs">
-                    <div class="p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl space-y-1 text-justify">
+                    <div class="p-3 bg-slate-50 border border-slate-200/60 rounded-xl space-y-1 text-justify">
                         <h4 class="font-bold text-slate-800 flex items-center gap-1">
-                            <span>🔍</span> <span>逆向歸納法（Backward Induction）說明</span>
+                            <span>🔍</span> <span>子賽局精煉納許均衡 (SPNE) 與逆向歸納</span>
                         </h4>
                         <p class="text-[11px] text-slate-500 leading-relaxed editable-target">
-                            分析動態賽局最核心的工具是「逆向歸納法」。我們必須從決策樹的最末端（高階主管群）往前推導：高管群深知低價同業方案在IPO時可能帶來無法理賠的毀滅風險，故高管的理性選擇必然是「安泰方案」。得知此點的人事部張經理，為避免獨自背負未來重大職災的「決策黑鍋」，最佳應對是「接受提議舉辦簡報」。如此逆向推演，最終決定了起點的安泰人壽應採取「策略
-                            B」，成功創造出唯一的雙贏新均衡。
+                            分析動態序列賽局核心工具是「逆向歸納法（Backward Induction）」。推導必須由決策樹末端（高管群）向前追溯：得知低價同業方案在IPO期間有職災毀滅性風險，高管理性選擇必然是「安泰方案」。得知高管偏好後的人事張經理，為避免獨自背負未來理賠黑鍋，其最優回應是「接受提議舉辦簡報」。如此逆向推演，決定了起點的安泰人壽應採取「策略 B」（改變規則），此路徑即為唯一的<strong>子賽局精煉納許均衡 (SPNE)</strong>。
                         </p>
                     </div>
-                    <div class="p-3.5 bg-slate-50 border border-slate-200/60 rounded-xl space-y-1 text-justify">
+                    <div class="p-3 bg-slate-50 border border-slate-200/60 rounded-xl space-y-1 text-justify">
                         <h4 class="font-bold text-slate-800 flex items-center gap-1">
-                            <span>💡</span> <span>動態賽局中「威脅」與「承諾」的可信度</span>
+                            <span>💡</span> <span>薛爾頓顫抖手完美均衡 (Trembling Hand) 與策略強健性</span>
                         </h4>
                         <p class="text-[11px] text-slate-500 leading-relaxed editable-target">
-                            在傳統談判中，安泰高達兩倍的報價看似是一種「不可信的威脅」（因為不降價就無法得標）。但安泰透過引入「高管簡報會議」此一第三方監督機制，巧妙將原本非理性的高價，轉化為「可信的承諾」——亦即一旦高管了解實質保障的真偽，高保費即對應高保障。這個機制設計（Mechanism
-                            Design）不僅改變了賽局結構，更成功促使對手的削價威脅徹底失效。
+                            薛爾頓 (Selten, 1975) 提出參與者有微小機率 $\epsilon > 0$ 因非理性犯錯（手顫抖）而偏離最優策略。若維持舊規（策略 A），一旦張經理「顫抖」比價，安泰得標率為零。而安泰採取策略 B「點出風險並建立高管簡報新規」，將賽局引導至公開評選。在此機制下，即便張經理或高管有微小機率顫抖犯錯，安泰透過發送同業難以模仿的「昂貴訊號」（單槍投影機與客製方案）拉大效用差，使「選擇安泰」在顫抖干擾下依然是強健的<strong>顫抖手完美均衡</strong>，大幅消弭了決策不確定性。
                         </p>
                     </div>
                 </div>
             </div>
 
-            <!-- 頁底 -->
+        <!-- 頁底 -->
             <div
                 class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-100 pt-3 font-semibold">
                 <span>NTUST 1142 賽局與策略管理 期末報告</span>
@@ -3068,9 +3098,8 @@
                     </div>
 
                     <p class="text-[11px] text-slate-500 editable-target mt-1">
-                        <strong>★【全新納許均衡點(New Nash Equilibrium)】★</strong><br>
-                        <strong>● 決策樹邏輯總結:</strong> 安泰人壽透過修改決策樹的結構,避免了走向「分支A」的死胡同。在「分支
-                        B」中,無論是張經理基於自保接受簡報,或是高階主管基於公司整體利益選擇高價,都是參與者在當下環境中的「最理性選擇」。
+                        <strong>★【子賽局精煉納許均衡 (SPNE) 總結】★</strong><br>
+                        <strong>● 序列決策路徑:</strong> 安泰人壽透過修改決策樹的結構，排除不可置信的價格戰威脅。在「策略 B」分支形成的子賽局中，人事張經理基於防範黑鍋風險而接受簡報，高階主管群基於 IPO 風險規避而選擇安泰的高防護方案。各節點的選擇皆符合當下子賽局的理性最優反應，這條由「安泰發起簡報 $\rightarrow$ 張經理接受簡報 $\rightarrow$ 高管選擇安泰」的路徑，即為本案中唯一的子賽局精煉納許均衡 (SPNE)。
                     </p>
                 </div>
 
