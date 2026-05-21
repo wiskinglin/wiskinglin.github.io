@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中油探勘石油決賽賽局：貝氏機率與決策分析</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #f43f5e;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(0, 210, 255, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(58, 123, 213, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .section-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-label {
+            display: inline-block;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+        }
+
+        /* SVG Game Tree Styles */
+        .tree-container {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .game-tree-svg {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .node { fill: #1e293b; stroke: var(--primary); stroke-width: 2; }
+        .node-nature { fill: var(--primary); stroke: none; }
+        .edge { stroke: var(--text-muted); stroke-width: 1.5; fill: none; }
+        .edge-label { fill: var(--primary); font-size: 12px; font-weight: 600; }
+        .info-set { stroke: var(--accent); stroke-dasharray: 4; fill: none; stroke-width: 2; opacity: 0.6; }
+        .payoff-label { fill: #fff; font-size: 13px; font-weight: 700; }
+        .text-label { fill: var(--text-main); font-size: 12px; }
+
+        .grid-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border-left: 3px solid var(--primary);
+        }
+
+        .info-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .math-block {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .payoff-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .payoff-table th, .payoff-table td {
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .payoff-table th {
+            background: rgba(58, 123, 213, 0.15);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .result-box.conclusion {
+            background: rgba(244, 63, 94, 0.1);
+            border-left: 4px solid var(--accent);
+            color: #ffcbd1;
+            padding: 1.25rem;
+            border-radius: 12px;
+            margin-top: 1.25rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            .section-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <span class="section-label">Strategic Analysis</span>
+            <h1>中油探勘石油決策賽局</h1>
+            <p class="subtitle">分析不完全訊息下的探勘決策，結合貝氏定理與賽局理論。</p>
+        </header>
+
+        <!-- Extensive Form Tree (Coded SVG) -->
+        <section class="section-card">
+            <span class="section-label">Visualization</span>
+            <h2>推展式賽局圖 (Game Tree)</h2>
+            <p>下圖為賽局之完整決策樹。紅色虛線表示中油的<strong>資訊集合</strong>（中油觀察到結果，但不知道地底真實狀態）。</p>
+            
+            <div class="tree-container">
+                <svg viewBox="0 0 800 450" class="game-tree-svg">
+                    <!-- Edges from Nature (N) -->
+                    <line x1="100" y1="225" x2="250" y2="125" class="edge" />
+                    <line x1="100" y1="225" x2="250" y2="325" class="edge" />
+                    
+                    <!-- Edges from Result (Nature's signal) -->
+                    <line x1="250" y1="125" x2="400" y2="75" class="edge" />
+                    <line x1="250" y1="125" x2="400" y2="175" class="edge" />
+                    <line x1="250" y1="325" x2="400" y2="275" class="edge" />
+                    <line x1="250" y1="325" x2="400" y2="375" class="edge" />
+                    
+                    <!-- Edges for CPC Decision (Drill) -->
+                    <line x1="400" y1="75" x2="550" y2="50" class="edge" />
+                    <line x1="400" y1="75" x2="550" y2="100" class="edge" />
+                    <line x1="400" y1="175" x2="550" y2="150" class="edge" />
+                    <line x1="400" y1="175" x2="550" y2="200" class="edge" />
+                    <line x1="400" y1="275" x2="550" y2="250" class="edge" />
+                    <line x1="400" y1="275" x2="550" y2="300" class="edge" />
+                    <line x1="400" y1="375" x2="550" y2="350" class="edge" />
+                    <line x1="400" y1="375" x2="550" y2="400" class="edge" />
+
+                    <!-- Information Sets -->
+                    <path d="M 400 75 Q 420 175 400 275" class="info-set" />
+                    <path d="M 400 175 Q 420 275 400 375" class="info-set" style="stroke: var(--secondary);" />
+
+                    <!-- Nodes -->
+                    <circle cx="100" cy="225" r="8" class="node-nature" />
+                    <circle cx="250" cy="125" r="6" class="node" />
+                    <circle cx="250" cy="325" r="6" class="node" />
+                    <circle cx="400" cy="75" r="6" class="node" />
+                    <circle cx="400" cy="175" r="6" class="node" />
+                    <circle cx="400" cy="275" r="6" class="node" />
+                    <circle cx="400" cy="375" r="6" class="node" />
+
+                    <!-- Labels -->
+                    <text x="80" y="210" class="text-label">Nature</text>
+                    <text x="130" y="160" class="edge-label">有油 (10%)</text>
+                    <text x="130" y="300" class="edge-label">沒油 (90%)</text>
+                    
+                    <text x="290" y="90" class="edge-label">正面 (95%)</text>
+                    <text x="290" y="160" class="edge-label">負面 (5%)</text>
+                    <text x="290" y="290" class="edge-label">正面 (25%)</text>
+                    <text x="290" y="360" class="edge-label">負面 (75%)</text>
+
+                    <text x="400" y="60" class="text-label" text-anchor="middle">中油</text>
+                    <text x="400" y="160" class="text-label" text-anchor="middle">中油</text>
+                    <text x="400" y="260" class="text-label" text-anchor="middle">中油</text>
+                    <text x="400" y="360" class="text-label" text-anchor="middle">中油</text>
+
+                    <text x="460" y="60" class="text-label">鑽井</text>
+                    <text x="560" y="55" class="payoff-label">+20</text>
+                    <text x="460" y="100" class="text-label">不鑽</text>
+                    <text x="560" y="105" class="payoff-label">0</text>
+
+                    <text x="460" y="160" class="text-label">鑽井</text>
+                    <text x="560" y="155" class="payoff-label">+20</text>
+                    <text x="460" y="200" class="text-label">不鑽</text>
+                    <text x="560" y="205" class="payoff-label">0</text>
+
+                    <text x="460" y="260" class="text-label">鑽井</text>
+                    <text x="560" y="255" class="payoff-label" style="fill: var(--accent);">-10</text>
+                    <text x="460" y="300" class="text-label">不鑽</text>
+                    <text x="560" y="305" class="payoff-label">0</text>
+
+                    <text x="460" y="360" class="text-label">鑽井</text>
+                    <text x="560" y="355" class="payoff-label" style="fill: var(--accent);">-10</text>
+                    <text x="460" y="400" class="text-label">不鑽</text>
+                    <text x="560" y="405" class="payoff-label">0</text>
+                </svg>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">註：紅色虛線為「正面」資訊集合，藍色虛線為「負面」資訊集合。</p>
+        </section>
+
+        <!-- Step 01: Parameters -->
+        <section class="section-card">
+            <span class="section-label">Step 01</span>
+            <h2>原始參數 (Parameters)</h2>
+            <div class="grid-info">
+                <div class="info-item"><span class="info-label">P(有油)</span><span class="info-value">10%</span></div>
+                <div class="info-item"><span class="info-label">P(沒油)</span><span class="info-value">90%</span></div>
+                <div class="info-item"><span class="info-label">P(正|有)</span><span class="info-value">95%</span></div>
+                <div class="info-item"><span class="info-label">P(正|沒)</span><span class="info-value">25%</span></div>
+            </div>
+        </section>
+
+        <!-- Step 02: Bayesian -->
+        <section class="section-card">
+            <span class="section-label">Step 02</span>
+            <h2>後驗機率更新 (Bayesian Update)</h2>
+            <div class="math-block">
+                $$P(\text{有油} \mid \text{正面}) = \frac{P(\text{正面} \mid \text{有油}) \times P(\text{有油})}{P(\text{正面})}$$
+                $$P(\text{正面}) = (0.95 \times 0.1) + (0.25 \times 0.9) = 0.32$$
+                $$P(\text{有油} \mid \text{正面}) = \frac{0.095}{0.32} \approx \mathbf{29.7\%}$$
+            </div>
+            <div class="math-block">
+                $$P(\text{有油} \mid \text{負面}) = \frac{0.05 \times 0.1}{0.68} \approx \mathbf{0.74\%}$$
+            </div>
+        </section>
+
+        <!-- Step 03: Decision -->
+        <section class="section-card">
+            <span class="section-label">Step 03</span>
+            <h2>期望收益與最終決策</h2>
+            <div class="math-block">
+                $$E(\text{鑽} \mid \text{正面}) = (0.297 \times 20) + (0.703 \times -10) = \mathbf{-1.09}$$
+                $$E(\text{鑽} \mid \text{負面}) = (0.007 \times 20) + (0.993 \times -10) = \mathbf{-9.78}$$
+            </div>
+            <div class="result-box conclusion">
+                <p><strong>結論：</strong> 即使收到正面報告，鑽井的期望收益仍為負值（$-1.09$）。因此，中油的最佳決策是<strong>全面不鑽井</strong>。</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2026 Game Theory Analysis Model</p>
+        </footer>
+    </div>
+</body>
+</html>
