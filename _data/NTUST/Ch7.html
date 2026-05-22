@@ -1,0 +1,154 @@
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第七章</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Noto Sans TC', 'sans-serif'] },
+                    colors: {
+                        corporate: { 50: '#f0f4f8', 100: '#dbeafe', 600: '#1e40af', 800: '#1e293b', 900: '#0f172a' },
+                        amberAccent: { 500: '#d97706', 600: '#b45309' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @page { size: A4 portrait; margin: 0; }
+        body { background-color: #f1f5f9; color: #1e293b; margin: 0; padding: 20px 0; }
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto 30px auto;
+            background: #ffffff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 18mm 16mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+        @media print {
+            body { background: none; padding: 0; }
+            .a4-page { margin: 0; box-shadow: none; page-break-after: always; }
+        }
+        .math-block { background-color: rgba(241, 245, 249, 0.6); padding: 10px 15px; border-radius: 8px; font-family: monospace; font-size: 13px; line-height: 1.6; border-left: 3px solid #1e40af; margin-top: 8px; margin-bottom: 8px; }
+    </style>
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']] }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+</head>
+<body class="font-sans antialiased text-sm">
+
+    <!-- PAGE 1: 第七章推導 -->
+    <div class="a4-page flex flex-col">
+        <div class="border-b border-slate-200 pb-3 mb-5">
+            <h1 class="text-2xl font-black text-corporate-900 tracking-tight">第七章：透過 Nature (N) 客觀機率之風險管理推導</h1>
+            <p class="text-slate-500 mt-1">從大宇資訊視角分析：面對客觀職災風險，選擇不同保險方案的期望值模型。</p>
+        </div>
+
+        <!-- 1. 擴展式決策樹模型 -->
+        <h2 class="text-base font-bold text-slate-800 border-l-4 border-amberAccent-500 pl-3 mb-3">一、 包含 Nature (N) 的樹狀擴展式模型 (Extensive-form)</h2>
+        <div class="relative border border-slate-200 rounded-xl bg-slate-50 p-4 mb-6 shadow-inner" style="width: 100%; height: 320px;">
+            <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 10;">
+                <defs>
+                    <marker id="arrow-gray" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 2 L 8 5 L 0 8 z" fill="#94a3b8"></path>
+                    </marker>
+                    <marker id="arrow-blue" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 2 L 8 5 L 0 8 z" fill="#1e40af"></path>
+                    </marker>
+                </defs>
+                <!-- 大宇 -> 同業 -->
+                <path d="M 90 160 L 230 80" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow-gray)"></path>
+                <!-- 大宇 -> 安泰 -->
+                <path d="M 90 160 L 230 240" stroke="#1e40af" stroke-width="2" fill="none" marker-end="url(#arrow-blue)"></path>
+                
+                <!-- Nature 1 -> 分支 -->
+                <path d="M 270 80 L 410 40" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow-gray)"></path>
+                <path d="M 270 80 L 410 120" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow-gray)"></path>
+                
+                <!-- Nature 2 -> 分支 -->
+                <path d="M 270 240 L 410 200" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow-gray)"></path>
+                <path d="M 270 240 L 410 280" stroke="#94a3b8" stroke-width="1.5" fill="none" marker-end="url(#arrow-gray)"></path>
+            </svg>
+
+            <!-- Nodes -->
+            <div class="absolute flex items-center justify-center bg-blue-100 border-2 border-blue-500 text-blue-900 rounded-full font-bold shadow-sm z-20" style="left: 30px; top: 130px; width: 60px; height: 60px;">大宇</div>
+            
+            <div class="absolute text-[11px] bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-sm text-slate-500 z-30" style="left: 100px; top: 90px;">選擇本土同業<br>(低保費 C=10)</div>
+            <div class="absolute text-[11px] bg-white border border-blue-200 px-1.5 py-0.5 rounded shadow-sm text-blue-700 z-30 font-bold" style="left: 100px; top: 210px;">選擇安泰方案<br>(高保費 C=20)</div>
+
+            <div class="absolute flex items-center justify-center bg-white border-2 border-slate-400 text-slate-800 rounded-full font-bold shadow-sm z-20" style="left: 230px; top: 60px; width: 40px; height: 40px;">N</div>
+            <div class="absolute flex items-center justify-center bg-white border-2 border-slate-400 text-slate-800 rounded-full font-bold shadow-sm z-20" style="left: 230px; top: 220px; width: 40px; height: 40px;">N</div>
+
+            <!-- Probabilities -->
+            <div class="absolute text-[11px] text-red-600 font-bold z-30 bg-slate-50 px-1" style="left: 310px; top: 40px;">發生職災 (P)</div>
+            <div class="absolute text-[11px] text-emerald-600 font-bold z-30 bg-slate-50 px-1" style="left: 310px; top: 105px;">平安無事 (1-P)</div>
+            <div class="absolute text-[11px] text-red-600 font-bold z-30 bg-slate-50 px-1" style="left: 310px; top: 200px;">發生職災 (P)</div>
+            <div class="absolute text-[11px] text-emerald-600 font-bold z-30 bg-slate-50 px-1" style="left: 310px; top: 265px;">平安無事 (1-P)</div>
+
+            <!-- Terminal Payoffs -->
+            <div class="absolute flex flex-col justify-center bg-white border border-slate-300 rounded p-1 z-20" style="left: 420px; top: 25px; width: 180px;">
+                <span class="text-[11px] font-bold text-red-600 text-center">-100</span>
+                <span class="text-[10px] text-slate-500 text-center leading-tight">IPO受阻 / 鉅額賠償<br>(效用0 - 成本10 = -10?) 實為極大負效用 -100</span>
+            </div>
+            <div class="absolute flex flex-col justify-center bg-white border border-slate-300 rounded p-1 z-20" style="left: 420px; top: 105px; width: 180px;">
+                <span class="text-[11px] font-bold text-slate-800 text-center">90</span>
+                <span class="text-[10px] text-slate-500 text-center leading-tight">IPO成功 + 省錢<br>(效用100 - 成本10 = 90)</span>
+            </div>
+            
+            <div class="absolute flex flex-col justify-center bg-emerald-50 border border-emerald-300 rounded p-1 z-20" style="left: 420px; top: 185px; width: 180px;">
+                <span class="text-[11px] font-bold text-emerald-700 text-center">80</span>
+                <span class="text-[10px] text-slate-500 text-center leading-tight">風險轉嫁成功 / IPO順利<br>(效用100 - 成本20 = 80)</span>
+            </div>
+            <div class="absolute flex flex-col justify-center bg-emerald-50 border border-emerald-300 rounded p-1 z-20" style="left: 420px; top: 265px; width: 180px;">
+                <span class="text-[11px] font-bold text-emerald-700 text-center">80</span>
+                <span class="text-[10px] text-slate-500 text-center leading-tight">多付保費 / IPO順利<br>(效用100 - 成本20 = 80)</span>
+            </div>
+        </div>
+
+        <!-- 2. 邏輯推導與報酬計算 -->
+        <h2 class="text-base font-bold text-slate-800 border-l-4 border-amberAccent-500 pl-3 mb-2">二、 期望報酬 (Expected Payoff) 計算與邏輯推導</h2>
+        <div class="text-[13px] text-slate-700 space-y-3 leading-relaxed">
+            <p>大宇資訊高層在做決策時，實際上是在比較兩條路徑的「期望報酬 $E$」。由於自然 (Nature) 決定職災發生與否的機率客觀存在，我們將發生重大職災的機率設為 $P$，平安無事的機率設為 $1-P$。</p>
+            
+            <p class="font-bold">步驟 1：計算「選擇安泰人壽」的期望報酬 $E(\text{安泰})$</p>
+            <p>因為安泰提供了 100% 的職災風險轉嫁，無論自然界發生什麼事，企業的 IPO 都不受干擾，效用鎖死為 80。</p>
+            <div class="math-block">
+                $E(\text{安泰}) = P \times 80 + (1-P) \times 80 = 80$
+            </div>
+
+            <p class="font-bold">步驟 2：計算「選擇本土同業」的期望報酬 $E(\text{同業})$</p>
+            <p>選擇同業雖然能省下保費（平安時獲得 90 的效用），但一旦發生職災，將承受極大的損失（效用為 -100）。</p>
+            <div class="math-block">
+                $E(\text{同業}) = P \times (-100) + (1-P) \times 90$<br>
+                $E(\text{同業}) = -100P + 90 - 90P$<br>
+                $E(\text{同業}) = 90 - 190P$
+            </div>
+
+            <p class="font-bold">步驟 3：推導理性決策的臨界機率</p>
+            <p>作為理性的決策者，大宇高層選擇安泰的前提，是安泰方案的期望值「大於」同業方案：</p>
+            <div class="math-block">
+                $E(\text{安泰}) > E(\text{同業})$<br>
+                $80 > 90 - 190P$<br>
+                $190P > 10$<br>
+                $P > \frac{10}{190} \approx 0.0526 \quad (5.26\%)$
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 p-3 rounded mt-2">
+                <strong>結論：</strong> 透過上述客觀機率模型的推導，在數學邏輯上證明了：只要大宇資訊評估未來三年內發生足以影響 IPO 的重大職災<strong>機率超過 5.26%</strong>，支付高出一倍的保費給安泰人壽就是絕對理性的決策。高階主管因為承擔整體企業責任，其對 $P$ 的主觀評估遠大於 5%，因此雙方得以在此建立全新的納許均衡。
+            </div>
+        </div>
+    </div>
+</body>
+</html>
