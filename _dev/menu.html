@@ -349,6 +349,7 @@
                 <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
                     <thead>
                         <tr style="border-bottom: 1px solid #000;">
+                            <th style="padding: 8px 4px; width: 60px;">編號</th>
                             <th style="padding: 8px 4px;">品項</th>
                             <th style="padding: 8px 4px; text-align: right;">單價</th>
                             <th style="padding: 8px 4px; text-align: right;">數量</th>
@@ -358,10 +359,12 @@
                     <tbody>
             `;
 
+            let itemIndex = 0;
             inputs.forEach(input => {
                 const qty = parseInt(input.value) || 0;
                 if (qty > 0) {
                     hasItems = true;
+                    itemIndex++;
                     const name = input.getAttribute('data-name');
                     const price = parseInt(input.getAttribute('data-price')) || 0;
                     const itemSub = qty * price;
@@ -372,6 +375,7 @@
 
                     printHtml += `
                         <tr style="border-bottom: 1px dashed #ccc;">
+                            <td style="padding: 8px 4px;">${itemIndex}</td>
                             <td style="padding: 8px 4px;">${name}</td>
                             <td style="padding: 8px 4px; text-align: right;">${priceText}</td>
                             <td style="padding: 8px 4px; text-align: right;">${qty}</td>
