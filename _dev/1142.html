@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>台科大 EMBA 1142核心課程與策略管理精華手冊</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts - Inter & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  
+  <!-- MathJax for Beautiful Equations -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* 全局與字體設定 */
+    body {
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      background-color: #f3f4f6;
+      color: #1f2937;
+    }
+
+    /* A4 橫式尺寸與列印設定 (297mm x 210mm) */
+    .page {
+      width: 297mm;
+      height: 210mm;
+      padding: 16mm 20mm;
+      box-sizing: border-box;
+      background-color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e5e7eb;
+      margin: 2rem auto;
+      border-radius: 1rem;
+    }
+
+    /* 確保列印時完美一頁 A4 橫式 */
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .page {
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        page-break-after: always;
+        page-break-inside: avoid;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        /* 強制背景與顏色輸出 */
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      /* 列印時關閉平滑滾動與動畫 */
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+
+    /* 可編輯模式 (contenteditable) 樣式反饋 */
+    .document-wrapper[contenteditable="true"] {
+      outline: 3px dashed #3b82f6;
+      outline-offset: 8px;
+      animation: pulse-outline 2s infinite ease-in-out;
+    }
+    
+    @keyframes pulse-outline {
+      0%, 100% { outline-color: rgba(59, 130, 246, 0.3); }
+      50% { outline-color: rgba(59, 130, 246, 0.9); }
+    }
+
+    /* 漸層分隔線 */
+    .fancy-divider {
+      height: 2px;
+      background: linear-gradient(90deg, rgba(30,58,138,0.1) 0%, rgba(30,58,138,0.8) 50%, rgba(30,58,138,0.1) 100%);
+    }
+
+    /* 隱藏捲動條但保留功能 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-6 flex flex-col items-center">
+
+  <!-- ==================== 控制面板 (Control Panel) ==================== -->
+  <div class="no-print fixed top-6 right-6 z-50 backdrop-blur-md bg-white/80 border border-gray-200/50 shadow-xl rounded-full px-6 py-3 flex items-center gap-3">
+    <span class="text-xs font-bold text-gray-500 mr-2 uppercase tracking-wider">控制面板</span>
+    <button id="btn-edit" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-md shadow-blue-200 flex items-center gap-1.5">
+      <span>✏️</span> 編輯內容
+    </button>
+    <button id="btn-save" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md shadow-emerald-200 flex items-center gap-1.5">
+      <span>💾</span> 儲存網頁
+    </button>
+    <button id="btn-print" class="px-4 py-1.5 rounded-full text-xs font-semibold bg-gray-800 hover:bg-gray-900 text-white transition-all shadow-md shadow-gray-300 flex items-center gap-1.5">
+      <span>🖨️</span> 輸出 PDF
+    </button>
+  </div>
+
+  <!-- 可編輯的主文件容器 -->
+  <div id="document-wrapper" class="document-wrapper transition-all duration-300">
+
+    <!-- ==================== PAGE 1: 封面與核心導讀 ==================== -->
+    <section class="page">
+      <!-- 頁首裝飾 -->
+      <div class="flex justify-between items-center">
+        <span class="text-xs font-semibold tracking-widest text-blue-600 uppercase">Executive Summary Manual</span>
+        <span class="text-xs text-gray-400">1142學期 EMBA 聯合課程</span>
+      </div>
+
+      <!-- 封面英雄區 -->
+      <div class="grid grid-cols-12 gap-8 my-auto items-center">
+        <div class="col-span-7 space-y-6">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">
+            <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+            台科大管理學院高階經營管理碩士班
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-gray-900 leading-tight">
+            高階戰略、組織與理財<br>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-900 via-indigo-900 to-indigo-700">六大核心課程知識地圖</span>
+          </h1>
+          <p class="text-sm text-gray-600 leading-relaxed max-w-xl">
+            本手冊深度融合「管理策略個案」、「組織與管理」、「財富管理」、「賽局與策略管理」、「數位轉型與品牌傳播」及「創新思考與論文設計實作」之課堂精華。以現代化視覺化框架、商業動態模型與跨領域策略，為高階經理人提供具備實踐價值的決策指南。
+          </p>
+          <div class="flex items-center gap-6 pt-2">
+            <div>
+              <p class="text-xs text-gray-400">指導教授</p>
+              <p class="text-sm font-bold text-gray-800">陳正綱 / 欒斌 / 葉穎蓉 / 陳俊男 / 張順教 / 曾譯尹 等</p>
+            </div>
+            <div class="w-px h-8 bg-gray-200"></div>
+            <div>
+              <p class="text-xs text-gray-400">排版編製</p>
+              <p class="text-sm font-bold text-gray-800">L - 頂尖商業排版引擎</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 課程架構 Bento Box -->
+        <div class="col-span-5 grid grid-cols-2 gap-3">
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all">
+            <span class="text-lg">💼</span>
+            <h3 class="text-sm font-bold text-blue-900 mt-2">管理策略個案</h3>
+            <p class="text-2xs text-gray-400 mt-1">哈佛個案、雙占護城河與全通路</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all">
+            <span class="text-lg">🧬</span>
+            <h3 class="text-sm font-bold text-blue-900 mt-2">組織與管理</h3>
+            <p class="text-2xs text-gray-400 mt-1">PESTEL環境、RBV能耐、激勵理論</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all">
+            <span class="text-lg">📈</span>
+            <h3 class="text-sm font-bold text-blue-900 mt-2">財富管理</h3>
+            <p class="text-2xs text-gray-400 mt-1">ROE護城河、展望理論、投資組合</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all">
+            <span class="text-lg">🎯</span>
+            <h3 class="text-sm font-bold text-blue-900 mt-2">賽局與策略</h3>
+            <p class="text-2xs text-gray-400 mt-1">解題四部曲、不完全訊息、VIZIO案</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all">
+            <span class="text-lg">📱</span>
+            <h3 class="text-sm font-bold text-blue-900 mt-2">數位轉型與平台</h3>
+            <p class="text-2xs text-gray-400 mt-1">網路效應、臨界人數模型、JTBD</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all">
+            <span class="text-lg">🎓</span>
+            <h3 class="text-sm font-bold text-blue-900 mt-2">論文設計實作</h3>
+            <p class="text-2xs text-gray-400 mt-1">倒 V 推導、科學研究、變數操弄</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 頁尾 -->
+      <div class="border-t border-gray-100 pt-3 flex justify-between text-2xs text-gray-400">
+        <p>© 2026 國立臺灣科技大學 EMBA 1142學期課程整合手冊 | 橫向 A4 精華排版</p>
+        <p>1 / 6</p>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 2: 管理策略個案 (Strategic Case Study) ==================== -->
+    <section class="page">
+      <!-- 頁首 -->
+      <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 bg-blue-900 text-white text-3xs font-bold rounded">MODULE 1</span>
+          <span class="text-xs font-bold text-blue-900">管理策略個案學篇</span>
+        </div>
+        <span class="text-2xs text-gray-400">哈佛個案教學法、數位轉型與零售變革</span>
+      </div>
+
+      <!-- 內容區 -->
+      <div class="grid grid-cols-12 gap-6 my-auto">
+        <!-- 左側：哈佛個案法與數位轉型 -->
+        <div class="col-span-5 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">哈佛個案教學法 vs 傳統教學</h2>
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+              <span class="font-bold text-blue-900 block">🧠 如何教 (How)</span>
+              <span class="text-gray-600 text-2xs">訓練在資訊不足、混亂的情境下進行邏輯推演與決策能耐。</span>
+            </div>
+            <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+              <span class="font-bold text-blue-900 block">💬 討論導向</span>
+              <span class="text-gray-600 text-2xs">真實商業情境，藉由辯論與意見碰撞產生實戰洞見。</span>
+            </div>
+            <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+              <span class="font-bold text-blue-900 block">🎯 參與者為中心</span>
+              <span class="text-gray-600 text-2xs">學生是主角，教授扮演「引導者 (Facilitator)」角色。</span>
+            </div>
+            <div class="p-3 bg-blue-50/50 rounded-xl border border-blue-100">
+              <span class="font-bold text-blue-900 block">🔥 主動學習</span>
+              <span class="text-gray-600 text-2xs">課前大量消化資料，課堂上捍衛立場、隨時回應挑戰。</span>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <h3 class="text-xs font-bold text-gray-800 mb-2">💡 數位轉型的三個維度</h3>
+            <div class="flex items-center gap-1.5 text-2xs font-bold">
+              <span class="px-2 py-1 bg-gray-100 rounded text-gray-700">1. 數位化</span>
+              <span class="text-gray-400">➔</span>
+              <span class="px-2 py-1 bg-blue-50 rounded text-blue-700">2. 數位優化</span>
+              <span class="text-gray-400">➔</span>
+              <span class="px-2 py-1 bg-blue-900 rounded text-white">3. 數位轉型</span>
+            </div>
+            <p class="text-3xs text-gray-500 mt-2">
+              單純導入 IT 工具僅是數位化；流程檢討、降本增效為優化；而組織與商業模式的根本顛覆（如 Netflix、UPS）才是轉型。
+            </p>
+          </div>
+        </div>
+
+        <!-- 右側：Coca-Cola 與 Walmart 案例分析 -->
+        <div class="col-span-7 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">百年巨頭的結構性優勢與防禦</h2>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <!-- 可口可樂 -->
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div class="flex justify-between items-start">
+                <h3 class="text-xs font-bold text-red-700">可口可樂 (Coca-Cola) 雙占護城河</h3>
+                <span class="text-3xs px-2 py-0.5 bg-red-100 text-red-800 rounded font-bold">Duopoly</span>
+              </div>
+              <ul class="text-2xs text-gray-600 space-y-1.5 mt-3 list-disc pl-3">
+                <li><strong class="text-gray-800">品牌心佔率：</strong> 佔成本 70-80% 的行銷壁壘。</li>
+                <li><strong class="text-gray-800">配銷網絡綁定：</strong> 具排他性的特許裝瓶商合約。</li>
+                <li><strong class="text-gray-800">濃縮液高毛利：</strong> 產業鏈上游毛利高達 78%。</li>
+                <li><strong class="text-gray-800">全方位飲料轉型：</strong> 面臨減糖、肥胖稅挑戰，併購 Costa 進入熱飲，推動敏捷試錯文化。</li>
+              </ul>
+            </div>
+
+            <!-- 沃爾瑪 -->
+            <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+              <div class="flex justify-between items-start">
+                <h3 class="text-xs font-bold text-blue-800">沃爾瑪 (Walmart) 全通路戰略</h3>
+                <span class="text-3xs px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-bold">Omni-Channel</span>
+              </div>
+              <ul class="text-2xs text-gray-600 space-y-1.5 mt-3 list-disc pl-3">
+                <li><strong class="text-gray-800">早期祕訣：</strong> 天天低價 (EDLP)、越庫作業 (Cross-docking)與重金投資 Retail Link 系統。</li>
+                <li><strong class="text-gray-800">超級中心：</strong> 結合生鮮與折扣店帶動高頻人流。</li>
+                <li><strong class="text-gray-800">電商突圍：</strong> 不盲目高檔化（維持 Value 基因），以實體門市作為微型物流中心。</li>
+                <li><strong class="text-gray-800">護城河：</strong> 超越 Amazon 在線上雜貨的優勢，建立 Walmart+ 會員制。</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="p-3 bg-amber-50 rounded-xl border border-amber-100 text-2xs text-amber-900">
+            <span class="font-bold">⚠️ 領導力反思：記得你是誰 (Jai Jaikumar 喜馬拉雅啟示)</span><br>
+            「成功來自幸運，也帶來義務。」認清優勢地位是極大福分，必須以感恩之心扛起社會責任。堅守品格不迷失。
+          </div>
+        </div>
+      </div>
+
+      <!-- 頁尾 -->
+      <div class="border-t border-gray-100 pt-3 flex justify-between text-2xs text-gray-400">
+        <p>1142 管理策略個案 | 指導教師：陳正綱、欒斌</p>
+        <p>2 / 6</p>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: 組織與管理 (Organization & Management) ==================== -->
+    <section class="page">
+      <!-- 頁首 -->
+      <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 bg-indigo-950 text-white text-3xs font-bold rounded">MODULE 2</span>
+          <span class="text-xs font-bold text-blue-900">組織與管理理論篇</span>
+        </div>
+        <span class="text-2xs text-gray-400">經典理論演進、PESTEL環境風險與經營工具鏈</span>
+      </div>
+
+      <!-- 內容區 -->
+      <div class="grid grid-cols-12 gap-6 my-auto">
+        <!-- 左側：組織理論演進與 PESTEL -->
+        <div class="col-span-6 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">組織發展史與外部宏觀分析</h2>
+          
+          <!-- 組織發展三部曲 -->
+          <div class="grid grid-cols-3 gap-2 text-2xs">
+            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="font-bold text-blue-950 block">1. 官僚科層體制</span>
+              <span class="text-gray-500 font-medium">Max Weber</span>
+              <p class="text-3xs text-gray-500 mt-1">強調明確分工、職位階層化。現代可透過職務輪調克服僵化感。</p>
+            </div>
+            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="font-bold text-blue-950 block">2. 科學管理學派</span>
+              <span class="text-gray-500 font-medium">F.W. Taylor</span>
+              <p class="text-3xs text-gray-500 mt-1">標準作業、動作與時間分析、按件計酬、挑選最佳工人。</p>
+            </div>
+            <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="font-bold text-blue-950 block">3. 人群關係學派</span>
+              <span class="text-gray-500 font-medium">Elton Mayo</span>
+              <p class="text-3xs text-gray-500 mt-1">霍桑實驗證實：影響生產力關鍵是社會心理因素與團隊士氣。</p>
+            </div>
+          </div>
+
+          <!-- PESTEL 六維度 -->
+          <div class="p-3.5 bg-gray-50 rounded-xl border border-gray-100">
+            <h3 class="text-xs font-bold text-gray-800 mb-2">🌍 外部宏觀環境 PESTEL 風險管理</h3>
+            <div class="grid grid-cols-3 gap-2 text-3xs">
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900">P 政治：</strong>地緣政治、關稅衝突
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900">E 經濟：</strong>通膨、匯率、利率
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900">S 社會：</strong>老化、少子、偏好
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900">T 科技：</strong>AI、破壞性、資安
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900">E 環境：</strong>淨零、碳關稅 (CBAM)
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900">L 法律：</strong>勞動、安全、合規
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右側：經營策略工具鏈 -->
+        <div class="col-span-6 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">經營策略對決與工具鏈</h2>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <!-- I/O Model vs. RBV -->
+            <div class="p-3 bg-indigo-50/40 rounded-xl border border-indigo-100 text-2xs">
+              <h4 class="font-bold text-blue-900 mb-2 flex items-center gap-1">
+                <span>🎯</span> I/O 產業組織模式
+              </h4>
+              <p class="text-gray-600 text-3xs">
+                <strong class="text-gray-800">由外而內 (Outside-In)：</strong>選對產業（風口）比努力更重要。依賴「五力分析」，先看外部威脅再配置內部資源。
+              </p>
+            </div>
+            <div class="p-3 bg-indigo-50/40 rounded-xl border border-indigo-100 text-2xs">
+              <h4 class="font-bold text-blue-900 mb-2 flex items-center gap-1">
+                <span>🛡️</span> RBV 資源基礎觀點
+              </h4>
+              <p class="text-gray-600 text-3xs">
+                <strong class="text-gray-800">由內而外 (Inside-Out)：</strong>擁有獨特能耐。依賴「VRIO 分析」，盤點內部資源與核心競爭優勢，再去定位市場。
+              </p>
+            </div>
+          </div>
+
+          <!-- 工具鏈鏈條 -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <h3 class="text-xs font-bold text-gray-800 mb-2">🛠️ 策略工具標準分析鏈 (Sequence)</h3>
+            <div class="flex items-center justify-between text-3xs font-bold text-gray-700 bg-white p-2.5 rounded-lg border border-gray-200 shadow-sm">
+              <span class="text-blue-900">1. 五力分析 (外部)</span>
+              <span>➔</span>
+              <span class="text-indigo-900">2. VRIO (內部)</span>
+              <span>➔</span>
+              <span class="text-purple-900">3. SWOT (整合)</span>
+              <span>➔</span>
+              <span class="text-emerald-900">4. 商業畫布 (模式)</span>
+              <span>➔</span>
+              <span class="text-amber-900">5. 價值鏈 (流程)</span>
+            </div>
+          </div>
+
+          <!-- 波特競爭策略 -->
+          <div class="text-2xs text-gray-600">
+            <span class="font-bold text-gray-800">📌 波特三大競爭策略：</span>
+            <span class="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-bold">成本領導 (Cost)</span>、
+            <span class="bg-blue-50 px-2 py-0.5 rounded text-blue-700 font-bold">差異化 (Differentiation)</span>、
+            <span class="bg-amber-50 px-2 py-0.5 rounded text-amber-700 font-bold">集中聚焦 (Focus)</span>。
+            <p class="text-3xs text-gray-500 mt-1">台灣高科技核心優勢多落於「彈性＋客製化」的集中差異化模式（如台積電）。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 頁尾 -->
+      <div class="border-t border-gray-100 pt-3 flex justify-between text-2xs text-gray-400">
+        <p>1142 組織與管理 | 指導教師：葉穎蓉 教授</p>
+        <p>3 / 6</p>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4: 財富管理與投資心理學 (Wealth Management) ==================== -->
+    <section class="page">
+      <!-- 頁首 -->
+      <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 bg-emerald-950 text-white text-3xs font-bold rounded">MODULE 3</span>
+          <span class="text-xs font-bold text-blue-900">財富管理與心理決策學篇</span>
+        </div>
+        <span class="text-2xs text-gray-400">複利法則、巴菲特 ROE、展望理論、心理偏誤與資產再平衡</span>
+      </div>
+
+      <!-- 內容區 -->
+      <div class="grid grid-cols-12 gap-6 my-auto">
+        <!-- 左側：ROE 經濟護城河與決策雙歷程 -->
+        <div class="col-span-5 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">超凡理財哲學與決策本質</h2>
+          
+          <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100 text-xs">
+            <h3 class="font-bold text-emerald-950">💎 巴菲特唯一選股指標：ROE</h3>
+            <p class="text-3xs text-gray-500 mt-1">
+              $$ROE = \frac{\text{稅後淨利}}{\text{股東權益}} \times 100\%$$
+              當公司保持 \(ROE > 20\%\) 時，證明其擁有強大經濟護城河與完美的內部複利機器。
+              <span class="text-red-600 font-bold block mt-1">⚠️ 致命陷阱：需確認高 ROE 不是依賴「高槓桿（負債）」硬撐出來。</span>
+            </p>
+          </div>
+
+          <!-- 認知雙歷程與人格結構 -->
+          <div class="grid grid-cols-2 gap-3 text-3xs">
+            <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+              <span class="font-bold text-blue-900 block">🧠 認知雙歷程理論</span>
+              <ul class="space-y-1 mt-1 text-gray-500">
+                <li><strong class="text-gray-700">第一類思考：</strong>直覺捷思，不佔認知資源，基於經驗習慣。</li>
+                <li><strong class="text-gray-700">第二類思考：</strong>邏輯規則，需要投入工作記憶與高度反思。</li>
+              </ul>
+            </div>
+            <div class="p-3 bg-gray-50 rounded-xl border border-gray-100">
+              <span class="font-bold text-blue-900 block">👤 佛洛伊德心理動力</span>
+              <ul class="space-y-1 mt-1 text-gray-500">
+                <li><strong class="text-gray-700">本我 (Id)：</strong>快樂原則（想賺大錢）</li>
+                <li><strong class="text-gray-700">自我 (Ego)：</strong>現實原則（分析風險）</li>
+                <li><strong class="text-gray-700">超我 (Superego)：</strong>道德規範（謹遵紀律）</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右側：展望理論、心理偏誤與動態配置 -->
+        <div class="col-span-7 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">展望理論與投資行為科學</h2>
+          
+          <div class="grid grid-cols-12 gap-4">
+            <!-- 展望理論核心 -->
+            <div class="col-span-6 p-3 bg-blue-50/50 rounded-xl border border-blue-100 text-2xs">
+              <span class="font-bold text-blue-900 block">📈 展望理論 (Prospect Theory)</span>
+              <ul class="space-y-1 mt-2 text-gray-600 text-3xs list-disc pl-3">
+                <li><strong class="text-gray-800">參考點依賴：</strong>以相對變化（買入成本）判斷得失，而非絕對財富總額。</li>
+                <li><strong class="text-gray-800">損失厭惡：</strong>虧損的痛苦（負展望）是獲利快樂（正展望）的 2.25 倍。</li>
+                <li><strong class="text-gray-800">反射效應：</strong>獲利時傾向「規避風險」（急於出場）；虧損時傾向「追求風險」（攤平凹單）。</li>
+              </ul>
+            </div>
+
+            <!-- 常見心理偏誤 -->
+            <div class="col-span-6 p-3 bg-gray-50 rounded-xl border border-gray-100 text-2xs">
+              <span class="font-bold text-gray-800 block">🧠 三大核心認知偏誤</span>
+              <ul class="space-y-1 mt-2 text-gray-600 text-3xs list-disc pl-3">
+                <li><strong class="text-gray-800">代表性偏誤：</strong>忽略客觀基率。小數法則，看經理人賺三年就奉為股神。</li>
+                <li><strong class="text-gray-800">定錨與調整：</strong>被「歷史高低點」或「自身買進成本價」綁架，調整不足。</li>
+                <li><strong class="text-gray-800">心理會計：</strong>分開「血汗錢」與「意外之財（賭資效應）」，導致非理性開銷。</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- 資產配置調整策略 -->
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-2xs">
+            <span class="font-bold text-gray-800 block mb-1">🛡️ 三大資產再平衡與調整策略 (Rebalancing)</span>
+            <div class="grid grid-cols-3 gap-2 text-3xs">
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900 block">1. 買進持有 (Buy & Hold)</strong>
+                交易成本最低，但在大空頭中無防護，權重易偏移。
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900 block">2. 固定比例 (Constant Mix)</strong>
+                永遠維持固定比例（如 50:50）。「逆勢操作」，適合盤整區間。
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <strong class="text-blue-900 block">3. 保險策略 (CPPI)</strong>
+                設定保本底線，資產漲時加碼股票，跌時減碼。屬於「順勢操作」。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 頁尾 -->
+      <div class="border-t border-gray-100 pt-3 flex justify-between text-2xs text-gray-400">
+        <p>1142 財富管理 | 指導教師：陳俊男 教授</p>
+        <p>4 / 6</p>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 5: 賽局與策略管理 (Game Theory) ==================== -->
+    <section class="page">
+      <!-- 頁首 -->
+      <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 bg-amber-950 text-white text-3xs font-bold rounded">MODULE 4</span>
+          <span class="text-xs font-bold text-blue-900">賽局與不合作談判學篇</span>
+        </div>
+        <span class="text-2xs text-gray-400">賽局解題四部曲、訊息不對稱與破壞式創新案例</span>
+      </div>
+
+      <!-- 內容區 -->
+      <div class="grid grid-cols-12 gap-6 my-auto">
+        <!-- 左側：賽局解題四部曲 -->
+        <div class="col-span-5 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">賽局求解標準四部曲 (Algorithm)</h2>
+          <div class="space-y-2 text-2xs">
+            <div class="flex items-start gap-2 bg-slate-50 p-2.5 rounded-lg border-l-4 border-blue-600">
+              <span class="bg-blue-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-3xs font-bold shrink-0">1</span>
+              <div>
+                <strong class="text-gray-900 block">尋找絕對優勢策略 (Dominant Strategy)</strong>
+                <p class="text-3xs text-gray-500">不論對手出何招，我選該策略報酬皆最高。</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2 bg-slate-50 p-2.5 rounded-lg border-l-4 border-blue-600">
+              <span class="bg-blue-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-3xs font-bold shrink-0">2</span>
+              <div>
+                <strong class="text-gray-900 block">連續剔除劣勢策略 (Eliminate Dominated)</strong>
+                <p class="text-3xs text-gray-500">剔除在任何狀況下報酬皆嚴格劣於其他選項的最爛策略，藉以縮小矩陣。</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2 bg-slate-50 p-2.5 rounded-lg border-l-4 border-blue-600">
+              <span class="bg-blue-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-3xs font-bold shrink-0">3</span>
+              <div>
+                <strong class="text-gray-900 block">最佳回應畫線法 (Best Response)</strong>
+                <p class="text-3xs text-gray-500">固定對手策略，標出我方最高報酬。雙方最佳回應重疊格子即為「純策略納許均衡」。</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2 bg-slate-50 p-2.5 rounded-lg border-l-4 border-blue-600">
+              <span class="bg-blue-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-3xs font-bold shrink-0">4</span>
+              <div>
+                <strong class="text-gray-900 block">混合策略納許均衡 (Mixed Strategy)</strong>
+                <p class="text-3xs text-gray-500">藉由機率分配 \(p\) 與 \(q\)，使對手選擇各策略的期望報酬相等（無差異原則）。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右側：完全/不完全訊息賽局與 VIZIO 個案 -->
+        <div class="col-span-7 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">訊息不對稱與動態競爭分析</h2>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <!-- 訊息特徵 -->
+            <div class="p-3.5 bg-gray-50 rounded-xl border border-gray-100 text-2xs">
+              <span class="font-bold text-gray-800 block mb-2">📡 訊息不對稱與賽局均衡</span>
+              <ul class="space-y-1.5 text-gray-600 text-3xs list-disc pl-3">
+                <li><strong class="text-gray-800">完全訊息動態：</strong>先後出招。用「後推法 (Backward Induction)」求取「子賽局精煉納許均衡 (SPNE)」，剔除不可置信的威脅。</li>
+                <li><strong class="text-gray-800">不完全訊息：</strong>不知道對方底牌。引進「自然 (Nature)」擲骰子分配角色。</li>
+                <li><strong class="text-gray-800">傳遞訊號與篩選：</strong>優勢者主動傳遞優質訊號（如五年保固）；劣勢者設計合約篩選使對方自現原形。</li>
+              </ul>
+            </div>
+
+            <!-- VIZIO 案例分析 -->
+            <div class="p-3.5 bg-gray-50 rounded-xl border border-gray-100 text-2xs">
+              <div class="flex justify-between items-start">
+                <span class="font-bold text-blue-900 block">📺 VIZIO 破壞式創新賽局</span>
+                <span class="text-3xs px-1.5 py-0.5 bg-blue-100 text-blue-800 font-bold rounded">Case Study</span>
+              </div>
+              <ul class="space-y-1 mt-2 text-gray-600 text-3xs list-disc pl-3">
+                <li><strong class="text-gray-800">策略拼圖：</strong>不自建工廠，結合瑞軒、冠捷及 LG 面板，捨棄專賣店，直攻 Costco 與 Walmart 通路。</li>
+                <li><strong class="text-gray-800">完全訊息動態建模：</strong>解析 VIZIO 與 SONY、三星等巨頭在資訊透明下的訂價攻防與反應。</li>
+                <li><strong class="text-gray-800">不完全訊息賽局建模：</strong>在不知對手高/低成本結構下，以主觀機率計算價格戰對決的期望利益。</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 rounded-xl border border-amber-100 text-2xs text-amber-900">
+            <span class="font-bold">⚔️ 兵法對應：</span>「勝兵先勝，而後求戰」（內部能耐）；「避實而擊虛」（外在勢能）；「事莫密于間」（訊息不對稱與保密）。
+            <span class="text-red-700 font-bold">顫抖手均衡：</span>策略必須容忍對手有極小機率 \(\epsilon\) 手滑犯錯（合約需設計防呆與寬限期）。
+          </div>
+        </div>
+      </div>
+
+      <!-- 頁尾 -->
+      <div class="border-t border-gray-100 pt-3 flex justify-between text-2xs text-gray-400">
+        <p>1142 賽局與策略管理 | 指導教師：張順教 教授</p>
+        <p>5 / 6</p>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 6: 數位平台與論文設計 (Digital Platform & Thesis Design) ==================== -->
+    <section class="page">
+      <!-- 頁首 -->
+      <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 bg-indigo-950 text-white text-3xs font-bold rounded">MODULE 5 & 6</span>
+          <span class="text-xs font-bold text-blue-900">數位平台與創新研究設計篇</span>
+        </div>
+        <span class="text-2xs text-gray-400">多邊平台、臨界人數模型、倒 V 研究推導與論文答辯</span>
+      </div>
+
+      <!-- 內容區 -->
+      <div class="grid grid-cols-12 gap-6 my-auto">
+        <!-- 左側：多邊平台策略與網絡外部性 -->
+        <div class="col-span-6 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">雙向多邊平台與臨界網絡效應</h2>
+          
+          <div class="grid grid-cols-12 gap-3 text-3xs">
+            <!-- 平台邊結構 -->
+            <div class="col-span-6 p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+              <span class="font-bold text-blue-900 block">📐 平台四大基本組成</span>
+              <ul class="space-y-1 mt-1 text-gray-500">
+                <li><strong class="text-gray-700">A 邊：</strong>需求方 (Consumers)</li>
+                <li><strong class="text-gray-700">B 邊：</strong>供給方 (Providers)</li>
+                <li><strong class="text-gray-700">C 邊：</strong>履行方 (Enablers，調度效能)</li>
+                <li><strong class="text-gray-700">D 邊：</strong>獲利方 (Influencers，如廣告商)</li>
+              </ul>
+            </div>
+            <!-- 網絡效應 -->
+            <div class="col-span-6 p-2.5 bg-gray-50 rounded-xl border border-gray-100">
+              <span class="font-bold text-blue-900 block">🛜 網絡外部性雙面刃</span>
+              <ul class="space-y-1 mt-1 text-gray-500">
+                <li><strong class="text-gray-700">跨邊正效應：</strong>一邊增加引爆另一邊價值。</li>
+                <li><strong class="text-gray-700">同邊負效應：</strong>供給方過多造成削價競爭。</li>
+                <li><strong class="text-gray-700">跨邊負效應：</strong>廣告氾濫或跳單搜尋成本劇增。</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 text-3xs">
+            <span class="font-bold text-indigo-950 block">📉 網路經濟學：臨界人數 (Critical Mass) 模型</span>
+            <p class="text-gray-600 mt-1">
+              當產品擁有強大「單機價值 (\(k_a\))」時，平台越過冷啟動門檻與生存平衡線所需的臨界人數 \(n(k)\) 將會大幅降低：
+              \(n(k) < n(0)\)。單機優勢是平台冷啟動存活的戰略關鍵。
+            </p>
+          </div>
+        </div>
+
+        <!-- 右側：倒 V 論文推導與實驗設計 -->
+        <div class="col-span-6 space-y-4">
+          <h2 class="text-lg font-bold text-blue-900 border-l-4 border-blue-900 pl-2">倒 V 模型 (Inverted V) 論文設計實作</h2>
+          
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-3xs">
+            <div class="flex items-center justify-between mb-2 pb-1 border-b border-gray-200">
+              <strong class="text-gray-800">🔍 「倒 V」科學推導邏輯</strong>
+              <span class="text-red-600 font-bold">拒絕直覺決策 ➔ 建立嚴謹邏輯</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="font-bold text-blue-900 block mb-1">◀️ 左半：收斂問題</span>
+                <ul class="space-y-1 text-gray-500 list-decimal pl-3.5">
+                  <li><strong class="text-gray-700">管理困境：</strong> 實際痛點（例：SOGO 坪效下降）。</li>
+                  <li><strong class="text-gray-700">管理問題：</strong> 決策方向（例：如何提升獲利？）。</li>
+                  <li><strong class="text-gray-700">研究問題：</strong> 轉為變數（例：體驗是否影響客單？）。</li>
+                </ul>
+              </div>
+              <div>
+                <span class="font-bold text-indigo-900 block mb-1">▶️ 右半：發散設計</span>
+                <ul class="space-y-1 text-gray-500 list-decimal pl-3.5">
+                  <li><strong class="text-gray-700">定義構念：</strong> 抽象構念 ➔ 操作型定義。</li>
+                  <li><strong class="text-gray-700">建立假設：</strong> 預測變數之因果關係。</li>
+                  <li><strong class="text-gray-700">建構模型：</strong> 繪製理論與實驗設計架構。</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 bg-amber-50 rounded-xl border border-amber-100 text-3xs text-amber-900">
+            <strong class="block mb-1">🎓 口試防禦重點 (論文一致性與可行性)：</strong>
+            嚴防「層次謬誤」（用消費者主觀偏好直接推導企業客觀財務績效）；在田野實驗中確保嚴格操弄排除干擾（如摩斯尖峰干擾、順天堂受測狀態控制），使學術成果無縫對接商業實踐。
+          </div>
+        </div>
+      </div>
+
+      <!-- 頁尾 -->
+      <div class="border-t border-gray-100 pt-3 flex justify-between text-2xs text-gray-400">
+        <p>1142 數位轉型與品牌傳播 / 創新思考與論文設計 | 指導教師：曾譯尹、王蕙芝 等</p>
+        <p>6 / 6</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== JavaScript 功能實作 ==================== -->
+  <script>
+    window.onload = function() {
+      const btnEdit = document.getElementById('btn-edit');
+      const btnSave = document.getElementById('btn-save');
+      const btnPrint = document.getElementById('btn-print');
+      const docWrapper = document.getElementById('document-wrapper');
+      
+      let isEditing = false;
+
+      // 1. 原格式編輯模式切換
+      btnEdit.addEventListener('click', () => {
+        isEditing = !isEditing;
+        if (isEditing) {
+          docWrapper.setAttribute('contenteditable', 'true');
+          btnEdit.innerHTML = '<span>💾</span> 結束編輯';
+          btnEdit.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+          btnEdit.classList.add('bg-green-600', 'hover:bg-green-700');
+        } else {
+          docWrapper.removeAttribute('contenteditable');
+          btnEdit.innerHTML = '<span>✏️</span> 編輯內容';
+          btnEdit.classList.remove('bg-green-600', 'hover:bg-green-700');
+          btnEdit.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }
+      });
+
+      // 2. 下載當前修改後的 HTML 網頁
+      btnSave.addEventListener('click', () => {
+        // 保存前若在編輯，強制關閉以確保導出的 html 不殘留可編輯標記與樣式
+        if (isEditing) {
+          btnEdit.click();
+        }
+
+        // 取得完整包含最新修改內容的 HTML 結構
+        const docHtml = document.documentElement.outerHTML;
+        const blob = new Blob([docHtml], { type: 'text/html;charset=utf-8' });
+        
+        // 產生日期
+        const today = new Date();
+        const dateStr = today.getFullYear() + 
+                        String(today.getMonth() + 1).padStart(2, '0') + 
+                        String(today.getDate()).padStart(2, '0');
+        
+        const fileName = `EMBA_Course_Summary_Report_${dateStr}.html`;
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+      });
+
+      // 3. 輸出高品質橫式 A4 PDF
+      btnPrint.addEventListener('click', () => {
+        if (isEditing) {
+          btnEdit.click();
+        }
+        window.print();
+      });
+    };
+  </script>
+</body>
+</html>
