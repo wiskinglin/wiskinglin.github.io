@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>EMBA 1142 課程精華手冊 | KLIO. REPORT</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- MathJax for Beautiful Equations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Desktop Redirect Script -->
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260528_emba1142.html';
+        }
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --bg-base: #050505;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* 頂部進度條 */
+        .progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #1a1a1a;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* 頂部導航列 */
+        .top-nav {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            z-index: 90;
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #fff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .category-tag {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        /* 橫向滾動選單 (Tab Navigation) */
+        .tab-nav-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background: rgba(5, 5, 5, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 89;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 16px;
+        }
+
+        .tab-nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            margin-right: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* 內容容器 */
+        .article-body {
+            padding: 120px 18px 80px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .date-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .intro-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* 模組卡片結構 */
+        .module-section {
+            display: none;
+        }
+
+        .module-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .module-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .module-num {
+            font-size: 0.7rem;
+            font-weight: 900;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .sub-instructor {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Bento 元素改裝為行動端 Card */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-card.highlight {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--accent);
+        }
+
+        .card-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* 列表樣式 */
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 14px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* 警告與高亮區 */
+        .alert-box {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 0.78rem;
+            color: #f3f4f6;
+            line-height: 1.5;
+        }
+
+        .alert-box.danger {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* 快切導航 */
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 32px;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .back-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: #fff;
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-decoration: none;
+            margin-top: 40px;
+        }
+
+        /* 行動端 MathJax 調整 */
+        .mjx-chtml {
+            font-size: 90% !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 4px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 頂部進度條 -->
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- 頂部導航 -->
+    <nav class="top-nav">
+        <div class="logo-text">KLIO. REPORT</div>
+        <div class="category-tag">● EMBA 1142</div>
+    </nav>
+
+    <!-- 模組快速導航 Tab 欄 -->
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 策略個案</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 組織管理</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 財富管理</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 賽局策略</button>
+        <button class="tab-btn" onclick="switchModule(5)">5. 平台效應</button>
+        <button class="tab-btn" onclick="switchModule(6)">6. 論文設計</button>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="article-body">
+        <span class="date-tag">May 28, 2026</span>
+        <h1>EMBA 1142 核心課程<br>策略知識手冊</h1>
+        <p class="intro-text">融合高階戰略、組織設計、行為財務、談判賽局與平台創新六大領域，為經理人提供敏捷實戰的決策參考。</p>
+
+        <!-- ==================== MODULE 1 ==================== -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>管理策略個案篇</h2>
+                <div class="sub-instructor">授課教師：陳正綱、欒斌 教授</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-brain"></i>哈佛個案教學法核心</div>
+                <p class="card-desc">訓練經理人在「資訊不對稱與高度混亂」的商業環境下，如何迅速定位問題、進行推演並作出可執行的策略選擇。課堂重點在於立場捍衛與同儕碰撞。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-trend-up"></i>數位轉型三維度</div>
+                <ul class="bullet-list">
+                    <li><strong>數位化 (Digitization)：</strong>將紙本與實體程序搬入 IT 系統 (IT基礎建設)。</li>
+                    <li><strong>數位優化 (Optimization)：</strong>利用工具精簡作業、自動化以達到降本增效。</li>
+                    <li><strong>數位轉型 (Transformation)：</strong>以數位科技完全顛覆組織基因與商業模式 (如 Netflix)。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-shield-star"></i>百年巨頭防禦戰</div>
+                <ul class="bullet-list">
+                    <li><strong>Coca-Cola 雙占護城河：</strong>利用品牌超高心佔率與特許瓶裝配銷網絡，築起防禦壁壘。同時藉由Costa熱飲併購，探索減糖稅下的轉型路徑。</li>
+                    <li><strong>Walmart 全通路戰略：</strong>利用 EDLP (天天低價)、 Retail Link 及越庫作業，配合線下雜貨與實體門市作為微型物流中心，建立與 Amazon 爭雄的護城河。</li>
+                </ul>
+            </div>
+
+            <div class="alert-box">
+                <strong>💡 領導力反思 (Jai Jaikumar 啟示)：</strong>「認清成功有極大幸運成分，所以我們有扛起責任的義務。」保持品格、常懷謙卑，絕不在優勢中迷失。
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary" onclick="switchModule(2)">下一單元：組織管理 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 2 ==================== -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num">MODULE 2</span>
+                <h2>組織與管理理論篇</h2>
+                <div class="sub-instructor">授課教師：葉穎蓉 教授</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-calendar"></i>經典組織理論演進</div>
+                <ul class="bullet-list">
+                    <li><strong>官僚科層體制 (Max Weber)：</strong>強調明確分工、專業化、法制階層。改善方式可利用職務輪調，打破科室壁壘。</li>
+                    <li><strong>科學管理學派 (F.W. Taylor)：</strong>動作與時間科學化、按件計酬、將生產效率推升到極致。</li>
+                    <li><strong>人群關係學派 (Elton Mayo)：</strong>霍桑實驗指出，關注與社會心理需求才是激勵士氣、改善產能的催化劑。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-compass"></i>宏觀環境 PESTEL</div>
+                <p class="card-desc">外部宏觀不可控風險之盤點：<strong>P</strong>政治(關稅)、<strong>E</strong>經濟(匯率)、<strong>S</strong>社會(老化)、<strong>T</strong>科技(AI)、<strong>E</strong>環境(碳關稅)、<strong>L</strong>法律(合規)。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-arrows-merge"></i>策略決戰觀點：I/O vs RBV</div>
+                <ul class="bullet-list">
+                    <li><strong>I/O 模式：</strong>由外而內 (Outside-In)。強調產業結構（風口），優先進行「五力分析」，並調整定位防禦外部威脅。</li>
+                    <li><strong>RBV 模式：</strong>由內而外 (Inside-Out)。核心是 VRIO 分析，依靠盤點內部資源的稀缺與不可模仿性，來定位市場。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-wrench"></i>波特三大競爭策略</div>
+                <p class="card-desc"><strong>成本領導</strong>（規模低價）、<strong>差異化</strong>（高質創新）、<strong>集中聚焦</strong>（聚焦利基）。台灣高科技廠商多採用「彈性客製」的集中差異化路線。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(3)">下一單元：財富管理 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 3 ==================== -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num">MODULE 3</span>
+                <h2>財富管理與心理決策學篇</h2>
+                <div class="sub-instructor">授課教師：陳俊男 教授</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-coins"></i>巴菲特選股指標：ROE</div>
+                <div class="card-desc">
+                    $$ROE = \frac{\text{稅後淨利}}{\text{股東權益}} \times 100\%$$
+                    高於 20% 代表其具備優秀的經濟護城河，可做為持續滾動利基的複利引擎。
+                </div>
+                <div class="alert-box danger" style="margin: 10px 0 0 0; padding: 10px;">
+                    <strong>⚠️ 注意：</strong>必須剔除以「高負債/高財務槓桿」粉飾撐出來的高 ROE。
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-headset"></i>認知雙歷程與人格結構</div>
+                <ul class="bullet-list">
+                    <li><strong>第一類思考 (System 1)：</strong>直覺反射、自動捷思、消耗極少大腦資源。</li>
+                    <li><strong>第二類思考 (System 2)：</strong>邏輯推理、專注分析、需要工作記憶進行反思。</li>
+                    <li><strong>心智動力：</strong>本我 (想賺快錢/貪婪)、自我 (理性分析)、超我 (投資纪律/風控)。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-chart-line-up"></i>展望理論與行為科學</div>
+                <ul class="bullet-list">
+                    <li><strong>參考點依賴：</strong>決策基於得失變化，非絕對財富。</li>
+                    <li><strong>損失厭惡：</strong>同等虧損帶來的痛苦，是同等獲利快樂的 2.25 倍。</li>
+                    <li><strong>反射效應：</strong>獲利時急於鎖定收益 (避險)，虧損時選擇加碼凹單 (冒險)。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-scales"></i>三大資產再平衡配置</div>
+                <ul class="bullet-list">
+                    <li><strong>買進持有 (Buy & Hold)：</strong>成本極低，但在大波動環境無下檔防護。</li>
+                    <li><strong>固定比例 (Constant Mix)：</strong>維持固定配比，高賣低買，適合區間盤整。</li>
+                    <li><strong>保險策略 (CPPI)：</strong>順勢操作，設定底線，資產越高越加碼，防範崩盤。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(4)">下一單元：賽局策略 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 4 ==================== -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num">MODULE 4</span>
+                <h2>賽局與不合作談判學篇</h2>
+                <div class="sub-instructor">授課教師：張順教 教授</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-target"></i>賽局解題四部曲</div>
+                <ul class="bullet-list">
+                    <li><strong>1. 找絕對優勢策略：</strong>不論對方做什麼，我方都是最佳決策。</li>
+                    <li><strong>2. 連續剔除劣勢策略：</strong>刪除那些永遠不如其他選項的策略。</li>
+                    <li><strong>3. 最佳回應畫線法：</strong>固定對手策略求最大報酬，重疊點即 Nash 均衡。</li>
+                    <li><strong>4. 混合策略 Nash 均衡：</strong>賦予各策略機率(p/q)，使對手對不同選擇「無差異」。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-broadcast"></i>訊息不對稱分析</div>
+                <ul class="bullet-list">
+                    <li><strong>完全訊息動態：</strong>後推法 (Backward Induction)，推導 SPNE (子賽局精煉均衡)，排除不可置信的威脅。</li>
+                    <li><strong>不完全訊息：</strong>對方不知道我方成本。優勢者傳遞強烈訊號，劣勢者以服務級別進行篩選防禦。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-television"></i>VIZIO 破壞式創新案例</div>
+                <p class="card-desc">結合台灣瑞軒、冠捷及 LG 供應鏈，不自建廠房，直攻 Costco 與 Walmart 破壞高價通路。透過「不完全訊息」動態定價賽局，在索尼等日系大廠摸不清成本下贏得價格戰勝負。</p>
+            </div>
+
+            <div class="alert-box">
+                <strong>⚔️ 兵法對決：</strong>「勝兵先勝，而後求戰」（建構 VRIO 能耐）；「事莫密于間」（防範訊息外洩）；策略需考慮「顫抖手均衡」以容忍對手手滑犯錯的防護措施。
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(5)">下一單元：平台效應 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 5 ==================== -->
+        <div class="module-section" id="module-5">
+            <div class="module-header">
+                <span class="module-num">MODULE 5</span>
+                <h2>雙邊平台與網絡外部性</h2>
+                <div class="sub-instructor">授課教師：曾譯尹 教授</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-circles-four"></i>多邊平台的四邊結構</div>
+                <p class="card-desc">多邊平台包含：<strong>A 邊：</strong>需求方；<strong>B 邊：</strong>供給方；<strong>C 邊：</strong>履行履行方（調度與服務質量）；<strong>D 邊：</strong>獲利方（廣告或轉載）。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-arrows-left-right"></i>網絡效應的多面刃</div>
+                <ul class="bullet-list">
+                    <li><strong>跨邊正向效應：</strong>B邊商戶越多，A邊買家越多，雙向引爆。</li>
+                    <li><strong>同邊負向效應：</strong>B邊商戶過多引起削價競爭或洗版，降低用戶滿意度。</li>
+                    <li><strong>跨邊負向效應：</strong>廣告氾濫、平台亂加手續費引起買家出走或跳單。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-chart-bar"></i>臨界人數 (Critical Mass) 模型</div>
+                <p class="card-desc">
+                    平台要跨越冷啟動障礙，臨界點人數至關重要。當產品有強大的「單機價值 (\(k_a\))」時，平台越過生存門檻所需的臨界人數會大幅降低：
+                    \(n(k) < n(0)\)。因此，早期應專注打磨產品的單機功能。
+                </p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(4)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(6)">下一單元：論文設計 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 6 ==================== -->
+        <div class="module-section" id="module-6">
+            <div class="module-header">
+                <span class="module-num">MODULE 6</span>
+                <h2>倒 V 論文設計與口試防禦</h2>
+                <div class="sub-instructor">授課教師：王蕙芝 教授</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-intersect"></i>倒 V 研究推導邏輯</div>
+                <ul class="bullet-list">
+                    <li><strong>左半（收斂）：</strong>管理困境 (實際痛點) ➔ 管理問題 (決策難題) ➔ 研究問題 (學術變數)。</li>
+                    <li><strong>右半（發散）：</strong>定義構念 (將抽象轉為操作型定義) ➔ 建立假設 ➔ 建構理論模型。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-certificate"></i>科學研究思維</div>
+                <p class="card-desc">演繹法 (量化分析、建立假設、收集數據驗證) 與 歸納法 (質性研究、訪談個案、發現新洞察) 雙軌架構。必須維持論文「內部一致性」，即結論要能完美解決最初的管理困境。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-seal-warning"></i>論文口試答辯防禦</div>
+                <ul class="bullet-list">
+                    <li><strong>避免層次謬誤：</strong>不能用消費者主觀偏好直接套用到組織/企業級財務指標。</li>
+                    <li><strong>田野實驗操弄：</strong>嚴格控制干擾變數（如排除摩斯漢堡尖峰人流干擾），並確保對照組與實驗組設定之合理性。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(5)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <a href="../index.html" class="back-home">
+            返回 KLIO. <i class="ph-bold ph-house-line"></i>
+        </a>
+    </div>
+
+    <!-- JS 邏輯 -->
+    <script>
+        // 進度條控制
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        // 模組切換邏輯
+        function switchModule(moduleNum) {
+            // 切換 Section
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            // 切換 Tab 按鈕樣式
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    // 自動滾動選單使當前 Tab 置中
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // 滾動回頂部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>
