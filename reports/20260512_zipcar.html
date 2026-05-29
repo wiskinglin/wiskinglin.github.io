@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zipcar 個案深度分析 - 個案分析大師</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 自訂捲軸樣式 */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* 隱藏元素用 */
+        .tab-hidden {
+            display: none;
+        }
+
+        /* 時間軸橫線 */
+        .timeline-line {
+            position: absolute;
+            top: 24px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #cbd5e1;
+            z-index: 0;
+            width: max-content;
+            min-width: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- 頂部導航與標題 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-car-side text-green-600 text-2xl"></i>
+                <h1 class="text-xl font-bold text-slate-900">Zipcar: 商業模式淬鍊分析</h1>
+            </div>
+            <!-- 分頁切換按鈕 -->
+            <div class="flex space-x-2 bg-slate-100 p-1 rounded-lg">
+                <button id="btn-text"
+                    class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-green-700"
+                    onclick="switchTab('text')">
+                    <i class="fa-solid fa-align-left mr-1"></i> 文字版內容
+                </button>
+                <button id="btn-visual"
+                    class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-500 hover:text-slate-700"
+                    onclick="switchTab('visual')">
+                    <i class="fa-solid fa-chart-pie mr-1"></i> 視覺版內容
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ==================== 分頁 1：文字版內容 ==================== -->
+        <div id="tab-text" class="space-y-12">
+
+            <div class="border-b pb-4">
+                <h2 class="text-3xl font-extrabold text-slate-900">個案多語系深度分析</h2>
+                <p class="mt-2 text-slate-600">包含人物背景、時間軸、決策重點與附件逐項審視（繁中 / 英文 / 原始摘要 對照）。</p>
+            </div>
+
+            <!-- 1. 人物與背景分析 -->
+            <section>
+                <h3 class="text-2xl font-bold text-green-700 border-l-4 border-green-600 pl-3 mb-6">1. 人物與背景分析</h3>
+                <div class="space-y-6">
+                    <!-- Robin Chase -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-xl font-bold text-slate-800 mb-4"><i
+                                class="fa-solid fa-user-tie mr-2 text-blue-500"></i>Robin Chase (執行長兼共同創辦人)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold">繁體中文</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">Robin Chase 是 Zipcar
+                                    的核心推手。她畢業於衛斯理學院，主修英文、法文與哲學，並於 1986 年取得麻省理工學院斯隆管理學院 (MIT Sloan) 應用經濟與財務企管碩士
+                                    (MBA)。曾在公共衛生顧問公司與學術期刊擔任高階管理與財務職位，具有紮實的商業營運與財務分析底子。為兼顧家庭，她曾於 1998
+                                    年暫離職場。她充滿創業渴望，行事積極、對數字敏感，並主導了營運計畫與募資任務。</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">English</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">CEO and cofounder. Holds a BA from
+                                    Wellesley College and an MBA in applied economics/finance from MIT Sloan (1986). She
+                                    has substantial experience in healthcare consulting and operations management.
+                                    Highly driven, analytical, and family-oriented, she led the business planning,
+                                    financial modeling, and fundraising efforts for Zipcar.</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-semibold">Original
+                                    Extract</span>
+                                <p class="text-sm text-slate-600 italic">"Chase was CEO and cofounder... majored in
+                                    English, French, and philosophy at Wellesley... MBA in applied economics and finance
+                                    from MIT's Sloan... 13 years professional career... devoted herself to organizing
+                                    her household... wrote the business plan, and built the assumptions..."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Antje Danielson -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-xl font-bold text-slate-800 mb-4"><i
+                                class="fa-solid fa-leaf mr-2 text-green-500"></i>Antje Danielson (環境事務與策略副總裁兼共同創辦人)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold">繁體中文</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">
+                                    汽車共享點子的發想者。她擁有柏林自由大學的地球化學博士學位，過去曾有兩年汽車銷售經驗及三年半導體研究經驗。她在哈佛大學環境委員會指導能源政策研究。她具有國際視野與環保意識，負責
+                                    Zipcar 的車廠關係拓展（尤其是與福特汽車的聯繫）及車載技術規格的制定，但因為身兼哈佛全職工作及育兒，初期僅能兼職投入 Zipcar。</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">English</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">VP of Environmental Affairs & Strategy
+                                    and cofounder. A Ph.D. geochemist managing energy policy research at Harvard. She
+                                    brought the car-sharing concept from Germany. Experienced in car sales and
+                                    semiconductor research, she handled automotive industry relations and specified
+                                    in-car technology, though she worked only part-time initially.</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-semibold">Original
+                                    Extract</span>
+                                <p class="text-sm text-slate-600 italic">"Danielson, a Ph.D. geochemist who supervised
+                                    undergraduate energy policy research at Harvard... two years in car sales and three
+                                    years as a research assistant... connections with Ford... naturally choice to focus
+                                    on building car industry relationships..."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glenn Urban -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-xl font-bold text-slate-800 mb-4"><i
+                                class="fa-solid fa-chalkboard-user mr-2 text-amber-500"></i>Glenn Urban (MIT Sloan
+                            前院長與導師)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold">繁體中文</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">擔任 Robin Chase 的心靈導師。在聽取 Zipcar
+                                    構想後，不僅給予肯定，更以高階學者的宏觀視角，敦促 Chase 必須加快腳步並擴大格局，是促使 Zipcar 加速推進的重要推手。</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">English</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">Former dean and mentor from MIT's
+                                    Sloan School. Encouraged Chase to move at twice the speed and think twice as big
+                                    regarding the venture's scale.</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-semibold">Original
+                                    Extract</span>
+                                <p class="text-sm text-slate-600 italic">"...former dean and a mentor from MIT's
+                                    Sloan... urged her to move quickly. He noted, 'This idea is much bigger than you are
+                                    imagining. You have to do this at twice the speed...'"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dan Holland -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-xl font-bold text-slate-800 mb-4"><i
+                                class="fa-solid fa-hand-holding-dollar mr-2 text-purple-500"></i>Dan Holland (創投合夥人)
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold">繁體中文</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">One Liberty Ventures
+                                    的創投合夥人。雖然他在初次會議中並未投資 Zipcar，但他提出了關於損益兩平點、車輛使用率與人事擴張的尖銳問題，這些「靈魂拷問」為 Chase
+                                    後續精煉商業模式提供了極具價值的指導。</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">English</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">Venture partner at One Liberty
+                                    Ventures. Provided invaluable coaching by asking tough, critical questions about
+                                    utilization rates, COGS, and scaling, despite not investing immediately.</p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-semibold">Original
+                                    Extract</span>
+                                <p class="text-sm text-slate-600 italic">"Dan Holland, a venture partner at One Liberty
+                                    Ventures... asked several hard questions... what utilization rate was required to
+                                    cover COGS? How many cars would require an increase in staff?"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 其他重要配角整合 -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <h4 class="text-xl font-bold text-slate-800 mb-4"><i
+                                class="fa-solid fa-users mr-2 text-slate-500"></i>其他關鍵角色</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-semibold">繁體中文</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">
+                                    <strong>Paul Covell</strong>: 麻省理工學院年輕工程師，為 Zipcar 撰寫近場感應卡(Proximity
+                                    card)的軟體，突破技術瓶頸。<br>
+                                    <strong>Unnamed President (未具名總裁)</strong>:
+                                    為了取信投資人而聘請的大企業空降主管。因過度官僚、浪費資金且無法適應新創節奏，於2000年7月遭解雇。<br>
+                                    <strong>Former Sloan Classmate (Sloan 同學)</strong>: 提供首筆 5 萬美元可轉換債券的天使投資人。<br>
+                                    <strong>Katherine Watkins</strong>: 透過美聯社報導曝光的首批真實用戶，反映了都市人不常開車卻偶有需求的情境。
+                                </p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">English</span>
+                                <p class="text-sm text-slate-700 leading-relaxed">
+                                    <strong>Paul Covell</strong>: MIT engineer who developed the proximity card
+                                    software.<br>
+                                    <strong>Unnamed President</strong>: Brought in for industry credibility but fired in
+                                    July 2000 for excessive spending and bureaucratic inefficiency.<br>
+                                    <strong>Former Sloan Classmate / Angel Investor</strong>: Provided initial $50K
+                                    convertible loan.<br>
+                                    <strong>Katherine Watkins</strong>: Early customer featured in AP article,
+                                    validating the use-case.
+                                </p>
+                            </div>
+                            <div class="space-y-2">
+                                <span
+                                    class="inline-block bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded font-semibold">Original
+                                    Extract</span>
+                                <p class="text-sm text-slate-600 italic">"Paul Covell, who wrote the software for a
+                                    proximity card reader... our mistake: hiring a big-company guy for a start-up...
+                                    $50,000 'convertible loan' from a former Sloan classmate... Katherine Watkins is a
+                                    new member of Zipcar..."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 時間軸與事件 -->
+            <section>
+                <h3 class="text-2xl font-bold text-green-700 border-l-4 border-green-600 pl-3 mb-6">2. 時間軸與重點事件推演</h3>
+                <div class="overflow-x-auto">
+                    <table
+                        class="min-w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4 text-left font-semibold text-slate-700 w-1/6">時間點</th>
+                                <th class="py-3 px-4 text-left font-semibold text-slate-700 w-1/3">繁體中文解析</th>
+                                <th class="py-3 px-4 text-left font-semibold text-slate-700 w-1/3">英文摘要</th>
+                                <th class="py-3 px-4 text-left font-semibold text-slate-700 w-1/6">原文明證</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">1980 - 1986 (前傳推理)</td>
+                                <td class="py-3 px-4 text-slate-700">Robin Chase 1980年自衛斯理學院畢業，隨後於1986年取得 MIT
+                                    企管碩士。奠定其商業與財務基礎。</td>
+                                <td class="py-3 px-4 text-slate-700">Chase graduates college (1980) and earns MIT MBA
+                                    (1986).</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"graduating cum laude in 1980... In
+                                    1986, she received her MBA..."</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">1987 - 1998 (產業與個人醞釀)</td>
+                                <td class="py-3 px-4 text-slate-700">瑞士出現最早的汽車共享組織。1991年 Antje 前往哈佛。1998年，北美開始出現類似組織；同年
+                                    Chase 為照顧家庭從期刊總編輯職務退休。</td>
+                                <td class="py-3 px-4 text-slate-700">Car sharing starts in Europe (1987). Danielson to
+                                    Harvard (1991). Chase retires (1998) to focus on family.</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"originated in Switzerland in
+                                    1987... Harvard in 1991... In 1998, Chase... retired"</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">1999 年 9 月</td>
+                                <td class="py-3 px-4 text-slate-700">Antje Danielson 從德國帶回「汽車共享」概念，並說服 Robin Chase 共同創業。
+                                </td>
+                                <td class="py-3 px-4 text-slate-700">Danielson returns from Germany with car-sharing
+                                    idea and partners with Chase.</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"returned from a trip to Germany...
+                                    turned to Chase... to partner with her"</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">1999 年 12 月</td>
+                                <td class="py-3 px-4 text-slate-700">Chase 完成第一版營運計畫書（高額年費模式），向恩師 Glenn Urban 請益，並與創投
+                                    Dan Holland 會面受挫。</td>
+                                <td class="py-3 px-4 text-slate-700">First business plan drafted. Meets mentor Urban and
+                                    VC Holland.</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"completed the first draft...
+                                    December 1999... contacted Dan Holland"</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">2000 年 1 月 - 5 月</td>
+                                <td class="py-3 px-4 text-slate-700">公司正式登記成立。獲得同學 5
+                                    萬美元貸款。開發感應卡技術。5月決定修改訂價策略，降低年費門檻並提高小時計費。</td>
+                                <td class="py-3 px-4 text-slate-700">Incorporated. Secured $50K loan. Tech dev. Revised
+                                    pricing model in May.</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"incorporated in January 2000...
+                                    late May, Chase had decided to change Zipcar's pricing model"</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">2000 年 6 月</td>
+                                <td class="py-3 px-4 text-slate-700">獲得新一筆 2.5 萬美元貸款。6月22日首度於波士頓投放3輛車試營運。美聯社報導帶來大量免費曝光。
+                                </td>
+                                <td class="py-3 px-4 text-slate-700">Secured $25K loan. Launched on June 22 with initial
+                                    cars. Huge AP press coverage.</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"loan of $25,000... June 22, 2000...
+                                    AP reporter... story went national"</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">2000 年 7 月</td>
+                                <td class="py-3 px-4 text-slate-700">團隊衝突爆發。新聘任以討好投資人為目的的「大企業老總」因官僚作風遭 Chase 果斷開除。</td>
+                                <td class="py-3 px-4 text-slate-700">Fired the corporate-style President due to mismatch
+                                    with startup culture.</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"take the necessary steps to sever
+                                    the relationship in July 2000"</td>
+                            </tr>
+                            <tr>
+                                <td class="py-3 px-4 font-bold text-slate-800">2000 年 10 月</td>
+                                <td class="py-3 px-4 text-slate-700">公司擁有 19 輛車、近 250 名會員，燒完 37.5 萬美元。收集完 9 月份營運數據，準備在
+                                    Springboard 2000 女性創投論壇進行百萬美元募資簡報。</td>
+                                <td class="py-3 px-4 text-slate-700">Reached 19 cars, 250 members. Spent $375K.
+                                    Preparing to pitch for $1.3M at Springboard 2000.</td>
+                                <td class="py-3 px-4 text-slate-500 italic text-xs">"October 14, 2000... 19 vehicles,
+                                    nearly 250 members... spent an additional $325,000... pitch at Springboard 2000"
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 3. 需要決策的內容 -->
+            <section>
+                <h3 class="text-2xl font-bold text-green-700 border-l-4 border-green-600 pl-3 mb-6">3. 需要決策的核心經營議題</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">A. 募資簡報與估值說服力</h4>
+                        <div class="space-y-3">
+                            <p class="text-sm"><span class="font-bold text-blue-700">繁中:</span> Chase 必須在 Springboard
+                                2000 論壇上完美演繹商業模式，以取得 130 萬美元的 A 輪資金來證明波士頓市場並推向全國。</p>
+                            <p class="text-sm"><span class="font-bold text-green-700">EN:</span> Must formulate a
+                                compelling pitch for Springboard 2000 to raise $1.3M for proving the model and scaling.
+                            </p>
+                            <p class="text-xs text-slate-500 italic">"I need to review our presentation and make sure
+                                we're making the strongest argument... sought $1 million in capital..."</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">B. 成本結構與獲利模式修正</h4>
+                        <div class="space-y-3">
+                            <p class="text-sm"><span class="font-bold text-blue-700">繁中:</span>
+                                實際營運發現，車輛租賃成本(因信用風險提高至$4,800)、停車費($750)與油錢皆高於預期。必須決策是否再次調整定價或優化車隊利用率以達成損益兩平。</p>
+                            <p class="text-sm"><span class="font-bold text-green-700">EN:</span> Actual variable costs
+                                (leases, parking, fuel) exceeded estimates. Must decide how to optimize utilization and
+                                margins.</p>
+                            <p class="text-xs text-slate-500 italic">"lease costs were actually coming in a bit
+                                higher... $4,800... Parking was coming in more expensive... $750..."</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">C. 團隊組織與承諾風險</h4>
+                        <div class="space-y-3">
+                            <p class="text-sm"><span class="font-bold text-blue-700">繁中:</span>
+                                經歷開除空降總裁的陣痛後，團隊結構依然薄弱。且共同創辦人 Antje Danielson 即將於 11 月產子且仍在哈佛兼職，必須解決核心團隊全職投入的疑慮以安撫創投。</p>
+                            <p class="text-sm"><span class="font-bold text-green-700">EN:</span> Need to resolve VC
+                                concerns regarding management credibility and Danielson's part-time status/upcoming
+                                maternity.</p>
+                            <p class="text-xs text-slate-500 italic">"Danielson had not yet committed to the business
+                                full time... due to give birth to her second child in late November..."</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-100">
+                        <h4 class="font-bold text-lg mb-2 text-slate-800">D. 擴張策略：深耕 vs. 攻城掠地</h4>
+                        <div class="space-y-3">
+                            <p class="text-sm"><span class="font-bold text-blue-700">繁中:</span> 資金到位後，應優先利用「網絡效應」在波士頓達到
+                                1 萬名用戶的密度，還是盡快搶佔美國東岸及中西部其他 14 個潛在城市防堵競爭對手？</p>
+                            <p class="text-sm"><span class="font-bold text-green-700">EN:</span> Decide between
+                                deepening the Boston market density vs. aggressive expansion to 14 other US cities to
+                                capture market share.</p>
+                            <p class="text-xs text-slate-500 italic">"...create strong network effects by increasing
+                                usage within a single market, but Chase was anxious to begin claiming other major
+                                markets..."</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 4. 附件摘要與分析 -->
+            <section>
+                <h3 class="text-2xl font-bold text-green-700 border-l-4 border-green-600 pl-3 mb-6">4. 附件逐項摘要與深度分析</h3>
+                <div class="space-y-6">
+
+                    <!-- Exhibit 1 -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 1: 個人擁有汽車的經濟學成本</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span> 列出每月養車成本共 $575 美元 (折舊/租約$270,
+                                保險$99, 停車$125, 油錢$45, 保養$36)。此為 Zipcar 說服都市低里程用戶(每年低於6000英里)放棄擁車的核心痛點行銷依據。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Details monthly cost of car
+                                ownership at $575. Acts as the primary economic justification for urbanites to switch to
+                                car-sharing.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "Vehicle depreciation/Lease
+                                $270, Insurance 99, Parking 125... Total $575"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 2 -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 2: 美國前20大市場人口統計</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span> 數據顯示全美前20大都會區擁有約 6,590 萬人口。波士頓排名第8
+                                (人口290萬，密度1631人/平方英里)。紐約與洛杉磯潛力龐大。這證明了市場規模足以支撐全國性擴張。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Demographic data of top 20 US
+                                MSAs totaling 65.9M people. Highlights Boston's ranking and proves the massive
+                                addressable market for nationwide expansion.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "Boston: Population 2.9m,
+                                Households 1.12m, Density 1,631... TOTAL 65.9m"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 3 -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 3: 1999 年 12 月的原始財務預測</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span>
+                                第一版商業模型。假設每人收費：申請費$25、高額年費$300、押金$300；使用費為每小時$1.5+每英里$0.4。預估第一年虧損約 3.6
+                                萬美元，但依賴高額押金與年費快速建立現金流。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Initial financial model featuring
+                                a high barrier to entry ($300 annual fee, $300 deposit) but low usage fees ($1.5/hr).
+                                Projected Year 1 Net Income of -$36,007.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "Annual fees $300... Per
+                                hour charge 1.5... Net Income Before Tax -$36,007"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 4 -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 4: Zipcar 駕駛人資格要求</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span>
+                                嚴格的風險控管標準：過去三年內違規或事故不得超過兩次，且絕對禁止酒駕、嚴重超速或肇事逃逸等重大違規。這是與保險公司談判以及保障共享車隊妥善率的關鍵。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Strict driver eligibility
+                                criteria (e.g., no DUI, no excessive speeding) to manage fleet risk and satisfy
+                                corporate insurance requirements.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "No more than two
+                                incidents... No major moving violations: Excessive speed... Driving under the
+                                influence..."</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 5 -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 5: 2000 年 5 月的修正版財務預測</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span> 聽取市場反饋後大幅修改定價：年費大降至 $75
+                                以降低門檻，但大幅調高小時計費至平均 $5.5，改由「高使用率」驅動營收。此外，將流失率預估從 5% 調高至 15%，停車與租車成本預估也隨之調高。第一年預估淨利反轉為正的 7
+                                萬美元。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Revised model lowered annual fee
+                                to $75 to drive adoption but increased hourly rate to $5.5. Attrition bumped to 15%.
+                                Projected Year 1 Net Income swung to +$70,253.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "Annual fees 75... Per hour
+                                charge 5.5... Attrition 0.15... Net Income Before Tax 70,253"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 6 -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 6: Zipcar 商標 (Logo)</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span>
+                                綠色圓底加上虛線構成的「Z」字，象徵著「都市、時髦、綠能環保」與點對點的移動軌跡。視覺語彙強烈，被刻意貼在副駕側與車尾，讓綠色金龜車成為移動的免費活廣告。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Visual logo featuring a dotted
+                                'Z' path on a green background. Designed to convey an "urban hip," environmentally
+                                friendly image and serve as a moving billboard.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "[Image]... convey
+                                simplicity, cleanliness, a professional (but not corporate) look with a hint of
+                                'green.'"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 7 -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 7: 美聯社 (AP) 新聞報導</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span> 2000年6月25日的全國性公關大捷。透過報導真實用戶
+                                Katherine 的故事（帶貓看獸醫等短程需求），完美教育市場。文章強調租車僅需 $4.5/小時，比起傳統租車更具便利性，直接促成了前期的爆發性成長與低廉的獲客成本。
+                            </li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> A June 2000 AP article that
+                                served as a massive PR win. It effectively educated the market using real customer
+                                use-cases and validated the "convenience over ownership" proposition.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "Car Sharing on Rise...
+                                'Some people don't need a car about 85 percent of the time,' said co-founder Robin
+                                Chase."</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 8a -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 8a: 2000 年會員成長數據</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span> 數據顯示指數型成長：從測試期的 14 人，6月 34 人，7月 80
+                                人，8月 141 人，到9月暴增至 239 人。且退租率極低（流失總計僅9人），證明產品黏著度極高。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Displays exponential
+                                month-over-month membership growth (14 to 239 from Beta to September) with extremely low
+                                attrition, proving high product-market fit.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "Beta: 14... June: 34...
+                                September Ending Members: 239... Attrition: 3 (Sept)"</li>
+                        </ul>
+                    </div>
+
+                    <!-- Exhibit 8b -->
+                    <div class="bg-white p-4 rounded border border-slate-200">
+                        <h4 class="font-bold text-lg text-slate-800 mb-2">Exhibit 8b: 9 月份實際營運與財務數據</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm">
+                            <li><span class="font-semibold text-blue-700">[繁中]</span> 深度的營運透視：全月共產生 335
+                                次出行（218次按小時，117次按日）。顯示夜間與週末使用佔了 53% 的時間與 60%
+                                的趟次。按小時計費產生了主要的營收（約9326美元），優於日租營收。同時揭露了龐大的固定開銷（企業端3萬，波士頓地區1.4萬）。這是未來向創投論述財務模型的鐵證。</li>
+                            <li><span class="font-semibold text-green-700">[EN]</span> Detailed operational metrics for
+                                September. Highlights that hourly uses generate more revenue than daily uses. Shows
+                                strong night/weekend utilization. Exposes the $44K monthly burn rate in overhead.</li>
+                            <li><span class="font-semibold text-slate-600">[Original]</span> "Total trips taken (uses)
+                                335... hourly uses 218... Trips - night & weekend 60%... revenue from hourly uses
+                                9,326.90"</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+
+        <!-- ==================== 分頁 2：視覺版內容 ==================== -->
+        <div id="tab-visual" class="tab-hidden space-y-12">
+
+            <div class="border-b pb-4">
+                <h2 class="text-3xl font-extrabold text-slate-900">個案視覺化儀表板</h2>
+                <p class="mt-2 text-slate-600">透過圖像化卡片、時間軸與數據圖表，直觀掌握 Zipcar 的發展脈絡與商業底層邏輯。</p>
+            </div>
+
+            <!-- a. 角色介紹卡片 -->
+            <section>
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center"><i
+                        class="fa-solid fa-address-card text-blue-600 mr-2"></i>核心角色雷達圖與檔案</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- Card 1: Robin Chase -->
+                    <div
+                        class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition">
+                        <div class="bg-blue-600 h-2"></div>
+                        <div class="p-5">
+                            <h4 class="text-xl font-bold text-slate-800">Robin Chase</h4>
+                            <p class="text-blue-600 text-sm font-semibold mb-3">CEO & Cofounder</p>
+                            <div class="space-y-2 text-sm text-slate-600">
+                                <p><i class="fa-solid fa-graduation-cap w-5 text-center"></i> <b>學歷:</b> Wellesley (BA
+                                    1980), MIT Sloan (MBA 1986)</p>
+                                <p><i class="fa-solid fa-book w-5 text-center"></i> <b>主修:</b> 英文/法文/哲學, 應用經濟與財務</p>
+                                <p><i class="fa-solid fa-building w-5 text-center"></i> <b>經歷:</b> 醫療公衛顧問(John Snow),
+                                    期刊總編輯(1995-1998)</p>
+                                <p><i class="fa-solid fa-briefcase w-5 text-center"></i> <b>職責:</b> 募資、財模推算、網頁文案與營運</p>
+                                <hr class="my-2 border-slate-100">
+                                <p class="text-xs bg-slate-100 p-2 rounded"><b>推估個性:</b> 堅毅、數據導向、極度務實（拒絕印製昂貴文宣）、以家庭為重。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Antje Danielson -->
+                    <div
+                        class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition">
+                        <div class="bg-green-600 h-2"></div>
+                        <div class="p-5">
+                            <h4 class="text-xl font-bold text-slate-800">Antje Danielson</h4>
+                            <p class="text-green-600 text-sm font-semibold mb-3">VP Strategy & Cofounder</p>
+                            <div class="space-y-2 text-sm text-slate-600">
+                                <p><i class="fa-solid fa-graduation-cap w-5 text-center"></i> <b>學歷:</b> Freie
+                                    Universitat Berlin (地球化學博士)</p>
+                                <p><i class="fa-solid fa-book w-5 text-center"></i> <b>專長:</b> 能源政策、環境科學</p>
+                                <p><i class="fa-solid fa-building w-5 text-center"></i> <b>經歷:</b> 汽車銷售(2年), 半導體研究(3年),
+                                    哈佛研究員(自1991)</p>
+                                <p><i class="fa-solid fa-briefcase w-5 text-center"></i> <b>職責:</b> 車廠談判(福特)、車載硬體規格制定
+                                </p>
+                                <hr class="my-2 border-slate-100">
+                                <p class="text-xs bg-slate-100 p-2 rounded"><b>推估個性:</b> 充滿遠見、學術氣息重、具備環保使命感、兼顧學術與家庭的斜槓者。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Glenn Urban & Dan Holland -->
+                    <div
+                        class="bg-white rounded-xl shadow-md overflow-hidden border border-slate-200 hover:shadow-lg transition">
+                        <div class="bg-purple-600 h-2"></div>
+                        <div class="p-5">
+                            <h4 class="text-xl font-bold text-slate-800">導師與資本家</h4>
+                            <p class="text-purple-600 text-sm font-semibold mb-3">Key Advisors</p>
+                            <div class="space-y-4 text-sm text-slate-600">
+                                <div>
+                                    <p class="font-bold text-slate-800"><i class="fa-solid fa-user-graduate w-5"></i>
+                                        Glenn Urban</p>
+                                    <p class="text-xs ml-6">前 MIT Sloan 院長。極具前瞻視野的學者，強迫團隊打破舒適圈，「用兩倍的速度、想兩倍的規模」。</p>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-800"><i class="fa-solid fa-sack-dollar w-5"></i> Dan
+                                        Holland</p>
+                                    <p class="text-xs ml-6">創投合夥人。典型矽谷菁英思維，用嚴苛的損益兩平(COGS)與編制擴張問題，協助新創「防禦性壓力測試」。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- b. 橫向故事時間軸 -->
+            <section>
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center"><i
+                        class="fa-solid fa-timeline text-indigo-600 mr-2"></i>全知觀點時間軸 (包含前傳推演)</h3>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="relative overflow-x-auto pb-6 custom-scrollbar">
+                        <div class="flex space-x-12 min-w-max relative pt-10 px-4">
+                            <!-- 貫穿線 -->
+                            <div class="timeline-line"></div>
+
+                            <!-- Node 1 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-5 h-5 rounded-full bg-slate-400 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-slate-800">1980~1986</p>
+                                    <p class="text-xs text-slate-500 mt-1">Chase 於衛斯理大學畢業並取得 MIT MBA，打下商管基石</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 2 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-5 h-5 rounded-full bg-slate-400 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-slate-800">1980s後期</p>
+                                    <p class="text-xs text-slate-500 mt-1">Danielson 累積車輛銷售與半導體研究經驗 (取得博士前後)</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 3 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-5 h-5 rounded-full bg-slate-400 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-slate-800">1991</p>
+                                    <p class="text-xs text-slate-500 mt-1">Danielson 獲 NATO 獎學金赴哈佛從事能源研究</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 4 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-5 h-5 rounded-full bg-slate-400 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-slate-800">1995~1998</p>
+                                    <p class="text-xs text-slate-500 mt-1">Chase 擔任期看總編輯後，因家庭壓力暫離職場</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 5 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-blue-600 border-4 border-white shadow-sm mb-3 animate-pulse">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-blue-700">1999 年 9 月</p>
+                                    <p class="text-xs text-slate-600 mt-1 font-semibold">Zipcar 構想誕生</p>
+                                    <p class="text-xs text-slate-500 mt-1">Danielson 從德國歸來提議創業</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 6 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-5 h-5 rounded-full bg-indigo-500 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-slate-800">1999 年 12 月</p>
+                                    <p class="text-xs text-slate-500 mt-1">完成首份 BP，拜會導師與創投受挫</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 7 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-5 h-5 rounded-full bg-indigo-500 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-slate-800">2000 年 1~5月</p>
+                                    <p class="text-xs text-slate-500 mt-1">公司登記、獲天使資金、開發感應卡技術與修正商業模型</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 8 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-6 h-6 rounded-full bg-green-500 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-green-700">2000 年 6 月</p>
+                                    <p class="text-xs text-slate-600 mt-1 font-semibold">首度上路營運</p>
+                                    <p class="text-xs text-slate-500 mt-1">美聯社大篇幅報導引發狂潮</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 9 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-5 h-5 rounded-full bg-red-500 border-4 border-white shadow-sm mb-3"></div>
+                                <div class="text-center">
+                                    <p class="font-bold text-slate-800">2000 年 7 月</p>
+                                    <p class="text-xs text-slate-500 mt-1">人事陣痛期，開除空降大企業總裁</p>
+                                </div>
+                            </div>
+
+                            <!-- Node 10 -->
+                            <div class="relative flex flex-col items-center w-32 z-10">
+                                <div class="w-6 h-6 rounded-full bg-purple-600 border-4 border-white shadow-sm mb-3">
+                                </div>
+                                <div class="text-center">
+                                    <p class="font-bold text-purple-700">2000 年 10 月</p>
+                                    <p class="text-xs text-slate-600 mt-1 font-semibold">Springboard 決戰</p>
+                                    <p class="text-xs text-slate-500 mt-1">250名會員，尋求130萬美元A輪融資</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- c. 附件圖表視覺化 -->
+            <section>
+                <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center"><i
+                        class="fa-solid fa-chart-line text-green-600 mr-2"></i>附件資料視覺與商業分析</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                    <!-- Chart 1: Own Car Cost -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-4 text-center">Ex 1: 每月養車成本解構 ($575)</h4>
+                        <div class="w-full max-w-xs mx-auto h-64 relative">
+                            <canvas id="costChart"></canvas>
+                        </div>
+                        <div class="mt-4 bg-slate-50 p-4 rounded text-sm text-slate-700">
+                            <p class="font-bold text-blue-700 mb-1"><i class="fa-solid fa-lightbulb"></i> 分析 Insight：
+                            </p>
+                            <p>折舊與停車費佔了超過 68% 的絕對成本，而這兩項在「不開車時」依然會發生。這就是 Zipcar 主打「需要時才付費」(On-demand)
+                                能夠輕易攻破消費者心理防線的底層經濟學邏輯。</p>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Membership Growth -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-4 text-center">Ex 8a: 2000年 用戶成長軌跡</h4>
+                        <div class="w-full h-64 relative">
+                            <canvas id="memberChart"></canvas>
+                        </div>
+                        <div class="mt-4 bg-slate-50 p-4 rounded text-sm text-slate-700">
+                            <p class="font-bold text-blue-700 mb-1"><i class="fa-solid fa-rocket"></i> 分析 Insight：</p>
+                            <p>呈現完美的「曲棍球棍效應」(Hockey Stick Growth)。特別是 6 月到 9 月，用戶數從 34 激增至 239 人。更驚人的是，9 月份僅有 3
+                                人退租，證明該服務不僅拉新容易，留存率 (Retention) 也極度優異。</p>
+                        </div>
+                    </div>
+
+                    <!-- Chart 3: Financial Plan Comparison -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-4 text-center">Ex 3 vs Ex 5: 淨利預測比較 (前三年)</h4>
+                        <div class="w-full h-64 relative">
+                            <canvas id="financeChart"></canvas>
+                        </div>
+                        <div class="mt-4 bg-slate-50 p-4 rounded text-sm text-slate-700">
+                            <p class="font-bold text-blue-700 mb-1"><i class="fa-solid fa-scale-balanced"></i> 分析
+                                Insight：</p>
+                            <p>原計劃(藍)靠高額年費($300)與低時薪($1.5)；新計劃(綠)改採低門檻年費($75)與高時薪($5.5)。從圖表可見，新計劃雖然犧牲了前期會員費現金池，但透過「使用量變現」，在第一年就實現了淨利轉正，大幅提升了營利天花板。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Chart 4: Sept Operating Metrics -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-4 text-center">Ex 8b: 9月 營收結構 (小時 vs 日租)</h4>
+                        <div class="w-full max-w-xs mx-auto h-64 relative">
+                            <canvas id="revenuePieChart"></canvas>
+                        </div>
+                        <div class="mt-4 bg-slate-50 p-4 rounded text-sm text-slate-700">
+                            <p class="font-bold text-blue-700 mb-1"><i class="fa-solid fa-money-bill-trend-up"></i> 分析
+                                Insight：</p>
+                            <p>9 月份營收顯示，按小時計費的碎片化使用 (Hourly Uses) 貢獻了近 64% 的營收 ($9326)，遠高於日租 ($5317)。這證實了 Chase
+                                最初的假設：填補「計程車太貴、傳統租車太麻煩」中間的短程私家車微租賃缺口，是真正的搖錢樹。</p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 text-center py-6 mt-12 text-sm">
+        <p>&copy; 2026 個案分析大師 專業出品. 針對 Harvard Business School Zipcar 商業個案生成.</p>
+    </footer>
+
+    <!-- 互動邏輯與圖表渲染 -->
+    <script>
+        let chartsInitialized = false;
+
+        function switchTab(tab) {
+            const btnText = document.getElementById('btn-text');
+            const btnVisual = document.getElementById('btn-visual');
+            const contentText = document.getElementById('tab-text');
+            const contentVisual = document.getElementById('tab-visual');
+
+            if (tab === 'text') {
+                btnText.classList.replace('text-slate-500', 'text-green-700');
+                btnText.classList.replace('hover:text-slate-700', 'bg-white');
+                btnText.classList.add('shadow-sm');
+
+                btnVisual.classList.replace('text-green-700', 'text-slate-500');
+                btnVisual.classList.replace('bg-white', 'hover:text-slate-700');
+                btnVisual.classList.remove('shadow-sm');
+
+                contentText.classList.remove('tab-hidden');
+                contentVisual.classList.add('tab-hidden');
+            } else {
+                btnVisual.classList.replace('text-slate-500', 'text-green-700');
+                btnVisual.classList.replace('hover:text-slate-700', 'bg-white');
+                btnVisual.classList.add('shadow-sm');
+
+                btnText.classList.replace('text-green-700', 'text-slate-500');
+                btnText.classList.replace('bg-white', 'hover:text-slate-700');
+                btnText.classList.remove('shadow-sm');
+
+                contentVisual.classList.remove('tab-hidden');
+                contentText.classList.add('tab-hidden');
+
+                // 只有在第一次切換到視覺版時才渲染圖表，避免尺寸計算錯誤
+                if (!chartsInitialized) {
+                    renderCharts();
+                    chartsInitialized = true;
+                }
+            }
+        }
+
+        function renderCharts() {
+            // Chart.js 預設字體設定
+            Chart.defaults.font.family = "sans-serif";
+            Chart.defaults.color = "#64748b";
+
+            // 1. Own Car Cost (Ex 1)
+            new Chart(document.getElementById('costChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['折舊/租約 ($270)', '停車費 ($125)', '保險 ($99)', '汽油 ($45)', '保養 ($36)'],
+                    datasets: [{
+                        data: [270, 125, 99, 45, 36],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } }
+                }
+            });
+
+            // 2. Membership Growth (Ex 8a)
+            new Chart(document.getElementById('memberChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Beta', '6月', '7月', '8月', '9月'],
+                    datasets: [{
+                        label: '累積會員數',
+                        data: [14, 34, 80, 141, 239],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#10b981',
+                        pointRadius: 5,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 3. Financial Comparison (Ex 3 vs Ex 5)
+            new Chart(document.getElementById('financeChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Year 1', 'Year 2', 'Year 3'],
+                    datasets: [
+                        {
+                            label: '原始預估 (12月版)',
+                            data: [-36007, 185933, 300463],
+                            backgroundColor: '#94a3b8',
+                            borderRadius: 4
+                        },
+                        {
+                            label: '修正預估 (5月版)',
+                            data: [70253, 498417, 725917],
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: function (value) { return '$' + value.toLocaleString(); } }
+                        }
+                    }
+                }
+            });
+
+            // 4. Sept Revenue (Ex 8b)
+            new Chart(document.getElementById('revenuePieChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['按小時使用營收 ($9,327)', '按日使用營收 ($5,318)'],
+                    datasets: [{
+                        data: [9326.90, 5317.60],
+                        backgroundColor: ['#6366f1', '#fbbf24'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

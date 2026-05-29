@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMBA 1142 課程摘要總覽</title>
+
+    <!-- Google Fonts: 優先使用現代無襯線字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            950: '#172554',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 原生 CSS: 列印規範與排版核心 -->
+    <style>
+        :root {
+            --page-width: 297mm;
+            --page-min-height: 209mm;
+            /* 扣除 1mm 防治跨頁空白 */
+        }
+
+        body {
+            background-color: #f1f5f9;
+            /* bg-slate-100 */
+            -webkit-font-smoothing: antialiased;
+            color: #334155;
+            /* 強制列印時維持橫向，防止自動旋轉 */
+            writing-mode: horizontal-tb !important;
+        }
+
+        /* --- 網頁預覽版面設定 --- */
+        .document-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .a4-page {
+            width: var(--page-width);
+            min-height: var(--page-min-height);
+            background: white;
+            padding: 12mm 15mm;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            /* 讓內容自動延展 */
+            page-break-after: always;
+            break-inside: avoid;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- UI 控制面板 --- */
+        .control-panel {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 0.75rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 50;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-edit {
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-edit:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-save {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .btn-save:hover {
+            background: #dbeafe;
+        }
+
+        .btn-print {
+            background: #1e293b;
+            color: white;
+        }
+
+        .btn-print:hover {
+            background: #0f172a;
+        }
+
+        /* --- 編輯模式視覺提示 --- */
+        [contenteditable="true"] {
+            outline: 2px dashed #94a3b8;
+            outline-offset: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: text;
+        }
+
+        [contenteditable="true"]:focus {
+            outline: 2px solid #3b82f6;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* --- 強制列印引擎規範 (@media print) --- */
+        @media print {
+            @page {
+                size: 297mm 210mm;
+                /* 絕對數值強制橫式 A4 */
+                margin: 0;
+            }
+
+            body,
+            html {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            * {
+                /* 強制印表機列印背景色與圖片 */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                /* 停用所有動畫與漸變 */
+                transition: none !important;
+                animation: none !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .document-wrapper {
+                padding: 0;
+                gap: 0;
+            }
+
+            .a4-page {
+                width: 297mm;
+                height: 210mm;
+                min-height: 210mm;
+                border-radius: 0;
+                box-shadow: none;
+                margin: 0;
+            }
+
+            /* Fallback: 列印時強制降級毛玻璃與透明度 */
+            .print-bg-solid {
+                backdrop-filter: none !important;
+                background-color: #f1f5f9 !important;
+            }
+
+            .print-bg-brand-solid {
+                background-color: #ebf5ff !important;
+            }
+
+            /* Fallback: 列印時強制取消漸層字，改為實體品牌色 */
+            .print-text-brand {
+                background: none !important;
+                -webkit-text-fill-color: #1d4ed8 !important;
+                color: #1d4ed8 !important;
+            }
+        }
+
+        /* --- 模組化美學設計 (Bento Box) --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 1.25rem;
+            flex-grow: 1;
+        }
+
+        .bento-card {
+            background: #f8fafc;
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .bento-card.brand {
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            border: 1px solid #dbeafe;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #1d4ed8, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 標籤設計 */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 浮動控制面板 -->
+    <div class="control-panel no-print" id="controlPanel">
+        <button class="btn btn-edit" id="btnEdit" onclick="toggleEdit()">
+            ✏️ 編輯內容
+        </button>
+        <button class="btn btn-save" id="btnSave" onclick="saveDocument()">
+            ⬇️ 儲存網頁
+        </button>
+        <button class="btn btn-print" id="btnPrint" onclick="window.print()">
+            🖨️ 輸出 PDF
+        </button>
+    </div>
+
+    <div class="document-wrapper" id="documentWrapper">
+
+        <!-- ================= PAGE 1 ================= -->
+        <div class="a4-page">
+            <header class="flex justify-between items-end mb-4 border-b-2 border-brand-100 pb-4">
+                <div>
+                    <div class="tag bg-brand-100 text-brand-700 mb-2">MODULE 01</div>
+                    <h1 class="text-4xl font-black tracking-tight text-slate-900 print-text-brand gradient-text">管理策略個案
+                    </h1>
+                    <p class="text-sm text-slate-500 mt-2 font-medium">授課教師：陳正綱、欒斌 | 哈佛個案參與式教學法</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-2xl font-bold text-slate-300">EMBA 1142</p>
+                </div>
+            </header>
+
+            <div class="bento-grid">
+                <!-- Card 1 -->
+                <div class="bento-card col-span-5 brand print-bg-brand-solid justify-center">
+                    <h2 class="text-xl font-bold text-brand-800 mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-brand-500 rounded-full inline-block"></span>
+                        哈佛個案教學法核心
+                    </h2>
+                    <p class="text-slate-600 mb-4 text-sm leading-relaxed">
+                        理念在於「個案導向」與「以參與者為中心」。重點不在死記理論，而是訓練大腦如何在資訊不足的情境下推演。</p>
+                    <div class="grid grid-cols-2 gap-3 mt-auto">
+                        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                            <div class="text-brand-600 font-bold mb-1">主動學習</div>
+                            <div class="text-xs text-slate-500">課前消化資料，課堂捍衛立場</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100">
+                            <div class="text-brand-600 font-bold mb-1">討論導向</div>
+                            <div class="text-xs text-slate-500">真實商業情境，洞見在碰撞中產生</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bento-card col-span-7">
+                    <h2 class="text-xl font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">關鍵商業挑戰與理論</h2>
+                    <div class="flex flex-col gap-3">
+                        <div class="flex gap-4 items-start">
+                            <div class="bg-rose-100 text-rose-600 font-bold py-1 px-3 rounded-lg text-sm shrink-0 mt-1">
+                                供應鏈長鞭效應</div>
+                            <p class="text-sm text-slate-600 leading-relaxed">
+                                下游需求的微小波動，向上游傳遞時被放大。成因包含預測修正、批量訂購。解決策略為<span
+                                    class="font-bold text-slate-800">資訊透明化(POS)</span>與縮短前置時間。</p>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <div class="bg-blue-100 text-blue-600 font-bold py-1 px-3 rounded-lg text-sm shrink-0 mt-1">
+                                雙占壟斷護城河</div>
+                            <p class="text-sm text-slate-600 leading-relaxed">以 Coca Cola
+                                為例：品牌資產壁壘、裝瓶配銷網路綁定、獨家通路貨架、絕對規模經濟。產業鏈最賺錢為「濃縮液生產商」。</p>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            <div
+                                class="bg-purple-100 text-purple-600 font-bold py-1 px-3 rounded-lg text-sm shrink-0 mt-1">
+                                數位轉型三層次</div>
+                            <p class="text-sm text-slate-600 leading-relaxed"><span class="font-bold">數位化</span> (導入IT)
+                                → <span class="font-bold">數位優化</span> (流程檢討) → <span class="font-bold">數位轉型</span>
+                                (商業模式根本改變，如Netflix)。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bento-card col-span-12 flex-row gap-6 items-center">
+                    <div class="w-1/3">
+                        <h2 class="text-lg font-bold text-slate-800 mb-2">企業策略實戰</h2>
+                        <p class="text-xs text-slate-500 leading-relaxed">精選全球與在地指標企業，拆解其商業模式轉軸與核心戰略。</p>
+                    </div>
+                    <div class="w-2/3 grid grid-cols-3 gap-3">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200">
+                            <div class="font-bold text-slate-800">Walmart 全通路戰略</div>
+                            <div class="text-xs text-slate-500 mt-1">鄉鎮包圍城市、天天低價(EDLP)，利用實體門市作為電商微型物流中心。</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200">
+                            <div class="font-bold text-slate-800">TSMC 台積電</div>
+                            <div class="text-xs text-slate-500 mt-1">堅持不與客戶競爭。利用學習曲線與研發投入維持領先。定價為「價值導向」。</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200">
+                            <div class="font-bold text-slate-800">Zipcar 精實行銷</div>
+                            <div class="text-xs text-slate-500 mt-1">商業模式轉軸(降低年費)，發展無線通訊技術轉型科技服務，敏捷管理快速停損。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3 text-xs text-slate-400">Page 1 / 6</div>
+        </div>
+
+        <!-- ================= PAGE 2 ================= -->
+        <div class="a4-page">
+            <header class="flex justify-between items-end mb-4 border-b-2 border-emerald-100 pb-4">
+                <div>
+                    <div class="tag bg-emerald-100 text-emerald-700 mb-2">MODULE 02</div>
+                    <h1 class="text-4xl font-black tracking-tight text-slate-900">組織與管理</h1>
+                    <p class="text-sm text-slate-500 mt-2 font-medium">授課教師：葉穎蓉 | 組織理論與經營策略工具鏈</p>
+                </div>
+            </header>
+
+            <div class="bento-grid">
+                <!-- Card 1 -->
+                <div class="bento-card col-span-4 bg-slate-800 text-white">
+                    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">管理理論演進</h2>
+                    <ul class="space-y-4 text-sm text-slate-300">
+                        <li>
+                            <span class="text-emerald-400 font-bold block mb-1">官僚體制 (Max Weber)</span>
+                            明確分工與階層化，滿足秩序。現代可透過職務輪調改善僵化。
+                        </li>
+                        <li>
+                            <span class="text-emerald-400 font-bold block mb-1">科學管理 (F.W. Taylor)</span>
+                            動作與時間分析、標準化、按件計酬、挑選最佳工人。
+                        </li>
+                        <li>
+                            <span class="text-emerald-400 font-bold block mb-1">人群關係 (Elton Mayo)</span>
+                            霍桑實驗證實影響生產力的關鍵是社會心理因素（關注與士氣）。
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bento-card col-span-8 brand print-bg-brand-solid">
+                    <h2 class="text-xl font-bold text-brand-800 mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-brand-500 rounded-full inline-block"></span>
+                        經營策略工具鏈 (Strategy Tools)
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1">兩大策略觀點</h3>
+                            <ul class="text-sm text-slate-600 space-y-2">
+                                <li><span class="font-bold text-brand-600">I/O 模式 (由外而內):</span>
+                                    選對好產業。依賴五力分析，先看外部環境再調整內部。</li>
+                                <li><span class="font-bold text-brand-600">RBV 資源基礎 (由內而外):</span> 擁有別人沒有的強項。依賴
+                                    VRIO，先盤點內部能耐再找市場。</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1">宏觀分析 PESTEL</h3>
+                            <ul class="text-sm text-slate-600 grid grid-cols-2 gap-x-2 gap-y-1">
+                                <li><b>P</b> 政治(關稅/制裁)</li>
+                                <li><b>E</b> 經濟(通膨/匯率)</li>
+                                <li><b>S</b> 社會(少子/高齡)</li>
+                                <li><b>T</b> 科技(AI/資安)</li>
+                                <li><b>E</b> 環境(碳排/ESG)</li>
+                                <li><b>L</b> 法律(勞規/合規)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bento-card col-span-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3">波特三大通用競爭策略</h2>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-xl border-l-4 border-slate-800 shadow-sm">
+                            <div class="font-bold text-sm">成本領導 (Cost Leadership)</div>
+                            <div class="text-xs text-slate-500 mt-1">規模經濟，低價廣泛市場（大廠法則）。著重精簡成本與效率。</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border-l-4 border-emerald-500 shadow-sm">
+                            <div class="font-bold text-sm">差異化 (Differentiation)</div>
+                            <div class="text-xs text-slate-500 mt-1">創新、品牌、高品質，吸引高價顧客。著重研發與頂級原料。</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border-l-4 border-blue-500 shadow-sm">
+                            <div class="font-bold text-sm">集中/聚焦 (Focus)</div>
+                            <div class="text-xs text-slate-500 mt-1">鎖定利基市場（小公司生存法則）。台灣高科技多為「彈性+客製化」。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bento-card col-span-6 flex flex-col justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 mb-2">組織激勵與偏見</h2>
+                        <p class="text-sm text-slate-600 mb-3">探討情境需求與無意識偏見對決策的影響。</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-orange-50 p-3 rounded-xl">
+                                <div class="font-bold text-orange-700 text-sm">馬斯洛需求理論</div>
+                                <div class="text-xs text-slate-600 mt-1">七層需求理論，探討不同環境（如夏威夷vs瑞典冰館）的激勵效應。</div>
+                            </div>
+                            <div class="bg-purple-50 p-3 rounded-xl">
+                                <div class="font-bold text-purple-700 text-sm">內隱偏見 (Implicit Bias)</div>
+                                <div class="text-xs text-slate-600 mt-1">無意識的刻板印象（性別、年齡、美貌），影響組織影響力與決策。</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3 text-xs text-slate-400">Page 2 / 6</div>
+        </div>
+
+        <!-- ================= PAGE 3 ================= -->
+        <div class="a4-page">
+            <header class="flex justify-between items-end mb-4 border-b-2 border-amber-200 pb-4">
+                <div>
+                    <div class="tag bg-amber-100 text-amber-700 mb-2">MODULE 03</div>
+                    <h1 class="text-4xl font-black tracking-tight text-slate-900">財富管理</h1>
+                    <p class="text-sm text-slate-500 mt-2 font-medium">授課教師：陳俊男 | 行為財務學與資產配置</p>
+                </div>
+            </header>
+
+            <div class="bento-grid">
+                <!-- Card 1 -->
+                <div class="bento-card col-span-5 relative overflow-hidden bg-slate-900 text-white">
+                    <div
+                        class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-amber-500 rounded-full opacity-20 blur-2xl">
+                    </div>
+                    <h2 class="text-xl font-bold mb-4 relative z-10 text-amber-400">理財基石與指標</h2>
+                    <div class="space-y-4 relative z-10">
+                        <div>
+                            <div class="text-sm font-bold text-slate-300">72 法則 (本金翻倍年數)</div>
+                            <div
+                                class="text-xs text-slate-400 mt-1 flex justify-between border-b border-slate-700 pb-1">
+                                <span>定存(1%)</span> <span>72年</span></div>
+                            <div
+                                class="text-xs text-slate-400 mt-1 flex justify-between border-b border-slate-700 pb-1">
+                                <span>存股/債券(6%)</span> <span>12年</span></div>
+                            <div class="text-xs text-slate-400 mt-1 flex justify-between"><span>大盤ETF(8%)</span> <span
+                                    class="text-amber-400 font-bold">9年</span></div>
+                        </div>
+                        <div class="bg-slate-800 p-3 rounded-xl border border-slate-700">
+                            <div class="text-sm font-bold text-white mb-1">巴菲特指標: ROE > 20%</div>
+                            <p class="text-xs text-slate-300">擁有經濟護城河的完美內部複利機器。致命陷阱：絕對不能是靠高負債開槓桿撐出。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bento-card col-span-7 bg-amber-50 border-amber-100">
+                    <h2 class="text-xl font-bold text-amber-900 mb-3 border-b border-amber-200 pb-2">展望理論與心理偏誤 (Prospect
+                        Theory)</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <ul class="space-y-3 text-sm text-slate-700">
+                                <li><span class="font-bold text-amber-700">損失厭惡 (Loss Aversion):</span> 負展望(虧損痛苦)大約是正展望的
+                                    2~2.5 倍效用。</li>
+                                <li><span class="font-bold text-amber-700">風險偏好反轉:</span> 獲利時規避風險(急獲利了結)；虧損時追求風險(凹單攤平)。
+                                </li>
+                                <li><span class="font-bold text-amber-700">心理帳戶:</span> 非替代性迷思、股息與價差盲點、死抱虧損的沉沒成本效應。</li>
+                            </ul>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="bg-white p-2 rounded-lg text-xs shadow-sm"><span class="font-bold">代表性偏誤:</span>
+                                忽略基率、小數法則(達康泡沫)</div>
+                            <div class="bg-white p-2 rounded-lg text-xs shadow-sm"><span class="font-bold">易取性偏誤:</span>
+                                媒體放大效應、創傷記憶定錨</div>
+                            <div class="bg-white p-2 rounded-lg text-xs shadow-sm"><span class="font-bold">過度自信:</span>
+                                知識錯覺、樂觀歸因、控制錯覺</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bento-card col-span-12 flex-row gap-4">
+                    <div class="w-1/3 border-r border-slate-200 pr-4">
+                        <h2 class="text-lg font-bold text-slate-800 mb-2">總體經濟 (PMI)</h2>
+                        <div class="text-4xl font-black text-brand-600 mb-1">50<span
+                                class="text-sm font-normal text-slate-500 ml-1">榮枯分水嶺</span></div>
+                        <p class="text-xs text-slate-600">景氣領先指標。包含：新訂單(最重)、生產、僱用、交貨時間、存貨。</p>
+                    </div>
+                    <div class="w-1/3 border-r border-slate-200 pr-4 pl-2">
+                        <h2 class="text-lg font-bold text-slate-800 mb-2">基本面：三率三升</h2>
+                        <ul class="text-xs text-slate-600 space-y-1">
+                            <li><span class="font-bold">毛利率:</span> 產品競爭力與定價權</li>
+                            <li><span class="font-bold">營業純益率:</span> 本業經營效率控管</li>
+                            <li><span class="font-bold">淨利率:</span> 最終落入口袋的錢</li>
+                        </ul>
+                    </div>
+                    <div class="w-1/3 pl-2">
+                        <h2 class="text-lg font-bold text-slate-800 mb-2">技術與資產動態調整</h2>
+                        <ul class="text-xs text-slate-600 space-y-1">
+                            <li><span class="font-bold">布林通道:</span> 掌握市場波動率收斂與爆發</li>
+                            <li><span class="font-bold">均線(MA):</span> 20MA生命線 / 60MA多空線</li>
+                            <li><span class="font-bold">Rebalancing:</span> 固定比例策略 vs CPPI保險</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3 text-xs text-slate-400">Page 3 / 6</div>
+        </div>
+
+        <!-- ================= PAGE 4 ================= -->
+        <div class="a4-page">
+            <header class="flex justify-between items-end mb-4 border-b-2 border-indigo-100 pb-4">
+                <div>
+                    <div class="tag bg-indigo-100 text-indigo-700 mb-2">MODULE 04</div>
+                    <h1 class="text-4xl font-black tracking-tight text-slate-900">賽局與策略管理</h1>
+                    <p class="text-sm text-slate-500 mt-2 font-medium">授課教師：張順教 | 個案、談判與動態均衡分析</p>
+                </div>
+            </header>
+
+            <div class="bento-grid">
+                <!-- Card 1 -->
+                <div class="bento-card col-span-12 brand print-bg-brand-solid">
+                    <h2 class="text-xl font-bold text-indigo-800 mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-indigo-500 rounded-full inline-block"></span>
+                        賽局解題四部曲 (核心分析架構)
+                    </h2>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-50 relative">
+                            <div
+                                class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-black text-lg shadow-md">
+                                1</div>
+                            <div class="font-bold text-slate-800 mt-2">尋找優勢策略</div>
+                            <div class="text-xs text-slate-500 mt-1">尋找是否有「不管對手出什麼招，我選這招都賺最多」的絕對優勢選擇。</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-50 relative">
+                            <div
+                                class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-black text-lg shadow-md">
+                                2</div>
+                            <div class="font-bold text-slate-800 mt-2">刪除劣策略</div>
+                            <div class="text-xs text-slate-500 mt-1">若無優勢，剔除「在任何情況下報酬都嚴格小於其他策略」的最爛選項。</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-50 relative">
+                            <div
+                                class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-black text-lg shadow-md">
+                                3</div>
+                            <div class="font-bold text-slate-800 mt-2">推論最佳回應</div>
+                            <div class="text-xs text-slate-500 mt-1">畫線法。雙方最佳回應交集於同一個格子，即為「純策略 Nash 均衡」。</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-indigo-50 relative">
+                            <div
+                                class="absolute -top-3 -left-3 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-black text-lg shadow-md">
+                                4</div>
+                            <div class="font-bold text-slate-800 mt-2">混合策略</div>
+                            <div class="text-xs text-slate-500 mt-1">引入隨機性(機率p/q)，讓對手陷入無差異選擇的兩難。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bento-card col-span-7 border-t-4 border-indigo-400">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3">賽局分類與分析武器</h2>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="font-bold text-sm text-indigo-700">完全訊息動態賽局 (先後順序)</div>
+                            <p class="text-xs text-slate-600">後推法 (Backward Induction) 與前推法。使用 SPNE (子賽局精煉均衡) 剔除不可置信的威脅。
+                            </p>
+                        </div>
+                        <hr class="border-slate-200">
+                        <div>
+                            <div class="font-bold text-sm text-indigo-700">不完全訊息賽局 (資訊不對稱)</div>
+                            <p class="text-xs text-slate-600">引入虛擬玩家「自然
+                                (Nature)」擲骰子。利用貝氏定理進行機率更新。動態行為包含「傳遞訊號(Signaling)」與「篩選(Screening)」。</p>
+                        </div>
+                        <hr class="border-slate-200">
+                        <div>
+                            <div class="font-bold text-sm text-indigo-700">合作賽局 (競合 Co-opetition)</div>
+                            <p class="text-xs text-slate-600">核心精神：「先把餅做大，再分餅」。關注價值網(Value Net)的互動。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bento-card col-span-5 bg-slate-800 text-slate-300">
+                    <h2 class="text-lg font-bold text-white mb-3">實戰案例對應</h2>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex flex-col">
+                            <span class="text-amber-400 font-bold">孫子兵法與訊息</span>
+                            <span class="text-xs mt-1">「知己知彼」與「避實擊虛」。孫臏逐日滅灶操作訊息不對稱。</span>
+                        </li>
+                        <li class="flex flex-col mt-2">
+                            <span class="text-amber-400 font-bold">VIZIO 電視破壞式創新</span>
+                            <span class="text-xs mt-1">不完全訊息賽局應用：在 SONY/三星不知其生產成本下，計算價格戰發動時機。</span>
+                        </li>
+                        <li class="flex flex-col mt-2">
+                            <span class="text-amber-400 font-bold">薛爾頓顫抖手賽局</span>
+                            <span class="text-xs mt-1">容忍對手有極小機率(ε)手滑犯錯，穩固防呆策略。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="text-center mt-3 text-xs text-slate-400">Page 4 / 6</div>
+        </div>
+
+        <!-- ================= PAGE 5 ================= -->
+        <div class="a4-page">
+            <header class="flex justify-between items-end mb-4 border-b-2 border-rose-100 pb-4">
+                <div>
+                    <div class="tag bg-rose-100 text-rose-700 mb-2">MODULE 05</div>
+                    <h1 class="text-4xl font-black tracking-tight text-slate-900">數位轉型與品牌傳播專題</h1>
+                    <p class="text-sm text-slate-500 mt-2 font-medium">授課教師：張譯尹、成力庚、江藍龍 | 平台經濟與 MarTech</p>
+                </div>
+            </header>
+
+            <div class="bento-grid">
+                <!-- Card 1 -->
+                <div class="bento-card col-span-6 border-l-4 border-rose-500">
+                    <h2 class="text-xl font-bold text-slate-800 mb-3">商業洞察力與 JTBD 框架</h2>
+                    <div class="bg-rose-50 p-4 rounded-xl mb-4 border border-rose-100">
+                        <div class="text-center font-black text-rose-700 text-lg mb-1">
+                            Business Sense = Business Model + Common Sense
+                        </div>
+                        <p class="text-xs text-slate-600 text-center">商業模式(邏輯架構) 必須符合 常理/人性(大眾行為準則)</p>
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm text-slate-800 mb-1">JTBD (Jobs-to-be-Done) 核心概念</div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            消費者「並非購買產品」，而是在特定情境下，想要完成「核心任務」。包含三大層面：
+                            <span class="font-bold">功能(Functional)</span>、<span
+                                class="font-bold">情感(Emotional)</span>、<span class="font-bold">社交(Social)</span>。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bento-card col-span-6 brand print-bg-brand-solid">
+                    <h2 class="text-xl font-bold text-brand-800 mb-3">多邊平臺架構與網路效應</h2>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div class="bg-white p-2 rounded shadow-sm text-xs border border-slate-100"><b
+                                class="text-brand-600">A邊:</b> 需求方 (Consumers)</div>
+                        <div class="bg-white p-2 rounded shadow-sm text-xs border border-slate-100"><b
+                                class="text-brand-600">B邊:</b> 供給方 (Providers)</div>
+                        <div class="bg-white p-2 rounded shadow-sm text-xs border border-slate-100"><b
+                                class="text-brand-600">C邊:</b> 輔助方 (Enablers)</div>
+                        <div class="bg-white p-2 rounded shadow-sm text-xs border border-slate-100"><b
+                                class="text-brand-600">D邊:</b> 影響/獲利方</div>
+                    </div>
+                    <p class="text-xs text-slate-600"><span class="font-bold text-slate-800">臨界人數(Critical Mass):</span>
+                        若具備單機價值(Stand-alone Benefit)，可大幅降低引發正向循環的門檻，度過冷啟動期。</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bento-card col-span-12">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3">數位轉型實戰診斷室</h2>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="font-black text-slate-800 mb-1">Kodak 數位革命</div>
+                            <div class="text-xs text-slate-500 mb-2">創新者的窘境</div>
+                            <p class="text-xs text-slate-600">硬體淪為價格戰，利潤轉移。文化抗拒低毛利數位硬體，將新技術強行綁定舊生態(Photo CD)導致失敗。</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="font-black text-slate-800 mb-1">Clubhouse 衰退</div>
+                            <div class="text-xs text-slate-500 mb-2">網路效應反轉</div>
+                            <p class="text-xs text-slate-600">同步音訊違反非同步趨勢(Common Sense)。用戶過載導致負向網路效應，搜尋成本劇增，缺乏變現機制。</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <div class="font-black text-slate-800 mb-1">Uber & Instacart</div>
+                            <div class="text-xs text-slate-500 mb-2">平臺經濟與補貼</div>
+                            <p class="text-xs text-slate-600">跨邊補貼策略設計(燒錢擴張期的財務邏輯)。探討平臺定價權歸屬及如何以資訊科技建立對抗競品的護城河。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3 text-xs text-slate-400">Page 5 / 6</div>
+        </div>
+
+        <!-- ================= PAGE 6 ================= -->
+        <div class="a4-page">
+            <header class="flex justify-between items-end mb-4 border-b-2 border-cyan-200 pb-4">
+                <div>
+                    <div class="tag bg-cyan-100 text-cyan-800 mb-2">MODULE 06</div>
+                    <h1 class="text-4xl font-black tracking-tight text-slate-900">創新思考與論文設計實作</h1>
+                    <p class="text-sm text-slate-500 mt-2 font-medium">授課教師：王蕙芝 | 管理問題收斂與科學研究思維</p>
+                </div>
+            </header>
+
+            <div class="bento-grid">
+                <!-- Card 1 -->
+                <div class="bento-card col-span-5 bg-cyan-900 text-white">
+                    <h2 class="text-xl font-bold mb-4 text-cyan-300">研究者的語言與邏輯</h2>
+                    <ul class="space-y-4 text-sm text-cyan-100">
+                        <li class="border-b border-cyan-800 pb-3">
+                            <span class="text-white font-bold block mb-1">歸納法 (Induction) vs. 演繹法 (Deduction)</span>
+                            由下而上(多到一，適合質性) vs. 由上而下(一到多，適合量化驗證)。
+                        </li>
+                        <li>
+                            <span class="text-white font-bold block mb-1">研究術語建構階層</span>
+                            <ol class="list-decimal ml-4 mt-2 space-y-1 text-xs text-cyan-200">
+                                <li><b>構念 (Constructs):</b> 高度抽象(如：體驗服務)</li>
+                                <li><b>概念 (Concepts):</b> 具體共識(如：客單價)</li>
+                                <li><b>操作型定義:</b> 可測量指標(如：一對一服務時數)</li>
+                                <li><b>變數與假設:</b> 賦予數值，驗證正負向關係</li>
+                            </ol>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bento-card col-span-7 brand print-bg-brand-solid">
+                    <h2 class="text-xl font-bold text-brand-900 mb-4 flex items-center justify-center">
+                        核心實作工具：倒V推導 (Inverted V)
+                    </h2>
+                    <div class="flex justify-center items-center gap-4 mb-2">
+                        <!-- 左半部收斂 -->
+                        <div class="bg-white p-3 rounded-xl border border-blue-100 w-1/2 text-center shadow-sm">
+                            <div class="font-bold text-brand-700 text-sm mb-1">左半部 (收斂)</div>
+                            <div class="text-xs text-slate-600">從困境到問題</div>
+                            <div class="mt-2 text-xs font-medium text-slate-800">管理困境 → 管理問題 → 研究問題</div>
+                            <div class="mt-1 text-[10px] text-slate-400">(SOGO坪效下降 → 如何提升? → 體驗是否影響客單價?)</div>
+                        </div>
+                        <div class="text-brand-300 font-bold text-2xl">V</div>
+                        <!-- 右半部發散 -->
+                        <div class="bg-white p-3 rounded-xl border border-blue-100 w-1/2 text-center shadow-sm">
+                            <div class="font-bold text-brand-700 text-sm mb-1">右半部 (發散)</div>
+                            <div class="text-xs text-slate-600">從問題到架構</div>
+                            <div class="mt-2 text-xs font-medium text-slate-800">定義變數 → 建立假設 → 建構模型</div>
+                            <div class="mt-1 text-[10px] text-slate-400">(操作化 → 預測正負向/調節/中介 → 畫出架構圖)</div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-center text-brand-700 mt-2 font-medium">避免「文不對題」，精準轉化學術變數關係。</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bento-card col-span-12 flex-row gap-6 items-center border border-slate-200">
+                    <div class="w-1/3">
+                        <h2 class="text-lg font-bold text-slate-800 mb-2">研究設計與防禦</h2>
+                        <p class="text-xs text-slate-500 leading-relaxed">文獻須具一致性(參考TSSCI/SSCI)。產出必須能回應管理困境，提供降本增效之決策。
+                        </p>
+                    </div>
+                    <div class="w-2/3 grid grid-cols-2 gap-3">
+                        <div class="bg-white p-3 rounded-lg border-l-4 border-slate-800 shadow-sm">
+                            <div class="font-bold text-sm">調查法 (Survey)</div>
+                            <div class="text-xs text-slate-600 mt-1">結構式問卷，探討「什麼人/事、有多少」。需確保信度與效度。</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border-l-4 border-cyan-600 shadow-sm">
+                            <div class="font-bold text-sm">實驗法 (Experiment)</div>
+                            <div class="text-xs text-slate-600 mt-1">探討「因果關係」。需設定實驗/對照組，嚴格控制外在干擾變數。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3 text-xs text-slate-400">Page 6 / 6</div>
+        </div>
+
+    </div>
+
+    <!-- UI 互動邏輯 -->
+    <script>
+        let isEditing = false;
+
+        function toggleEdit() {
+            const wrapper = document.getElementById('documentWrapper');
+            const btn = document.getElementById('btnEdit');
+
+            isEditing = !isEditing;
+
+            if (isEditing) {
+                wrapper.setAttribute('contenteditable', 'true');
+                wrapper.focus();
+                btn.innerHTML = '💾 結束編輯';
+                btn.style.background = '#e2e8f0';
+                wrapper.classList.add('edit-mode');
+            } else {
+                wrapper.setAttribute('contenteditable', 'false');
+                btn.innerHTML = '✏️ 編輯內容';
+                btn.style.background = '';
+                wrapper.classList.remove('edit-mode');
+            }
+        }
+
+        function saveDocument() {
+            // 在儲存前，暫時確保狀態不是編輯中
+            if (isEditing) toggleEdit();
+
+            const htmlContent = document.documentElement.outerHTML;
+            // 嚴格遵守防亂碼規範：陣列第一個元素加入 \uFEFF (UTF-8 BOM)
+            const blob = new Blob(['\uFEFF', htmlContent], { type: 'text/html;charset=utf-8' });
+
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'EMBA_1142_課程摘要_排版.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert('網頁已下載！請在下載資料夾中查看。');
+        }
+    </script>
+</body>
+
+</html>

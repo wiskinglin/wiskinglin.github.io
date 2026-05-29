@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>曉鹿鳴樓 點菜系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 隱藏數字輸入框預設的上下箭頭 */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 font-sans pb-40">
+
+    <!-- 頂部導覽列 -->
+    <header class="bg-red-800 text-white p-4 shadow-md sticky top-0 z-20">
+        <h1 class="text-xl md:text-2xl font-bold text-center tracking-wider">曉鹿鳴樓 點菜系統</h1>
+    </header>
+
+    <!-- 菜單列表容器 -->
+    <main class="max-w-4xl mx-auto p-4 mt-4" id="menu-container">
+        <!-- 菜單內容由 JavaScript 動態生成 -->
+    </main>
+
+    <!-- 底部結帳資訊列 -->
+    <footer
+        class="fixed bottom-0 left-0 w-full bg-white border-t-2 border-red-800 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-4 z-30">
+        <div class="max-w-4xl mx-auto flex flex-col items-end">
+            <div class="text-gray-600 text-sm md:text-base mb-1">
+                小計： NT$ <span id="subtotal" class="font-mono">0</span>
+            </div>
+            <div class="text-gray-600 text-sm md:text-base mb-1">
+                服務費 (10%)： NT$ <span id="service-fee" class="font-mono">0</span>
+            </div>
+            <div class="text-xl md:text-2xl font-bold text-red-700 mb-1">
+                總計金額： NT$ <span id="total" class="font-mono">0</span>
+            </div>
+            <div class="text-xs text-gray-500">
+                * 時價品項（如大沙公、海鮮泡飯鍋）不計入自動結算，需另行確認。
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const menuData = [
+            {
+                category: "招牌菜色",
+                items: [
+                    { name: "銷魂東坡肉 (帶夾) - 小", price: 660 },
+                    { name: "銷魂東坡肉 (帶夾) - 大", price: 1080 },
+                    { name: "峭壁石斛燉雞 (一人份/盅)", price: 380 },
+                    { name: "曉鹿鳴樓翡翠菜飯 - 小", price: 320 },
+                    { name: "曉鹿鳴樓翡翠菜飯 - 大", price: 620 }
+                ]
+            },
+            {
+                category: "冷盤",
+                items: [
+                    { name: "主廚四拼", price: 1080 },
+                    { name: "主廚三拼", price: 980 },
+                    { name: "主廚雙拼", price: 720 },
+                    { name: "蔥泥油雞腿", price: 460 },
+                    { name: "蒜香蝦油雞", price: 420 },
+                    { name: "麻辣牛肚腱", price: 420 },
+                    { name: "蜜桃醬鴨腿", price: 380 },
+                    { name: "梅汁油爆蝦", price: 360 },
+                    { name: "涼拌海蜇絲", price: 360 },
+                    { name: "杭州素鵝", price: 330 },
+                    { name: "涼拌椒麻魚膠", price: 320 },
+                    { name: "冰梅山藥", price: 320 }
+                ]
+            },
+            {
+                category: "四川風味",
+                items: [
+                    { name: "湖南剁椒鰱魚頭 (半片)", price: 980 },
+                    { name: "乾燒大草蝦 (4隻)", price: 680 },
+                    { name: "重慶水煮牛 (內含鴨血)", price: 560 },
+                    { name: "重慶水煮魚 (內含鴨血)", price: 560 },
+                    { name: "湖南剁椒魚片", price: 420 },
+                    { name: "宮保雞丁", price: 360 }
+                ]
+            },
+            {
+                category: "豬肉",
+                items: [
+                    { name: "外婆墨魚紅燒肉", price: 520 },
+                    { name: "無錫子排", price: 480 },
+                    { name: "蒜香軟骨排", price: 460 },
+                    { name: "蔥燒軟骨排", price: 460 },
+                    { name: "蒼蠅頭", price: 420 },
+                    { name: "乾煸三樣", price: 360 },
+                    { name: "茭白筍肉絲", price: 360 },
+                    { name: "香乾肉絲", price: 320 }
+                ]
+            },
+            {
+                category: "牛肉",
+                items: [
+                    { name: "蘿蔔牛腩煲", price: 480 },
+                    { name: "茭白筍牛肉", price: 380 },
+                    { name: "香乾牛肉絲", price: 360 },
+                    { name: "蔥爆 / 韭黃 / 青椒牛肉絲", price: 320 }
+                ]
+            },
+            {
+                category: "雞肉",
+                items: [
+                    { name: "豌豆雞絲", price: 560 },
+                    { name: "茄腸雞丁煲", price: 380 },
+                    { name: "砂鍋花雕雞", price: 380 },
+                    { name: "蠔油雞丁", price: 380 },
+                    { name: "左宗棠雞", price: 360 }
+                ]
+            },
+            {
+                category: "鮑 / 參 / 肚 / 蟹",
+                items: [
+                    { name: "蹄筋花膠海參煲", price: 620 },
+                    { name: "蟹黃海鮮豆腐煲", price: 480 },
+                    { name: "蟹粉魚皮", price: 460 },
+                    { name: "蟹粉蹄筋", price: 420 },
+                    { name: "斯里蘭卡大沙公 (需預訂)", price: 0, note: "時價" }
+                ]
+            },
+            {
+                category: "蔬菜 / 蛋 / 豆腐",
+                items: [
+                    { name: "時蔬雙冬", price: 380 },
+                    { name: "蘆筍彩時蔬", price: 380 },
+                    { name: "金沙四季豆腐", price: 360 },
+                    { name: "清炒豆苗", price: 360 },
+                    { name: "臘肉高麗菜", price: 360 },
+                    { name: "雪菜百頁", price: 320 },
+                    { name: "澎湖海菜吻仔魚炒蛋", price: 320 },
+                    { name: "蝦仁嫩炒蛋", price: 320 },
+                    { name: "櫻花蝦高麗菜", price: 280 },
+                    { name: "清蒸臭豆腐 (三塊)", price: 260 },
+                    { name: "鮮菇炒水蓮", price: 260 },
+                    { name: "老皮嫩肉", price: 240 },
+                    { name: "季節時蔬", price: 220 },
+                    { name: "清炒高麗菜", price: 220 }
+                ]
+            },
+            {
+                category: "砂鍋湯品",
+                items: [
+                    { name: "峭壁石斛燉雞 (盅)", price: 380 },
+                    { name: "峭壁石斛燉雞湯 (預定)", price: 2880 },
+                    { name: "神仙雲吞老鴨湯 (預定)", price: 1880 },
+                    { name: "火腿白菜花膠雞湯 (預定)", price: 1680 },
+                    { name: "蛤蜊鮮筍竹笙雞湯 (預定)", price: 1580 },
+                    { name: "龍蝦海鮮泡飯鍋 (預定)", price: 0, note: "時價" },
+                    { name: "肥蟹海鮮泡飯鍋 (預定)", price: 0, note: "時價" },
+                    { name: "砂鍋鰱魚頭 (半片/預定)", price: 980 },
+                    { name: "砂鍋醃篤鮮 - 小", price: 520 },
+                    { name: "砂鍋醃篤鮮 - 大", price: 980 },
+                    { name: "澎湖海菜吻仔魚湯", price: 320 },
+                    { name: "酸菜肚片蛤蜊湯", price: 300 },
+                    { name: "主廚秘製酸辣湯", price: 280 },
+                    { name: "冬瓜蛤蜊湯", price: 260 }
+                ]
+            },
+            {
+                category: "飯 / 麵",
+                items: [
+                    { name: "台大臘肉高麗菜飯 (台大產學)", price: 380 },
+                    { name: "蔥開煨麵 (限平日供應)", price: 300 },
+                    { name: "嫩雞煨麵 (限平日供應)", price: 350 },
+                    { name: "鱈魚煨麵 (限平日供應)", price: 380 }
+                ]
+            },
+            {
+                category: "點心",
+                items: [
+                    { name: "心太軟 (一份15粒)", price: 320 },
+                    { name: "蘿蔔絲酥餅 (3粒)", price: 160 },
+                    { name: "鮮蝦腐衣捲 (3條)", price: 160 },
+                    { name: "螺絲捲 (蒸 / 炸各3粒)", price: 160 },
+                    { name: "酥炸芝麻球 (3粒)", price: 120 },
+                    { name: "芝麻萌菇包 (2粒)", price: 110 },
+                    { name: "壽桃 (2粒)", price: 100 },
+                    { name: "荷葉夾 (片)", price: 20 }
+                ]
+            },
+            {
+                category: "飲品 / 酒水",
+                items: [
+                    { name: "柳丁汁 (還原/壺)", price: 200 },
+                    { name: "烏梅汁 (壺)", price: 200 },
+                    { name: "蜜糖冬瓜茶 (壺)", price: 200 },
+                    { name: "蜜糖冬瓜檸檬茶 (壺)", price: 250 },
+                    { name: "新鮮蘋果汁 (杯)", price: 80 },
+                    { name: "新鮮蘋果汁 (壺)", price: 450 },
+                    { name: "高山金萱 (人)", price: 30 },
+                    { name: "土肉桂紅茶 (人)", price: 40 },
+                    { name: "金門高粱酒 (500ml)", price: 1000 },
+                    { name: "金門高粱酒 (300ml)", price: 600 },
+                    { name: "威廉彼特紅酒 (瓶)", price: 800 },
+                    { name: "普娜天然礦泉水", price: 180 },
+                    { name: "海尼根啤酒 (瓶)", price: 130 },
+                    { name: "金牌台灣啤酒 (瓶)", price: 120 },
+                    { name: "經典台灣啤酒 (瓶)", price: 100 },
+                    { name: "可口可樂 (瓶)", price: 80 },
+                    { name: "噶瑪蘭經典 威士忌", price: 2400 },
+                    { name: "噶瑪蘭山川首席波特風味桶 威士忌", price: 1800 },
+                    { name: "噶瑪蘭珍選No.1 威士忌", price: 1500 }
+                ]
+            }
+        ];
+
+        const container = document.getElementById('menu-container');
+
+        // 生成菜單 DOM
+        menuData.forEach((section) => {
+            // 分類外框
+            const catDiv = document.createElement('div');
+            catDiv.className = 'mb-6 bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200';
+
+            // 分類標題
+            const catHeader = document.createElement('div');
+            catHeader.className = 'bg-red-800 text-white px-4 py-3 font-bold text-lg md:text-xl';
+            catHeader.textContent = section.category;
+            catDiv.appendChild(catHeader);
+
+            // 菜色列表容器
+            const itemsList = document.createElement('div');
+            itemsList.className = 'divide-y divide-gray-100';
+
+            section.items.forEach((item) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex justify-between items-center p-4 hover:bg-gray-50 transition-colors';
+
+                const priceText = item.price === 0 ? item.note : `NT$ ${item.price}`;
+
+                itemDiv.innerHTML = `
+                    <div class="flex-1 pr-4">
+                        <div class="font-bold text-gray-800 text-base md:text-lg mb-1">${item.name}</div>
+                        <div class="text-sm text-gray-500">${priceText}</div>
+                    </div>
+                    <div class="flex items-center space-x-2 md:space-x-4">
+                        <button class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 text-gray-700 font-bold hover:bg-gray-300 active:bg-gray-400 flex items-center justify-center transition-colors text-xl select-none" onclick="updateQuantity(this, -1)">-</button>
+                        
+                        <input type="number" min="0" value="0" class="qty-input w-12 md:w-16 h-8 md:h-10 text-center border border-gray-300 rounded font-bold text-gray-800 bg-white" data-price="${item.price}" onchange="validateAndUpdate()" onkeyup="validateAndUpdate()">
+                        
+                        <button class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-700 text-white font-bold hover:bg-red-800 active:bg-red-900 flex items-center justify-center transition-colors text-xl select-none" onclick="updateQuantity(this, 1)">+</button>
+                    </div>
+                `;
+                itemsList.appendChild(itemDiv);
+            });
+
+            catDiv.appendChild(itemsList);
+            container.appendChild(catDiv);
+        });
+
+        // 點擊加減按鈕更新數量
+        function updateQuantity(btn, change) {
+            const input = btn.parentElement.querySelector('.qty-input');
+            let currentValue = parseInt(input.value) || 0;
+            let newValue = currentValue + change;
+
+            if (newValue < 0) {
+                newValue = 0;
+            }
+
+            input.value = newValue;
+            calculateTotal();
+        }
+
+        // 檢查手動輸入並更新
+        function validateAndUpdate() {
+            const inputs = document.querySelectorAll('.qty-input');
+            inputs.forEach(input => {
+                if (parseInt(input.value) < 0 || isNaN(parseInt(input.value))) {
+                    input.value = 0;
+                }
+            });
+            calculateTotal();
+        }
+
+        // 計算總金額
+        function calculateTotal() {
+            let subtotal = 0;
+            const inputs = document.querySelectorAll('.qty-input');
+
+            inputs.forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                const price = parseInt(input.getAttribute('data-price')) || 0;
+
+                if (qty > 0 && price > 0) {
+                    subtotal += qty * price;
+                }
+            });
+
+            const serviceFee = Math.round(subtotal * 0.1);
+            const total = subtotal + serviceFee;
+
+            // 更新畫面金額
+            document.getElementById('subtotal').innerText = subtotal.toLocaleString();
+            document.getElementById('service-fee').innerText = serviceFee.toLocaleString();
+            document.getElementById('total').innerText = total.toLocaleString();
+        }
+    </script>
+</body>
+
+</html>
