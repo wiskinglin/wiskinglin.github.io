@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TurboGrid Studio | 極致 Excel 操作體驗</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Handsontable CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PapaParse (CSV) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            overscroll-behavior: none;
+        }
+
+        .handsontable {
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            color: #1f2937;
+        }
+
+        .handsontable th {
+            background-color: #f9fafb;
+            color: #6b7280;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+        }
+
+        .handsontable td {
+            vertical-align: middle;
+        }
+
+        .handsontable .current {
+            border: 2px solid #10b981 !important;
+            z-index: 100;
+        }
+
+        .handsontable .area {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            border: 1px solid #10b981 !important;
+        }
+
+        .wtBorder.current.corner {
+            background-color: #10b981 !important;
+            border-color: #10b981 !important;
+        }
+
+        /* Sheet Tabs Styles */
+        .sheet-tab {
+            position: relative;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .sheet-tab.active {
+            background-color: white;
+            color: #10b981;
+            /* Emerald-500 */
+            border-bottom: 2px solid #10b981;
+            font-weight: 600;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .sheet-tab:not(.active):hover {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 z-10 shadow-sm shrink-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-500 text-white p-2 rounded-lg shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900 tracking-tight">TurboGrid <span
+                            class="text-emerald-500">Studio</span></h1>
+                    <p class="text-xs text-gray-500">多工作表架構 (Workbook Mode)</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Dashboard -->
+                <div
+                    class="hidden md:flex items-center gap-6 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] uppercase text-gray-400 font-bold">目前分頁總額</span>
+                        <span id="total-revenue" class="font-mono font-bold text-emerald-600">$0</span>
+                    </div>
+                    <div class="w-px h-6 bg-gray-200"></div>
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] uppercase text-gray-400 font-bold">資料筆數</span>
+                        <span id="row-count" class="font-mono font-bold text-gray-800">0</span>
+                    </div>
+                </div>
+
+                <input type="file" id="csv-input" accept=".csv" class="hidden" onchange="importCSV(this)">
+
+                <div class="flex items-center gap-2">
+                    <button onclick="document.getElementById('csv-input').click()"
+                        class="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        匯入 CSV
+                    </button>
+
+                    <button onclick="exportData()"
+                        class="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors shadow-lg shadow-gray-900/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        匯出 CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 relative bg-gray-100 p-2 sm:p-4 overflow-hidden flex flex-col">
+        <div
+            class="flex-1 bg-white rounded-t-lg shadow-xl border border-gray-200 flex flex-col overflow-hidden relative">
+            <!-- Toolbar -->
+            <div
+                class="bg-gray-50 border-b border-gray-200 px-4 py-2 text-xs text-gray-500 flex items-center gap-4 shrink-0">
+                <span class="flex items-center gap-1"><kbd
+                        class="bg-white border border-gray-300 rounded px-1 shadow-sm">Ctrl</kbd> + <kbd
+                        class="bg-white border border-gray-300 rounded px-1 shadow-sm">C</kbd> 複製</span>
+                <span class="flex items-center gap-1"><kbd
+                        class="bg-white border border-gray-300 rounded px-1 shadow-sm">Ctrl</kbd> + <kbd
+                        class="bg-white border border-gray-300 rounded px-1 shadow-sm">V</kbd> 貼上</span>
+                <span class="hidden sm:inline">拖曳右下角方塊自動填滿</span>
+                <span class="flex items-center gap-1 ml-auto text-emerald-600 font-medium">✨ 雙擊下方標籤可重新命名</span>
+            </div>
+
+            <!-- Grid Container -->
+            <div id="excel-grid" class="flex-1 w-full overflow-hidden"></div>
+        </div>
+
+        <!-- Excel-like Sheet Tabs Bar (Footer) -->
+        <div
+            class="bg-gray-100 border-t border-gray-300 flex items-end h-10 shrink-0 select-none overflow-x-auto overflow-y-hidden shadow-inner px-2 gap-1">
+            <!-- Add Button -->
+            <button onclick="addNewSheet()"
+                class="flex items-center justify-center w-8 h-8 mb-1 mr-2 text-gray-600 hover:bg-gray-200 rounded-full transition-colors focus:outline-none"
+                title="新增工作表">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+
+            <!-- Tabs Container -->
+            <div id="sheet-tabs-container" class="flex gap-1 items-end h-full">
+                <!-- Tabs will be injected here via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Handsontable JS -->
+    <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+
+    <script>
+        // --- 1. 資料結構與狀態管理 (Workbook Architecture) ---
+
+        // 每個 Sheet 都是一個物件 { id, name, data }
+        let workbook = [];
+        let activeSheetIndex = 0;
+        let hotInstance;
+
+        function generateData(rows = 50, prefix = '') {
+            const products = ['無線機械鍵盤', '4K 電競螢幕', '人體工學椅', '降噪耳機', 'USB-C 集線器', '智能手錶', 'GaN 充電器', '筆電支架'];
+            const regions = ['台北總部', '台中分部', '高雄分部', '新竹研發中心', '海外-東京'];
+            const categories = ['3C周邊', '辦公家具', '影音設備', '智能穿戴'];
+
+            const data = [];
+
+            for (let i = 0; i < rows; i++) {
+                const price = Math.floor(Math.random() * 5000) + 500;
+                const quantity = Math.floor(Math.random() * 50) + 1;
+
+                data.push({
+                    id: i + 1,
+                    product: prefix + products[Math.floor(Math.random() * products.length)],
+                    category: categories[Math.floor(Math.random() * categories.length)],
+                    region: regions[Math.floor(Math.random() * regions.length)],
+                    date: new Date(2023, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toLocaleDateString('zh-TW'),
+                    price: price,
+                    quantity: quantity,
+                    total: price * quantity,
+                    status: Math.random() > 0.8 ? '缺貨' : '有庫存',
+                    notes: ''
+                });
+            }
+            return data;
+        }
+
+        // 初始化工作簿，預設兩個 Sheet
+        workbook.push({ id: 1, name: '一月銷售表', data: generateData(50) });
+        workbook.push({ id: 2, name: '庫存清單', data: generateData(30, '庫存-') });
+
+        const container = document.getElementById('excel-grid');
+
+        // --- 2. Handsontable 配置 ---
+        const hotSettings = {
+            data: workbook[activeSheetIndex].data,
+            licenseKey: 'non-commercial-and-evaluation',
+
+            columns: [
+                { data: 'id', title: 'ID', type: 'numeric', width: 50, readOnly: true, className: 'htCenter' },
+                { data: 'product', title: '產品名稱', width: 150 },
+                {
+                    data: 'category',
+                    title: '分類',
+                    type: 'dropdown',
+                    source: ['3C周邊', '辦公家具', '影音設備', '智能穿戴'],
+                    width: 100
+                },
+                { data: 'region', title: '銷售區域', width: 100 },
+                { data: 'date', title: '銷售日期', type: 'date', dateFormat: 'YYYY/MM/DD', width: 110 },
+                {
+                    data: 'price',
+                    title: '單價 (TWD)',
+                    type: 'numeric',
+                    numericFormat: { pattern: '$0,0' },
+                    width: 100
+                },
+                { data: 'quantity', title: '數量', type: 'numeric', width: 80 },
+                {
+                    data: 'total',
+                    title: '總金額 (Auto)',
+                    type: 'numeric',
+                    numericFormat: { pattern: '$0,0' },
+                    width: 120,
+                    readOnly: true,
+                    renderer: function (instance, td, row, col, prop, value, cellProperties) {
+                        Handsontable.renderers.NumericRenderer.apply(this, arguments);
+                        td.style.fontWeight = 'bold';
+                        td.style.color = '#059669';
+                        td.style.backgroundColor = '#ecfdf5';
+                    }
+                },
+                {
+                    data: 'status',
+                    title: '庫存狀態',
+                    type: 'checkbox',
+                    checkedTemplate: '有庫存',
+                    uncheckedTemplate: '缺貨',
+                    className: 'htCenter',
+                    width: 90
+                },
+                { data: 'notes', title: '備註', width: 200 }
+            ],
+
+            rowHeaders: true,
+            colHeaders: true,
+            height: '100%',
+            width: '100%',
+
+            minSpareRows: 1, // 恢復 Excel 行為：底部保留一行空行
+            autoWrapRow: true,
+            manualColumnResize: true,
+            manualRowResize: true,
+            contextMenu: true,
+            filters: true,
+            dropdownMenu: true,
+            multiColumnSorting: true,
+
+            // 核心邏輯：數據同步與公式計算
+            afterChange: function (changes, source) {
+                if (!changes) return;
+                // 注意：在多 Sheet 模式下，loadData 會觸發 afterChange，我們需要忽略它，否則可能影響其他 Sheet
+                if (source === 'loadData') {
+                    updateDashboard();
+                    return;
+                }
+
+                const hot = this;
+
+                // 獲取當前工作表的數據引用
+                const currentSheetData = workbook[activeSheetIndex].data;
+
+                changes.forEach(([row, prop, oldValue, newValue]) => {
+                    // 因為我們是直接操作 hotSettings.data (By Reference)，
+                    // Handsontable 通常會自動更新傳入的 Array。
+                    // 但為了保險和處理「公式」，我們手動確保數據一致性。
+
+                    const physicalRow = hot.toPhysicalRow(row);
+
+                    if (currentSheetData[physicalRow]) {
+                        // 模擬公式連動 (若修改了單價/數量)
+                        if (prop === 'price' || prop === 'quantity') {
+                            const p = Number(currentSheetData[physicalRow].price) || 0;
+                            const q = Number(currentSheetData[physicalRow].quantity) || 0;
+                            const newTotal = p * q;
+
+                            // 更新數據模型
+                            currentSheetData[physicalRow].total = newTotal;
+
+                            // 更新視圖 (使用 calculation source 避免無窮迴圈)
+                            hot.setDataAtRowProp(row, 'total', newTotal, 'calculation');
+                        }
+                    }
+                });
+
+                if (source !== 'calculation') {
+                    updateDashboard();
+                }
+            }
+        };
+
+        hotInstance = new Handsontable(container, hotSettings);
+
+        // --- 3. Sheet 分頁功能實作 ---
+
+        const tabsContainer = document.getElementById('sheet-tabs-container');
+
+        function renderTabs() {
+            tabsContainer.innerHTML = '';
+
+            workbook.forEach((sheet, index) => {
+                const isActive = index === activeSheetIndex;
+                const tab = document.createElement('div');
+                tab.className = `sheet-tab px-4 py-2 text-sm cursor-pointer rounded-t-md border-t border-l border-r border-transparent ${isActive ? 'active border-gray-300' : 'text-gray-600 bg-gray-200 border-gray-200'}`;
+                tab.innerText = sheet.name;
+
+                // 點擊切換
+                tab.onclick = () => switchSheet(index);
+
+                // 雙擊重新命名
+                tab.ondblclick = (e) => {
+                    e.stopPropagation(); // 防止觸發切換
+                    const newName = prompt('請輸入新的工作表名稱:', sheet.name);
+                    if (newName && newName.trim() !== '') {
+                        workbook[index].name = newName.trim();
+                        renderTabs();
+                    }
+                };
+
+                tabsContainer.appendChild(tab);
+            });
+        }
+
+        function switchSheet(index) {
+            if (index < 0 || index >= workbook.length) return;
+
+            // 1. 保存當前狀態 (雖然物件是引用傳遞，但如果我們有排序狀態需要重置)
+            // 這裡簡單切換數據源
+            activeSheetIndex = index;
+
+            // 2. 重新渲染 Tabs 樣式
+            renderTabs();
+
+            // 3. 載入新數據
+            hotInstance.loadData(workbook[activeSheetIndex].data);
+
+            // 4. 重置排序等狀態 (可選)
+            hotInstance.getPlugin('multiColumnSorting').clearSort();
+
+            // 5. 更新儀表板
+            updateDashboard();
+        }
+
+        function addNewSheet(customName = null, customData = null) {
+            const id = workbook.length + 1;
+            const name = customName || `工作表 ${id}`;
+            // 預設給一些空數據或簡單範例
+            const data = customData || generateData(10, '(新)-');
+
+            workbook.push({ id, name, data });
+
+            // 切換到新分頁
+            switchSheet(workbook.length - 1);
+        }
+
+        // --- 4. CSV 匯入與匯出 ---
+
+        function importCSV(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const fileName = file.name.replace('.csv', '');
+
+            Papa.parse(file, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    if (results.data && results.data.length > 0) {
+                        const newData = results.data.map((row, index) => {
+                            const price = Number(row['price'] || row['單價 (TWD)'] || 0);
+                            const quantity = Number(row['quantity'] || row['數量'] || 0);
+
+                            return {
+                                id: row.id || row['ID'] || index + 1,
+                                product: row.product || row['產品名稱'] || '',
+                                category: row.category || row['分類'] || '',
+                                region: row.region || row['銷售區域'] || '',
+                                date: row.date || row['銷售日期'] || '',
+                                price: price,
+                                quantity: quantity,
+                                total: price * quantity,
+                                status: (row.status || row['庫存狀態']) === '有庫存' || (row.status || row['庫存狀態']) === true ? '有庫存' : '缺貨',
+                                notes: row.notes || row['備註'] || ''
+                            };
+                        });
+
+                        // 詢問使用者：覆蓋當前還是開新分頁？
+                        // 為了順暢體驗，這裡預設行為是「開啟為新工作表」
+                        addNewSheet(fileName, newData);
+
+                        alert(`已建立新工作表 "${fileName}" 並匯入 ${newData.length} 筆資料！`);
+                    }
+                    input.value = '';
+                },
+                error: function (err) {
+                    alert('CSV 解析失敗: ' + err.message);
+                }
+            });
+        }
+
+        function exportData() {
+            const exportPlugin = hotInstance.getPlugin('exportFile');
+            const currentSheetName = workbook[activeSheetIndex].name;
+
+            exportPlugin.downloadFile('csv', {
+                bom: true,
+                columnDelimiter: ',',
+                columnHeaders: true,
+                exportHiddenColumns: true,
+                exportHiddenRows: true,
+                fileExtension: 'csv',
+                filename: `TurboGrid_${currentSheetName}_${new Date().toISOString().slice(0, 10)}`,
+                mimeType: 'text/csv',
+                rowDelimiter: '\r\n',
+                rowHeaders: false
+            });
+        }
+
+        function updateDashboard() {
+            let totalRevenue = 0;
+            // 僅計算「當前激活的工作表」
+            const currentData = workbook[activeSheetIndex].data;
+
+            currentData.forEach(item => {
+                if (item.total && !isNaN(item.total)) {
+                    totalRevenue += item.total;
+                }
+            });
+
+            document.getElementById('total-revenue').innerText = '$' + totalRevenue.toLocaleString();
+            document.getElementById('row-count').innerText = currentData.length;
+        }
+
+        window.addEventListener('resize', () => {
+            hotInstance.refreshDimensions();
+        });
+
+        // 啟動
+        renderTabs();
+        updateDashboard();
+
+    </script>
+</body>
+
+</html>

@@ -17,6 +17,23 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+
+        @media print {
+            body {
+                padding-bottom: 0 !important;
+                background-color: white !important;
+            }
+
+            header,
+            main,
+            footer {
+                display: none !important;
+            }
+
+            #print-area {
+                display: block !important;
+            }
+        }
     </style>
 </head>
 
@@ -48,8 +65,15 @@
             <div class="text-xs text-gray-500">
                 * 時價品項（如大沙公、海鮮泡飯鍋）不計入自動結算，需另行確認。
             </div>
+            <div class="mt-4 w-full flex justify-end">
+                <button onclick="printOrder()"
+                    class="bg-red-800 text-white px-6 py-2 rounded-lg font-bold shadow hover:bg-red-900 transition-colors focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2">列印點菜單</button>
+            </div>
         </div>
     </footer>
+
+    <!-- 列印專用區域 -->
+    <div id="print-area" class="hidden p-4 bg-white text-black font-sans"></div>
 
     <script>
         const menuData = [
@@ -251,7 +275,7 @@
                     <div class="flex items-center space-x-2 md:space-x-4">
                         <button class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-200 text-gray-700 font-bold hover:bg-gray-300 active:bg-gray-400 flex items-center justify-center transition-colors text-xl select-none" onclick="updateQuantity(this, -1)">-</button>
                         
-                        <input type="number" min="0" value="0" class="qty-input w-12 md:w-16 h-8 md:h-10 text-center border border-gray-300 rounded font-bold text-gray-800 bg-white" data-price="${item.price}" onchange="validateAndUpdate()" onkeyup="validateAndUpdate()">
+                        <input type="number" min="0" value="0" class="qty-input w-12 md:w-16 h-8 md:h-10 text-center border border-gray-300 rounded font-bold text-gray-800 bg-white" data-price="${item.price}" data-name="${item.name}" onchange="validateAndUpdate()" onkeyup="validateAndUpdate()">
                         
                         <button class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-red-700 text-white font-bold hover:bg-red-800 active:bg-red-900 flex items-center justify-center transition-colors text-xl select-none" onclick="updateQuantity(this, 1)">+</button>
                     </div>
@@ -309,6 +333,84 @@
             document.getElementById('subtotal').innerText = subtotal.toLocaleString();
             document.getElementById('service-fee').innerText = serviceFee.toLocaleString();
             document.getElementById('total').innerText = total.toLocaleString();
+        }
+
+        // 列印點菜單功能
+        function printOrder() {
+            const inputs = document.querySelectorAll('.qty-input');
+            let hasItems = false;
+            let subtotal = 0;
+
+            let printHtml = `
+                <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">
+                    <h2 style="font-size: 24px; font-weight: bold; margin: 0;">曉鹿鳴樓 點菜單</h2>
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">列印時間：${new Date().toLocaleString('zh-TW')}</p>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #000;">
+                            <th style="padding: 8px 4px; width: 60px;">編號</th>
+                            <th style="padding: 8px 4px;">品項</th>
+                            <th style="padding: 8px 4px; text-align: right;">單價</th>
+                            <th style="padding: 8px 4px; text-align: right;">數量</th>
+                            <th style="padding: 8px 4px; text-align: right;">小計</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let itemIndex = 0;
+            inputs.forEach(input => {
+                const qty = parseInt(input.value) || 0;
+                if (qty > 0) {
+                    hasItems = true;
+                    itemIndex++;
+                    const name = input.getAttribute('data-name');
+                    const price = parseInt(input.getAttribute('data-price')) || 0;
+                    const itemSub = qty * price;
+                    subtotal += itemSub;
+
+                    const priceText = price === 0 ? '時價' : price.toLocaleString();
+                    const itemSubText = price === 0 ? '時價' : itemSub.toLocaleString();
+
+                    printHtml += `
+                        <tr style="border-bottom: 1px dashed #ccc;">
+                            <td style="padding: 8px 4px;">${itemIndex}</td>
+                            <td style="padding: 8px 4px;">${name}</td>
+                            <td style="padding: 8px 4px; text-align: right;">${priceText}</td>
+                            <td style="padding: 8px 4px; text-align: right;">${qty}</td>
+                            <td style="padding: 8px 4px; text-align: right;">${itemSubText}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (!hasItems) {
+                // 若沒有選擇任何餐點，不執行列印
+                return;
+            }
+
+            const serviceFee = Math.round(subtotal * 0.1);
+            const total = subtotal + serviceFee;
+
+            printHtml += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 20px; border-top: 2px solid #000; padding-top: 10px; text-align: right; font-size: 16px;">
+                    <div style="margin-bottom: 4px;">小計： NT$ ${subtotal.toLocaleString()}</div>
+                    <div style="margin-bottom: 4px;">服務費 (10%)： NT$ ${serviceFee.toLocaleString()}</div>
+                    <div style="font-size: 20px; font-weight: bold; margin-top: 8px; color: #b91c1c;">總計金額： NT$ ${total.toLocaleString()}</div>
+                </div>
+                <div style="margin-top: 20px; font-size: 12px; color: #666; text-align: center;">
+                    * 時價品項不計入自動結算，需另行確認。
+                </div>
+            `;
+
+            const printArea = document.getElementById('print-area');
+            printArea.innerHTML = printHtml;
+
+            // 觸發瀏覽器列印
+            window.print();
         }
     </script>
 </body>
