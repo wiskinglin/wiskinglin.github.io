@@ -1,0 +1,1628 @@
+/* ==================== 1. 全域變數與重置 ==================== */
+:root {
+  /* HSL 柔和諧調色彩系統 */
+  --theme-bg-light: #FFF9EB;
+  --color-primary: #EAA850;
+  /* 柯基焦糖橙 */
+  --color-primary-light: #FFD166;
+  /* 陽光橙黃 */
+  --color-accent: #EF476F;
+  /* 肉墊粉 */
+  --color-info: #118AB2;
+  /* 清爽藍 */
+  --color-success: #06D6A0;
+  /* 生機綠 */
+  --color-dark: #2B2D42;
+  /* 質感深紫灰 */
+  --color-gray: #8D99AE;
+  --color-white: #FFFFFF;
+
+  /* 毛玻璃樣式 */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.45);
+  --glass-shadow: 0 8px 32px 0 rgba(234, 168, 80, 0.15);
+  --glass-shadow-hover: 0 12px 40px 0 rgba(234, 168, 80, 0.25);
+
+  --font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+  --border-radius-lg: 24px;
+  --border-radius-md: 16px;
+  --border-radius-sm: 8px;
+
+  --transition-speed: 0.3s;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--theme-bg-light);
+  color: var(--color-dark);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ==================== 2. 版面佈局 (RWD 雙欄自適應) ==================== */
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  /* 手機版預設寬度 */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: max-width var(--transition-speed) ease-in-out;
+}
+
+/* 頂部狀態列 */
+.top-bar {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: var(--glass-border);
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+}
+
+.corgi-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.corgi-info .avatar {
+  font-size: 28px;
+  background: rgba(234, 168, 80, 0.15);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary-light);
+}
+
+.info-text h1 {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--color-dark);
+}
+
+.info-text .status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: rgba(234, 168, 80, 0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-top: 2px;
+}
+
+.currency-group {
+  display: flex;
+  gap: 8px;
+}
+
+.currency {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-white);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.currency.bone {
+  color: var(--color-gray);
+}
+
+.currency.gold-bone {
+  color: #D4AF37;
+}
+
+/* 屬性數值列 */
+.attributes-panel {
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  background-color: var(--theme-bg-light);
+  border-bottom: 1px solid rgba(234, 168, 80, 0.1);
+  z-index: 9;
+}
+
+.attr-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-white);
+  padding: 6px 10px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(234, 168, 80, 0.08);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.attr-item .icon {
+  font-size: 18px;
+}
+
+.attr-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.attr-details .label {
+  font-size: 10px;
+  color: var(--color-gray);
+  font-weight: 700;
+}
+
+.attr-details .value {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--color-dark);
+}
+
+/* 主遊戲視窗 */
+.game-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #ECE5D3;
+}
+
+.game-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center bottom;
+  transition: background-image 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 柯基容器 */
+.corgi-container {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 220px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  cursor: pointer;
+  z-index: 5;
+}
+
+.corgi-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* 生理指標面板 */
+.stats-panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border-top: var(--glass-border);
+  z-index: 8;
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  box-shadow: 0 -8px 24px rgba(234, 168, 80, 0.08);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-header {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stat-header .icon {
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+.stat-header .label {
+  color: var(--color-dark);
+}
+
+.stat-header .percent {
+  margin-left: auto;
+  font-weight: 900;
+  color: var(--color-primary);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar .fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+}
+
+.hunger-fill {
+  background-color: var(--color-primary);
+}
+
+.clean-fill {
+  background-color: var(--color-info);
+}
+
+.happy-fill {
+  background-color: var(--color-accent);
+}
+
+/* 動作按鈕區 */
+.action-buttons {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+  background-color: var(--color-white);
+  z-index: 8;
+}
+
+.btn-action {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: var(--theme-bg-light);
+  border: 1px solid rgba(234, 168, 80, 0.15);
+  padding: 10px;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+  background: var(--color-primary-light);
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+.btn-action .icon-btn {
+  font-size: 20px;
+}
+
+.btn-action .text-btn {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--color-dark);
+}
+
+/* 底部導航欄 */
+.footer-nav {
+  padding: 10px 8px;
+  display: flex;
+  justify-content: space-around;
+  background: var(--color-dark);
+  z-index: 8;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-gray);
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color var(--transition-speed);
+}
+
+.nav-item:hover,
+.nav-item.active {
+  color: var(--color-primary-light);
+}
+
+.nav-item .icon-nav {
+  font-size: 20px;
+}
+
+.nav-item .text-nav {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* ==================== 3. 柯基 SVG 骨骼動畫 Keyframes ==================== */
+
+/* --- 3.1 待機動畫 (Idle) --- */
+.status-idle .corgi-torso {
+  animation: breathing 3s ease-in-out infinite;
+}
+
+.status-idle .corgi-chest {
+  animation: breathing-chest 3s ease-in-out infinite;
+}
+
+.status-idle .corgi-head {
+  animation: idle-head 3s ease-in-out infinite;
+}
+
+.status-idle .ear-l {
+  animation: ear-wag-l 6s ease-in-out infinite;
+}
+
+.status-idle .ear-r {
+  animation: ear-wag-r 6s ease-in-out infinite;
+}
+
+.status-idle .corgi-tail {
+  animation: idle-tail 4s ease-in-out infinite;
+}
+
+.status-idle .corgi-eyes {
+  animation: blinking 4s steps(1) infinite;
+}
+
+/* --- 3.2 走路動畫 (Walk) --- */
+.status-walk {
+  animation: walk-bounce 0.6s ease-in-out infinite alternate;
+}
+
+.status-walk .leg-fl {
+  animation: leg-swing-f 0.6s ease-in-out infinite alternate;
+}
+
+.status-walk .leg-fr {
+  animation: leg-swing-f 0.6s ease-in-out infinite alternate-reverse;
+}
+
+.status-walk .leg-bl {
+  animation: leg-swing-b 0.6s ease-in-out infinite alternate-reverse;
+}
+
+.status-walk .leg-br {
+  animation: leg-swing-b 0.6s ease-in-out infinite alternate;
+}
+
+.status-walk .corgi-butt-group {
+  animation: walk-butt-jiggle 0.3s ease-in-out infinite alternate;
+}
+
+.status-walk .corgi-tail {
+  animation: tail-shake-fast 0.3s ease-in-out infinite alternate;
+}
+
+/* --- 3.3 跑步動畫 (Run) --- */
+.status-run {
+  animation: run-bounce 0.4s ease-in-out infinite alternate;
+}
+
+.status-run .corgi-head {
+  transform: translate(10px, 8px) rotate(5deg);
+}
+
+.status-run .ear-l,
+.status-run .ear-r {
+  transform: rotate(-15deg);
+  /* 耳朵往後貼 */
+}
+
+.status-run .leg-fl {
+  animation: leg-run-f 0.4s ease-in-out infinite alternate;
+}
+
+.status-run .leg-fr {
+  animation: leg-run-f 0.4s ease-in-out infinite alternate-reverse;
+}
+
+.status-run .leg-bl {
+  animation: leg-run-b 0.4s ease-in-out infinite alternate-reverse;
+}
+
+.status-run .leg-br {
+  animation: leg-run-b 0.4s ease-in-out infinite alternate;
+}
+
+.status-run .corgi-tail {
+  animation: tail-shake-crazy 0.2s ease-in-out infinite alternate;
+}
+
+/* --- 3.4 趴下動畫 (Sploot) --- */
+.status-sploot .corgi-torso {
+  transform: scaleY(0.65) translateY(55px);
+  transform-origin: bottom;
+  transition: transform 0.5s ease-out;
+}
+
+.status-sploot .corgi-chest {
+  transform: scaleY(0.65) translateY(55px);
+  transform-origin: bottom;
+  transition: transform 0.5s ease-out;
+}
+
+.status-sploot .corgi-head {
+  transform: translateY(35px);
+  transition: transform 0.5s ease-out;
+}
+
+.status-sploot .corgi-leg {
+  transform: translateY(12px) scaleX(1.3);
+  transform-origin: center;
+  transition: transform 0.5s ease-out;
+}
+
+.status-sploot .corgi-butt-group {
+  transform: scaleY(0.8) translateY(20px);
+  transform-origin: bottom;
+}
+
+/* --- 3.5 挖土動畫 (Digging) --- */
+@keyframes digging-action {
+  0% {
+    transform: rotate(-8deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(8deg) translateY(-8px);
+  }
+}
+
+@keyframes digging-tail-wag {
+  0% {
+    transform: rotate(-30deg);
+  }
+
+  100% {
+    transform: rotate(30deg);
+  }
+}
+
+.digging-butt {
+  animation: digging-action 0.15s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+
+.digging-tail {
+  animation: digging-tail-wag 0.1s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+
+/* 泥土粒子動畫 */
+@keyframes particle-spray-l {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-80px, -50px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-spray-r {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(80px, -50px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.soil.s1 {
+  animation: particle-spray-l 0.3s ease-out infinite;
+}
+
+.soil.s3 {
+  animation: particle-spray-l 0.4s ease-out infinite 0.1s;
+}
+
+.soil.s2 {
+  animation: particle-spray-r 0.3s ease-out infinite;
+}
+
+.soil.s4 {
+  animation: particle-spray-r 0.4s ease-out infinite 0.1s;
+}
+
+/* ==================== 4. CSS 動畫 Keyframes 定義 ==================== */
+@keyframes breathing {
+
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.96) translateY(2px);
+  }
+}
+
+@keyframes breathing-chest {
+
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.97) translateY(1.5px);
+  }
+}
+
+@keyframes idle-head {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(3px) rotate(1deg);
+  }
+}
+
+@keyframes ear-wag-l {
+
+  0%,
+  90%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  93%,
+  97% {
+    transform: rotate(-6deg);
+  }
+
+  95% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes ear-wag-r {
+
+  0%,
+  85%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  88%,
+  92% {
+    transform: rotate(6deg);
+  }
+
+  90% {
+    transform: rotate(-3deg);
+  }
+}
+
+@keyframes idle-tail {
+
+  0%,
+  80%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  84%,
+  92% {
+    transform: rotate(15deg);
+  }
+
+  88%,
+  96% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes blinking {
+
+  0%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  98% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* 走路位移 keyframes */
+@keyframes walk-bounce {
+  0% {
+    transform: translate(-50%, 0) rotate(-1deg);
+  }
+
+  100% {
+    transform: translate(-50%, -8px) rotate(1deg);
+  }
+}
+
+@keyframes leg-swing-f {
+  0% {
+    transform: rotate(-15deg) translateY(-2px);
+  }
+
+  100% {
+    transform: rotate(15deg) translateY(0);
+  }
+}
+
+@keyframes leg-swing-b {
+  0% {
+    transform: rotate(12deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(-12deg) translateY(-3px);
+  }
+}
+
+@keyframes walk-butt-jiggle {
+  0% {
+    transform: translateX(-4px) rotate(-2deg);
+  }
+
+  100% {
+    transform: translateX(4px) rotate(2deg);
+  }
+}
+
+@keyframes tail-shake-fast {
+  0% {
+    transform: rotate(-25deg);
+  }
+
+  100% {
+    transform: rotate(25deg);
+  }
+}
+
+/* 跑步位移 keyframes */
+@keyframes run-bounce {
+  0% {
+    transform: translate(-50%, 4px) scaleY(0.95);
+  }
+
+  100% {
+    transform: translate(-50%, -16px) scaleY(1.02);
+  }
+}
+
+@keyframes leg-run-f {
+  0% {
+    transform: rotate(-30deg) translate(-5px, -5px);
+  }
+
+  100% {
+    transform: rotate(30deg) translate(5px, 0);
+  }
+}
+
+@keyframes leg-run-b {
+  0% {
+    transform: rotate(25deg) translate(3px, 0);
+  }
+
+  100% {
+    transform: rotate(-25deg) translate(-5px, -5px);
+  }
+}
+
+@keyframes tail-shake-crazy {
+  0% {
+    transform: rotate(-45deg);
+  }
+
+  100% {
+    transform: rotate(45deg);
+  }
+}
+
+/* ==================== 5. 抽屜與彈出視窗 UI (Glassmorphism) ==================== */
+.drawer-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(43, 45, 66, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.drawer-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-height: 80%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border-top: var(--glass-border);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.1);
+  z-index: 101;
+  transform: translateY(100%);
+  transition: transform var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer.active {
+  transform: translateY(0);
+}
+
+.drawer-header {
+  padding: 20px 24px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(234, 168, 80, 0.1);
+}
+
+.drawer-header h2 {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.btn-close {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background var(--transition-speed);
+}
+
+.btn-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.drawer-content {
+  padding: 20px 24px 30px;
+  overflow-y: auto;
+  flex-content: 1;
+}
+
+.drawer-desc {
+  font-size: 13px;
+  color: var(--color-gray);
+  margin-bottom: 20px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+/* 按鈕樣式 */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary));
+  color: var(--color-dark);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-md);
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(234, 168, 80, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(234, 168, 80, 0.4.5);
+}
+
+.btn-danger {
+  background: var(--color-accent);
+  color: var(--color-white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-md);
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* 培育訓練選項卡 */
+.train-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.train-card {
+  background: var(--color-white);
+  border: 1px solid rgba(234, 168, 80, 0.1);
+  padding: 16px;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  transition: border var(--transition-speed);
+}
+
+.train-card:hover {
+  border-color: var(--color-primary);
+}
+
+.train-icon {
+  font-size: 28px;
+}
+
+.train-card h3 {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.train-card p {
+  font-size: 12px;
+  color: var(--color-gray);
+}
+
+.train-reward {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.train-card .btn-primary {
+  align-self: flex-end;
+}
+
+/* 冒險散步選卡 */
+.walk-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.walk-card {
+  background: var(--color-white);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(234, 168, 80, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.walk-img {
+  height: 100px;
+  background-size: cover;
+  background-position: center;
+}
+
+.walk-info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.walk-info h3 {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.walk-time {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--color-info);
+  background: rgba(17, 138, 178, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+  align-self: flex-start;
+}
+
+.walk-info p {
+  font-size: 12px;
+  color: var(--color-gray);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.walk-info .btn-primary {
+  margin-top: 10px;
+}
+
+/* 散步倒數面板 */
+.walk-active-panel {
+  padding: 20px 0;
+  text-align: center;
+}
+
+.walk-status-card {
+  background: var(--color-white);
+  padding: 24px;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.walk-dog-emoji {
+  font-size: 48px;
+  display: inline-block;
+  animation: walk-bounce 0.6s ease-in-out infinite alternate;
+}
+
+.walk-timer-display {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--color-primary);
+  letter-spacing: 2px;
+}
+
+.walk-tip {
+  font-size: 12px;
+  color: var(--color-gray);
+  font-weight: 700;
+}
+
+/* 扭蛋機樣式 */
+.gacha-machine {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gacha-display {
+  height: 200px;
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  border: 2px dashed rgba(234, 168, 80, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.gacha-idle-view {
+  text-align: center;
+}
+
+.gacha-chest-icon {
+  font-size: 64px;
+  display: inline-block;
+  animation: chest-bob 2s ease-in-out infinite alternate;
+}
+
+@keyframes chest-bob {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-10px);
+  }
+}
+
+.gacha-idle-view h3 {
+  font-size: 16px;
+  font-weight: 900;
+  margin-top: 10px;
+}
+
+.gacha-idle-view p {
+  font-size: 12px;
+  color: var(--color-gray);
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.gacha-reveal-view {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.reward-icon {
+  font-size: 64px;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.1));
+}
+
+.rarity-badge {
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 10px;
+  border-radius: 10px;
+  color: var(--color-white);
+}
+
+.rarity-badge.N {
+  background: var(--color-gray);
+}
+
+.rarity-badge.SR {
+  background: var(--color-info);
+}
+
+.rarity-badge.SSR {
+  background: var(--color-accent);
+}
+
+.gacha-controls {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-gacha-spin {
+  background: linear-gradient(135deg, #FFD166, #EAA850);
+  border: none;
+  padding: 16px 32px;
+  border-radius: 30px;
+  color: var(--color-dark);
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(234, 168, 80, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+
+.btn-gacha-spin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(234, 168, 80, 0.5);
+}
+
+/* 更衣室 */
+.closet-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 12px;
+  color: var(--color-dark);
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--color-dark);
+  color: var(--color-white);
+}
+
+.closet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.closet-card {
+  background: var(--color-white);
+  border: 2px solid transparent;
+  border-radius: var(--border-radius-md);
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.closet-card.equipped {
+  border-color: var(--color-success);
+  background: rgba(6, 214, 160, 0.05);
+}
+
+.closet-card.locked {
+  opacity: 0.5;
+}
+
+.closet-card .item-preview {
+  font-size: 32px;
+}
+
+.closet-card .item-name {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--color-dark);
+}
+
+.closet-card .item-rarity {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--color-gray);
+}
+
+/* 設定面板額外樣式 */
+.settings-group {
+  background: var(--color-white);
+  padding: 16px;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 16px;
+  border: 1px solid rgba(234, 168, 80, 0.1);
+}
+
+.settings-group h3 {
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 12px;
+  color: var(--color-dark);
+  border-left: 3px solid var(--color-primary);
+  padding-left: 8px;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.setting-row label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.setting-row-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.setting-row-column input {
+  padding: 10px 14px;
+  border-radius: var(--border-radius-md);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  font-size: 13px;
+  outline: none;
+}
+
+.setting-row-column input:focus {
+  border-color: var(--color-primary);
+}
+
+.sync-status {
+  font-size: 11px;
+  font-weight: 700;
+  display: block;
+  margin-top: 8px;
+}
+
+.status-offline {
+  color: var(--color-gray);
+}
+
+.status-online {
+  color: var(--color-success);
+}
+
+.topup-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.btn-topup {
+  background: var(--theme-bg-light);
+  border: 1px solid rgba(234, 168, 80, 0.15);
+  border-radius: var(--border-radius-md);
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-topup:hover {
+  background: #FFD166;
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.topup-bones {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--color-dark);
+}
+
+.topup-cost {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+/* ==================== 6. 隨機事件 Modal 樣式 ==================== */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(43, 45, 66, 0.5);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-speed);
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  width: 85%;
+  max-width: 380px;
+  background: var(--color-white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  padding: 24px;
+  transform: scale(0.9);
+  transition: transform var(--transition-speed) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.active .modal-card {
+  transform: scale(1);
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.event-postcard {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  background: #FFFDFC;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.postcard-bg {
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+}
+
+.postcard-stamp {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  background: var(--color-white);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.postcard-msg {
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--color-dark);
+  line-height: 1.5;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.reward-display h3 {
+  font-size: 13px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.reward-loot {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+/* 愛心與洗澡粒子漂浮動畫 */
+.float-effect {
+  position: absolute;
+  pointer-events: none;
+  font-size: 24px;
+  z-index: 10;
+  animation: floatUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translate(-50%, 0) scale(0.5);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -80px) scale(1.3);
+    opacity: 0;
+  }
+}
+
+.bubble-fx {
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(17, 138, 178, 0.4) 70%);
+  border-radius: 50%;
+  box-shadow: inset -2px -2px 6px rgba(17, 138, 178, 0.3);
+  z-index: 10;
+  animation: floatBubble 1.2s ease-out forwards;
+}
+
+@keyframes floatBubble {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: translate(var(--dx), -40px) scale(1.1);
+  }
+
+  100% {
+    transform: translate(var(--dx-end), -80px) scale(0);
+    opacity: 0;
+  }
+}
+
+/* ==================== 7. PC 寬螢幕樣式升級 (RWD 雙欄自適應) ==================== */
+@media (min-width: 1024px) {
+  .app-container {
+    max-width: 1050px;
+    /* 大螢幕展開為寬雙欄 */
+    flex-direction: row;
+    height: 90vh;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.08);
+  }
+
+  /* 左半邊為遊戲主視窗 */
+  .top-bar,
+  .attributes-panel,
+  .game-viewport,
+  .stats-panel,
+  .action-buttons,
+  .footer-nav {
+    /* 這裡由 flex 控制 */
+  }
+
+  /* 為了達到雙欄，我們將左半邊包裝起來 */
+  /* 我們可以直接使用 JS 配合 CSS Grid 來實現：在 index.html 依然是線性，但在 CSS 裡重新定義網格 */
+  /* 完美的做法：大螢幕下 app-container 變成 grid */
+  .app-container {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    grid-template-rows: auto auto 1fr auto;
+    grid-template-areas:
+      "topbar topbar"
+      "attr attr"
+      "viewport drawer"
+      "actions nav";
+  }
+
+  .top-bar {
+    grid-area: topbar;
+  }
+
+  .attributes-panel {
+    grid-area: attr;
+  }
+
+  .game-viewport {
+    grid-area: viewport;
+    height: 100%;
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* 常駐顯示的 PC 功能面板欄位 */
+  .stats-panel {
+    grid-area: actions;
+    border-radius: 0;
+    border-top: var(--glass-border);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 12px 16px;
+    height: 100%;
+  }
+
+  .action-buttons {
+    grid-area: actions;
+    border-top: none;
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    background: transparent;
+    padding-top: 0;
+    justify-content: space-around;
+  }
+
+  /* 我們大螢幕的 Grid 調整為：
+     [Topbar] [Topbar]
+     [Attr]   [Attr]
+     [Game]   [Drawer/Closet/Settings]
+     [Stats & Actions] [Nav]
+  */
+
+  .app-container {
+    grid-template-areas:
+      "topbar topbar"
+      "attr attr"
+      "viewport drawer-panel"
+      "controls nav";
+  }
+
+  /* 在這裏我們不重構 HTML，只讓 drawer 大螢幕下成為 grid 中的右側 panel 且不再滑出，而是常駐展示！ */
+  /* 如果 drawer 是 active 的，在大螢幕下它會自動填充到右側區域 `drawer-panel`！這非常酷！ */
+
+  .drawer {
+    position: relative;
+    grid-area: drawer-panel;
+    transform: none;
+    max-height: 100%;
+    height: 100%;
+    border-top: none;
+    border-left: var(--glass-border);
+    border-radius: 0;
+    display: none;
+    /* 預設在沒有 active 時不顯示，active 時顯示 */
+    background: var(--color-white);
+  }
+
+  .drawer.active {
+    display: flex;
+    transform: none;
+  }
+
+  /* 如果沒有任何 drawer 是 active 時，我們讓右側顯示衣帽間或是主培育面板 */
+  /* 預設右邊可以佔位顯示一個空的或歡迎卡片，或是設定為預設開啟 closet 抽屜 */
+  .drawer-overlay {
+    display: none;
+    /* 大螢幕下不需要 modal 遮罩，可以直接互動 */
+  }
+
+  .stats-panel {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 8px 16px;
+  }
+
+  .stat-item {
+    flex: 1;
+  }
+
+  /* 將 stats-panel 與 action-buttons 合併為 controls 區域 */
+  .app-container {
+    grid-template-rows: auto auto 1.3fr auto auto;
+    grid-template-areas:
+      "topbar topbar"
+      "attr attr"
+      "viewport drawer-panel"
+      "stats drawer-panel"
+      "controls nav";
+  }
+
+  .stats-panel {
+    grid-area: stats;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .action-buttons {
+    grid-area: controls;
+    border-top: none;
+  }
+
+  .footer-nav {
+    grid-area: nav;
+    border-top: var(--glass-border);
+    border-left: var(--glass-border);
+  }
+
+  /* 大螢幕的彈出式視窗居中 */
+  .modal-card {
+    max-width: 420px;
+  }
+}

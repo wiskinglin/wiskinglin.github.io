@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Summer Park - 柯基養成公園</title>
+  <meta name="description" content="一隻短腿柯基犬的夏日放置陪伴與冒險遊戲！">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#EAA850">
+  <!-- 引入 Google Fonts: Outfit 與 Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-default">
+  <div class="app-container">
+    
+    <!-- 頂部狀態列 -->
+    <header class="top-bar">
+      <div class="corgi-info">
+        <span class="avatar">🐶</span>
+        <div class="info-text">
+          <h1 id="corgi-name">小薯條 (Corgi)</h1>
+          <span class="status-badge" id="corgi-state-label">客廳休息中</span>
+        </div>
+      </div>
+      
+      <div class="currency-group">
+        <div class="currency bone" title="普通狗骨頭 (日常代幣)">
+          <span class="icon">🦴</span>
+          <span id="val-bones" class="value">100</span>
+        </div>
+        <div class="currency gold-bone" title="黃金狗骨頭 (付費代幣)">
+          <span class="icon">🪙</span>
+          <span id="val-gold-bones" class="value">10</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 屬性狀態列 (速度、魅力、智商) -->
+    <section class="attributes-panel">
+      <div class="attr-item" id="attr-speed" title="速度 (影響散步速度)">
+        <span class="icon">🏃‍♂️</span>
+        <div class="attr-details">
+          <span class="label">速度</span>
+          <span id="val-speed" class="value">10</span>
+        </div>
+      </div>
+      <div class="attr-item" id="attr-charm" title="魅力 (影響隨機事件稀有度)">
+        <span class="icon">💖</span>
+        <div class="attr-details">
+          <span class="label">魅力</span>
+          <span id="val-charm" class="value">10</span>
+        </div>
+      </div>
+      <div class="attr-item" id="attr-iq" title="智商 (影響散步事件骨頭獲得量)">
+        <span class="icon">🧠</span>
+        <div class="attr-details">
+          <span class="label">智商</span>
+          <span id="val-iq" class="value">10</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主遊戲畫面區域 -->
+    <main class="game-viewport">
+      <!-- 遊戲背景層 -->
+      <div class="game-bg" id="game-bg-layer" style="background-image: url('./assets/background-home.png');"></div>
+      
+      <!-- 互動漂浮特效容器 -->
+      <div id="effect-container" class="effect-container"></div>
+
+      <!-- 柯基角色容器 -->
+      <div class="corgi-container status-idle" id="corgi-character">
+        
+        <!-- SVG 柯基與骨骼結構 -->
+        <svg class="corgi-svg" viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <!-- 陰影濾鏡 -->
+            <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="6" stdDeviation="4" flood-opacity="0.15"/>
+            </filter>
+            <!-- 焦糖色漸層 -->
+            <linearGradient id="caramelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#F3B361"/>
+              <stop offset="100%" stop-color="#D98829"/>
+            </linearGradient>
+            <!-- 陰影漸層 -->
+            <radialGradient id="floorShadow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(0,0,0,0.25)"/>
+              <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+            </radialGradient>
+          </defs>
+
+          <!-- 地面陰影 -->
+          <ellipse class="corgi-shadow" cx="150" cy="220" rx="75" ry="12" fill="url(#floorShadow)" />
+
+          <!-- 背部/配件裝飾插槽 -->
+          <g id="slot-back" class="item-slot back-slot" transform="translate(150, 150)"></g>
+
+          <!-- 柯基身體群組 -->
+          <g class="corgi-body" filter="url(#shadow)">
+            <!-- 後腿 (左/右) -->
+            <ellipse class="corgi-leg leg-bl" cx="95" cy="205" rx="16" ry="14" fill="#D98829" />
+            <ellipse class="corgi-leg leg-br" cx="195" cy="205" rx="16" ry="14" fill="#D98829" />
+            
+            <!-- 前腿 (左/右) -->
+            <rect class="corgi-leg leg-fl" x="115" y="195" width="18" height="24" rx="9" fill="#F3B361" />
+            <rect class="corgi-leg leg-fr" x="160" y="195" width="18" height="24" rx="9" fill="#F3B361" />
+
+            <!-- 圓滾滾的大屁股與尾巴 (僅在背向或扭屁股時突顯，正面時為身體背景) -->
+            <g class="corgi-butt-group">
+              <path class="corgi-tail" d="M 85 145 C 75 140, 70 150, 72 155 C 75 160, 85 152, 85 145 Z" fill="#D98829" />
+              <!-- 吐司屁股 -->
+              <ellipse class="corgi-butt-cheek cheek-l" cx="110" cy="165" rx="35" ry="32" fill="url(#caramelGrad)" />
+              <ellipse class="corgi-butt-cheek cheek-r" cx="170" cy="165" rx="35" ry="32" fill="url(#caramelGrad)" />
+              <!-- 白肚皮/白色心形屁屁心 -->
+              <path class="corgi-butt-white" d="M 140 145 C 115 140, 105 170, 140 192 C 175 170, 165 140, 140 145 Z" fill="#FFFFFF" />
+            </g>
+            
+            <!-- 身體軀幹 (正面與側面混合) -->
+            <rect class="corgi-torso" x="90" y="125" width="115" height="75" rx="35" fill="url(#caramelGrad)" />
+            <!-- 胸前白毛 -->
+            <path class="corgi-chest" d="M 125 130 Q 150 125 175 130 Q 185 160 150 185 Q 115 160 125 130 Z" fill="#FFFFFF" />
+          </g>
+
+          <!-- 身體裝飾插槽 -->
+          <g id="slot-body" class="item-slot body-slot" transform="translate(150, 160)"></g>
+
+          <!-- 柯基頭部群組 -->
+          <g class="corgi-head" filter="url(#shadow)">
+            <!-- 脖子 -->
+            <rect class="corgi-neck" x="135" y="105" width="30" height="30" fill="url(#caramelGrad)" />
+            
+            <!-- 大立耳 (左/右) -->
+            <g class="corgi-ear ear-l">
+              <path d="M 115 90 C 90 70, 95 30, 115 25 C 135 20, 135 60, 125 90 Z" fill="url(#caramelGrad)" />
+              <path d="M 118 80 C 103 65, 106 38, 117 35 C 128 32, 129 55, 123 80 Z" fill="#EF476F" opacity="0.6" />
+            </g>
+            <g class="corgi-ear ear-r">
+              <path d="M 185 90 C 210 70, 205 30, 185 25 C 165 20, 165 60, 175 90 Z" fill="url(#caramelGrad)" />
+              <path d="M 182 80 C 197 65, 194 38, 183 35 C 172 32, 171 55, 177 80 Z" fill="#EF476F" opacity="0.6" />
+            </g>
+
+            <!-- 圓圓大腦袋 -->
+            <ellipse class="corgi-face" cx="150" cy="95" rx="42" ry="36" fill="url(#caramelGrad)" />
+            
+            <!-- 臉部白毛 (額頭與嘴部) -->
+            <path class="corgi-face-white" d="M 150 70 L 142 85 L 122 95 Q 150 125 178 95 L 158 85 Z" fill="#FFFFFF" />
+            
+            <!-- 腮紅 (左/右) -->
+            <circle cx="120" cy="98" r="6" fill="#EF476F" opacity="0.4" />
+            <circle cx="180" cy="98" r="6" fill="#EF476F" opacity="0.4" />
+
+            <!-- 雙眼 (左/右) -->
+            <g class="corgi-eyes">
+              <circle class="corgi-eye eye-l" cx="132" cy="88" r="5" fill="#2B2D42" />
+              <circle class="eye-shine-l" cx="130" cy="86" r="1.5" fill="#FFFFFF" />
+              <circle class="corgi-eye eye-r" cx="168" cy="88" r="5" fill="#2B2D42" />
+              <circle class="eye-shine-r" cx="166" cy="86" r="1.5" fill="#FFFFFF" />
+            </g>
+
+            <!-- 鼻子 -->
+            <ellipse cx="150" cy="96" rx="5" ry="3.5" fill="#2B2D42" />
+            
+            <!-- 開心 W 嘴巴與舌頭 -->
+            <g class="corgi-mouth">
+              <path d="M 142 98 Q 146 103 150 98 Q 154 103 158 98" fill="none" stroke="#2B2D42" stroke-width="2.5" stroke-linecap="round" />
+              <!-- 開口笑的紅舌頭 -->
+              <path class="corgi-tongue" d="M 146 100 Q 150 114 154 100 Z" fill="#EF476F" />
+            </g>
+          </g>
+
+          <!-- 頭部裝飾插槽 -->
+          <g id="slot-head" class="item-slot head-slot" transform="translate(150, 75)"></g>
+        </svg>
+
+        <!-- 泡泡/碎石動畫物件 (吃東西、洗澡時顯示) -->
+        <div class="corgi-bubbles" id="corgi-fx-bubbles"></div>
+      </div>
+    </main>
+
+    <!-- 生理指標狀態面板 -->
+    <section class="stats-panel">
+      <div class="stat-item" id="stat-hunger">
+        <div class="stat-header">
+          <span class="icon">🍖</span>
+          <span class="label">飽食度</span>
+          <span class="percent" id="lbl-hunger">100%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="fill hunger-fill" id="bar-hunger" style="width: 100%;"></div>
+        </div>
+      </div>
+      
+      <div class="stat-item" id="stat-clean">
+        <div class="stat-header">
+          <span class="icon">🧼</span>
+          <span class="label">清潔度</span>
+          <span class="percent" id="lbl-clean">100%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="fill clean-fill" id="bar-clean" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <div class="stat-item" id="stat-happy">
+        <div class="stat-header">
+          <span class="icon">❤️</span>
+          <span class="label">心情值</span>
+          <span class="percent" id="lbl-happy">100%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="fill happy-fill" id="bar-happy" style="width: 100%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 核心操作按鈕區 -->
+    <section class="action-buttons">
+      <button class="btn-action" id="btn-feed" title="餵食美味罐頭">
+        <span class="icon-btn">🍖</span>
+        <span class="text-btn">餵食</span>
+      </button>
+      <button class="btn-action" id="btn-bath" title="舒服的洗個熱水澡">
+        <span class="icon-btn">🧼</span>
+        <span class="text-btn">洗澡</span>
+      </button>
+      <button class="btn-action" id="btn-pet" title="溫柔撫摸柯基">
+        <span class="icon-btn">👋</span>
+        <span class="text-btn">撫摸</span>
+      </button>
+    </section>
+
+    <!-- 底部功能選單列 -->
+    <footer class="footer-nav">
+      <button class="nav-item" id="nav-train">
+        <span class="icon-nav">🏋️‍♂️</span>
+        <span class="text-nav">培育訓練</span>
+      </button>
+      <button class="nav-item" id="nav-walk">
+        <span class="icon-nav">🌳</span>
+        <span class="text-nav">冒險散步</span>
+      </button>
+      <button class="nav-item" id="nav-gacha">
+        <span class="icon-nav">🎁</span>
+        <span class="text-nav">盲盒扭蛋</span>
+      </button>
+      <button class="nav-item" id="nav-closet">
+        <span class="icon-nav">👕</span>
+        <span class="text-nav">衣帽更衣</span>
+      </button>
+      <button class="nav-item" id="nav-settings">
+        <span class="icon-nav">⚙️</span>
+        <span class="text-nav">設定儲值</span>
+      </button>
+    </footer>
+
+    <!-- ==================== 各功能抽屜 (Glassmorphism Drawers) ==================== -->
+    
+    <!-- 遮罩層 -->
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+
+    <!-- 1. 訓練抽屜 -->
+    <div class="drawer" id="drawer-train">
+      <div class="drawer-header">
+        <h2>🏋️‍♂️ 柯基能力特訓</h2>
+        <button class="btn-close">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <p class="drawer-desc">消耗體力進行特訓，能提升柯基的各項屬性數值！</p>
+        <div class="train-options">
+          <div class="train-card" data-type="speed">
+            <span class="train-icon">🏃‍♂️</span>
+            <h3>短腿快跑</h3>
+            <p>提升「速度」屬性，讓散步冒險的速度更快！</p>
+            <span class="train-reward">速度 +1 ~ +3</span>
+            <button class="btn-primary start-train-btn">開始訓練</button>
+          </div>
+          <div class="train-card" data-type="charm">
+            <span class="train-icon">💖</span>
+            <h3>微笑練習</h3>
+            <p>提升「魅力」屬性，提高散步時帶回稀有裝扮的機率！</p>
+            <span class="train-reward">魅力 +1 ~ +3</span>
+            <button class="btn-primary start-train-btn">開始訓練</button>
+          </div>
+          <div class="train-card" data-type="iq">
+            <span class="train-icon">🧠</span>
+            <h3>聞香尋物</h3>
+            <p>提升「智商」屬性，增加散步時獲得的狗骨頭數量！</p>
+            <span class="train-reward">智商 +1 ~ +3</span>
+            <button class="btn-primary start-train-btn">開始訓練</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 散步抽屜 -->
+    <div class="drawer" id="drawer-walk">
+      <div class="drawer-header">
+        <h2>🌳 夏日大冒險 (散步)</h2>
+        <button class="btn-close">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <!-- 散步中狀態面板 -->
+        <div class="walk-active-panel hidden" id="walk-active-panel">
+          <div class="walk-status-card">
+            <div class="walk-gif-placeholder">
+              <span class="walk-dog-emoji">🐕💨</span>
+            </div>
+            <h3 id="walk-target-name">正前往 陽光綠地 散步中...</h3>
+            <div class="walk-timer-display" id="walk-timer">00:00</div>
+            <p class="walk-tip">柯基正努力探索地圖，倒數結束後會帶回驚喜喔！</p>
+            <button class="btn-danger" id="btn-cancel-walk">召回柯基</button>
+          </div>
+        </div>
+
+        <!-- 散步選擇面板 -->
+        <div class="walk-selection-panel" id="walk-selection-panel">
+          <p class="drawer-desc">選擇要派遣柯基前往探索的夏日場景，不同地圖會帶回不同獎勵！</p>
+          <div class="walk-options">
+            <div class="walk-card" data-map="park">
+              <div class="walk-img" style="background-image: url('./assets/background-park.png');"></div>
+              <div class="walk-info">
+                <h3>陽光綠地</h3>
+                <span class="walk-time">⏱️ 1 分鐘</span>
+                <p>消耗低，產出普通狗骨頭與 [N 級] 草帽或書包裝飾。</p>
+                <button class="btn-primary start-walk-btn">出發散步</button>
+              </div>
+            </div>
+            <div class="walk-card" data-map="beach">
+              <div class="walk-img" style="background-image: url('./assets/background-beach.png');"></div>
+              <div class="walk-info">
+                <h3>夏日海灘</h3>
+                <span class="walk-time">⏱️ 3 分鐘</span>
+                <p>中等消耗，產出豐富狗骨頭與 [N/SR 級] 墨鏡與花襯衫。</p>
+                <button class="btn-primary start-walk-btn">出發散步</button>
+              </div>
+            </div>
+            <div class="walk-card" data-map="camp">
+              <div class="walk-img" style="background-image: url('./assets/background-camp.png');"></div>
+              <div class="walk-info">
+                <h3>森林營地</h3>
+                <span class="walk-time">⏱️ 5 分鐘</span>
+                <p>高消耗，極高機率帶回大量代幣與 [SR/SSR 級] 蜜蜂裝、竹蜻蜓。</p>
+                <button class="btn-primary start-walk-btn">出發散步</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 扭蛋抽屜 -->
+    <div class="drawer" id="drawer-gacha">
+      <div class="drawer-header">
+        <h2>🎁 柯基屁屁挖寶扭蛋</h2>
+        <button class="btn-close">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <p class="drawer-desc">消耗 <span class="highlight">🪙 1 黃金狗骨頭</span> 讓柯基在後院挖寶，隨機獲得稀有 SSR/SR 裝扮！</p>
+        
+        <div class="gacha-machine">
+          <!-- 挖寶展示區 -->
+          <div class="gacha-display" id="gacha-display-screen">
+            <div class="gacha-corgi-back hidden" id="gacha-corgi-digging">
+              <!-- 柯基挖土動畫專用 SVG -->
+              <svg viewBox="0 0 200 150" width="100%" height="100%">
+                <!-- 屁屁挖土 -->
+                <g class="digging-butt">
+                  <ellipse cx="100" cy="80" rx="35" ry="30" fill="#F3B361" />
+                  <ellipse class="dig-cheek-l" cx="80" cy="90" rx="22" ry="20" fill="#D98829" />
+                  <ellipse class="dig-cheek-r" cx="120" cy="90" rx="22" ry="20" fill="#D98829" />
+                  <path d="M 100 80 C 85 75, 78 95, 100 110 C 122 95, 115 75, 100 80 Z" fill="#FFFFFF" />
+                  <path class="digging-tail" d="M 100 65 Q 95 50 100 45 Q 105 50 100 65" fill="#D98829" stroke="#2B2D42" stroke-width="1.5" />
+                </g>
+                <g class="soil-particles">
+                  <circle class="soil s1" cx="60" cy="115" r="4" fill="#8B5A2B" />
+                  <circle class="soil s2" cx="140" cy="115" r="3" fill="#8B5A2B" />
+                  <circle class="soil s3" cx="50" cy="100" r="2.5" fill="#8B5A2B" />
+                  <circle class="soil s4" cx="150" cy="95" r="3.5" fill="#8B5A2B" />
+                </g>
+              </svg>
+            </div>
+            <!-- 扭蛋未啟動畫面 -->
+            <div class="gacha-idle-view" id="gacha-idle-view">
+              <span class="gacha-chest-icon">📦</span>
+              <h3>黃金藏寶地</h3>
+              <p>稀有度機率：SSR 5% | SR 25% | N 70%</p>
+            </div>
+            <!-- 獎勵揭曉畫面 -->
+            <div class="gacha-reveal-view hidden" id="gacha-reveal-view">
+              <div class="reward-sparkle"></div>
+              <span class="reward-icon" id="gacha-reward-icon">👒</span>
+              <h3 id="gacha-reward-name">獲得 草帽 (N)</h3>
+              <span class="rarity-badge" id="gacha-reward-rarity">N</span>
+              <p id="gacha-reward-desc">一頂編織精緻的遮陽草帽，戴上後特別有夏日風情。</p>
+              <button class="btn-primary" id="btn-collect-gacha">收下裝扮</button>
+            </div>
+          </div>
+          
+          <div class="gacha-controls">
+            <button class="btn-gacha-spin" id="btn-gacha-play">
+              <span class="btn-icon">🪙 1</span>
+              <span class="btn-text">派柯基去挖寶！</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 衣帽更衣室 -->
+    <div class="drawer" id="drawer-closet">
+      <div class="drawer-header">
+        <h2>👕 柯基衣帽間</h2>
+        <button class="btn-close">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <p class="drawer-desc">為你的柯基穿上可愛或搞笑的夏日裝扮吧！</p>
+        
+        <!-- 更衣室頁籤 -->
+        <div class="closet-tabs">
+          <button class="tab-btn active" data-category="head">頭部</button>
+          <button class="tab-btn" data-category="body">身體</button>
+          <button class="tab-btn" data-category="back">背部</button>
+        </div>
+
+        <!-- 飾品清單區域 -->
+        <div class="closet-grid" id="closet-items-grid">
+          <!-- 裝扮卡片將由 JS 動態渲染 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 設定與儲值 -->
+    <div class="drawer" id="drawer-settings">
+      <div class="drawer-header">
+        <h2>⚙️ 遊戲設定與儲值</h2>
+        <button class="btn-close">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <div class="settings-group">
+          <h3>🎵 音效與音樂</h3>
+          <div class="setting-row">
+            <label for="setting-bgm">背景音樂 (BGM)</label>
+            <input type="checkbox" id="setting-bgm" checked>
+          </div>
+          <div class="setting-row">
+            <label for="setting-sfx">遊戲音效 (SFX)</label>
+            <input type="checkbox" id="setting-sfx" checked>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>🌐 雲端資料同步 (Cloudflare Workers)</h3>
+          <p class="setting-desc">填入您的 Cloudflare Workers API 網址，即可啟用雲端資料存檔同步與跨裝置遊玩，不填則使用 LocalStorage 本地遊玩。</p>
+          <div class="setting-row-column">
+            <input type="url" id="setting-api-url" placeholder="https://your-worker.workers.dev">
+            <button class="btn-primary" id="btn-save-api-url">儲存並連接</button>
+          </div>
+          <span class="sync-status status-offline" id="sync-status-text">當前模式：本地離線存檔 (LocalStorage)</span>
+        </div>
+
+        <div class="settings-group">
+          <h3>💰 虛擬儲值 (80% 毛利策略測試)</h3>
+          <p class="setting-desc">此為模擬付費流程。在真實版本中，這將會串接 Stripe 或 LINE Pay，跳過商店 30% 抽成以獲取 80% 高毛利！</p>
+          <div class="topup-options">
+            <button class="btn-topup" data-gold="5" data-cost="50">
+              <span class="topup-bones">🪙 5 黃金骨頭</span>
+              <span class="topup-cost">NT$ 50</span>
+            </button>
+            <button class="btn-topup" data-gold="12" data-cost="100">
+              <span class="topup-bones">🪙 12 黃金骨頭</span>
+              <span class="topup-cost">NT$ 100</span>
+            </button>
+            <button class="btn-topup" data-gold="30" data-cost="200">
+              <span class="topup-bones">🪙 30 黃金骨頭</span>
+              <span class="topup-cost">NT$ 200</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="settings-group">
+          <h3>🧹 系統維護</h3>
+          <button class="btn-danger" id="btn-reset-game">重置遊戲數據</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 隨機散步事件 / 獎勵彈出 Modal ==================== -->
+    <div class="modal-overlay" id="reward-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="reward-title">🐕 柯基散步回來囉！</h2>
+        </div>
+        <div class="modal-body">
+          <div class="event-postcard" id="event-postcard">
+            <!-- 明信片圖片將動態載入對應場景 -->
+            <div class="postcard-bg" id="postcard-bg-img"></div>
+            <div class="postcard-stamp">📪</div>
+            <p class="postcard-msg" id="reward-event-text">「柯基在公園大樹下打了個滾，還跟一隻小松鼠打招呼，感覺速度變快了呢！」</p>
+          </div>
+          
+          <div class="reward-display">
+            <h3>獲得獎勵：</h3>
+            <div class="reward-loot" id="reward-loot-items">
+              <!-- 動態生成獲得的道具與骨頭 -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary" id="btn-close-reward">太棒了！</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
