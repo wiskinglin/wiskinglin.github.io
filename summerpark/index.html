@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2.2">
 </head>
 <body class="theme-default">
   <div class="app-container">
@@ -19,7 +19,9 @@
     <!-- 頂部狀態列 -->
     <header class="top-bar">
       <div class="corgi-info">
-        <span class="avatar">🐶</span>
+        <div class="avatar-container">
+          <img src="./assets/icon.png" class="avatar-img" alt="柯基頭像">
+        </div>
         <div class="info-text">
           <h1 id="corgi-name">小薯條 (Corgi)</h1>
           <span class="status-badge" id="corgi-state-label">客廳休息中</span>
@@ -28,11 +30,11 @@
       
       <div class="currency-group">
         <div class="currency bone" title="普通狗骨頭 (日常代幣)">
-          <span class="icon">🦴</span>
+          <img src="./assets/item-bone.png" class="ui-icon" alt="骨頭">
           <span id="val-bones" class="value">100</span>
         </div>
         <div class="currency gold-bone" title="黃金狗骨頭 (付費代幣)">
-          <span class="icon">🪙</span>
+          <img src="./assets/item-gold-bone.png" class="ui-icon" alt="黃金骨頭">
           <span id="val-gold-bones" class="value">10</span>
         </div>
       </div>
@@ -41,21 +43,33 @@
     <!-- 屬性狀態列 (速度、魅力、智商) -->
     <section class="attributes-panel">
       <div class="attr-item" id="attr-speed" title="速度 (影響散步速度)">
-        <span class="icon">🏃‍♂️</span>
+        <span class="icon">
+          <svg class="ui-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2B2D42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="#FFD166"/>
+          </svg>
+        </span>
         <div class="attr-details">
           <span class="label">速度</span>
           <span id="val-speed" class="value">10</span>
         </div>
       </div>
       <div class="attr-item" id="attr-charm" title="魅力 (影響隨機事件稀有度)">
-        <span class="icon">💖</span>
+        <span class="icon">
+          <img src="./assets/item-heart.png" class="ui-icon" style="width:20px; height:20px; margin:0;" alt="魅力">
+        </span>
         <div class="attr-details">
           <span class="label">魅力</span>
           <span id="val-charm" class="value">10</span>
         </div>
       </div>
       <div class="attr-item" id="attr-iq" title="智商 (影響散步事件骨頭獲得量)">
-        <span class="icon">🧠</span>
+        <span class="icon">
+          <svg class="ui-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2B2D42" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .5 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" fill="#06D6A0"/>
+            <line x1="9" y1="18" x2="15" y2="18"/>
+            <line x1="10" y1="22" x2="14" y2="22"/>
+          </svg>
+        </span>
         <div class="attr-details">
           <span class="label">智商</span>
           <span id="val-iq" class="value">10</span>
@@ -83,97 +97,49 @@
             </filter>
             <!-- 焦糖色漸層 -->
             <linearGradient id="caramelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#F3B361"/>
-              <stop offset="100%" stop-color="#D98829"/>
+              <stop offset="0%" stop-color="#F7C59F"/>
+              <stop offset="50%" stop-color="#EAA850"/>
+              <stop offset="100%" stop-color="#C57B28"/>
+            </linearGradient>
+            <!-- 前腿漸層 (黃色到白色) -->
+            <linearGradient id="legGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="65%" stop-color="#F3B361"/>
+              <stop offset="65%" stop-color="#FFFFFF"/>
+            </linearGradient>
+            <!-- 後腿漸層 (焦糖色到白色，左/右) -->
+            <linearGradient id="backLegGradL" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="70%" stop-color="#D98829"/>
+              <stop offset="70%" stop-color="#FFFFFF"/>
+            </linearGradient>
+            <linearGradient id="backLegGradR" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="70%" stop-color="#D98829"/>
+              <stop offset="70%" stop-color="#FFFFFF"/>
             </linearGradient>
             <!-- 陰影漸層 -->
             <radialGradient id="floorShadow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="rgba(0,0,0,0.25)"/>
+              <stop offset="0%" stop-color="rgba(0,0,0,0.2)"/>
               <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
             </radialGradient>
           </defs>
 
           <!-- 地面陰影 -->
-          <ellipse class="corgi-shadow" cx="150" cy="220" rx="75" ry="12" fill="url(#floorShadow)" />
+          <ellipse class="corgi-shadow" cx="150" cy="215" rx="75" ry="12" fill="url(#floorShadow)" />
 
           <!-- 背部/配件裝飾插槽 -->
-          <g id="slot-back" class="item-slot back-slot" transform="translate(150, 150)"></g>
+          <g id="slot-back" class="item-slot back-slot" transform="translate(150, 140)"></g>
 
-          <!-- 柯基身體群組 -->
-          <g class="corgi-body" filter="url(#shadow)">
-            <!-- 後腿 (左/右) -->
-            <ellipse class="corgi-leg leg-bl" cx="95" cy="205" rx="16" ry="14" fill="#D98829" />
-            <ellipse class="corgi-leg leg-br" cx="195" cy="205" rx="16" ry="14" fill="#D98829" />
-            
-            <!-- 前腿 (左/右) -->
-            <rect class="corgi-leg leg-fl" x="115" y="195" width="18" height="24" rx="9" fill="#F3B361" />
-            <rect class="corgi-leg leg-fr" x="160" y="195" width="18" height="24" rx="9" fill="#F3B361" />
-
-            <!-- 圓滾滾的大屁股與尾巴 (僅在背向或扭屁股時突顯，正面時為身體背景) -->
-            <g class="corgi-butt-group">
-              <path class="corgi-tail" d="M 85 145 C 75 140, 70 150, 72 155 C 75 160, 85 152, 85 145 Z" fill="#D98829" />
-              <!-- 吐司屁股 -->
-              <ellipse class="corgi-butt-cheek cheek-l" cx="110" cy="165" rx="35" ry="32" fill="url(#caramelGrad)" />
-              <ellipse class="corgi-butt-cheek cheek-r" cx="170" cy="165" rx="35" ry="32" fill="url(#caramelGrad)" />
-              <!-- 白肚皮/白色心形屁屁心 -->
-              <path class="corgi-butt-white" d="M 140 145 C 115 140, 105 170, 140 192 C 175 170, 165 140, 140 145 Z" fill="#FFFFFF" />
-            </g>
-            
-            <!-- 身體軀幹 (正面與側面混合) -->
-            <rect class="corgi-torso" x="90" y="125" width="115" height="75" rx="35" fill="url(#caramelGrad)" />
-            <!-- 胸前白毛 -->
-            <path class="corgi-chest" d="M 125 130 Q 150 125 175 130 Q 185 160 150 185 Q 115 160 125 130 Z" fill="#FFFFFF" />
+          <!-- 柯基精美角色圖案群組 -->
+          <g class="corgi-character-group" filter="url(#shadow)">
+            <!-- 柯基精美 PNG 角色 (預設顯示 idle) -->
+            <image href="./assets/corgi-idle.png" x="107" y="25" width="86" height="176" id="corgi-sprite-img" />
           </g>
 
           <!-- 身體裝飾插槽 -->
-          <g id="slot-body" class="item-slot body-slot" transform="translate(150, 160)"></g>
+          <g id="slot-body" class="item-slot body-slot" transform="translate(150, 150)"></g>
 
-          <!-- 柯基頭部群組 -->
-          <g class="corgi-head" filter="url(#shadow)">
-            <!-- 脖子 -->
-            <rect class="corgi-neck" x="135" y="105" width="30" height="30" fill="url(#caramelGrad)" />
-            
-            <!-- 大立耳 (左/右) -->
-            <g class="corgi-ear ear-l">
-              <path d="M 115 90 C 90 70, 95 30, 115 25 C 135 20, 135 60, 125 90 Z" fill="url(#caramelGrad)" />
-              <path d="M 118 80 C 103 65, 106 38, 117 35 C 128 32, 129 55, 123 80 Z" fill="#EF476F" opacity="0.6" />
-            </g>
-            <g class="corgi-ear ear-r">
-              <path d="M 185 90 C 210 70, 205 30, 185 25 C 165 20, 165 60, 175 90 Z" fill="url(#caramelGrad)" />
-              <path d="M 182 80 C 197 65, 194 38, 183 35 C 172 32, 171 55, 177 80 Z" fill="#EF476F" opacity="0.6" />
-            </g>
-
-            <!-- 圓圓大腦袋 -->
-            <ellipse class="corgi-face" cx="150" cy="95" rx="42" ry="36" fill="url(#caramelGrad)" />
-            
-            <!-- 臉部白毛 (額頭與嘴部) -->
-            <path class="corgi-face-white" d="M 150 70 L 142 85 L 122 95 Q 150 125 178 95 L 158 85 Z" fill="#FFFFFF" />
-            
-            <!-- 腮紅 (左/右) -->
-            <circle cx="120" cy="98" r="6" fill="#EF476F" opacity="0.4" />
-            <circle cx="180" cy="98" r="6" fill="#EF476F" opacity="0.4" />
-
-            <!-- 雙眼 (左/右) -->
-            <g class="corgi-eyes">
-              <circle class="corgi-eye eye-l" cx="132" cy="88" r="5" fill="#2B2D42" />
-              <circle class="eye-shine-l" cx="130" cy="86" r="1.5" fill="#FFFFFF" />
-              <circle class="corgi-eye eye-r" cx="168" cy="88" r="5" fill="#2B2D42" />
-              <circle class="eye-shine-r" cx="166" cy="86" r="1.5" fill="#FFFFFF" />
-            </g>
-
-            <!-- 鼻子 -->
-            <ellipse cx="150" cy="96" rx="5" ry="3.5" fill="#2B2D42" />
-            
-            <!-- 開心 W 嘴巴與舌頭 -->
-            <g class="corgi-mouth">
-              <path d="M 142 98 Q 146 103 150 98 Q 154 103 158 98" fill="none" stroke="#2B2D42" stroke-width="2.5" stroke-linecap="round" />
-              <!-- 開口笑的紅舌頭 -->
-              <path class="corgi-tongue" d="M 146 100 Q 150 114 154 100 Z" fill="#EF476F" />
-            </g>
-          </g>
 
           <!-- 頭部裝飾插槽 -->
-          <g id="slot-head" class="item-slot head-slot" transform="translate(150, 75)"></g>
+          <g id="slot-head" class="item-slot head-slot" transform="translate(150, 83)"></g>
         </svg>
 
         <!-- 泡泡/碎石動畫物件 (吃東西、洗澡時顯示) -->
@@ -185,7 +151,7 @@
     <section class="stats-panel">
       <div class="stat-item" id="stat-hunger">
         <div class="stat-header">
-          <span class="icon">🍖</span>
+          <img src="./assets/item-can.png" class="ui-icon" alt="飽食度">
           <span class="label">飽食度</span>
           <span class="percent" id="lbl-hunger">100%</span>
         </div>
@@ -196,7 +162,7 @@
       
       <div class="stat-item" id="stat-clean">
         <div class="stat-header">
-          <span class="icon">🧼</span>
+          <img src="./assets/item-soap.png" class="ui-icon" alt="清潔度">
           <span class="label">清潔度</span>
           <span class="percent" id="lbl-clean">100%</span>
         </div>
@@ -207,7 +173,7 @@
 
       <div class="stat-item" id="stat-happy">
         <div class="stat-header">
-          <span class="icon">❤️</span>
+          <img src="./assets/item-heart.png" class="ui-icon" alt="心情值">
           <span class="label">心情值</span>
           <span class="percent" id="lbl-happy">100%</span>
         </div>
@@ -220,15 +186,15 @@
     <!-- 核心操作按鈕區 -->
     <section class="action-buttons">
       <button class="btn-action" id="btn-feed" title="餵食美味罐頭">
-        <span class="icon-btn">🍖</span>
+        <img src="./assets/item-can.png" class="btn-icon-img" alt="餵食">
         <span class="text-btn">餵食</span>
       </button>
       <button class="btn-action" id="btn-bath" title="舒服的洗個熱水澡">
-        <span class="icon-btn">🧼</span>
+        <img src="./assets/item-soap.png" class="btn-icon-img" alt="洗澡">
         <span class="text-btn">洗澡</span>
       </button>
       <button class="btn-action" id="btn-pet" title="溫柔撫摸柯基">
-        <span class="icon-btn">👋</span>
+        <img src="./assets/item-heart.png" class="btn-icon-img" alt="撫摸">
         <span class="text-btn">撫摸</span>
       </button>
     </section>
@@ -236,23 +202,43 @@
     <!-- 底部功能選單列 -->
     <footer class="footer-nav">
       <button class="nav-item" id="nav-train">
-        <span class="icon-nav">🏋️‍♂️</span>
+        <span class="icon-nav">
+          <svg class="nav-icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 6.5h11M6.5 17.5h11M12 3v18M3 6.5h3.5M3 17.5h3.5M17.5 6.5H21M17.5 17.5H21"/>
+          </svg>
+        </span>
         <span class="text-nav">培育訓練</span>
       </button>
       <button class="nav-item" id="nav-walk">
-        <span class="icon-nav">🌳</span>
+        <span class="icon-nav">
+          <img src="./assets/item-map.png" style="width: 22px; height: 22px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));" alt="冒險散步">
+        </span>
         <span class="text-nav">冒險散步</span>
       </button>
       <button class="nav-item" id="nav-gacha">
-        <span class="icon-nav">🎁</span>
+        <span class="icon-nav">
+          <svg class="nav-icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="8" width="18" height="13" rx="2"/>
+            <path d="M12 8V3M12 3H7.5A2.5 2.5 0 0 1 10 5.5v0A2.5 2.5 0 0 1 7.5 8H12M12 3h4.5A2.5 2.5 0 0 0 14 5.5v0A2.5 2.5 0 0 0 16.5 8H12 M12 8v13"/>
+          </svg>
+        </span>
         <span class="text-nav">盲盒扭蛋</span>
       </button>
       <button class="nav-item" id="nav-closet">
-        <span class="icon-nav">👕</span>
+        <span class="icon-nav">
+          <svg class="nav-icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.38 3.46L16 6a2 2 0 0 1-2-2V2H10v2a2 2 0 0 1-2 2L3.62 3.46a2 2 0 0 0-2.45.9L.22 6.11a2 2 0 0 0 .58 2.71L5 11.25V20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8.75l4.2-2.43a2 2 0 0 0 .58-2.71l-.95-1.65a2 2 0 0 0-2.45-.9z"/>
+          </svg>
+        </span>
         <span class="text-nav">衣帽更衣</span>
       </button>
       <button class="nav-item" id="nav-settings">
-        <span class="icon-nav">⚙️</span>
+        <span class="icon-nav">
+          <svg class="nav-icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </span>
         <span class="text-nav">設定儲值</span>
       </button>
     </footer>
@@ -359,7 +345,7 @@
         <button class="btn-close">&times;</button>
       </div>
       <div class="drawer-content">
-        <p class="drawer-desc">消耗 <span class="highlight">🪙 1 黃金狗骨頭</span> 讓柯基在後院挖寶，隨機獲得稀有 SSR/SR 裝扮！</p>
+        <p class="drawer-desc">消耗 <span class="highlight"><img src="./assets/item-gold-bone.png" class="ui-icon-inline" alt="黃金骨頭"> 1</span> 讓柯基在後院挖寶，隨機獲得稀有 SSR/SR 裝扮！</p>
         
         <div class="gacha-machine">
           <!-- 挖寶展示區 -->
@@ -385,7 +371,15 @@
             </div>
             <!-- 扭蛋未啟動畫面 -->
             <div class="gacha-idle-view" id="gacha-idle-view">
-              <span class="gacha-chest-icon">📦</span>
+              <div class="gacha-chest-icon">
+                <svg viewBox="0 0 100 100" width="80" height="80">
+                  <rect x="15" y="45" width="70" height="40" rx="5" fill="#C57B28" stroke="#2B2D42" stroke-width="3"/>
+                  <path d="M 15 45 Q 50 15 85 45 Z" fill="#EAA850" stroke="#2B2D42" stroke-width="3"/>
+                  <rect x="42" y="40" width="16" height="20" rx="3" fill="#FFD166" stroke="#2B2D42" stroke-width="2"/>
+                  <circle cx="50" cy="48" r="3" fill="#2B2D42"/>
+                  <line x1="15" y1="45" x2="85" y2="45" stroke="#2B2D42" stroke-width="3"/>
+                </svg>
+              </div>
               <h3>黃金藏寶地</h3>
               <p>稀有度機率：SSR 5% | SR 25% | N 70%</p>
             </div>
@@ -402,7 +396,7 @@
           
           <div class="gacha-controls">
             <button class="btn-gacha-spin" id="btn-gacha-play">
-              <span class="btn-icon">🪙 1</span>
+              <span class="btn-icon"><img src="./assets/item-gold-bone.png" class="btn-icon-img" alt="黃金骨頭"> 1</span>
               <span class="btn-text">派柯基去挖寶！</span>
             </button>
           </div>

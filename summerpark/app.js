@@ -399,11 +399,25 @@ function applyEquipmentVisuals() {
 /* ==================== 4. 照顧互動 (餵食、洗澡、撫摸) ==================== */
 
 // 產出浮動金幣/愛心特效
-function spawnFloatingText(emoji, text = '') {
+function spawnFloatingText(assetOrEmoji, text = '') {
   const container = document.getElementById('effect-container');
   const el = document.createElement('div');
   el.className = 'float-effect';
-  el.textContent = emoji + text;
+  
+  if (assetOrEmoji.startsWith('./assets/') || assetOrEmoji.startsWith('assets/')) {
+    const img = document.createElement('img');
+    img.src = assetOrEmoji;
+    img.style.width = '24px';
+    img.style.height = '24px';
+    img.style.verticalAlign = 'middle';
+    img.style.marginRight = '4px';
+    el.appendChild(img);
+    const span = document.createElement('span');
+    span.textContent = text;
+    el.appendChild(span);
+  } else {
+    el.textContent = assetOrEmoji + text;
+  }
   
   // 隨機在柯基附近的位置
   const randomX = 40 + Math.random() * 20; // 50% 左右
@@ -522,7 +536,7 @@ function feedCorgi() {
   gameState.bones += earned;
   
   // 顯示特效與文字
-  spawnFloatingText('🦴', ` +${earned}`);
+  spawnFloatingText('./assets/item-bone.png', ` +${earned}`);
   triggerTemporaryAnimation('status-walk', 1200); // 假裝吃東西晃動
   
   saveGame();
@@ -538,7 +552,7 @@ function bathCorgi() {
   gameState.stats.cleanliness = Math.min(100, gameState.stats.cleanliness + 35);
   
   spawnBubbles();
-  spawnFloatingText('🧼', ' 清潔度+35');
+  spawnFloatingText('./assets/item-soap.png', ' 清潔度+35');
   triggerTemporaryAnimation('status-walk', 1200); // 扭屁股洗澡
   
   saveGame();
@@ -556,7 +570,7 @@ function petCorgi() {
   const earned = 2 + Math.floor(gameState.attributes.charm / 5);
   gameState.bones += earned;
   
-  spawnFloatingText('❤️', ` +${earned}`);
+  spawnFloatingText('./assets/item-heart.png', ` +${earned}`);
   triggerTemporaryAnimation('status-walk', 1500); // 開心搖尾巴
   
   saveGame();
@@ -898,7 +912,7 @@ function showRewardModal(mapName, bgImg, eventText, bonesCount, rewardItem, attr
   const lootContainer = document.getElementById('reward-loot-items');
   lootContainer.innerHTML = `
     <div class="currency bone">
-      <span class="icon">🦴</span>
+      <img src="./assets/item-bone.png" class="ui-icon" alt="骨頭">
       <span class="value">+${bonesCount}</span>
     </div>
     <div class="currency" style="color: var(--color-success)">
@@ -1105,7 +1119,7 @@ function setupSettingsAndTopup() {
       if (confirm(`確定虛擬支付 ${cost} 元，儲值 ${gold} 黃金狗骨頭嗎？`)) {
         gameState.goldBones += gold;
         playSFX('level');
-        spawnFloatingText('🪙', ` +${gold}`);
+        spawnFloatingText('./assets/item-gold-bone.png', ` +${gold}`);
         saveGame();
         updateUI();
         alert(`儲值成功！已獲得 🪙 ${gold} 黃金狗骨頭！(此為 80% 高毛利虛擬流程演示)`);
@@ -1128,12 +1142,53 @@ function setupSettingsAndTopup() {
 document.addEventListener('DOMContentLoaded', () => {
   // 1. 載入存檔
   loadGame();
+
+  // 監聽柯基狀態變化並更新圖片
+  const corgiCharacter = document.getElementById('corgi-character');
+  const corgiSprite = document.getElementById('corgi-sprite-img');
+  if (corgiCharacter && corgiSprite) {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          const className = corgiCharacter.className;
+          if (className.includes('status-idle')) {
+            corgiSprite.setAttribute('href', './assets/corgi-idle.png');
+          } else if (className.includes('status-walk') || className.includes('status-run')) {
+            corgiSprite.setAttribute('href', './assets/corgi-walk.png');
+          } else if (className.includes('status-sploot')) {
+            corgiSprite.setAttribute('href', './assets/corgi-sploot.png');
+          } else if (className.includes('status-stuck')) {
+            corgiSprite.setAttribute('href', './assets/corgi-stuck.png');
+          }
+        }
+      });
+    });
+    observer.observe(corgiCharacter, { attributes: true });
+    // 初始化呼叫
+    const currentClass = corgiCharacter.className;
+    if (currentClass.includes('status-idle')) {
+      corgiSprite.setAttribute('href', './assets/corgi-idle.png');
+    } else if (currentClass.includes('status-walk') || currentClass.includes('status-run')) {
+      corgiSprite.setAttribute('href', './assets/corgi-walk.png');
+    } else if (currentClass.includes('status-sploot')) {
+      corgiSprite.setAttribute('href', './assets/corgi-sploot.png');
+    } else if (currentClass.includes('status-stuck')) {
+      corgiSprite.setAttribute('href', './assets/corgi-stuck.png');
+    }
+  }
   
-  // 2. 註冊 PWA Service Worker
+  // 2. 註銷 PWA Service Worker 與清除快取，以保證開發時載入最新 HTML/CSS
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('Service Worker 註冊成功!', reg))
-      .catch(err => console.log('Service Worker 註冊失敗:', err));
+    navigator.serviceWorker.getRegistrations().then(registrations => {
+      for (let registration of registrations) {
+        registration.unregister();
+      }
+    });
+  }
+  if ('caches' in window) {
+    caches.keys().then(keys => {
+      keys.forEach(key => caches.delete(key));
+    });
   }
   
   // 3. 設定抽屜控制事件
