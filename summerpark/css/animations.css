@@ -1,0 +1,431 @@
+/* ==================== 3. 柯基動畫與裝飾插槽 ==================== */
+
+.corgi-leg {
+  transform-origin: 50% 15%;
+  transform-box: fill-box;
+  transition: transform 0.3s ease-out;
+}
+
+/* --- 3.1 PNG 柯基尺寸與各狀態定位 --- */
+#corgi-sprite-img {
+  /* 預設為 Idle 姿態 */
+  x: 107px;
+  y: 25px;
+  width: 86px;
+  height: 176px;
+  transform-origin: bottom center;
+  transform-box: fill-box;
+}
+
+/* 走路姿態寬高與定位 */
+.status-walk #corgi-sprite-img {
+  x: 75px;
+  y: 40px;
+  width: 150px;
+  height: 136px;
+}
+
+/* 跑步姿態寬高與定位 */
+.status-run #corgi-sprite-img {
+  x: 75px;
+  y: 40px;
+  width: 150px;
+  height: 136px;
+}
+
+/* 趴下/吐司屁股姿態寬高與定位 */
+.status-sploot #corgi-sprite-img {
+  x: 85px;
+  y: 55px;
+  width: 130px;
+  height: 110px;
+}
+
+/* 卡住/鑽洞姿態寬高與定位 */
+.status-stuck #corgi-sprite-img {
+  x: 85px;
+  y: 50px;
+  width: 130px;
+  height: 118px;
+}
+
+/* 非 Idle 狀態下隱藏正面飾品槽，防穿模 */
+.status-walk .item-slot,
+.status-run .item-slot,
+.status-sploot .item-slot,
+.status-stuck .item-slot {
+  display: none !important;
+}
+
+/* --- 3.2 PNG 柯基各狀態動畫綁定 --- */
+
+/* Idle 待機呼吸 */
+.status-idle #corgi-sprite-img {
+  animation: png-breathing 3s ease-in-out infinite;
+}
+
+/* Walk 走路彈跳與搖擺 */
+.status-walk #corgi-sprite-img {
+  animation: png-walk 0.6s ease-in-out infinite alternate;
+}
+
+/* Run 奔跑彈跳與擺動 */
+.status-run #corgi-sprite-img {
+  animation: png-run 0.4s ease-in-out infinite alternate;
+}
+
+/* Stuck 卡住搖屁股 */
+.status-stuck #corgi-sprite-img {
+  animation: png-butt-shake 0.15s ease-in-out infinite alternate;
+}
+
+/* --- 3.3 PNG 動畫 Keyframes 定義 --- */
+
+@keyframes png-breathing {
+  0%, 100% {
+    transform: scaleY(1) scaleX(1) translateY(0);
+  }
+  50% {
+    transform: scaleY(0.97) scaleX(1.01) translateY(3px);
+  }
+}
+
+@keyframes png-walk {
+  0% {
+    transform: translateY(0) rotate(-3deg) scaleY(0.98);
+  }
+  100% {
+    transform: translateY(-8px) rotate(3deg) scaleY(1.02);
+  }
+}
+
+@keyframes png-run {
+  0% {
+    transform: translateY(2px) rotate(-6deg) scaleY(0.95);
+  }
+  100% {
+    transform: translateY(-14px) rotate(6deg) scaleY(1.05);
+  }
+}
+
+@keyframes png-butt-shake {
+  0% {
+    transform: rotate(-6deg) translateY(0);
+  }
+  100% {
+    transform: rotate(6deg) translateY(-2px);
+  }
+}
+
+/* --- 3.5 挖土動畫 (Digging) --- */
+@keyframes digging-action {
+  0% {
+    transform: rotate(-8deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(8deg) translateY(-8px);
+  }
+}
+
+@keyframes digging-tail-wag {
+  0% {
+    transform: rotate(-30deg);
+  }
+
+  100% {
+    transform: rotate(30deg);
+  }
+}
+
+.digging-butt {
+  animation: digging-action 0.15s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+  display: none !important;
+}
+
+.digging-tail {
+  animation: digging-tail-wag 0.1s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+
+/* 泥土粒子動畫 */
+@keyframes particle-spray-l {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-80px, -50px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes particle-spray-r {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(80px, -50px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.soil.s1 {
+  animation: particle-spray-l 0.3s ease-out infinite;
+}
+
+.soil.s3 {
+  animation: particle-spray-l 0.4s ease-out infinite 0.1s;
+}
+
+.soil.s2 {
+  animation: particle-spray-r 0.3s ease-out infinite;
+}
+
+.soil.s4 {
+  animation: particle-spray-r 0.4s ease-out infinite 0.1s;
+}
+
+/* ==================== 4. CSS 動畫 Keyframes 定義 ==================== */
+@keyframes breathing {
+
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.96) translateY(2px);
+  }
+}
+
+@keyframes breathing-chest {
+
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.97) translateY(1.5px);
+  }
+}
+
+@keyframes idle-head {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(3px) rotate(1deg);
+  }
+}
+
+@keyframes ear-wag-l {
+
+  0%,
+  90%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  93%,
+  97% {
+    transform: rotate(-6deg);
+  }
+
+  95% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes ear-wag-r {
+
+  0%,
+  85%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  88%,
+  92% {
+    transform: rotate(6deg);
+  }
+
+  90% {
+    transform: rotate(-3deg);
+  }
+}
+
+@keyframes idle-tail {
+
+  0%,
+  80%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  84%,
+  92% {
+    transform: rotate(15deg);
+  }
+
+  88%,
+  96% {
+    transform: rotate(-10deg);
+  }
+}
+
+@keyframes blinking {
+
+  0%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  98% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* 走路位移 keyframes */
+@keyframes walk-bounce {
+  0% {
+    transform: translate(-50%, 0) rotate(-1deg);
+  }
+
+  100% {
+    transform: translate(-50%, -8px) rotate(1deg);
+  }
+}
+
+@keyframes leg-swing-f {
+  0% {
+    transform: rotate(-15deg) translateY(-2px);
+  }
+
+  100% {
+    transform: rotate(15deg) translateY(0);
+  }
+}
+
+@keyframes leg-swing-b {
+  0% {
+    transform: rotate(12deg) translateY(0);
+  }
+
+  100% {
+    transform: rotate(-12deg) translateY(-3px);
+  }
+}
+
+@keyframes walk-butt-jiggle {
+  0% {
+    transform: translateX(-4px) rotate(-2deg);
+  }
+
+  100% {
+    transform: translateX(4px) rotate(2deg);
+  }
+}
+
+@keyframes tail-shake-fast {
+  0% {
+    transform: rotate(-25deg);
+  }
+
+  100% {
+    transform: rotate(25deg);
+  }
+}
+
+/* 跑步位移 keyframes */
+@keyframes run-bounce {
+  0% {
+    transform: translate(-50%, 4px) scaleY(0.95);
+  }
+
+  100% {
+    transform: translate(-50%, -16px) scaleY(1.02);
+  }
+}
+
+@keyframes leg-run-f {
+  0% {
+    transform: rotate(-30deg) translate(-5px, -5px);
+  }
+
+  100% {
+    transform: rotate(30deg) translate(5px, 0);
+  }
+}
+
+@keyframes leg-run-b {
+  0% {
+    transform: rotate(25deg) translate(3px, 0);
+  }
+
+  100% {
+    transform: rotate(-25deg) translate(-5px, -5px);
+  }
+}
+
+@keyframes tail-shake-crazy {
+  0% {
+    transform: rotate(-45deg);
+  }
+  100% {
+    transform: rotate(45deg);
+  }
+}
+
+/* 愛心與洗澡粒子漂浮動畫 */
+.float-effect {
+  position: absolute;
+  pointer-events: none;
+  font-size: 24px;
+  z-index: 10;
+  animation: floatUp 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translate(-50%, 0) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -80px) scale(1.3);
+    opacity: 0;
+  }
+}
+
+.bubble-fx {
+  position: absolute;
+  pointer-events: none;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.7), rgba(17, 138, 178, 0.4) 70%);
+  border-radius: 50%;
+  box-shadow: inset -2px -2px 6px rgba(17, 138, 178, 0.3);
+  z-index: 10;
+  animation: floatBubble 1.2s ease-out forwards;
+}
+
+@keyframes floatBubble {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(var(--dx), -40px) scale(1.1);
+  }
+  100% {
+    transform: translate(var(--dx-end), -80px) scale(0);
+    opacity: 0;
+  }
+}
