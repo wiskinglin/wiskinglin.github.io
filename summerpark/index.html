@@ -15,9 +15,25 @@
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/quests.css">
 </head>
 <body class="theme-default">
   <div class="app-container">
+    
+    <!-- PWA 安裝提示橫幅 -->
+    <div class="pwa-install-banner hidden" id="pwa-install-banner">
+      <div class="install-banner-content">
+        <img src="./assets/icon.png" class="install-banner-icon" alt="Summer Park">
+        <div class="install-banner-text">
+          <strong>安裝 Summer Park</strong>
+          <span>加入主畫面，隨時照顧你的柯基！</span>
+        </div>
+      </div>
+      <div class="install-banner-actions">
+        <button class="btn-install" id="btn-pwa-install">安裝</button>
+        <button class="btn-install-dismiss" id="btn-pwa-dismiss">之後再說</button>
+      </div>
+    </div>
     
     <!-- 頂部狀態列 -->
     <header class="top-bar">
@@ -85,6 +101,9 @@
       <!-- 遊戲背景層 -->
       <div class="game-bg" id="game-bg-layer" style="background-image: url('./assets/background-home.png');"></div>
       
+      <!-- 天氣效果覆蓋層 -->
+      <div class="weather-layer" id="weather-layer"></div>
+
       <!-- 互動漂浮特效容器 -->
       <div id="effect-container" class="effect-container"></div>
 
@@ -226,6 +245,15 @@
           </svg>
         </span>
         <span class="text-nav">盲盒扭蛋</span>
+      </button>
+      <button class="nav-item" id="nav-quests">
+        <span class="icon-nav">
+          <svg class="nav-icon-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </span>
+        <span class="text-nav">每日任務</span>
       </button>
       <button class="nav-item" id="nav-closet">
         <span class="icon-nav">
@@ -481,6 +509,37 @@
         <div class="settings-group">
           <h3>🧹 系統維護</h3>
           <button class="btn-danger" id="btn-reset-game">重置遊戲數據</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 每日任務與成就 -->
+    <div class="drawer" id="drawer-quests">
+      <div class="drawer-header">
+        <h2>✅ 每日任務與成就</h2>
+        <button class="btn-close">&times;</button>
+      </div>
+      <div class="drawer-content">
+        <!-- 任務/成就切換頁籤 -->
+        <div class="quest-tabs">
+          <button class="quest-tab-btn active" data-quest-tab="daily">📝 每日任務</button>
+          <button class="quest-tab-btn" data-quest-tab="achievements">🏆 成就</button>
+        </div>
+
+        <!-- 每日任務列表 -->
+        <div class="quest-panel" id="quest-daily-panel">
+          <p class="drawer-desc">每天自動刷新 3 個任務，完成後點擊「領取」獲得豐富獎勵！</p>
+          <div class="quest-list" id="quest-daily-list">
+            <!-- JS 動態渲染 -->
+          </div>
+        </div>
+
+        <!-- 成就列表 -->
+        <div class="quest-panel hidden" id="quest-achievements-panel">
+          <p class="drawer-desc">解鎖里程碑成就，永久獲得稀有獎勵！</p>
+          <div class="achievement-list" id="quest-achievement-list">
+            <!-- JS 動態渲染 -->
+          </div>
         </div>
       </div>
     </div>

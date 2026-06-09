@@ -1,6 +1,7 @@
 import { gameState, saveGame } from '../store/gameState.js';
 import { playSFX } from './audio.js';
 import { spawnFloatingText, spawnBubbles, triggerTemporaryAnimation } from '../ui/effects.js';
+import { recordAction } from './questManager.js';
 
 export function feedCorgi() {
   if (gameState.walk.isWalking) return;
@@ -16,6 +17,7 @@ export function feedCorgi() {
   spawnFloatingText('./assets/item-bone.png', ` +${earned}`);
   triggerTemporaryAnimation('status-walk', 1200, gameState.walk.isWalking); // 假裝吃東西晃動
   
+  recordAction('feed', { bonesEarned: earned });
   saveGame();
   window.dispatchEvent(new CustomEvent('state-updated'));
 }
@@ -31,6 +33,7 @@ export function bathCorgi() {
   spawnFloatingText('./assets/item-soap.png', ' 清潔度+35');
   triggerTemporaryAnimation('status-walk', 1200, gameState.walk.isWalking); // 扭屁股洗澡
   
+  recordAction('bath');
   saveGame();
   window.dispatchEvent(new CustomEvent('state-updated'));
 }
@@ -47,6 +50,7 @@ export function petCorgi() {
   
   spawnFloatingText('./assets/item-heart.png', ` +${earned}`);
   triggerTemporaryAnimation('status-walk', 1500, gameState.walk.isWalking); // 開心搖尾巴
+  recordAction('pet', { bonesEarned: earned });
   
   saveGame();
   window.dispatchEvent(new CustomEvent('state-updated'));
@@ -55,6 +59,15 @@ export function petCorgi() {
 export function startTraining(type) {
   if (gameState.walk.isWalking) {
     alert('柯基正在散步大冒險，無法進行特訓！');
+    return;
+  }
+  
+  // 冷卻時間限制 (30 秒)
+  const TRAIN_COOLDOWN_MS = 30 * 1000;
+  const now = Date.now();
+  if (now - gameState.train.lastTrainTime < TRAIN_COOLDOWN_MS) {
+    const remainSec = Math.ceil((TRAIN_COOLDOWN_MS - (now - gameState.train.lastTrainTime)) / 1000);
+    alert(`柯基還在休息中，請等待 ${remainSec} 秒後再訓練！`);
     return;
   }
   
@@ -86,6 +99,8 @@ export function startTraining(type) {
     playSFX('level');
     spawnFloatingText('✨', ` ${type === 'speed' ? '速度' : type === 'charm' ? '魅力' : '智商'} +${gain}`);
     
+    gameState.train.lastTrainTime = Date.now();
+    recordAction('train');
     if (statusLabel) statusLabel.textContent = '客廳休息中';
     if (container) container.className = 'corgi-container status-idle';
     

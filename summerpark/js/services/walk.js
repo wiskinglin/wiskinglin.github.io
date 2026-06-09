@@ -1,6 +1,7 @@
 import { gameState, saveGame } from '../store/gameState.js';
 import { EXPLORATION_MAPS } from '../data/maps.js';
 import { CLOSET_ITEMS } from '../data/items.js';
+import { recordAction } from './questManager.js';
 
 let walkTimerInterval = null;
 
@@ -138,6 +139,7 @@ export function settleWalk() {
     endTime: null
   };
   
+  recordAction('walk_complete', { mapId, bonesEarned: totalBones });
   saveGame();
   
   // 傳遞結算資訊給 UI 顯示

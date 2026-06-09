@@ -1,6 +1,7 @@
 import { gameState, saveGame } from '../store/gameState.js';
 import { CLOSET_ITEMS } from '../data/items.js';
 import { playSFX } from './audio.js';
+import { recordAction } from './questManager.js';
 
 export function playGacha() {
   if (gameState.walk.isWalking) {
@@ -64,6 +65,7 @@ export function playGacha() {
     // 還原主畫面柯基
     if (mainCorgi) mainCorgi.className = 'corgi-container status-idle';
     
+    recordAction('gacha');
     saveGame();
     window.dispatchEvent(new CustomEvent('state-updated'));
     

@@ -10,6 +10,7 @@ export function setupDrawers() {
     'nav-train': 'drawer-train',
     'nav-walk': 'drawer-walk',
     'nav-gacha': 'drawer-gacha',
+    'nav-quests': 'drawer-quests',
     'nav-closet': 'drawer-closet',
     'nav-settings': 'drawer-settings'
   };

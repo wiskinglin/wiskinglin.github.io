@@ -1,11 +1,24 @@
 import { gameState } from '../store/gameState.js';
 
+// 單例 AudioContext，避免每次 playSFX 都建立新的 context 造成資源洩漏
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  // 若被瀏覽器政策暫停，嘗試恢復
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
 export function playSFX(type) {
   if (!gameState.config.sfxEnabled) return;
   
-  // 本地使用 AudioContext
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioContext();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
@@ -56,6 +69,16 @@ export function playSFX(type) {
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
       osc.start();
       osc.stop(ctx.currentTime + 0.5);
+    } else if (type === 'quest') {
+      // 任務完成叮咚聲
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
+      osc.frequency.setValueAtTime(1108.73, ctx.currentTime + 0.12); // C#6
+      osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.24); // E6
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
     }
   } catch (e) {
     // 瀏覽器不支援或未解鎖音訊上下文

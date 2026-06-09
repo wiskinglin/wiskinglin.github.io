@@ -7,6 +7,7 @@ import { startWalk, cancelWalk, checkWalkStatus } from './services/walk.js';
 import { playGacha } from './services/gacha.js';
 import { syncToCloud } from './services/cloudSync.js';
 import { spawnFloatingText } from './ui/effects.js';
+import { initWeatherSystem } from './services/weather.js';
 
 // 初始化系統
 document.addEventListener('DOMContentLoaded', () => {
@@ -185,6 +186,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // 檢查是否處於散步中
   checkWalkStatus();
   
+  // 6.5. 初始化天氣系統
+  initWeatherSystem();
+  
   // 7. 設定更衣室頁籤切換
   document.querySelectorAll('.closet-tabs .tab-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -290,4 +294,47 @@ document.addEventListener('DOMContentLoaded', () => {
     calculateOfflineProgress();
     updateUI();
   }, 15000);
+
+  // 11. PWA 安裝提示
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // 檢查使用者是否已關閉過 (24 小時內不再顯示)
+    const dismissed = localStorage.getItem('pwa_install_dismissed');
+    if (dismissed && (Date.now() - parseInt(dismissed)) < 24 * 60 * 60 * 1000) {
+      return;
+    }
+    
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.classList.remove('hidden');
+  });
+
+  document.getElementById('btn-pwa-install')?.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('[PWA] Install outcome:', outcome);
+    deferredPrompt = null;
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.classList.add('hidden');
+  });
+
+  document.getElementById('btn-pwa-dismiss')?.addEventListener('click', () => {
+    const banner = document.getElementById('pwa-install-banner');
+    if (banner) banner.classList.add('hidden');
+    localStorage.setItem('pwa_install_dismissed', Date.now().toString());
+  });
+
+  // 12. 處理 manifest shortcuts 的 URL 參數
+  const urlParams = new URLSearchParams(window.location.search);
+  const action = urlParams.get('action');
+  if (action === 'feed') {
+    setTimeout(() => { import('./services/actions.js').then(m => m.feedCorgi()); }, 500);
+  } else if (action === 'walk') {
+    setTimeout(() => {
+      import('./ui/drawers.js').then(m => m.openDrawer('drawer-walk'));
+    }, 500);
+  }
 });

@@ -1,6 +1,7 @@
 import { gameState, saveGame } from '../store/gameState.js';
 import { CLOSET_ITEMS } from '../data/items.js';
 import { playSFX } from '../services/audio.js';
+import { recordAction } from '../services/questManager.js';
 
 export function updateUI() {
   // 貨幣
@@ -117,6 +118,7 @@ export function renderClosetItems(category) {
 
 function equipItem(category, itemId) {
   gameState.equipped[category] = itemId;
+  if (itemId) recordAction('equip');
   saveGame();
   
   // 即時渲染 SVG 飾品
