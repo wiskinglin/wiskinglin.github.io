@@ -16,6 +16,8 @@ description: 處理並發佈最新 Markdown 深度報告至現有網站架構，
 2. **建立 HTML 報告頁面**
    - 參照網站既有頁面風格或是撰寫自動化轉譯腳本，將 Markdown 內容轉換為首頁合規的單篇 HTML 檔案。
    - **格式符號轉換**：將 Markdown 內的程式碼區塊（```）、行內程式碼（\`）、數學公式（$$）等特殊符號，完美解析為對應的 HTML 標籤（如 `<pre><code>`，並配置 CSS，或引入 MathJax 腳本），轉換為易於人類閱讀的文字排版，不可遺漏或殘留 Markdown 原始標籤。
+   - **字型與內文大小優化**：生成的 HTML 報告內文一般文字（包含 `<p>`, `<li>`, `<td>`, `<th>`, `<label>`, `<button>` 等）字型大小必須調整為 `14pt` 以上（可以使用 CSS 的 `!important` 規則進行強制設定，如 `.a4-page p { font-size: 14pt !important; line-height: 1.6 !important; }`），以確保列印或閱讀時的清晰度。
+   - **封面頁資訊清理**：在報告的第一頁（封面頁 / HERO COVER）中，除了報告的主標題、副標題與必要導讀引言外，其他無意義的欄位與區塊，如撰寫時間、目標載體、Report by、Release Date、Target Entities 等，必須在生成時予以移除，以保持封面的乾淨與視覺美感。
    - 將檔案儲存至 `reports/YYYYMMDD_filename.html` （如有行動端特定報告格式，也請同步新增至 `m/reports/` 內或實作 RWD 設計）。
    - 注意：確保新頁面的 `<title>`, `<meta>` SEO 標籤、自定義字體、以及頂部導覽列/底部分隔等全域組件皆完整引用。
 
