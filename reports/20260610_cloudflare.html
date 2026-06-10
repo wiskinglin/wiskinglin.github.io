@@ -124,14 +124,7 @@
 
     /* --- 字型大小規範 (14pt 內文要求) --- */
     .body-text,
-    .a4-page p,
-    .a4-page li,
-    .a4-page td,
-    .a4-page th,
-    .a4-page label,
-    .a4-page input,
-    .a4-page select,
-    .a4-page button:not(.no-adjust-font) {
+    .a4-page p {
       font-size: 14pt !important;
       line-height: 1.6 !important;
     }
@@ -160,15 +153,41 @@
       line-height: 1.4 !important;
     }
 
-    /* 輔助標籤與小字 (11pt，符合比例) */
-    .a4-page .text-2xs,
-    .a4-page .text-[10px],
-    .a4-page .text-xs,
-    .a4-page .text-sm,
-    .a4-page .sub-text,
-    .a4-page .page-footer span,
-    .a4-page .legend-text {
-      font-size: 11pt !important;
+    /* 列表預設略小，防止撐開 Bento 卡片 */
+    .a4-page li {
+      font-size: 12pt !important;
+      line-height: 1.5 !important;
+    }
+
+    /* 透過更高權重 (類別 + 元素) 覆蓋全域 14pt p 與 12pt li，確保小字不跑版 */
+    .a4-page p.text-2xs, .a4-page p.text-\[9px\], .a4-page p.text-\[10px\],
+    .a4-page li.text-2xs, .a4-page li.text-\[9px\], .a4-page li.text-\[10px\],
+    .a4-page .text-2xs, .a4-page .text-\[9px\], .a4-page .text-\[9px\], .a4-page .text-\[10px\], .a4-page .text-\[10px\] {
+      font-size: 9.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-\[11px\], .a4-page p.text-xs, .a4-page p.sub-text,
+    .a4-page li.text-\[11px\], .a4-page li.text-xs, .a4-page li.sub-text,
+    .a4-page .text-\[11px\], .a4-page .text-\[11px\], .a4-page .text-xs, .a4-page .sub-text,
+    .a4-page .page-footer span, .a4-page .legend-text {
+      font-size: 10.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-sm, .a4-page li.text-sm, .a4-page .text-sm {
+      font-size: 11.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 表格與表單元素字型微調，確保在 A4 橫向佈局中不換行、不溢出 */
+    .a4-page td,
+    .a4-page th,
+    .a4-page label,
+    .a4-page input,
+    .a4-page select,
+    .a4-page button:not(.no-adjust-font) {
+      font-size: 10pt !important;
       line-height: 1.4 !important;
     }
   </style>
@@ -562,29 +581,29 @@
             <!-- Horizontal Lifecycle Timeline -->
             <div class="grid grid-cols-5 gap-2 text-center text-[11px] mb-4">
               <div class="p-2.5 bg-cf-50 border border-cf-200 rounded-xl">
-                <p class="font-extrabold text-cf-700">1. 活躍駐留</p>
-                <p class="text-[9px] text-cf-600/70 mt-1">Active, in-memory</p>
-                <p class="text-[9px] text-slate-400 mt-1">計費運算時長</p>
+                <div class="font-extrabold text-cf-700">1. 活躍駐留</div>
+                <div class="text-[9px] text-cf-600/70 mt-1">Active, in-memory</div>
+                <div class="text-[9px] text-slate-400 mt-1">計費運算時長</div>
               </div>
               <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
-                <p class="font-semibold text-slate-700">2. 閒置不休眠</p>
-                <p class="text-[9px] text-slate-500 mt-1">Idle, non-hib</p>
-                <p class="text-[9px] text-slate-400 mt-1">有活動計時器</p>
+                <div class="font-semibold text-slate-700">2. 閒置不休眠</div>
+                <div class="text-[9px] text-slate-500 mt-1">Idle, non-hib</div>
+                <div class="text-[9px] text-slate-400 mt-1">有活動計時器</div>
               </div>
               <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
-                <p class="font-semibold text-amber-700">3. 閒置可休眠</p>
-                <p class="text-[9px] text-amber-600 mt-1">Idle, hib</p>
-                <p class="text-[9px] text-slate-400 mt-1">符合休眠四條件</p>
+                <div class="font-semibold text-amber-700">3. 閒置可休眠</div>
+                <div class="text-[9px] text-amber-600 mt-1">Idle, hib</div>
+                <div class="text-[9px] text-slate-400 mt-1">符合休眠四條件</div>
               </div>
               <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                <p class="font-semibold text-emerald-700">4. 休眠中</p>
-                <p class="text-[9px] text-emerald-600 mt-1">Hibernated</p>
-                <p class="text-[9px] text-emerald-500 font-bold mt-1">完全免時長費</p>
+                <div class="font-semibold text-emerald-700">4. 休眠中</div>
+                <div class="text-[9px] text-emerald-600 mt-1">Hibernated</div>
+                <div class="text-[9px] text-emerald-500 font-bold mt-1">完全免時長費</div>
               </div>
               <div class="p-2.5 bg-red-50 border border-slate-200 rounded-xl">
-                <p class="font-semibold text-slate-500">5. 已停用</p>
-                <p class="text-[9px] text-slate-400 mt-1">Inactive</p>
-                <p class="text-[9px] text-slate-400 mt-1">清空記憶體</p>
+                <div class="font-semibold text-slate-500">5. 已停用</div>
+                <div class="text-[9px] text-slate-400 mt-1">Inactive</div>
+                <div class="text-[9px] text-slate-400 mt-1">清空記憶體</div>
               </div>
             </div>
 
