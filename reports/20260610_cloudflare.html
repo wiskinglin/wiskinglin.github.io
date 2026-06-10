@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloudflare 邊緣運算與分佈式存儲架構深度研究報告</title>
+  
+  <!-- Mobile Redirect Script -->
+  <script>
+    if (window.innerWidth <= 768) {
+      window.location.href = '../m/reports/20260610_cloudflare.html';
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            cf: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+              900: '#7c2d12',
+              dark: '#0f172a',
+              light: '#f8fafc'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* CSS A4 橫式列印與排版規範 */
+    body {
+      background-color: #f1f5f9;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+    }
+    
+    .a4-page {
+      width: 297mm;
+      height: 210mm;
+      box-sizing: border-box;
+      padding: 16mm 18mm;
+      margin: 28px auto;
+      background: white;
+      box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 8px 15px -6px rgba(15, 23, 42, 0.04);
+      border-radius: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      break-inside: avoid;
+      overflow: hidden;
+    }
+
+    /* 內容可編輯狀態的視覺防呆 UI */
+    [contenteditable="true"] .editable-zone {
+      transition: all 0.2s ease-in-out;
+    }
+    [contenteditable="true"] .editable-zone:hover {
+      outline: 2px dashed #f97316;
+      outline-offset: 4px;
+      cursor: text;
+      background-color: rgba(254, 243, 199, 0.2);
+    }
+    [contenteditable="true"] .editable-zone:focus {
+      outline: 2px solid #ea580c;
+      outline-offset: 4px;
+      background-color: rgba(254, 243, 199, 0.4);
+    }
+
+    /* 列印引擎強制設定 */
+    @media print {
+      body {
+        background-color: transparent !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .a4-page {
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        page-break-after: always !important;
+        break-inside: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* 自訂精緻滾動條 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="antialiased text-slate-800">
+
+  <!-- 頂部控制面板 (列印時隱藏) -->
+  <div class="no-print fixed top-4 right-4 z-50 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-full border border-slate-700/50 shadow-2xl">
+    <a href="../index.html" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-slate-850 hover:bg-slate-700 transition-colors duration-200 border border-slate-700 flex items-center gap-1.5">
+      <span>← 返回首頁</span>
+    </a>
+    <span class="text-xs font-semibold tracking-wider text-slate-500 mx-1">|</span>
+    <span class="text-xs font-semibold tracking-wider text-slate-400 mr-2">DOC CONTROL:</span>
+    <button id="edit-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-cf-500 hover:bg-cf-600 transition-colors duration-200 shadow-md flex items-center gap-1.5">
+      <span>✏️ 編輯內容</span>
+    </button>
+    <button id="save-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors duration-200 border border-slate-700 flex items-center gap-1.5">
+      <span>⬇️ 儲存網頁</span>
+    </button>
+    <button id="print-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 flex items-center gap-1.5">
+      <span>🖨️ 輸出 PDF</span>
+    </button>
+  </div>
+
+  <!-- 提示浮窗 -->
+  <div id="toast" class="no-print fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 bg-slate-900 text-white rounded-xl shadow-2xl text-sm font-medium border border-slate-700/50 flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300">
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- 主文件包裝器 -->
+  <div id="document-wrapper" class="w-full">
+
+    <!-- PAGE 1: HERO COVER & PHILOSOPHY -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2.5">
+          <svg class="w-6 h-6 text-cf-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.125 10.5h-.322c-.11-.47-.323-.9-.613-1.28l.228-.228a.75.75 0 0 0-1.06-1.06l-.228.228a4.137 4.137 0 0 0-1.28-.613v-.322a.75.75 0 0 0-1.5 0v.322c-.47.11-.9.323-1.28.613l-.228-.228a.75.75 0 0 0-1.06 1.06l.228.228c-.29.38-.503.81-.613 1.28h-.322a.75.75 0 0 0 0 1.5h.322c.11.47.323.9.613 1.28l-.228.228a.75.75 0 1 0 1.06 1.06l.228-.228c.38.29.81.503 1.28.613v.322a.75.75 0 0 0 1.5 0v-.322c.47-.11.9-.323 1.28-.613l.228.228a.75.75 0 0 0 1.06-1.06l-.228-.228c.29-.38.503-.81.613-1.28h.322a.75.75 0 0 0 0-1.5ZM16.5 13.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/>
+            <path d="M11.642 6.58A6.748 6.748 0 0 0 4.5 12.75a6.748 6.748 0 0 0 6.642 6.17h.036c.41 0 .81-.04 1.2-.11a.75.75 0 0 0-.256-1.478 5.253 5.253 0 0 1-.944.088c-2.731 0-5.006-2.025-5.176-4.745h10.395c.01-.15.018-.3.018-.45a5.215 5.215 0 0 0-3.32-4.838.75.75 0 1 0-.53 1.403 3.714 3.714 0 0 1 2.348 3.435H7.747a3.731 3.731 0 0 1 3.65-3.037.75.75 0 0 0 .245-1.48Z"/>
+          </svg>
+          <span class="text-xs font-black tracking-widest text-slate-900">CLOUDFLARE ARCHITECTURE STUDY</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 01 / 06</span>
+      </div>
+
+      <!-- Main Content Block -->
+      <div class="grid grid-cols-12 gap-8 my-auto items-center">
+        <!-- Title Hero Block -->
+        <div class="col-span-7 flex flex-col justify-center space-y-6">
+          <div class="inline-flex items-center gap-2 bg-gradient-to-r from-cf-50 to-orange-100/50 border border-cf-100 text-cf-700 px-3 py-1 rounded-full text-xs font-bold w-fit">
+            <span class="w-1.5 h-1.5 rounded-full bg-cf-500 animate-pulse"></span>
+            邊緣儲存與運算生態系深度報告
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-slate-900 leading-tight tracking-tight editable-zone">
+            Cloudflare 邊緣運算與<br><span class="bg-gradient-to-r from-cf-500 to-orange-600 bg-clip-text text-transparent">分佈式存儲架構</span>深度研究
+          </h1>
+          <p class="text-slate-600 text-base leading-relaxed max-w-xl editable-zone">
+            本報告以領域專家的視角，深度剖析 Cloudflare 旗下包含 R2 物件儲存、D1 邊緣資料庫、KV、Durable Objects 等核心組件之流量額度、資源限制與生產環境應用架構的最佳實踐。
+          </p>
+          <div class="flex items-center gap-6 pt-4 border-t border-slate-100">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">編撰時間</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">2026 年 6 月</p>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">目標載體</p>
+              <p class="text-sm font-semibold text-slate-700 mt-1">A4 橫式 / PDF 整合文件</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Bento Block: Start Sharded Philosophy -->
+        <div class="col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-slate-900/10 h-full flex flex-col justify-between">
+          <div class="absolute -right-20 -top-20 w-48 h-48 bg-cf-500/10 rounded-full blur-3xl"></div>
+          <div>
+            <div class="p-3 bg-white/5 rounded-xl w-fit mb-6 border border-white/10">
+              <span class="text-cf-500 font-bold text-sm">ARCH PHILOSOPHY</span>
+            </div>
+            <h3 class="text-xl font-bold mb-3 tracking-tight editable-zone">「從一開始就分片 (Start Sharded)」</h3>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6 editable-zone">
+              現代網路應用不再建議依賴集中式的單一龐大資料庫。相反地，應該將資料與運算邏輯徹底解耦，分散至全球數百個邊緣節點的無數個小型儲存基元中。例如，為每個 SaaS 租戶部署一個獨立資料庫或狀態協調物件。
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-cf-500">275+</p>
+              <p class="text-[11px] text-slate-400 mt-1">全球邊緣節點覆蓋</p>
+            </div>
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-cf-500">Zero</p>
+              <p class="text-[11px] text-slate-400 mt-1">完全免除 R2 資料流出費</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 pt-3">
+        <span>Cloudflare Edge Computing & Distributed Storage Architecture Deep Dive</span>
+        <span>© 2026 Cloudflare, Inc. All rights reserved.</span>
+      </div>
+    </section>
+
+    <!-- PAGE 2: R2 OBJECT STORAGE -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
+          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 01 / R2 物件儲存：資料重力釋放與無網路流出成本</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 02 / 06</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Billing Matrix Card -->
+        <div class="col-span-8 bg-slate-50/50 border border-slate-200/60 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <span class="w-1.5 h-3 bg-cf-500 rounded-full"></span>
+              R2 精細化計費模型及操作分類
+            </h3>
+            <div class="overflow-hidden border border-slate-200 rounded-xl bg-white">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
+                    <th class="p-3">計費與操作項目</th>
+                    <th class="p-3">標準儲存層 (Standard)</th>
+                    <th class="p-3">不頻繁存取層 (Infrequent)</th>
+                    <th class="p-3">免費方案額度 (僅限標準層)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-650">
+                  <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-slate-900">資料儲存費</td>
+                    <td class="p-3">$0.015 / GB-月</td>
+                    <td class="p-3">$0.010 / GB-月</td>
+                    <td class="p-3 text-cf-600 font-bold">每月 10 GB-月</td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-slate-900">Class A 操作 <span class="text-[10px] text-slate-400">(寫入/列出)</span></td>
+                    <td class="p-3">$4.50 / 百萬次</td>
+                    <td class="p-3">$9.00 / 百萬次</td>
+                    <td class="p-3 text-cf-600 font-bold">每月 1,000,000 次</td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-slate-900">Class B 操作 <span class="text-[10px] text-slate-400">(讀取)</span></td>
+                    <td class="p-3">$0.36 / 百萬次</td>
+                    <td class="p-3">$0.90 / 百萬次</td>
+                    <td class="p-3 text-cf-600 font-bold">每月 10,000,000 次</td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-slate-900">資料檢索處理費</td>
+                    <td class="p-3 text-slate-400">免費</td>
+                    <td class="p-3">$0.01 / GB</td>
+                    <td class="p-3 text-slate-400">不適用</td>
+                  </tr>
+                  <tr class="hover:bg-slate-50">
+                    <td class="p-3 font-semibold text-slate-900">網路流出 (Egress)</td>
+                    <td class="p-3 text-cf-600 font-bold">完全免費</td>
+                    <td class="p-3 text-cf-600 font-bold">完全免費</td>
+                    <td class="p-3 text-cf-600 font-bold">無上限免費</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-3 leading-relaxed editable-zone">
+              * Class A 操作包含 Put, List, Copy, Multipart Upload 等；Class B 包含 Get, Head。資源刪除 (Delete) 以及未獲授權的請求 (HTTP 401) 完全免費。不頻繁存取層有強制 30 天最低儲存期限制。
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mt-4 border-t border-slate-200/60 pt-4">
+            <div class="flex items-start gap-2">
+              <div class="text-cf-600 font-black text-sm">✓</div>
+              <div>
+                <p class="text-xs font-bold text-slate-900">Sippy 隨需複製遷移</p>
+                <p class="text-[10px] text-slate-500 leading-relaxed">當使用者請求特定物件時，即時從 S3/GCS 抓取並非同步寫入 R2。</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="text-cf-600 font-black text-sm">✓</div>
+              <div>
+                <p class="text-xs font-bold text-slate-900">自訂網域 & 快取整合</p>
+                <p class="text-[10px] text-slate-500 leading-relaxed">綁定自訂網域方可啟用 WAF 與 Smart Tiered Cache 降低回源延遲。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Limits Bento Box -->
+        <div class="col-span-4 flex flex-col gap-4">
+          <div class="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200/80 p-5 rounded-2xl flex-1 flex flex-col justify-between">
+            <span class="text-xs font-bold text-slate-500 bg-slate-200/50 px-2.5 py-1 rounded-full w-fit">R2 系統限制</span>
+            <div class="space-y-3 mt-4">
+              <div class="flex justify-between items-center border-b border-slate-200/40 pb-1.5">
+                <span class="text-xs text-slate-500">單一物件容量上限</span>
+                <span class="text-xs font-bold text-slate-800">5 TB</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-200/40 pb-1.5">
+                <span class="text-xs text-slate-500">預設單一帳戶桶數</span>
+                <span class="text-xs font-bold text-slate-800">1,000,000</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-200/40 pb-1.5">
+                <span class="text-xs text-slate-500">管理 API 速率限制</span>
+                <span class="text-xs font-bold text-slate-800">50 次 / 秒</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-500">單物件金鑰 / 中繼資料</span>
+                <span class="text-xs font-bold text-slate-800">1024B / 8192B</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-cf-900 text-orange-50 p-5 rounded-2xl flex-1 flex flex-col justify-between">
+            <div>
+              <h4 class="text-sm font-bold mb-2">管轄區與端點重要指引</h4>
+              <p class="text-[11px] text-orange-200/90 leading-relaxed editable-zone">
+                若建立 Bucket 時指定特定的地理管轄區（如 EU），必須透過專屬端點進行存取（如 <code class="bg-black/20 px-1 py-0.5 rounded text-white text-[10px]">eu.r2.cloudflarestorage.com</code>）。傳統 S3 客戶端因不支援單一實例多端點，須針對不同管轄區實例化獨立 S3 客戶端。
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-orange-800/60 flex items-center justify-between text-[10px] text-orange-300">
+              <span>Sippy Multipart Auto-Trigger</span>
+              <span class="bg-orange-800 text-white px-2 py-0.5 rounded-full">> 200 MiB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 pt-3">
+        <span>R2 Object Storage: Zero Egress Cost, S3 Compatible</span>
+        <span>PAGE 02</span>
+      </div>
+    </section>
+
+    <!-- PAGE 3: D1 SQL DATABASE & WORKERS KV -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
+          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 02 / D1 邊緣 SQL 資料庫 與 Workers KV 鍵值存儲</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 03 / 06</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-2 gap-6 my-auto items-stretch">
+        <!-- Left: D1 Database -->
+        <div class="border border-slate-200 rounded-2xl p-6 bg-slate-50/30 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-cf-500 rounded-full"></span>
+                D1 邊緣 SQL SQLite 全托管庫
+              </h3>
+              <span class="text-[10px] font-extrabold text-cf-600 bg-cf-50 px-2 py-0.5 rounded-full border border-cf-100">SCALE TO ZERO</span>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+              <p class="text-slate-600 text-xs leading-relaxed editable-zone">
+                D1 基於 SQLite 構建，透過前端 Worker 代理 single-thread 實例以保證絕對事務一致性。其計費採用極具顛覆性的「按讀寫列計費」模型。
+              </p>
+              
+              <!-- D1 Table Pricing -->
+              <div class="border border-slate-200 rounded-lg overflow-hidden bg-white text-[11px] mt-2">
+                <div class="grid grid-cols-3 bg-slate-50 border-b border-slate-200 p-2 font-bold text-slate-700">
+                  <span>計費指標</span>
+                  <span>免費方案 (每日)</span>
+                  <span>付費方案 (每月)</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 border-b border-slate-100 hover:bg-slate-50">
+                  <span class="font-medium">資料列讀取</span>
+                  <span>5,000,000 列</span>
+                  <span>首 250 億列免費 ($0.001/M)</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 border-b border-slate-100 hover:bg-slate-50">
+                  <span class="font-medium">資料列寫入</span>
+                  <span>100,000 列</span>
+                  <span>首 5000 萬列免費 ($1.00/M)</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 hover:bg-slate-50">
+                  <span class="font-medium">總儲存空間</span>
+                  <span class="text-slate-500">最大 5 GB</span>
+                  <span class="font-bold text-cf-600">5 GB 免費 (超額 $0.75/GB)</span>
+                </div>
+              </div>
+              
+              <div class="p-3 bg-white border border-slate-100 rounded-xl space-y-1.5">
+                <div class="flex items-center gap-1.5 text-[11px] font-bold text-slate-800">
+                  <span class="w-1 h-1 rounded-full bg-cf-500"></span> 
+                  全域讀取副本 (Global Read Replication)
+                </div>
+                <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+                  D1 原生內置主從副本同步。為防止副本延遲，應使用 <code class="bg-slate-100 px-1 py-0.2 rounded text-slate-800 font-mono">Sessions API</code> 建立書籤（withSession(bookmark)），確保順序一致性與單調讀取。
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between text-[10px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
+            <span>單庫容量天花板: 10 GB</span>
+            <span>單橫列容量上限: 2 MB</span>
+          </div>
+        </div>
+
+        <!-- Right: Workers KV -->
+        <div class="border border-slate-200 rounded-2xl p-6 bg-slate-50/30 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-slate-700 rounded-full"></span>
+                Workers KV 全球讀取優化庫
+              </h3>
+              <span class="text-[10px] font-extrabold text-slate-650 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">EVENTUAL CONSISTENCY</span>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+              <p class="text-slate-600 text-xs leading-relaxed editable-zone">
+                KV 犧牲了寫入傳播的強一致性，以背景非同步廣播換取 Sub-10ms 全網讀取延遲。然而其寫入計費成本為讀取成本的 10 倍。
+              </p>
+
+              <!-- KV Table Pricing -->
+              <div class="border border-slate-200 rounded-lg overflow-hidden bg-white text-[11px] mt-2">
+                <div class="grid grid-cols-3 bg-slate-50 border-b border-slate-200 p-2 font-bold text-slate-700">
+                  <span>計費指標</span>
+                  <span>免費方案 (每日)</span>
+                  <span>付費方案 (每月)</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 border-b border-slate-100 hover:bg-slate-50">
+                  <span class="font-medium">讀取操作 (Reads)</span>
+                  <span>100,000 次</span>
+                  <span>10,000,000 次 ($0.50/M)</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 border-b border-slate-100 hover:bg-slate-50">
+                  <span class="font-medium">寫入操作 (Writes)</span>
+                  <span class="text-red-500 font-semibold">1,000 次</span>
+                  <span class="text-red-500 font-semibold">1,000,000 次 ($5.00/M)</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 hover:bg-slate-50">
+                  <span class="font-medium">命名空間限制</span>
+                  <span>1,000 個 / 帳戶</span>
+                  <span>1,000 個 / 帳戶</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <div class="p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                  <p class="text-[11px] font-bold text-emerald-800 mb-0.5">最佳實踐場景</p>
+                  <p class="text-[10px] text-emerald-600/90 leading-tight editable-zone">A/B測試旗標、語系翻譯字典、微服務靜態路由配置。</p>
+                </div>
+                <div class="p-3 bg-red-50 border border-red-100 rounded-xl">
+                  <p class="text-[11px] font-bold text-red-800 mb-0.5">絕對反模式</p>
+                  <p class="text-[10px] text-red-600/90 leading-tight editable-zone">金融餘額儲存、高頻即時庫存。否則易出現嚴重的帳單與一致性撕裂。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
+            <span>寫入傳播期: 最長 60 秒</span>
+            <span>單個 Key 最大長度: 512 Bytes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 pt-3">
+        <span>Cloudflare Storage: Dynamic SQL Database vs. Eventual Consistency KV Store</span>
+        <span>PAGE 03</span>
+      </div>
+    </section>
+
+    <!-- PAGE 4: DURABLE OBJECTS (DO) -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
+          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 03 / Durable Objects (DO)：強一致性的單執行緒邊緣協調中樞</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 04 / 06</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- State Transitions Bento Card -->
+        <div class="col-span-8 border border-slate-200 rounded-2xl p-5 bg-slate-50/20 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 mb-4 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-cf-500 rounded-full"></span>
+                Durable Object 的五大生命週期狀態與計費模型
+              </span>
+              <span class="text-[10px] text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">Memory Baseline: 128 MB</span>
+            </h3>
+            
+            <!-- Horizontal Lifecycle Timeline -->
+            <div class="grid grid-cols-5 gap-2 text-center text-[11px] mb-4">
+              <div class="p-2.5 bg-cf-50 border border-cf-200 rounded-xl">
+                <p class="font-extrabold text-cf-700">1. 活躍駐留</p>
+                <p class="text-[9px] text-cf-600/70 mt-1">Active, in-memory</p>
+                <p class="text-[9px] text-slate-400 mt-1">計費運算時長</p>
+              </div>
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <p class="font-semibold text-slate-700">2. 閒置不休眠</p>
+                <p class="text-[9px] text-slate-500 mt-1">Idle, non-hib</p>
+                <p class="text-[9px] text-slate-400 mt-1">有活動計時器</p>
+              </div>
+              <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl">
+                <p class="font-semibold text-amber-700">3. 閒置可休眠</p>
+                <p class="text-[9px] text-amber-600 mt-1">Idle, hib</p>
+                <p class="text-[9px] text-slate-400 mt-1">符合休眠四條件</p>
+              </div>
+              <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <p class="font-semibold text-emerald-700">4. 休眠中</p>
+                <p class="text-[9px] text-emerald-600 mt-1">Hibernated</p>
+                <p class="text-[9px] text-emerald-500 font-bold mt-1">完全免時長費</p>
+              </div>
+              <div class="p-2.5 bg-red-50 border border-slate-200 rounded-xl">
+                <p class="font-semibold text-slate-500">5. 已停用</p>
+                <p class="text-[9px] text-slate-400 mt-1">Inactive</p>
+                <p class="text-[9px] text-slate-400 mt-1">清空記憶體</p>
+              </div>
+            </div>
+
+            <!-- Double Column Details inside DO -->
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div class="p-3 bg-white border border-slate-200/80 rounded-xl">
+                <p class="font-bold text-slate-800 mb-1 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 bg-cf-500 rounded-full"></span> 運算與持久化存儲計費
+                </p>
+                <ul class="space-y-1 text-[11px] text-slate-650 leading-relaxed">
+                  <li>• <span class="font-semibold">運算請求：</span>免費方案 10 萬/日，付費 100 萬/月 ($0.15/M)</li>
+                  <li>• <span class="font-semibold">執行時長：</span>免費 13,000 GB-s/日，付費 400,000 GB-s/月</li>
+                  <li>• <span class="font-semibold">WebSocket 優待：</span>20:1 合併請求計費，支援 Hibernation</li>
+                  <li>• <span class="font-semibold">SQLite 存儲：</span>免費 5GB 總額，付費單物件上限 10GB</li>
+                </ul>
+              </div>
+
+              <div class="p-3 bg-white border border-slate-200/80 rounded-xl">
+                <p class="font-bold text-slate-800 mb-1 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> 隔離性陷阱與 PITR
+                </p>
+                <p class="text-[11px] text-slate-500 leading-relaxed editable-zone">
+                  透過 <code class="bg-slate-100 px-0.5 rounded text-[10px]">sql.exec()</code> 取得的游標不保證跨非同步邊界 (await) 的快照隔離。務必使用 <code class="bg-slate-100 px-0.5 rounded text-[10px]">.toArray()</code> 在單一同步區塊內徹底消耗結果集。支持 API 回滾歷史狀態至過去 30 天。
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-200/60 text-[10px] text-slate-400">
+            <span class="font-bold text-cf-600">休眠四條件：</span>
+            <span>無活動中的計時器 / 無未完成的網路 I/O / 無使用標準 WebSocket / 無未決定的 Promise</span>
+          </div>
+        </div>
+
+        <!-- The Hybrid Pattern Card -->
+        <div class="col-span-4 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-cf-500 bg-cf-500/10 px-2.5 py-1 rounded-full border border-cf-500/30">Architecture Pattern</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            </div>
+            
+            <h4 class="text-base font-bold mb-3 tracking-tight editable-zone">混合存儲架構最佳實踐<br>(The Hybrid Storage Pattern)</h4>
+            
+            <p class="text-[11px] text-slate-300 leading-relaxed mb-4 editable-zone">
+              不要將 Durable Objects 當作唯一的歷史交易資料墳場。正確的微服務拓撲應該是：
+            </p>
+            
+            <!-- Flow steps -->
+            <div class="space-y-3.5 text-xs">
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-cf-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">1</span>
+                <div>
+                  <p class="font-bold text-slate-200">當下權威即時狀態</p>
+                  <p class="text-[10px] text-slate-400">寫入強一致性的 DO SQLite (單執行緒處理無 Race)</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-cf-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">2</span>
+                <div>
+                  <p class="font-bold text-slate-200">異步排程推送</p>
+                  <p class="text-[10px] text-slate-400">利用 DO 內建的 Alarms 觸發定時器，分批提取歷史穩態資料</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-cf-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">3</span>
+                <div>
+                  <p class="font-bold text-slate-200">D1 資料庫持久化歸檔</p>
+                  <p class="text-[10px] text-slate-400">非同步推送到外圍 D1，用於歷史多維度報表與關聯分析</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-white/10 text-[10px] text-slate-400 flex justify-between">
+            <span>DO 吞吐硬上限：約 1,000 rps</span>
+            <span>高並發須實施：分片 (DO-per-room)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 pt-3">
+        <span>Durable Objects: Single-Threaded Strict Linearizability with Embedded SQLite</span>
+        <span>PAGE 04</span>
+      </div>
+    </section>
+
+    <!-- PAGE 5: HYPERDRIVE, VECTORIZE & AI SEARCH -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
+          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 04 / Hyperdrive 與 AI 檢索生態系：地端連接與次世代知識庫</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 05 / 06</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Hyperdrive -->
+        <div class="col-span-5 border border-slate-200 rounded-2xl p-5 bg-slate-50/20 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-cf-500 rounded-full"></span>
+                Hyperdrive 橋接傳統資料庫
+              </h3>
+              <span class="text-[10px] text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded-full">MySQL / PG</span>
+            </div>
+            
+            <p class="text-[11px] text-slate-600 leading-relaxed mb-4 editable-zone">
+              為了解決無伺服器架構瞬間啟動成千上萬 Worker 導致後端地端/雲端 DB <strong>「TCP 連線耗盡 (TCP Connection Exhaustion)」</strong> 的問題，Hyperdrive 建立並長期維護全局連線池與邊緣快取機制。
+            </p>
+
+            <div class="space-y-3 text-xs">
+              <div class="p-3 bg-white border border-slate-200/60 rounded-xl">
+                <div class="flex justify-between font-bold text-slate-800 text-[11px] mb-1">
+                  <span>免費方案配額：</span>
+                  <span class="text-cf-600">每日 100,000 次操作</span>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+                  不論讀取、寫入、DDL 均算為一次操作。每日額度耗盡，系統將拒絕後續連線。升級付費版則完全無限制。
+                </p>
+              </div>
+
+              <div class="p-3 bg-white border border-slate-200/60 rounded-xl">
+                <div class="flex justify-between font-bold text-slate-800 text-[11px] mb-1">
+                  <span>並行連線數限制：</span>
+                  <span class="text-slate-800">免費層 20 / 付費層 100</span>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+                  支援端到端 TLS 憑證加密（如 VERIFY_CA / VERIFY_IDENTITY），支援 mTLS 客戶端憑證。快取配置 max_age 預設 60s。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-400 mt-3 pt-3 border-t border-slate-100">
+            <span>支援 stale_while_revalidate (15s)</span>
+            <span>Edge Caching Enabled</span>
+          </div>
+        </div>
+
+        <!-- Vectorize & AI Search -->
+        <div class="col-span-7 border border-slate-200 rounded-2xl p-5 bg-slate-50/20 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-slate-700 rounded-full"></span>
+                Vectorize 與 AI Search 生態系統
+              </h3>
+              <span class="text-[10px] text-cf-600 bg-cf-50 px-2 py-0.5 rounded-full border border-cf-100">RAG AUTOMATION</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <!-- Vectorize dimensions billing -->
+              <div class="bg-white border border-slate-200/60 p-3.5 rounded-xl flex flex-col justify-between">
+                <div>
+                  <p class="font-bold text-slate-800 mb-1">Vectorize 向量維度計費</p>
+                  <p class="text-[10px] text-slate-500 leading-relaxed mb-3 editable-zone">
+                    放棄單純請求數計費，改依「向量維度數量」計費：
+                  </p>
+                </div>
+                <div class="bg-slate-50 p-2.5 rounded-lg space-y-1.5 text-[10px] text-slate-600">
+                  <div class="flex justify-between">
+                    <span>免費層:</span>
+                    <span class="font-semibold text-slate-800">30M查詢/5M存儲維度</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>付費層:</span>
+                    <span class="font-semibold text-slate-800">50M查詢維度 ($0.01/M)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>單向量上限:</span>
+                    <span class="font-semibold text-slate-800">1536維 (float32)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Search and Web Crawler -->
+              <div class="bg-white border border-slate-200/60 p-3.5 rounded-xl flex flex-col justify-between">
+                <div>
+                  <p class="font-bold text-slate-800 mb-1">AI Search & R2 數據源整合</p>
+                  <p class="text-[10px] text-slate-500 leading-relaxed mb-3 editable-zone">
+                    自動排程讀取 R2 Bucket 作為攝取源，內建持久化存儲與 Web 爬蟲。
+                  </p>
+                </div>
+                <div class="bg-slate-50 p-2.5 rounded-lg space-y-1.5 text-[10px] text-slate-600">
+                  <div class="flex justify-between">
+                    <span>免費索引容量:</span>
+                    <span class="font-semibold text-slate-800">100實例/10萬個檔案</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>付費索引容量:</span>
+                    <span class="font-semibold text-slate-800">100萬個檔案/次數解禁</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>單一檔案限制:</span>
+                    <span class="font-semibold text-slate-800">最大 4 MB</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Path filtering and metadata extract -->
+            <div class="mt-4 p-3 bg-slate-900 text-slate-200 rounded-xl text-[11px] leading-relaxed editable-zone">
+              <span class="text-cf-500 font-bold">R2 資料攝取高階技巧：</span>
+              可透過 <code class="bg-white/10 px-1 rounded text-[10px]">include</code> 與 <code class="bg-white/10 px-1 rounded text-[10px]">exclude</code> 路徑過濾規則（如排除 /docs/drafts/）精準控制索引範圍，並能動態提取 R2 自訂標頭（如 <code class="bg-white/10 px-1 rounded text-[10px]">x-amz-meta-*</code>）注入中繼資料中。
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-400 mt-3 pt-3 border-t border-slate-100">
+            <span>新版 API 強烈建議棄用 V1 索引架構</span>
+            <span>支援 Web 爬蟲每日 500 頁 (免費)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 pt-3">
+        <span>Hyperdrive TCP Pooling & Vectorize Vector-Dimension Cognitive Store</span>
+        <span>PAGE 05</span>
+      </div>
+    </section>
+
+    <!-- PAGE 6: WORKERS, PAGES & SYNTHESIS GUIDE -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
+          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 05 / 基礎運算、非同步任務與全域最佳化架構合成指南</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 06 / 06</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-5 my-auto items-stretch">
+        <!-- Workers, Pages, AI Gateway -->
+        <div class="col-span-5 flex flex-col gap-4">
+          <!-- CPU Time limit card -->
+          <div class="bg-slate-50/50 border border-slate-200 p-4 rounded-xl flex-1 flex flex-col justify-between">
+            <div>
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-1.5 flex justify-between items-center">
+                <span>1. Workers CPU 限制與 Wall-clock time</span>
+                <span class="text-red-500 font-black">ALERT 1102</span>
+              </h4>
+              <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+                免費方案單次請求享 10ms 限制；付費版 CPU 上限可放寬至 5 分鐘。
+                <strong>重要觀念：</strong>CPU 時間僅計算 V8 引擎實際運算週期；所有的 <code class="bg-slate-200/50 px-1 rounded text-[9px]">await fetch()</code>、D1 資料庫回源或 R2 讀寫產生的等待期，均不計入 CPU 消耗。
+              </p>
+            </div>
+            <div class="mt-2 text-[9px] bg-red-50 border border-red-100 text-red-700 p-1.5 rounded">
+              * 超過 CPU 限制將擲回 <strong>1102 Worker exceeded resource limits</strong> 錯誤。
+            </div>
+          </div>
+
+          <!-- Queues and Workflows -->
+          <div class="bg-slate-50/50 border border-slate-200 p-4 rounded-xl flex-1 flex flex-col justify-between">
+            <div>
+              <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-1.5 flex justify-between items-center">
+                <span>2. Queues 佇列與 Workflows 狀態機</span>
+                <span class="text-cf-600">FREE tier</span>
+              </h4>
+              <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+                Queues 已正式下放至免費版（最大1萬個佇列，每日1萬次操作）。Payload 以 64 KB 作為計費區塊單位。
+                Workflows 全面整合於現有 Workers 計費架構（僅需付 $0.20/GB-月 狀態儲存費）。
+              </p>
+            </div>
+          </div>
+
+          <!-- Workers AI Neurons -->
+          <div class="bg-slate-900 text-white p-4 rounded-xl flex-1 flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <h4 class="text-xs font-extrabold text-cf-500 uppercase tracking-wider">3. Workers AI 神經元經濟學</h4>
+                <span class="text-[9px] text-slate-400">DLP / Guardrails</span>
+              </div>
+              <p class="text-[10px] text-slate-300 leading-relaxed editable-zone">
+                每日提供所有用戶 10,000 個免費神經元（Neurons）。耗盡後付費層按 $0.011/K神經元 計費，免費層直接阻斷並回傳 3036 異常。AI Gateway 整合 DLP 防止機密外洩。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Synthesis Blueprint Card -->
+        <div class="col-span-7 bg-gradient-to-br from-slate-950 to-slate-900 text-white rounded-2xl p-6 flex flex-col justify-between border border-cf-500/10">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="px-2.5 py-0.5 bg-cf-500 text-white rounded-full text-[9px] font-extrabold">BLUEPRINT</span>
+              <h3 class="text-base font-black text-slate-100 tracking-tight">Cloudflare 最佳化架構合成指南 (Synthesis)</h3>
+            </div>
+            
+            <div class="space-y-3 text-xs mt-2">
+              <div class="border-l-2 border-cf-500 pl-3">
+                <p class="font-bold text-slate-200 text-xs">① 責任與實體完全分離 (Object-per-entity)</p>
+                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
+                  嚴禁將任何大型 Blob、圖片或上傳文檔直接寫入 D1 或 KV。這些檔案一律歸入 R2 (免除 Egress 費)；而 D1 與 KV 僅記錄 URL 與 Meta 中繼資料。
+                </p>
+              </div>
+
+              <div class="border-l-2 border-slate-500 pl-3">
+                <p class="font-bold text-slate-200 text-xs">② 動靜分離與快取分層 (Dynamic-Static Split)</p>
+                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
+                  前端靜態資源丟 Pages 託管 (請求完全免費)；極少變更的路由、多語系翻譯塞 KV (享亞毫秒極致快取)；複雜關聯資料歸 D1 持久化，並開啟全域唯讀副本。
+                </p>
+              </div>
+
+              <div class="border-l-2 border-cf-600 pl-3">
+                <p class="font-bold text-slate-200 text-xs">③ 強一致性混合存儲 (The Hybrid DO-D1 Pattern)</p>
+                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
+                  面對即時遊戲、協作編輯、電商秒殺等並發更新，應使用單執行緒 Durable Objects 作為「即時真相來源」，再用 DO Alarms 定期背景同步穩態資料至 D1 作為「歷史分析來源」。
+                </p>
+              </div>
+
+              <div class="border-l-2 border-slate-600 pl-3">
+                <p class="font-bold text-slate-200 text-xs">④ 免費額度網異步解耦 (Decouple with Queues)</p>
+                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
+                  巧妙劃分微服務。利用 Queues 與 Workflows 進行異步非同步解耦與突發流量削峰，新創團隊甚至能實現 100% 零基礎設施成本的全球架構。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-white/10 text-[10px] text-slate-400 flex justify-between items-center">
+            <span>Cloudflare Edge Platform Architecture Best Practices</span>
+            <span>END OF REPORT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 pt-3">
+        <span>Cloudflare Developers Platform Study • Compiles and Prints Flawlessly</span>
+        <span>PAGE 06</span>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // 1. Toast Notification Utility
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toast-msg');
+      msg.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, duration);
+    }
+
+    // 2. Interactive Control Panel Logic
+    window.addEventListener('DOMContentLoaded', () => {
+      const editBtn = document.getElementById('edit-btn');
+      const saveBtn = document.getElementById('save-btn');
+      const printBtn = document.getElementById('print-btn');
+      const wrapper = document.getElementById('document-wrapper');
+      
+      let isEditing = false;
+
+      // Toggle Live Editing Mode
+      editBtn.addEventListener('click', () => {
+        isEditing = !isEditing;
+        if (isEditing) {
+          wrapper.setAttribute('contenteditable', 'true');
+          editBtn.innerHTML = '<span>💾 結束編輯</span>';
+          editBtn.classList.remove('bg-cf-500', 'hover:bg-cf-600');
+          editBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+          showToast('已開啟即時編輯模式！您可以直接點擊任何頁面內容進行修改 ✏️');
+        } else {
+          wrapper.removeAttribute('contenteditable');
+          editBtn.innerHTML = '<span>✏️ 編輯內容</span>';
+          editBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+          editBtn.classList.add('bg-cf-500', 'hover:bg-cf-600');
+          showToast('已結束編輯模式並儲存變更 ✨');
+        }
+      });
+
+      // Export Current Content as Clean HTML with Timestamp
+      saveBtn.addEventListener('click', () => {
+        // Temporarily cleanup contenteditable before exporting to ensure a clean file structure
+        const wasEditing = isEditing;
+        if (wasEditing) {
+          wrapper.removeAttribute('contenteditable');
+        }
+
+        const fileName = '20260610_cloudflare.html';
+        const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+        
+        // Use older/compatible anchor element click for iframe sandbox stability
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        // Restore editing state if it was previously active
+        if (wasEditing) {
+          wrapper.setAttribute('contenteditable', 'true');
+        }
+
+        showToast(`網頁報告已成功下載為：${fileName} 💾 請替換 reports/${fileName} 以生效。`);
+      });
+
+      // Fire Browser Native Print Engine Optimized via Media Print
+      printBtn.addEventListener('click', () => {
+        showToast('準備產生 PDF... 請確保目的端設定為「另存為 PDF」，方向選「橫向」🖨️');
+        setTimeout(() => {
+          window.print();
+        }, 800);
+      });
+    });
+  </script>
+
+</body>
+</html>
