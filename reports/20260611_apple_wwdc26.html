@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple WWDC26 與 OS 27 深度解析：Apple Intelligence 的系統架構融入與 Liquid Glass 設計</title>
+  
+  <!-- Mobile Redirect Script -->
+  <script>
+    if (window.innerWidth <= 768) {
+      window.location.href = '../m/reports/20260611_apple_wwdc26.html';
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            ap: {
+              50: '#f5f5f7',
+              100: '#e8e8ed',
+              500: '#0071e3',
+              600: '#005bb5',
+              700: '#00438a',
+              900: '#00224a',
+              dark: '#000000',
+              light: '#ffffff'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* CSS A4 橫式列印與排版規範 */
+    body {
+      background-color: #05070a;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      color: #e2e8f0;
+    }
+    
+    .a4-page {
+      width: 297mm;
+      height: 210mm;
+      box-sizing: border-box;
+      padding: 16mm 18mm;
+      margin: 28px auto;
+      background: rgba(20, 25, 35, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8);
+      border-radius: 24px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      break-inside: avoid;
+      overflow: hidden;
+    }
+
+    /* 內容可編輯狀態的視覺防呆 UI */
+    [contenteditable="true"] .editable-zone {
+      transition: all 0.2s ease-in-out;
+    }
+    [contenteditable="true"] .editable-zone:hover {
+      outline: 2px dashed #0071e3;
+      outline-offset: 4px;
+      cursor: text;
+      background-color: rgba(0, 113, 227, 0.1);
+    }
+    [contenteditable="true"] .editable-zone:focus {
+      outline: 2px solid #0071e3;
+      outline-offset: 4px;
+      background-color: rgba(0, 113, 227, 0.15);
+    }
+
+    /* 列印引擎強制設定 */
+    @media print {
+      body {
+        background-color: transparent !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .a4-page {
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        page-break-after: always !important;
+        break-inside: avoid !important;
+        background: #141923 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* 自訂精緻滾動條 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    /* --- 字型大小規範 (14pt 內文要求) --- */
+    .body-text,
+    .a4-page p {
+      font-size: 14pt !important;
+      line-height: 1.6 !important;
+    }
+
+    .a4-page h1 {
+      font-size: 32pt !important;
+      font-weight: 900 !important;
+      line-height: 1.25 !important;
+    }
+
+    .a4-page h2 {
+      font-size: 22pt !important;
+      font-weight: 800 !important;
+      line-height: 1.3 !important;
+    }
+
+    .a4-page h3 {
+      font-size: 18pt !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page h4 {
+      font-size: 15pt !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 列表預設略小，防止撐開 Bento 卡片 */
+    .a4-page li {
+      font-size: 12pt !important;
+      line-height: 1.5 !important;
+    }
+
+    /* 透過更高權重 (類別 + 元素) 覆蓋全域 14pt p 與 12pt li，確保小字不跑版 */
+    .a4-page p.text-2xs, .a4-page p.text-\[9px\], .a4-page p.text-\[10px\],
+    .a4-page li.text-2xs, .a4-page li.text-\[9px\], .a4-page li.text-\[10px\],
+    .a4-page .text-2xs, .a4-page .text-\[9px\], .a4-page .text-\[10px\] {
+      font-size: 9.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-\[11px\], .a4-page p.text-xs, .a4-page p.sub-text,
+    .a4-page li.text-\[11px\], .a4-page li.text-xs, .a4-page li.sub-text,
+    .a4-page .text-\[11px\], .a4-page .text-xs, .a4-page .sub-text,
+    .a4-page .page-footer span, .a4-page .legend-text {
+      font-size: 10.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-sm, .a4-page li.text-sm, .a4-page .text-sm {
+      font-size: 11.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 表格與表單元素字型微調，確保在 A4 橫向佈局中不換行、不溢出 */
+    .a4-page td,
+    .a4-page th,
+    .a4-page label,
+    .a4-page input,
+    .a4-page select,
+    .a4-page button:not(.no-adjust-font) {
+      font-size: 10pt !important;
+      line-height: 1.4 !important;
+    }
+  </style>
+</head>
+<body class="antialiased text-slate-200">
+
+  <!-- 頂部控制面板 (列印時隱藏) -->
+  <div class="no-print fixed top-4 right-4 z-50 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-full border border-slate-750 shadow-2xl">
+    <a href="../index.html" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors duration-200 border border-slate-700 flex items-center gap-1.5">
+      <span>← 返回首頁</span>
+    </a>
+    <span class="text-xs font-semibold tracking-wider text-slate-650 mx-1">|</span>
+    <span class="text-xs font-semibold tracking-wider text-slate-400 mr-2">DOC CONTROL:</span>
+    <button id="edit-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-ap-500 hover:bg-ap-600 transition-colors duration-200 shadow-md flex items-center gap-1.5">
+      <span>✏️ 編輯內容</span>
+    </button>
+    <button id="save-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors duration-200 border border-slate-700 flex items-center gap-1.5">
+      <span>⬇️ 儲存網頁</span>
+    </button>
+    <button id="print-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 flex items-center gap-1.5">
+      <span>🖨️ 輸出 PDF</span>
+    </button>
+  </div>
+
+  <!-- 提示浮窗 -->
+  <div id="toast" class="no-print fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 bg-slate-900 text-white rounded-xl shadow-2xl text-sm font-medium border border-slate-850 flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300">
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- 主文件包裝器 -->
+  <div id="document-wrapper" class="w-full">
+
+    <!-- PAGE 1: HERO COVER -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <svg class="w-6 h-6 text-ap-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.82M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.12.09 2.27-.57 2.95-1.39" />
+          </svg>
+          <span class="text-xs font-black tracking-widest text-white">APPLE WWDC26 SPECIAL REPORT</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 01 / 05</span>
+      </div>
+
+      <!-- Main Content Block -->
+      <div class="grid grid-cols-12 gap-8 my-auto items-center">
+        <!-- Title Hero Block -->
+        <div class="col-span-7 flex flex-col justify-center space-y-6">
+          <div class="inline-flex items-center gap-2 bg-gradient-to-r from-ap-900/50 to-indigo-950/20 border border-ap-700/30 text-ap-500 px-3 py-1 rounded-full text-xs font-bold w-fit">
+            <span class="w-1.5 h-1.5 rounded-full bg-ap-500 animate-pulse"></span>
+            作業系統與人工智慧架構研究
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight editable-zone">
+            Apple WWDC26 與 OS 27 深度解析：<br><span class="bg-gradient-to-r from-ap-500 to-indigo-400 bg-clip-text text-transparent">Apple Intelligence 與系統融合</span>
+          </h1>
+          <p class="text-slate-400 text-base leading-relaxed max-w-xl editable-zone">
+            本報告探討 WWDC26 發布的 OS 27 系列更新，深入剖析 Apple Intelligence 如何融入核心系統管線、提升內建軟體體驗，以及 Liquid Glass 視覺設計語彙的微調與 CPU 排程優化實證。
+          </p>
+        </div>
+
+        <!-- Right Side Bento Block -->
+        <div class="col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-8 relative overflow-hidden border border-slate-800 shadow-2xl h-full flex flex-col justify-between">
+          <div class="absolute -right-20 -top-20 w-48 h-48 bg-ap-500/10 rounded-full blur-3xl"></div>
+          <div>
+            <div class="p-3 bg-white/5 rounded-xl w-fit mb-6 border border-white/10">
+              <span class="text-ap-500 font-bold text-sm">DESIGN PHILOSOPHY</span>
+            </div>
+            <h3 class="text-xl font-bold mb-3 tracking-tight editable-zone">「實用且無縫的系統級 AI」</h3>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6 editable-zone">
+              Apple Intelligence 不再只是外掛的對話框，而是融入 Safari、捷徑、郵件、家庭與密碼等內建系統底層，為使用者提供自動化的主動服務與隱私安全保障。
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-ap-500">Liquid Glass</p>
+              <p class="text-[11px] text-slate-400 mt-1">自訂透明度設計語彙</p>
+            </div>
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-ap-500">Up to 5x</p>
+              <p class="text-[11px] text-slate-400 mt-1">系統檔案瀏覽與傳輸提升</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>Apple OS 27 & Apple Intelligence Deep Analysis</span>
+        <span>© 2026 KLIO. All rights reserved.</span>
+      </div>
+    </section>
+
+    <!-- PAGE 2: APPLE INTELLIGENCE -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-ap-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 01 / Apple Intelligence 系統架構深度融入</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 02 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- AI Features Bento Card -->
+        <div class="col-span-8 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <span class="w-1.5 h-3 bg-ap-500 rounded-full"></span>
+              系統內建軟體之 AI 升級概覽
+            </h3>
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-ap-500"></span> Safari 智慧與延伸建立
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  新增 AI 自動分頁分類功能；使用者可透過自然口語描述，一鍵建立、修改並偵錯自訂的 Safari 延伸功能；此外支援商品價格追蹤與主動通知。
+                </p>
+              </div>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-indigo-500"></span> 智慧密碼安全防護
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  獨立的「密碼」App 導入 AI 代理，能自動識別低強度或外洩密碼，並主動以系統級高強度密碼取代，降低帳戶被劫持風險。
+                </p>
+              </div>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-violet-500"></span> 通訊與智慧回覆
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  訊息與郵件中提供更擬真的智慧回覆建議，通話功能可根據即時語音對話內容，主動搜尋定位關聯資訊（例如自動調出訂票代碼）。
+                </p>
+              </div>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 家庭監控理解與捷徑
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  HomeKit 監控器支援 AI 畫面理解，將碎裂的警示通知合併為單一事件並生成影音說明。捷徑 App 支援口語化自動建置複雜工作流。
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-800 text-[10px] text-slate-500">
+            <span class="font-bold text-ap-500">發布時程：</span>
+            <span>預計 2026 年秋季隨 iOS 27, iPadOS 27 與 macOS 18 正式版釋出</span>
+          </div>
+        </div>
+
+        <!-- Right Side Bento Box -->
+        <div class="col-span-4 flex flex-col gap-4">
+          <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl flex-1 flex flex-col justify-between">
+            <span class="text-xs font-bold text-ap-500 bg-ap-900/50 border border-ap-700/30 px-2.5 py-1 rounded-full w-fit">AI 系統架構限制</span>
+            <div class="space-y-3 mt-4">
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">最低硬體門檻 (iOS)</span>
+                <span class="text-xs font-bold text-white">iPhone 15 Pro / 16</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">最低硬體門檻 (iPadOS)</span>
+                <span class="text-xs font-bold text-white">M1 / A16 以上晶片</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">系統語言首波支援</span>
+                <span class="text-xs font-bold text-white">美式英文 / 繁中秋季後續</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-400">隱私安全防禦機制</span>
+                <span class="text-xs font-bold text-white">私密雲端運算 (PCC)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>Apple Intelligence: On-device Edge + Private Cloud Compute</span>
+        <span>PAGE 02</span>
+      </div>
+    </section>
+
+    <!-- PAGE 3: IMAGE GENERATION & SPATIAL -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-ap-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 02 / 影像樂園與相片「空間重構」</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 03 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Image Playground Card -->
+        <div class="col-span-6 border border-slate-800 rounded-2xl p-6 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <span class="w-1.5 h-3 bg-ap-500 rounded-full"></span>
+              影像樂園 (Image Playground) 升級
+            </h3>
+            <p class="text-slate-400 text-xs leading-relaxed mb-4 editable-zone">
+              採用了全新訓練的端側擴散模型，不僅支持更具照片寫實感 (Photorealistic) 的圖案風格，還允許使用者使用複雜的口語描述直接對圖像進行局部編輯與風格重塑。
+            </p>
+            <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl space-y-1.5">
+              <div class="text-[11px] font-bold text-white">
+                🔒 Google SynthID 隱藏式水印
+              </div>
+              <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                為防止 AI 濫用，所有影像樂園產生的圖像均在像素底層自動嵌入 SynthID 隱藏式浮水印，該浮水印不可視，但在數位檔案層面可輕易被辨識。
+              </p>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between text-[10px] text-slate-500 pt-3 border-t border-slate-800">
+            <span>支援風格: 寫實, 插畫, 卡通</span>
+            <span>浮水印標準: C2PA & SynthID</span>
+          </div>
+        </div>
+
+        <!-- Spatial Reconstruction Card -->
+        <div class="col-span-6 border border-slate-800 rounded-2xl p-6 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-1.5 h-3 bg-indigo-500 rounded-full"></span>
+              相片 App 空間重構 (Spatial Reconstruction)
+            </h3>
+            <p class="text-slate-400 text-xs leading-relaxed mb-4 editable-zone">
+              導入與 Vision Pro 同款的空間透視模型技術，使用者只需在一般的 2D 照片中進行簡單的拖拽操作，即可調整照片的視角。
+            </p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="text-[11px] font-bold text-white mb-0.5">水平延伸背景填補</p>
+                <p class="text-[10px] text-slate-400 leading-tight editable-zone">當照片旋轉或拉遠時，邊界外的空白區域將由邊緣擴散模型自動填補自然背景。</p>
+              </div>
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="text-[11px] font-bold text-white mb-0.5">智慧清除干擾</p>
+                <p class="text-[10px] text-slate-400 leading-tight editable-zone">點擊即可選中照片中不相干的人物或雜物，AI 將其實時擦除並填補光影背景。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 pt-3 border-t border-slate-800">
+            <span>適用機型: iPhone 16 全系列及 M 系列裝置</span>
+            <span>核心技術: 深度估算與圖像修補</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>Image Playground & Photos Spatial Reconstruction</span>
+        <span>PAGE 03</span>
+      </div>
+    </section>
+
+    <!-- PAGE 4: LIQUID GLASS DESIGN -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-ap-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 03 / OS 27 視覺設計語彙：Liquid Glass 再進化</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 04 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Liquid Glass Bento Box -->
+        <div class="col-span-7 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-4 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-ap-500 rounded-full"></span>
+                Liquid Glass 自訂毛玻璃透明度與圓角微調
+              </span>
+            </h3>
+            
+            <p class="text-xs text-slate-400 leading-relaxed mb-4 editable-zone">
+              延續了去年的 Liquid Glass (液態玻璃) 設計風格，OS 27 進一步下放控制權給使用者，並實現了跨平台的系統控制台統一。
+            </p>
+
+            <div class="space-y-3.5 text-xs">
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-ap-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">1</span>
+                <div>
+                  <p class="font-bold text-slate-200">透明度控制滑桿 (Alpha Slider)</p>
+                  <p class="text-[10px] text-slate-400">使用者可以在控制台或桌面上直接調整視窗背景的玻璃透明度，支持完全透明到不透明的無段切換。</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-ap-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">2</span>
+                <div>
+                  <p class="font-bold text-slate-200">清透型 App 圖示 (Translucent Icons)</p>
+                  <p class="text-[10px] text-slate-400">App 圖示（如地圖、設定）採用了更為清澈的多層玻璃疊加視覺，背景發光與陰影能根據桌布主動調和。</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-ap-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">3</span>
+                <div>
+                  <p class="font-bold text-slate-200">系統視窗控制介面統一 (Unified Windows)</p>
+                  <p class="text-[10px] text-slate-400">macOS 18 的工具列、側邊欄及視窗控制圓角率與 iOS/iPadOS 27 徹底對齊，消除了跨平台操作的割裂感。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-800 text-[10px] text-slate-500">
+            <span class="font-bold text-ap-500">視覺重心：</span>
+            <span>輕量化、多層深度透視、消除物理邊界阻隔</span>
+          </div>
+        </div>
+
+        <!-- Right Side Glass Card -->
+        <div class="col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-800">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-ap-500 bg-ap-900/50 px-2.5 py-1 rounded-full border border-ap-700/30">User Customization</span>
+            </div>
+            
+            <h4 class="text-base font-bold mb-3 tracking-tight editable-zone">主題自訂與輔助易讀性</h4>
+            
+            <p class="text-[11px] text-slate-400 leading-relaxed mb-4 editable-zone">
+              為了解決毛玻璃在複雜背景下易讀性下降的缺陷，OS 27 設計了主動对比度偵測：
+            </p>
+            
+            <div class="space-y-3 text-xs">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-slate-200">文字邊緣主動發光 (Text Edge Glow)</p>
+                <p class="text-[10px] text-slate-400 mt-1">當視窗透明度調高且背景極為複雜時，文字與按鈕圖示邊緣將會自動產生 1px 的反差色柔和發光，以確保標籤可讀。</p>
+              </div>
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-slate-200">極簡對比度防護機制</p>
+                <p class="text-[10px] text-slate-400 mt-1">系統提供一鍵降低透明度選項，能在檢測到低對比度與高噪點背景時，自動在玻璃下墊上一層微米級灰色遮罩。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>Liquid Glass: Alpha Slider, Translucent Icons, and Unified Corner Radius</span>
+        <span>PAGE 04</span>
+      </div>
+    </section>
+
+    <!-- PAGE 5: PERFORMANCE & HARDWARE -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-ap-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 04 / CPU 排程優化與系統效能實證</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 05 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Performance stats -->
+        <div class="col-span-8 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-ap-500 rounded-full"></span>
+                藉由 CPU 排程器最佳化所獲得之實測效能提升
+              </h3>
+              <span class="text-[10px] text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded-full border border-emerald-900/40">CPU Optimization</span>
+            </div>
+            
+            <p class="text-[11px] text-slate-400 leading-relaxed mb-4 editable-zone">
+              OS 27 引入了全新重寫的執行緒排程分配演算法，能更智慧地將即時性任務（UI 回應、動畫、滑動）與背景任務（AI 代理背景索引、相片掃描）進行實時分流。
+            </p>
+
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div class="p-3.5 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-bold text-white">App 啟動速度</span>
+                  <span class="text-emerald-400 font-bold">+30%</span>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-normal">全新 CPU scheduler 優先調用大核處理冷啟動過程。</p>
+              </div>
+
+              <div class="p-3.5 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-bold text-white">相片 App 載入速度</span>
+                  <span class="text-emerald-400 font-bold">+70%</span>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-normal">大容量相冊索引快取重建，大幅降低滑動時的白塊率。</p>
+              </div>
+
+              <div class="p-3.5 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-bold text-white">AirDrop 無線傳輸</span>
+                  <span class="text-emerald-400 font-bold">+80%</span>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-normal">無線射頻協議調和，排除 Wi-Fi 與藍牙多重信號干擾。</p>
+              </div>
+
+              <div class="p-3.5 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="font-bold text-white">iPadOS 檔案讀寫傳輸</span>
+                  <span class="text-emerald-400 font-bold">5x 提升</span>
+                </div>
+                <p class="text-[10px] text-slate-500 leading-normal">在多工分屏環境下，核心寫入管道吞吐限制大幅放寬。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-3 border-t border-slate-800">
+            <span>測試設備: iPhone 16 Pro, iPad Pro M4, MacBook M3</span>
+            <span>測試版本: OS 27 Beta 1</span>
+          </div>
+        </div>
+
+        <!-- Miscellaneous Updates -->
+        <div class="col-span-4 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-indigo-500 rounded-full"></span>
+                其他硬體與功能更新
+              </h3>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-0.5">Vision Pro & 空間場景</p>
+                <p class="text-[10px] text-slate-400 leading-normal">支援將一般的全景照片自動轉為立體 3D 空間場景，並將 Wi-Fi 6E/7 連線效能提升 3 倍。</p>
+              </div>
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-0.5">Apple Watch 動態檢視</p>
+                <p class="text-[10px] text-slate-400 leading-normal">新增由 Siri 動態推薦排序的 App 蜂巢格狀檢視，並加入了全新雙指點按手勢。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-3 border-t border-slate-800">
+            <span>經期追蹤加入: 更年期通知</span>
+            <span>iCloud 共享相簿支援: 原圖上傳</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>OS 27 Scheduler Optimization, AirDrop 80% Faster, iPadOS 5x File IO</span>
+        <span>PAGE 05</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- JS 控制邏輯 -->
+  <script>
+    // 編輯、儲存與輸出 PDF 功能
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const printBtn = document.getElementById('print-btn');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+
+    let isEditing = false;
+
+    function showToast(msg) {
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    editBtn.addEventListener('click', () => {
+      isEditing = !isEditing;
+      const zones = document.querySelectorAll('.editable-zone');
+      zones.forEach(zone => {
+        zone.contentEditable = isEditing ? "true" : "false";
+      });
+      editBtn.innerHTML = isEditing ? '<span>🔒 完成編輯</span>' : '<span>✏️ 編輯內容</span>';
+      editBtn.classList.toggle('bg-ap-500');
+      editBtn.classList.toggle('bg-amber-600');
+      showToast(isEditing ? '已開啟編輯模式，可直接點擊內文修改' : '已關閉編輯模式');
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if (isEditing) {
+        editBtn.click();
+      }
+      showToast('按 Ctrl+S 即可將您修改後的網頁完整儲存至本地');
+    });
+
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>科技巨頭的商業戰略與人才思維：從輝達簡報設計師到宏碁行李箱的場景戰法 | KLIO. REPORT</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Desktop Redirect Script -->
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260611_tech_business_strategy.html';
+        }
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --accent: #d97706;
+            --accent-glow: rgba(217, 119, 6, 0.15);
+            --bg-base: #0d0d0d;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14pt !important;
+            line-height: 1.6;
+        }
+
+        /* 頂部進度條 */
+        .progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #1c1917;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* 頂部導航列 */
+        .top-nav {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            z-index: 90;
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #fff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .category-tag {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        /* 橫向滾動選單 (Tab Navigation) */
+        .tab-nav-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background: rgba(13, 13, 13, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 89;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 16px;
+        }
+
+        .tab-nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            margin-right: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* 內容容器 */
+        .article-body {
+            padding: 120px 18px 80px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .date-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 950;
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .intro-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* 模組卡片結構 */
+        .module-section {
+            display: none;
+        }
+
+        .module-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .module-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .module-num {
+            font-size: 0.7rem;
+            font-weight: 900;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 1px solid rgba(217, 119, 6, 0.3);
+        }
+
+        <h2> {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .sub-instructor {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Bento 元素改裝為行動端 Card */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-card.highlight {
+            border-color: rgba(217, 119, 6, 0.3);
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--accent);
+        }
+
+        .card-desc {
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* 列表樣式 */
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 14px;
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* 警告與高亮區 */
+        .alert-box {
+            background: rgba(217, 119, 6, 0.05);
+            border: 1px solid rgba(217, 119, 6, 0.2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: #f3f4f6;
+            line-height: 1.5;
+        }
+
+        /* 快切導航 */
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 32px;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .back-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: #fff;
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-decoration: none;
+            margin-top: 40px;
+        }
+
+        /* 表格優化 */
+        .mobile-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin-top: 8px;
+        }
+        .mobile-table th {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+        }
+        .mobile-table td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        
+        .code-inline {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 頂部進度條 -->
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- 頂部導航 -->
+    <nav class="top-nav">
+        <div class="logo-text">STRATEGY & TALENT</div>
+        <div class="category-tag">● 深度報告</div>
+    </nav>
+
+    <!-- 模組快速導航 Tab 欄 -->
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 職缺背景</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 簡報定位</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 核心價值</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 宏碁行李箱</button>
+        <button class="tab-btn" onclick="switchModule(5)">5. 經營戰法</button>
+        <button class="tab-btn" onclick="switchModule(6)">6. 戰略合成</button>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="article-body">
+        <span class="date-tag">June 11, 2026</span>
+        <h1>科技巨頭的商業戰略與人才思維：<br>簡報設計師與行李箱場景戰法</h1>
+        <p class="intro-text">解析輝達年薪高達 650 萬招募「簡報視覺設計師」背後對溝通判斷力的追求，以及宏碁行李箱以「生活場景戰法」獨立分割的經營思維。</p>
+
+        <!-- ==================== MODULE 1 ==================== -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>輝達 650 萬年薪做 PPT</h2>
+                <div class="sub-instructor">高薪職缺引發的熱議</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-newspaper"></i>高管簡報設計師</div>
+                <p class="card-desc">輝達（NVIDIA）近期開出年薪高達新台幣 650 萬元的「簡報視覺設計師」職缺，引發熱議。該職位主要負責為高管設計主題演講與行銷素材，需要能在極度高壓環境下與高層打磨敘事。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary" onclick="switchModule(2)">下一單元：簡報定位 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 2 ==================== -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num">MODULE 2</span>
+                <h2>簡報設計師在各行業的定位</h2>
+                <div class="sub-instructor">管顧、廣告與科技業的差異</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-presentation"></i>產業定位矩陣</div>
+                <table class="mobile-table text-slate-300">
+                    <thead>
+                        <tr>
+                            <th>產業</th>
+                            <th>核心任務</th>
+                            <th>定位</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>管理顧問</td>
+                            <td>資料轉譯與嚴謹邏輯推導</td>
+                            <td>重在金字塔結構與嚴謹性</td>
+                        </tr>
+                        <tr>
+                            <td>廣告代理</td>
+                            <td>提案說服與強烈情感共鳴</td>
+                            <td>重在視覺衝擊與心智佔領</td>
+                        </tr>
+                        <tr style="color:var(--accent); font-weight:bold;">
+                            <td>科技巨頭</td>
+                            <td>技術降維、願景宣示與傳播</td>
+                            <td>重在混亂技術中梳理故事線</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(3)">下一單元：核心價值 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 3 ==================== -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num">MODULE 3</span>
+                <h2>說故事、創造力與判斷力</h2>
+                <div class="sub-instructor">AI 時代下不可替代的人類資產</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-brain"></i>AI 美化技術已成為平民 baseline</div>
+                <p class="card-desc">現行 AI 工具可在幾秒內生成漂亮的簡報。但 AI 無法理解高層與聽眾間的政治/商業角力。將抽象且繁雜的技術規格進行「降維與降噪」，提煉出黃金故事線，是極致的人類判斷力表現。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-lock-key"></i>無可替代的三大支柱</div>
+                <ul class="bullet-list">
+                    <li><strong>說故事能力：</strong> 梳理故事線，引發受眾情感與戰略共鳴。</li>
+                    <li><strong>創造力：</strong> 將生硬規格轉化為驚豔視覺隱喻的能力。</li>
+                    <li><strong>判斷力：</strong> 評估此時此地該講什麼、不該講什麼的敏感度。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(4)">下一單元：宏碁行李箱 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 4 ==================== -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num">MODULE 4</span>
+                <h2>宏碁行李箱的市場奇兵</h2>
+                <div class="sub-instructor">3年賣破2億與子公司分割獨立</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-suitcase"></i>宏碁風尚行李箱的崛起</div>
+                <p class="card-desc">宏碁旗下子公司「宏碁風尚」自 2022 年推出行李箱，3 年內交出年營收約 2 億元、2025 年稅後淨利 1770 萬元的佳績，於 2025 年 7 月分割獨立，成功將「電腦贈品」包裝為品牌獲利新引擎。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-shield-check"></i>活用既有優勢</div>
+                <ul class="bullet-list">
+                    <li>利用先前電腦包袋的供應鏈積累，快速切入。</li>
+                    <li>套用 PC 等級的安規品管（摔落、滾輪強度檢測）提升信任。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(5)">下一單元：經營戰法 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 5 ==================== -->
+        <div class="module-section" id="module-5">
+            <div class="module-header">
+                <span class="module-num">MODULE 5</span>
+                <h2>「生活場景」的經營戰法</h2>
+                <div class="sub-instructor">宏碁風尚廖幼梅團隊決策框架</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-chart-pie"></i>決策三支柱</div>
+                <p class="card-desc">團隊在評估新業務時，始終遵循明確的框架：</p>
+                <ul class="bullet-list" style="margin-top:10px;">
+                    <li><strong>市場需要：</strong> 避開高教育成本的智慧衣，專注出行剛需。</li>
+                    <li><strong>我們能做：</strong> 發揮包袋供應鏈與品質檢驗實力。</li>
+                    <li><strong>能夠獲利：</strong> 定位中高端，維持高毛利空間。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-users"></i>翻轉規格化行銷</div>
+                <p class="card-desc">捨棄科技業傳統「講功能、秀規格」的冰冷思維，改與 KOL/KOC 合作並形塑「旅行、生活體驗」場景，精準打入家庭與男性主流客群，核心邏輯轉變為「從人在生活中缺少什麼出發」。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(4)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(6)">下一單元：戰略合成 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 6 ==================== -->
+        <div class="module-section" id="module-6">
+            <div class="module-header">
+                <span class="module-num">MODULE 6</span>
+                <h2>商業戰略合成與啟示</h2>
+                <div class="sub-instructor">從「人」出發的生活場景戰略啟示</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-lightbulb"></i>給創業者與經理人的三大啟示</div>
+                <div class="space-y-3.5 mt-2" style="font-size:10pt !important;">
+                    <div style="padding-left:12px; border-left:2px solid var(--accent);">
+                        <strong>① 擺脫生硬的規格思維</strong>
+                        <p style="color:var(--text-muted);">在成熟紅海中，誰能將冰冷規格包裝為生活場景，誰就擁有定價護城河。</p>
+                    </div>
+                    <div style="padding-left:12px; border-left:2px solid var(--accent);">
+                        <strong>② 積極投資「敘事與降噪」能力</strong>
+                        <p style="color:var(--text-muted);">AI 雖能生成文字，但梳理故事線與情感共鳴點，仍然是極高價值的人類資產。</p>
+                    </div>
+                    <div style="padding-left:12px; border-left:2px solid var(--accent);">
+                        <strong>③ 活用既有供應鏈護城河</strong>
+                        <p style="color:var(--text-muted);">跨界不是盲目摸索，而是用既有的生產與品管硬實力，降維打擊對手。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(5)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <a href="../index.html" class="back-home">
+            返回首頁 <i class="ph-bold ph-house-line"></i>
+        </a>
+    </div>
+
+    <!-- JS 邏輯 -->
+    <script>
+        // 進度條控制
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        // 模組切換邏輯
+        function switchModule(moduleNum) {
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>

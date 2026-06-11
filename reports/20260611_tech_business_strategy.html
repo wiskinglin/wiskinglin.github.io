@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>科技巨頭的商業戰略與人才思維：從輝達簡報設計師到宏碁行李箱的場景戰法</title>
+  
+  <!-- Mobile Redirect Script -->
+  <script>
+    if (window.innerWidth <= 768) {
+      window.location.href = '../m/reports/20260611_tech_business_strategy.html';
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            am: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#d97706',
+              600: '#b45309',
+              700: '#78350f',
+              900: '#451a03',
+              dark: '#0d0d0d',
+              light: '#fafafa'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* CSS A4 橫式列印與排版規範 */
+    body {
+      background-color: #0d0d0d;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      color: #e2e8f0;
+    }
+    
+    .a4-page {
+      width: 297mm;
+      height: 210mm;
+      box-sizing: border-box;
+      padding: 16mm 18mm;
+      margin: 28px auto;
+      background: #121212;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      border-radius: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      break-inside: avoid;
+      overflow: hidden;
+    }
+
+    /* 內容可編輯狀態的視覺防呆 UI */
+    [contenteditable="true"] .editable-zone {
+      transition: all 0.2s ease-in-out;
+    }
+    [contenteditable="true"] .editable-zone:hover {
+      outline: 2px dashed #d97706;
+      outline-offset: 4px;
+      cursor: text;
+      background-color: rgba(217, 119, 6, 0.1);
+    }
+    [contenteditable="true"] .editable-zone:focus {
+      outline: 2px solid #d97706;
+      outline-offset: 4px;
+      background-color: rgba(217, 119, 6, 0.15);
+    }
+
+    /* 列印引擎強制設定 */
+    @media print {
+      body {
+        background-color: transparent !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .a4-page {
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        page-break-after: always !important;
+        break-inside: avoid !important;
+        background: #121212 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* 自訂精緻滾動條 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3f3f46;
+    }
+
+    /* --- 字型大小規範 (14pt 內文要求) --- */
+    .body-text,
+    .a4-page p {
+      font-size: 14pt !important;
+      line-height: 1.6 !important;
+    }
+
+    .a4-page h1 {
+      font-size: 32pt !important;
+      font-weight: 900 !important;
+      line-height: 1.25 !important;
+    }
+
+    .a4-page h2 {
+      font-size: 22pt !important;
+      font-weight: 800 !important;
+      line-height: 1.3 !important;
+    }
+
+    .a4-page h3 {
+      font-size: 18pt !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page h4 {
+      font-size: 15pt !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 列表預設略小，防止撐開 Bento 卡片 */
+    .a4-page li {
+      font-size: 12pt !important;
+      line-height: 1.5 !important;
+    }
+
+    /* 透過更高權重 (類別 + 元素) 覆蓋全域 14pt p 與 12pt li，確保小字不跑版 */
+    .a4-page p.text-2xs, .a4-page p.text-\[9px\], .a4-page p.text-\[10px\],
+    .a4-page li.text-2xs, .a4-page li.text-\[9px\], .a4-page li.text-\[10px\],
+    .a4-page .text-2xs, .a4-page .text-\[9px\], .a4-page .text-\[10px\] {
+      font-size: 9.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-\[11px\], .a4-page p.text-xs, .a4-page p.sub-text,
+    .a4-page li.text-\[11px\], .a4-page li.text-xs, .a4-page li.sub-text,
+    .a4-page .text-\[11px\], .a4-page .text-xs, .a4-page .sub-text,
+    .a4-page .page-footer span, .a4-page .legend-text {
+      font-size: 10.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-sm, .a4-page li.text-sm, .a4-page .text-sm {
+      font-size: 11.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 表格與表單元素字型微調，確保在 A4 橫向佈局中不換行、不溢出 */
+    .a4-page td,
+    .a4-page th,
+    .a4-page label,
+    .a4-page input,
+    .a4-page select,
+    .a4-page button:not(.no-adjust-font) {
+      font-size: 10pt !important;
+      line-height: 1.4 !important;
+    }
+  </style>
+</head>
+<body class="antialiased text-slate-200">
+
+  <!-- 頂部控制面板 (列印時隱藏) -->
+  <div class="no-print fixed top-4 right-4 z-50 flex items-center gap-2 bg-zinc-900/90 backdrop-blur-md px-4 py-2.5 rounded-full border border-zinc-800 shadow-2xl">
+    <a href="../index.html" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-zinc-850 hover:bg-zinc-750 transition-colors duration-200 border border-zinc-700 flex items-center gap-1.5">
+      <span>← 返回首頁</span>
+    </a>
+    <span class="text-xs font-semibold tracking-wider text-zinc-700 mx-1">|</span>
+    <span class="text-xs font-semibold tracking-wider text-slate-400 mr-2">DOC CONTROL:</span>
+    <button id="edit-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-am-500 hover:bg-am-600 transition-colors duration-200 shadow-md flex items-center gap-1.5">
+      <span>✏️ 編輯內容</span>
+    </button>
+    <button id="save-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-zinc-800 hover:bg-zinc-700 transition-colors duration-200 border border-zinc-700 flex items-center gap-1.5">
+      <span>⬇️ 儲存網頁</span>
+    </button>
+    <button id="print-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 flex items-center gap-1.5">
+      <span>🖨️ 輸出 PDF</span>
+    </button>
+  </div>
+
+  <!-- 提示浮窗 -->
+  <div id="toast" class="no-print fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 bg-zinc-900 text-white rounded-xl shadow-2xl text-sm font-medium border border-zinc-800 flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300">
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- 主文件包裝器 -->
+  <div id="document-wrapper" class="w-full">
+
+    <!-- PAGE 1: HERO COVER -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <svg class="w-6 h-6 text-am-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" />
+          </svg>
+          <span class="text-xs font-black tracking-widest text-white">STRATEGY & TALENT STUDY</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 01 / 05</span>
+      </div>
+
+      <!-- Main Content Block -->
+      <div class="grid grid-cols-12 gap-8 my-auto items-center">
+        <!-- Title Hero Block -->
+        <div class="col-span-7 flex flex-col justify-center space-y-6">
+          <div class="inline-flex items-center gap-2 bg-gradient-to-r from-am-900/50 to-amber-950/20 border border-am-700/30 text-am-500 px-3 py-1 rounded-full text-xs font-bold w-fit">
+            <span class="w-1.5 h-1.5 rounded-full bg-am-500 animate-pulse"></span>
+            科技巨頭商業戰略與人才思維
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight editable-zone">
+            科技巨頭的商業戰略與人才思維：<br><span class="bg-gradient-to-r from-am-500 to-amber-400 bg-clip-text text-transparent">簡報設計師與行李箱場景戰法</span>
+          </h1>
+          <p class="text-slate-400 text-base leading-relaxed max-w-xl editable-zone">
+            本報告分析輝達年薪高達 650 萬招募「簡報視覺設計師」背後對溝通判斷力的追求，以及宏碁風尚行李箱以「生活場景戰法」獨立分割的經營思維，揭示 AI 時代下核心判斷力的無可替代性。
+          </p>
+        </div>
+
+        <!-- Right Side Bento Block -->
+        <div class="col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-8 relative overflow-hidden border border-slate-800 shadow-2xl h-full flex flex-col justify-between">
+          <div class="absolute -right-20 -top-20 w-48 h-48 bg-am-500/10 rounded-full blur-3xl"></div>
+          <div>
+            <div class="p-3 bg-white/5 rounded-xl w-fit mb-6 border border-white/10">
+              <span class="text-am-500 font-bold text-sm">STRATEGY THINKING</span>
+            </div>
+            <h3 class="text-xl font-bold mb-3 tracking-tight editable-zone">「說故事與創造力的重塑」</h3>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6 editable-zone">
+              在 AI 能輕易生成簡報大綱與排版的今天，真正無可替代的是「說故事的能力、創造力與判斷力」，以及從人在生活中缺少什麼出發的「場景戰略」。
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-am-500">650 萬元</p>
+              <p class="text-[11px] text-slate-400 mt-1">NVIDIA 簡報設計師年薪</p>
+            </div>
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-am-500">3年 2億</p>
+              <p class="text-[11px] text-slate-400 mt-1">宏碁風尚行李箱營收</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>NVIDIA Presentation Designer & Acer Luggage Strategy</span>
+        <span>© 2026 KLIO. All rights reserved.</span>
+      </div>
+    </section>
+
+    <!-- PAGE 2: NVIDIA PPT DESIGNER -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-am-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 01 / 輝達「簡報視覺設計師」職缺解析</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 02 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Job Description Card -->
+        <div class="col-span-8 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <span class="w-1.5 h-3 bg-am-500 rounded-full"></span>
+              簡報設計師在不同產業之定位差異
+            </h3>
+            <div class="overflow-hidden border border-slate-800 rounded-xl bg-slate-950">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-900 border-b border-slate-800 text-slate-350 font-bold">
+                    <th class="p-3">產業類別</th>
+                    <th class="p-3">核心任務</th>
+                    <th class="p-3">核心能力要求</th>
+                    <th class="p-3">NVIDIA 的獨特定位</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-850 text-slate-300">
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">管理顧問業</td>
+                    <td class="p-3">資料轉譯、結構化思考、邏輯推導</td>
+                    <td class="p-3">金字塔原理、高度邏輯框架</td>
+                    <td class="p-3 text-slate-450">重在嚴謹性而非視覺傳播</td>
+                  </tr>
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">廣告代理業</td>
+                    <td class="p-3">提案說服、情感共鳴、創意發想</td>
+                    <td class="p-3">視覺張力、情感打動、大膽創意</td>
+                    <td class="p-3 text-slate-450">重在說服買單而非技術傳播</td>
+                  </tr>
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">科技業高管演講</td>
+                    <td class="p-3 text-am-500 font-bold">主題演講、大型發布會、戰略宣示</td>
+                    <td class="p-3 text-am-500 font-bold">敘事剪輯、資訊降維、極速迭代</td>
+                    <td class="p-3 text-am-500 font-bold">在混亂中梳理出清晰的技術願景</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-3 leading-relaxed editable-zone">
+              * 備註：NVIDIA 此次開出高達新台幣 650 萬元的簡報設計師職缺，主要任務是服務 CEO 黃仁勳及核心高管，在極度高壓且瞬息萬變的環境下，與高管共同打磨出能被大眾及投資人理解的科技敘事。
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mt-4 border-t border-slate-800 pt-4">
+            <div class="flex items-start gap-2">
+              <div class="text-am-500 font-black text-sm">✓</div>
+              <div>
+                <p class="text-xs font-bold text-white">高壓敘事打磨</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed">需要能在演講前數小時，根據技術更新快速調整簡報的核心敘事邏輯。</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="text-am-500 font-black text-sm">✓</div>
+              <div>
+                <p class="text-xs font-bold text-white">跨部門資料整合</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed">將硬體工程、軟體生態、晶片封裝等極度繁雜的技術資料進行「降維」提煉。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side Stats -->
+        <div class="col-span-4 flex flex-col gap-4">
+          <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl flex-1 flex flex-col justify-between">
+            <span class="text-xs font-bold text-am-500 bg-am-900/50 border border-am-700/30 px-2.5 py-1 rounded-full w-fit">簡報設計師諸元</span>
+            <div class="space-y-3 mt-4">
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">職位年薪水準</span>
+                <span class="text-xs font-bold text-white">新台幣 650 萬元</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">直接匯報對象</span>
+                <span class="text-xs font-bold text-white">輝達高階主管 (含 CEO)</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">關鍵軟體門檻</span>
+                <span class="text-xs font-bold text-white">PowerPoint / Keynote</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-400">無形核心要求</span>
+                <span class="text-xs font-bold text-white">說故事、創造力與判斷力</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>NVIDIA Presentation Visual Designer: Position Profile</span>
+        <span>PAGE 02</span>
+      </div>
+    </section>
+
+    <!-- PAGE 3: THE CORE VALUE -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-am-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 02 / AI 時代下的「簡報技術」與「核心判斷力」</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 03 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-2 gap-6 my-auto items-stretch">
+        <!-- Left: AI Impact -->
+        <div class="border border-slate-800 rounded-2xl p-6 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-am-500 rounded-full"></span>
+                AI 能幫我們做什麼？簡報門檻的平民化
+              </h3>
+              <span class="text-[10px] font-extrabold text-am-500 bg-am-900/50 px-2 py-0.5 rounded-full border border-am-700/30">AI BASELINE</span>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+              <p class="text-slate-400 text-xs leading-relaxed editable-zone">
+                現在的生成式 AI (如 Copilot, Gamma) 可以在數秒內，依據簡短提示詞自動產出簡報大綱、內容文字、甚至自動套用精美的排版色彩。
+              </p>
+              
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl space-y-1.5">
+                <div class="flex items-center gap-1.5 text-[11px] font-bold text-white">
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> 
+                  簡報「美化技術」已是基本門檻
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  這意味著僅靠「把投影片做得很精美」的排版美化技術，其護城河已被 AI 填平。未來的簡報設計師若定位在此，將面臨極大貶值風險。
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-900">
+            <span>AI 工具: Gamma, PowerPoint Copilot, SlidesGPT</span>
+            <span>核心衝擊: 技術貶值</span>
+          </div>
+        </div>
+
+        <!-- Right: Unreplaceable values -->
+        <div class="border border-slate-800 rounded-2xl p-6 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-emerald-500 rounded-full"></span>
+                何為無可替代？說故事、創造力與判斷力
+              </h3>
+              <span class="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded-full border border-emerald-900/40">HUMAN CORE</span>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+              <p class="text-slate-400 text-xs leading-relaxed editable-zone">
+                最懂 AI 的輝達之所以願意砸大錢請真人做簡報，正因為他們深知以下三項人類核心能力，是 AI 至今且未來也極難取代的：
+              </p>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl space-y-1.5">
+                <div class="text-[11px] font-bold text-white">
+                  🎯 說故事的敘事剪輯能力 (Narrative Curation)
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  簡報是商業溝通的利刃，核心在於「敘事線 (Storyline)」。如何在混亂、零散的技術更新中，剪輯出打動投資人、開發者與媒體的黃金主線，需要深刻的商業判斷與同理心。
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <div class="p-3 bg-amber-950/20 border border-amber-900/30 rounded-xl">
+                  <p class="text-[11px] font-bold text-amber-400 mb-0.5">創造力</p>
+                  <p class="text-[10px] text-slate-400 leading-tight editable-zone">將抽象概念（如 NVLink 頻寬）轉化為驚豔視覺隱喻的靈光一閃。</p>
+                </div>
+                <div class="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-xl">
+                  <p class="text-[11px] font-bold text-emerald-400 mb-0.5">判斷力</p>
+                  <p class="text-[10px] text-slate-400 leading-tight editable-zone">評估此時此地，黃仁勳該講什麼、不該講什麼的政治與商業判斷。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-900">
+            <span>核心結論: 懂 AI 排版 + 懂高難度說故事與判斷力</span>
+            <span>目標受眾: 投資人與社會大眾</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>Storytelling, Creativity, and Curation in the Age of AI</span>
+        <span>PAGE 03</span>
+      </div>
+    </section>
+
+    <!-- PAGE 4: ACER LUGGAGE STRATEGY -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-am-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 03 / 宏碁風尚行李箱的「生活場景戰法」</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 04 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Acer Luggage Performance -->
+        <div class="col-span-8 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-4 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-am-500 rounded-full"></span>
+                宏碁風尚 (Acer Style) 行李箱之經營實績
+              </span>
+              <span class="text-[10px] text-am-500 bg-am-900/50 px-2.5 py-0.5 rounded-full border border-am-700/30">SPIN-OFF IN 2025</span>
+            </h3>
+            
+            <div class="grid grid-cols-3 gap-3 text-center text-[11px] mb-4">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="font-extrabold text-am-500">2 億元</div>
+                <div class="text-[10px] text-slate-300 mt-1">年營收規模</div>
+                <div class="text-[9px] text-slate-500 mt-1">2022 年推出，3 年內年營收迅速突破新台幣 2 億元關卡。</div>
+              </div>
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="font-bold text-white">1770 萬元</div>
+                <div class="text-[10px] text-slate-300 mt-1">2025 稅後淨利</div>
+                <div class="text-[9px] text-slate-500 mt-1">展現極高獲利能力，於 2025 年 7 月分割獨立，轉為集團獲利新引擎。</div>
+              </div>
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="font-bold text-white">品管優勢</div>
+                <div class="text-[10px] text-slate-350 mt-1">PC 等級安規檢測</div>
+                <div class="text-[9px] text-slate-500 mt-1">活用電腦包袋供應鏈與 PC 等級嚴格安規品管檢驗（落下、滾輪測試）。</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 bg-am-500 rounded-full"></span> 避開過度教育成本
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  團隊評估後避開了需要高昂教育與研發成本的「智慧發熱衣」，選擇技術成熟、市場接受度高且毛利穩健的「行李箱」作為主打突破口。
+                </p>
+              </div>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> 翻轉規格至生活場景
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  捨棄科技業傳統「講功能、秀規格」的冰冷思維，改與 KOL/KOC 合作並形塑「旅行、生活體驗」場景，精準打入家庭與男性主流客群。
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-800 text-[10px] text-slate-500">
+            <span class="font-bold text-am-500">行銷手段：</span>
+            <span>「生活場景」品牌包裝 / 重點通路網紅口碑行銷</span>
+          </div>
+        </div>
+
+        <!-- Strategy Decision Card -->
+        <div class="col-span-4 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-800">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-am-500 bg-am-900/50 px-2.5 py-1 rounded-full border border-am-700/30">Decision Framework</span>
+            </div>
+            
+            <h4 class="text-base font-bold mb-3 tracking-tight editable-zone">宏碁風尚三支柱<br>與未來雙軸戰略</h4>
+            
+            <p class="text-[11px] text-slate-400 leading-relaxed mb-4 editable-zone">
+              總經理廖幼梅帶領團隊，以明確的商業決策框架為核心：
+            </p>
+            
+            <!-- Flow steps -->
+            <div class="space-y-3.5 text-xs">
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-am-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">1</span>
+                <div>
+                  <p class="font-bold text-slate-200">市場需要 (Market Demand)</p>
+                  <p class="text-[10px] text-slate-400">專注解決人在商務出行或休閒旅行中的實際痛點。</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-am-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">2</span>
+                <div>
+                  <p class="font-bold text-slate-200">我們能做 (Operational Cap)</p>
+                  <p class="text-[10px] text-slate-400">發揮宏碁原先在電腦包袋的深厚供應鏈與檢驗實力。</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-am-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">3</span>
+                <div>
+                  <p class="font-bold text-slate-200">能夠獲利 (Profitability)</p>
+                  <p class="text-[10px] text-slate-400">避開殺價競爭的超低階市場，定位中高端品質利基點。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800 text-[10px] text-slate-500 flex justify-between">
+            <span>未來雙軸發展：</span>
+            <span>「旅行」與「身心平衡」雙軌前進</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>Acer Style Luggage Strategy: Market Need, Operational Capability, Profitability</span>
+        <span>PAGE 04</span>
+      </div>
+    </section>
+
+    <!-- PAGE 5: STRATEGY SYNTHESIS -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-am-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 04 / 商業戰略合成與未來啟示</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 05 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Landscape Analysis -->
+        <div class="col-span-8 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-am-500 rounded-full"></span>
+                翻轉硬規格：從「人」出發的生活場景戰略
+              </h3>
+              <span class="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">Curation Strategy</span>
+            </div>
+            
+            <p class="text-[11px] text-slate-400 leading-relaxed mb-4 editable-zone">
+              無論是輝達高薪聘用簡報設計師，還是宏碁將行李箱賣破 2 億元，其底層商業邏輯本質是相通的：<strong>「在技術同質化、規格飽和的時代，誰能更好地進行場景敘事與問題轉譯，誰就擁有定價權。」</strong>
+            </p>
+
+            <div class="space-y-3 text-xs">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between font-bold text-white text-[11px] mb-1">
+                  <span>輝達簡報設計師的啟示：</span>
+                  <span class="text-am-500 font-bold">資訊的降維與降噪能力</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  AI 雖然能寫出簡報文字，但無法感同身受高管與聽眾間的政治/商業角力。將生硬的硬體晶片規格，翻譯成打動人心、引導產業風潮的視覺願景，是極致的「降維與降噪」能力。
+                </p>
+              </div>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between font-bold text-white text-[11px] mb-1">
+                  <span>宏碁行李箱的啟示：</span>
+                  <span class="text-am-500 font-bold">硬體製造商的「場景延伸」</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  不要被原先的「PC 製造商」標籤所綁架。當 PC 市場利潤見底，活用製造業原先積累的安規品管與供應鏈優勢，以「生活出行」這一場景重新定義產品，便能在成熟紅海中開闢一片高毛利藍海。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-3 border-t border-slate-800">
+            <span>核心結論: 規格是死的，場景是活的</span>
+            <span>AI 時代白領新出路：說故事與商業判斷</span>
+          </div>
+        </div>
+
+        <!-- Future Outlook -->
+        <div class="col-span-4 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-emerald-500 rounded-full"></span>
+                給企業經理人的三大啟示
+              </h3>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-slate-950 border border-slate-850 p-3.5 rounded-xl">
+                <p class="font-bold text-white mb-1 text-[11px]">① 擺脫規格思維</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  不要再說是贈品！重新從「人在生活中缺少什麼」出發，設計有溫度的場景體驗。
+                </p>
+              </div>
+
+              <div class="bg-slate-950 border border-slate-850 p-3.5 rounded-xl">
+                <p class="font-bold text-white mb-1 text-[11px]">② 投資敘事能力</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  AI 可以美化格式，但故事線的梳理、情感共鳴的建立，仍然是極高價值的人類資產。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-3 border-t border-slate-800">
+            <span>KLIO. BUSINESS VIEW</span>
+            <span>Issue Date: 2026/06/11</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>Acer style luggage and Nvidia designer study synthesis</span>
+        <span>PAGE 05</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- JS 控制邏輯 -->
+  <script>
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const printBtn = document.getElementById('print-btn');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+
+    let isEditing = false;
+
+    function showToast(msg) {
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    editBtn.addEventListener('click', () => {
+      isEditing = !isEditing;
+      const zones = document.querySelectorAll('.editable-zone');
+      zones.forEach(zone => {
+        zone.contentEditable = isEditing ? "true" : "false";
+      });
+      editBtn.innerHTML = isEditing ? '<span>🔒 完成編輯</span>' : '<span>✏️ 編輯內容</span>';
+      editBtn.classList.toggle('bg-am-500');
+      editBtn.classList.toggle('bg-amber-600');
+      showToast(isEditing ? '已開啟編輯模式，可直接點擊內文修改' : '已關閉編輯模式');
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if (isEditing) {
+        editBtn.click();
+      }
+      showToast('按 Ctrl+S 即可將您修改後的網頁完整儲存至本地');
+    });
+
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  </script>
+</body>
+</html>

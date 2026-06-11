@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NVIDIA RTX Spark 處理器革命：Computex 2026 對 x86 與 ARM 處理器市場的重大影響</title>
+  
+  <!-- Mobile Redirect Script -->
+  <script>
+    if (window.innerWidth <= 768) {
+      window.location.href = '../m/reports/20260611_nvidia_pc_cpu.html';
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+          },
+          colors: {
+            nv: {
+              50: '#f4fbf0',
+              100: '#e6f7df',
+              500: '#76b900',
+              600: '#5c9200',
+              700: '#436c00',
+              900: '#213600',
+              dark: '#0b0f19',
+              light: '#f8fafc'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* CSS A4 橫式列印與排版規範 */
+    body {
+      background-color: #0b0f19;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      color: #cbd5e1;
+    }
+    
+    .a4-page {
+      width: 297mm;
+      height: 210mm;
+      box-sizing: border-box;
+      padding: 16mm 18mm;
+      margin: 28px auto;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+      border-radius: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      break-inside: avoid;
+      overflow: hidden;
+    }
+
+    /* 內容可編輯狀態的視覺防呆 UI */
+    [contenteditable="true"] .editable-zone {
+      transition: all 0.2s ease-in-out;
+    }
+    [contenteditable="true"] .editable-zone:hover {
+      outline: 2px dashed #76b900;
+      outline-offset: 4px;
+      cursor: text;
+      background-color: rgba(118, 185, 0, 0.1);
+    }
+    [contenteditable="true"] .editable-zone:focus {
+      outline: 2px solid #76b900;
+      outline-offset: 4px;
+      background-color: rgba(118, 185, 0, 0.15);
+    }
+
+    /* 列印引擎強制設定 */
+    @media print {
+      body {
+        background-color: transparent !important;
+        background: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .a4-page {
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        width: 297mm !important;
+        height: 210mm !important;
+        page-break-after: always !important;
+        break-inside: avoid !important;
+        background: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* 自訂精緻滾動條 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* --- 字型大小規範 (14pt 內文要求) --- */
+    .body-text,
+    .a4-page p {
+      font-size: 14pt !important;
+      line-height: 1.6 !important;
+    }
+
+    .a4-page h1 {
+      font-size: 32pt !important;
+      font-weight: 900 !important;
+      line-height: 1.25 !important;
+    }
+
+    .a4-page h2 {
+      font-size: 22pt !important;
+      font-weight: 800 !important;
+      line-height: 1.3 !important;
+    }
+
+    .a4-page h3 {
+      font-size: 18pt !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page h4 {
+      font-size: 15pt !important;
+      font-weight: 700 !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 列表預設略小，防止撐開 Bento 卡片 */
+    .a4-page li {
+      font-size: 12pt !important;
+      line-height: 1.5 !important;
+    }
+
+    /* 透過更高權重 (類別 + 元素) 覆蓋全域 14pt p 與 12pt li，確保小字不跑版 */
+    .a4-page p.text-2xs, .a4-page p.text-\[9px\], .a4-page p.text-\[10px\],
+    .a4-page li.text-2xs, .a4-page li.text-\[9px\], .a4-page li.text-\[10px\],
+    .a4-page .text-2xs, .a4-page .text-\[9px\], .a4-page .text-\[10px\] {
+      font-size: 9.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-\[11px\], .a4-page p.text-xs, .a4-page p.sub-text,
+    .a4-page li.text-\[11px\], .a4-page li.text-xs, .a4-page li.sub-text,
+    .a4-page .text-\[11px\], .a4-page .text-xs, .a4-page .sub-text,
+    .a4-page .page-footer span, .a4-page .legend-text {
+      font-size: 10.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    .a4-page p.text-sm, .a4-page li.text-sm, .a4-page .text-sm {
+      font-size: 11.5pt !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 表格與表單元素字型微調，確保在 A4 橫向佈局中不換行、不溢出 */
+    .a4-page td,
+    .a4-page th,
+    .a4-page label,
+    .a4-page input,
+    .a4-page select,
+    .a4-page button:not(.no-adjust-font) {
+      font-size: 10pt !important;
+      line-height: 1.4 !important;
+    }
+  </style>
+</head>
+<body class="antialiased text-slate-200">
+
+  <!-- 頂部控制面板 (列印時隱藏) -->
+  <div class="no-print fixed top-4 right-4 z-50 flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-full border border-slate-750 shadow-2xl">
+    <a href="../index.html" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors duration-200 border border-slate-700 flex items-center gap-1.5">
+      <span>← 返回首頁</span>
+    </a>
+    <span class="text-xs font-semibold tracking-wider text-slate-650 mx-1">|</span>
+    <span class="text-xs font-semibold tracking-wider text-slate-400 mr-2">DOC CONTROL:</span>
+    <button id="edit-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-nv-500 hover:bg-nv-600 transition-colors duration-200 shadow-md flex items-center gap-1.5">
+      <span>✏️ 編輯內容</span>
+    </button>
+    <button id="save-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors duration-200 border border-slate-700 flex items-center gap-1.5">
+      <span>⬇️ 儲存網頁</span>
+    </button>
+    <button id="print-btn" class="px-3.5 py-1.5 rounded-full text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200 flex items-center gap-1.5">
+      <span>🖨️ 輸出 PDF</span>
+    </button>
+  </div>
+
+  <!-- 提示浮窗 -->
+  <div id="toast" class="no-print fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 bg-slate-900 text-white rounded-xl shadow-2xl text-sm font-medium border border-slate-850 flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300">
+    <span id="toast-msg"></span>
+  </div>
+
+  <!-- 主文件包裝器 -->
+  <div id="document-wrapper" class="w-full">
+
+    <!-- PAGE 1: HERO COVER -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <svg class="w-6 h-6 text-nv-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+          </svg>
+          <span class="text-xs font-black tracking-widest text-white">NVIDIA PC CHIP REVOLUTION 2026</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 01 / 05</span>
+      </div>
+
+      <!-- Main Content Block -->
+      <div class="grid grid-cols-12 gap-8 my-auto items-center">
+        <!-- Title Hero Block -->
+        <div class="col-span-7 flex flex-col justify-center space-y-6">
+          <div class="inline-flex items-center gap-2 bg-gradient-to-r from-nv-900/50 to-emerald-950/20 border border-nv-700/30 text-nv-500 px-3 py-1 rounded-full text-xs font-bold w-fit">
+            <span class="w-1.5 h-1.5 rounded-full bg-nv-500 animate-pulse"></span>
+            消費級 PC 處理器市場戰略報告
+          </div>
+          <h1 class="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight editable-zone">
+            NVIDIA RTX Spark 處理器革命：<br><span class="bg-gradient-to-r from-nv-500 to-emerald-400 bg-clip-text text-transparent">Computex 2026 對市場的衝擊</span>
+          </h1>
+          <p class="text-slate-400 text-base leading-relaxed max-w-xl editable-zone">
+            本報告解析 NVIDIA 首款與聯發科合作設計的消費端 ARM 處理器「RTX Spark」的架構技術、AI 算力、遊戲效能與商業佈局，並探討其對傳統 x86 雙雄主導市場的變局影響。
+          </p>
+        </div>
+
+        <!-- Right Side Bento Block -->
+        <div class="col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-8 relative overflow-hidden border border-slate-800 shadow-2xl h-full flex flex-col justify-between">
+          <div class="absolute -right-20 -top-20 w-48 h-48 bg-nv-500/10 rounded-full blur-3xl"></div>
+          <div>
+            <div class="p-3 bg-white/5 rounded-xl w-fit mb-6 border border-white/10">
+              <span class="text-nv-500 font-bold text-sm">CHIP VISION</span>
+            </div>
+            <h3 class="text-xl font-bold mb-3 tracking-tight editable-zone">「重塑本地 AI 代理算力」</h3>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6 editable-zone">
+              現行 Copilot+ PC 的 NPU 算力（40+ TOPS）已無法滿足本地運行大型模型的需求。NVIDIA 以 Blackwell 架構的高核心算力與超大統一記憶體頻寬切入，正式宣告 ARM 架構 PC 進入 1000+ TOPS 的新紀元。
+            </p>
+          </div>
+          <div class="grid grid-cols-2 gap-4 border-t border-white/10 pt-6">
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-nv-500">1 PetaFLOP</p>
+              <p class="text-[11px] text-slate-400 mt-1">FP4 本地 AI 算力</p>
+            </div>
+            <div class="p-3 bg-white/5 rounded-2xl border border-white/10">
+              <p class="text-2xl font-black text-nv-500">600 GB/s</p>
+              <p class="text-[11px] text-slate-400 mt-1">NVLink 核心互連頻寬</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>NVIDIA RTX Spark Processor Analysis Report</span>
+        <span>© 2026 KLIO. All rights reserved.</span>
+      </div>
+    </section>
+
+    <!-- PAGE 2: ARCHITECTURE & AI -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-nv-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 01 / RTX Spark 架構設計與本地 AI 效能</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 02 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Specs Matrix Card -->
+        <div class="col-span-8 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+              <span class="w-1.5 h-3 bg-nv-500 rounded-full"></span>
+              RTX Spark 處理器核心架構規格諸元
+            </h3>
+            <div class="overflow-hidden border border-slate-800 rounded-xl bg-slate-950">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-900 border-b border-slate-800 text-slate-350 font-bold">
+                    <th class="p-3">規格項目</th>
+                    <th class="p-3">RTX Spark (N1X 高階版)</th>
+                    <th class="p-3">RTX Spark (N1 標準版)</th>
+                    <th class="p-3">競爭對手對標 (M5 Pro / Max+)</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-850 text-slate-300">
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">製程與電晶體</td>
+                    <td class="p-3">台積電 3nm / 700 億</td>
+                    <td class="p-3">台積電 3nm / 500 億</td>
+                    <td class="p-3">3nm 級 / 類似規模</td>
+                  </tr>
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">CPU 架構核心</td>
+                    <td class="p-3">20核 Grace (Arm v9.2)</td>
+                    <td class="p-3">8核 (4大核 + 4效能核)</td>
+                    <td class="p-3">Arm / x86 多核心架構</td>
+                  </tr>
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">GPU 繪圖核心</td>
+                    <td class="p-3">6144 CUDA (Blackwell)</td>
+                    <td class="p-3">64 SM (Blackwell)</td>
+                    <td class="p-3">等同於行動版 RTX 5070 等級</td>
+                  </tr>
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">統一記憶體</td>
+                    <td class="p-3">128GB LPDDR5x / 600GB/s</td>
+                    <td class="p-3">LPDDR6 / 300GB/s 頻寬</td>
+                    <td class="p-3">128GB LPDDR5x (Ryzen Max+)</td>
+                  </tr>
+                  <tr class="hover:bg-slate-900/40">
+                    <td class="p-3 font-semibold text-white">本地 AI 總算力</td>
+                    <td class="p-3 text-nv-500 font-bold">1 PetaFLOP (FP4)</td>
+                    <td class="p-3">650 TFLOPS (FP4)</td>
+                    <td class="p-3">低於 100 TOPS (純 NPU 算力)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-3 leading-relaxed editable-zone">
+              * 備註：RTX Spark 摒棄了傳統 PC 使用小算力 NPU 跑 AI 的做法，直接整合 Grace CPU、Blackwell GPU 與高速統一記憶體，利用 NVLink 高速總線進行超大吞吐量數據交換，在本地執行 120B 大語言模型及 1M 超長上下文。
+            </p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4 mt-4 border-t border-slate-800 pt-4">
+            <div class="flex items-start gap-2">
+              <div class="text-nv-500 font-black text-sm">✓</div>
+              <div>
+                <p class="text-xs font-bold text-white">Llama.cpp 高效推論</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed">在 Llama.cpp 多 Token 預測下，RTX Spark 達到了 90 Token/s 的本機高運算速度。</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-2">
+              <div class="text-nv-500 font-black text-sm">✓</div>
+              <div>
+                <p class="text-xs font-bold text-white">Flux 影像工作流加速</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed">受惠於 NV4 量化與 Blackwell 算力，生圖/生影速度比 Apple M5 Pro 快上將近 10 倍。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Bento Box -->
+        <div class="col-span-4 flex flex-col gap-4">
+          <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl flex-1 flex flex-col justify-between">
+            <span class="text-xs font-bold text-nv-500 bg-nv-900/50 border border-nv-700/30 px-2.5 py-1 rounded-full w-fit">晶片功耗指標</span>
+            <div class="space-y-3 mt-4">
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">標準版功耗 (TDP)</span>
+                <span class="text-xs font-bold text-white">80W</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">高階版 Max-Q 設計</span>
+                <span class="text-xs font-bold text-white">厚度僅 1.4cm 筆電</span>
+              </div>
+              <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span class="text-xs text-slate-400">GPU 核心總量</span>
+                <span class="text-xs font-bold text-white">6144 CUDA / 64 SM</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-xs text-slate-400">系統記憶體留存上限</span>
+                <span class="text-xs font-bold text-white">Windows 允許留存 80%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-slate-950 text-slate-350 p-5 rounded-2xl flex-1 flex flex-col justify-between border border-slate-850">
+            <div>
+              <h4 class="text-sm font-bold text-white mb-2">本地端 AI 代理 (Agent)</h4>
+              <p class="text-[11px] text-slate-400 leading-relaxed editable-zone">
+                與微軟深度合作的 Windows for Agent 作業系統，允許 RTX Spark 處理器將 GPU 記憶體留存上限大幅提高 80%，使筆電能以超高流暢度加載 1200 億參數量 (120B) 的大型代理模型。現場展示僅透過語音指令搭配視覺代理，便可將手繪草圖自動轉化為上線網頁。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>RTX Spark: Grace CPU + Blackwell GPU + LPDDR6</span>
+        <span>PAGE 02</span>
+      </div>
+    </section>
+
+    <!-- PAGE 3: GAMING & DLSS -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-nv-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 02 / 遊戲效能與 DLSS 4.5 技術革命</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 03 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-2 gap-6 my-auto items-stretch">
+        <!-- Left: Gaming Performance -->
+        <div class="border border-slate-800 rounded-2xl p-6 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-nv-500 rounded-full"></span>
+                硬派遊戲實測效能表現
+              </h3>
+              <span class="text-[10px] font-extrabold text-nv-500 bg-nv-900/50 px-2 py-0.5 rounded-full border border-nv-700/30">RTX 5070 CLASS</span>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+              <p class="text-slate-400 text-xs leading-relaxed editable-zone">
+                在 1440p (2K) 解析度下，開啟光線追蹤與 DLSS 4.5，RTX Spark 能在多款 3A 大作中維持穩定 100 fps 以上的流暢表現。
+              </p>
+              
+              <!-- Game Table -->
+              <div class="border border-slate-800 rounded-lg overflow-hidden bg-slate-950 text-[11px] mt-2">
+                <div class="grid grid-cols-3 bg-slate-900 border-b border-slate-800 p-2 font-bold text-slate-350">
+                  <span>實測遊戲項目</span>
+                  <span>平均幀率 (FPS)</span>
+                  <span>開啟技術支援</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 border-b border-slate-850 hover:bg-slate-900/30">
+                  <span class="font-medium text-white">心靈殺手 2</span>
+                  <span>95 - 105 fps</span>
+                  <span>DLSS 4.5 + 全光追</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 border-b border-slate-850 hover:bg-slate-900/30">
+                  <span class="font-medium text-white">印第安納瓊斯：古老之圈</span>
+                  <span>110 - 120 fps</span>
+                  <span>DLSS 4.5 + 光線重建</span>
+                </div>
+                <div class="grid grid-cols-3 p-2 hover:bg-slate-900/30">
+                  <span class="font-medium text-white">Cyberpunk 2077</span>
+                  <span class="text-nv-500 font-bold">105 fps</span>
+                  <span>Path Tracing + DLSS 4.5</span>
+                </div>
+              </div>
+              
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl space-y-1.5">
+                <div class="flex items-center gap-1.5 text-[11px] font-bold text-white">
+                  <span class="w-1.5 h-1.5 rounded-full bg-nv-500"></span> 
+                  第一手遊戲體驗優勢
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  RTX Spark 開箱即支援 NVIDIA Reflex 降延遲技術與 ACE AI NPC 功能，可將本地 NPC 語音生成與動作對齊延遲壓低至 150ms 內，實現高互動的開放世界體驗。
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-900">
+            <span>支援技術: Reflex, ACE, Ray Reconstruct</span>
+            <span>解析度: 1440p Target</span>
+          </div>
+        </div>
+
+        <!-- Right: DLSS 4.5 & Anti-Cheat Challenge -->
+        <div class="border border-slate-800 rounded-2xl p-6 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-emerald-500 rounded-full"></span>
+                DLSS 4.5 與防作弊相容挑戰
+              </h3>
+              <span class="text-[10px] font-extrabold text-slate-450 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">ARM COMPATIBILITY</span>
+            </div>
+            
+            <div class="space-y-3 text-xs">
+              <p class="text-slate-400 text-xs leading-relaxed editable-zone">
+                晶片搭載了全新 DLSS 4.5 技術，內建第二代 Transformer 模型，相較前代增加了 20% 的參數量，以獲得更精細的地面重建。
+              </p>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl space-y-1.5">
+                <div class="text-[11px] font-bold text-white">
+                  ⚡ 6 倍幀生成顯示效能
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  動態多幀生成 (Multi-Frame Generation) 技術藉由全新 Blackwell 光流加速器，最高能將幀率提升達 6 倍。
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 mt-2">
+                <div class="p-3 bg-emerald-950/20 border border-emerald-900/30 rounded-xl">
+                  <p class="text-[11px] font-bold text-emerald-400 mb-0.5">反作弊系統支援</p>
+                  <p class="text-[10px] text-slate-400 leading-tight editable-zone">主流 Easy Anti-Cheat 等系統目前已逐步釋出 ARM 64 原生版。</p>
+                </div>
+                <div class="p-3 bg-red-950/20 border border-red-900/30 rounded-xl">
+                  <p class="text-[11px] font-bold text-red-400 mb-0.5">未解決相容痛點</p>
+                  <p class="text-[10px] text-slate-400 leading-tight editable-zone">部分舊款 Direct X 11/12 遊戲仍需透過轉譯，且核心層反作弊軟體仍有部分受限。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-4 pt-3 border-t border-slate-900">
+            <span>DLSS 4.5 Transformer Size: +20%</span>
+            <span>TDP Target: 80W - 90W</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>DLSS 4.5 AI Frame Generation vs. Anti-Cheat Compatibility</span>
+        <span>PAGE 03</span>
+      </div>
+    </section>
+
+    <!-- PAGE 4: APPLICATION & PARTNERS -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-nv-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 03 / 專業應用程式優化與硬體生態系</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 04 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Application Optimization -->
+        <div class="col-span-8 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white mb-4 flex items-center justify-between">
+              <span class="flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-nv-500 rounded-full"></span>
+                三大專業創意與引擎巨頭之優化成果
+              </span>
+              <span class="text-[10px] text-slate-400 bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-800">ARM 64 Native</span>
+            </h3>
+            
+            <div class="grid grid-cols-3 gap-3 text-center text-[11px] mb-4">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="font-extrabold text-nv-500">Adobe Creative Cloud</div>
+                <div class="text-[10px] text-slate-300 mt-1">Photoshop & Premiere</div>
+                <div class="text-[9px] text-slate-500 mt-1">重構內部渲染管線，TensorRT-RTX 加速提升「場景剪輯偵測」速度達 2 倍。</div>
+              </div>
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="font-bold text-white">Blender 5.3</div>
+                <div class="text-[10px] text-slate-300 mt-1">光線重建與 3D 物理渲染</div>
+                <div class="text-[9px] text-slate-500 mt-1">利用 128GB 統一記憶體大容量優勢，流暢處理 90GB 以上極大型 3D 渲染場景。</div>
+              </div>
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="font-bold text-white">Unreal Engine 5.6</div>
+                <div class="text-[10px] text-slate-300 mt-1">Nanite & Lumen 加速</div>
+                <div class="text-[9px] text-slate-500 mt-1">針對 ARM Neon 指令集與 Blackwell 的硬體光追進行了底層指令重寫。</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 bg-nv-500 rounded-full"></span> 影音工作流實測
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  在 Premiere Pro 中，RTX Spark 能流暢且免降轉地回放 3 軌 4K60 fps 10-bit 4:2:2 影片。這在此前 ARM 筆電中是不可想像的。
+                </p>
+              </div>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <p class="font-bold text-white mb-1 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> 開發者 API 優勢
+                </p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  CUDA 生態系 (PyTorch, TensorRT) 100% 完美平移至本晶片上，AI 開發者可在本地進行高並行模型訓練與微調。
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2 mt-3 pt-3 border-t border-slate-800 text-[10px] text-slate-500">
+            <span class="font-bold text-nv-500">合作進度：</span>
+            <span>微軟 Surface Laptop Ultra (目前唯一實機運行筆電) / Adobe 特仕版 API 完成封包</span>
+          </div>
+        </div>
+
+        <!-- OEM Partners Card -->
+        <div class="col-span-4 bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-800">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-nv-500 bg-nv-900/50 px-2.5 py-1 rounded-full border border-nv-700/30">OEM Ecosystem</span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            </div>
+            
+            <h4 class="text-base font-bold mb-3 tracking-tight editable-zone">首波硬體合作夥伴與<br>預計秋季上市機型</h4>
+            
+            <p class="text-[11px] text-slate-400 leading-relaxed mb-4 editable-zone">
+              各大 OEM 廠預計於 2026 年秋季起，首波推出六大品牌之輕薄筆電、迷你主機與個人工作站：
+            </p>
+            
+            <!-- Flow steps -->
+            <div class="space-y-3.5 text-xs">
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-nv-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">1</span>
+                <div>
+                  <p class="font-bold text-slate-200">華碩 (ASUS) & 宏碁 (Acer)</p>
+                  <p class="text-[10px] text-slate-400">主打極致輕薄 Max-Q 筆電與迷你電競桌機。</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-nv-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">2</span>
+                <div>
+                  <p class="font-bold text-slate-200">微星 (MSI) & 技嘉 (GIGABYTE)</p>
+                  <p class="text-[10px] text-slate-400">專注於行動工作站、頂級創作者筆電與 AI 邊緣運算平台。</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-2.5">
+                <span class="bg-white/10 text-nv-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">3</span>
+                <div>
+                  <p class="font-bold text-slate-200">Dell, HP & 聯想 (Lenovo)</p>
+                  <p class="text-[10px] text-slate-400">針對企業高管與開發者，推出高續航、強安全防護的商務機種。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-slate-800 text-[10px] text-slate-500 flex justify-between">
+            <span>筆電機型重量目標：2Kg 內</span>
+            <span>配備電池限制：99.9Wh</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>ASUS, Acer, MSI, Lenovo, Dell, HP Launching in Autumn 2026</span>
+        <span>PAGE 04</span>
+      </div>
+    </section>
+
+    <!-- PAGE 5: MARKET LANDSCAPE -->
+    <section class="a4-page">
+      <!-- Header -->
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-2.5 h-2.5 rounded-full bg-nv-500"></div>
+          <span class="text-xs font-black tracking-widest text-white">CHAPTER 04 / 消費級處理器市場版圖與產業影響</span>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">PAGE 05 / 05</span>
+      </div>
+
+      <!-- Content -->
+      <div class="grid grid-cols-12 gap-6 my-auto items-stretch">
+        <!-- Landscape Analysis -->
+        <div class="col-span-8 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-nv-500 rounded-full"></span>
+                打破 x86 雙雄：ARM PC 的強勢崛起
+              </h3>
+              <span class="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">Market Shift</span>
+            </div>
+            
+            <p class="text-[11px] text-slate-400 leading-relaxed mb-4 editable-zone">
+              長久以來，消費級電腦處理器一直由 Intel 與 AMD 這對 x86 雙雄主導。隨著 Apple Silicon 成功自立門戶，以及 Qualcomm 與 NVIDIA 先後挾 ARM 架構大舉壓境，市場版圖正在發生結構性遷移。
+            </p>
+
+            <div class="space-y-3 text-xs">
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between font-bold text-white text-[11px] mb-1">
+                  <span>x86 陣營 (Intel, AMD)：</span>
+                  <span class="text-red-400">守勢戰略</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  面臨製程被台積電超越、CPU 與 NPU 架構能效面臨挑戰。Intel 與 AMD 急需透過大容量快取與 NPU 疊代防守傳統生產力市場，但面對 GPU 級 AI 運算仍顯不足。
+                </p>
+              </div>
+
+              <div class="p-3 bg-slate-950 border border-slate-850 rounded-xl">
+                <div class="flex justify-between font-bold text-white text-[11px] mb-1">
+                  <span>ARM 架構陣營 (Apple, Qualcomm, NVIDIA)：</span>
+                  <span class="text-emerald-400">強勢攻勢</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  Qualcomm 主打超高續航力，Apple 主打封閉生態整合，而 NVIDIA 則結合 GPU 算力優勢直搗「本地 AI 代理」與「3A 硬派遊戲」核心腹地，打破了 ARM 不能跑重度遊戲的偏見。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-3 border-t border-slate-800">
+            <span>ARM 陣營全球 PC 市佔目標：2027 年達 30%</span>
+            <span>NVIDIA Spark 專攻創作者與電競</span>
+          </div>
+        </div>
+
+        <!-- Risks & Outlook -->
+        <div class="col-span-4 border border-slate-800 rounded-2xl p-5 bg-slate-900/30 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span class="w-1.5 h-3 bg-emerald-500 rounded-full"></span>
+                實機限制與市場展望
+              </h3>
+            </div>
+
+            <div class="space-y-4">
+              <div class="bg-slate-950 border border-slate-850 p-3.5 rounded-xl">
+                <p class="font-bold text-white mb-1 text-[11px]">首批實機營運疑慮</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  搭載 99.9Wh 電池的 16 吋旗艦筆電全速運轉時，風扇噪音仍然偏大。不插電時的效能一致性以及中低負載下的實際電池續航力，仍有待正式上市後的長期驗證。
+                </p>
+              </div>
+
+              <div class="bg-slate-950 border border-slate-850 p-3.5 rounded-xl">
+                <p class="font-bold text-white mb-1 text-[11px]">產業長期定調</p>
+                <p class="text-[10px] text-slate-400 leading-relaxed editable-zone">
+                  NVIDIA RTX Spark 的問世不僅僅是一款新晶片，它宣告了消費級 PC 處理器市場正式步入 ARM 架構、大容量統一記憶體與 GPU 核心高度融合的新紀元。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-slate-500 mt-3 pt-3 border-t border-slate-800">
+            <span>秋季上市 (約 2026 Q3 末)</span>
+            <span>價格帶定位：高端旗艦</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex justify-between items-center text-[10px] text-slate-500 border-t border-slate-900 pt-3">
+        <span>NVIDIA RTX Spark Breaks x86 Hegemony, Ushering ARM PC Era</span>
+        <span>PAGE 05</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- JS 控制邏輯 -->
+  <script>
+    // 編輯、儲存與輸出 PDF 功能
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const printBtn = document.getElementById('print-btn');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toast-msg');
+
+    let isEditing = false;
+
+    function showToast(msg) {
+      toastMsg.innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    editBtn.addEventListener('click', () => {
+      isEditing = !isEditing;
+      const zones = document.querySelectorAll('.editable-zone');
+      zones.forEach(zone => {
+        zone.contentEditable = isEditing ? "true" : "false";
+      });
+      editBtn.innerHTML = isEditing ? '<span>🔒 完成編輯</span>' : '<span>✏️ 編輯內容</span>';
+      editBtn.classList.toggle('bg-nv-500');
+      editBtn.classList.toggle('bg-amber-600');
+      showToast(isEditing ? '已開啟編輯模式，可直接點擊內文修改' : '已關閉編輯模式');
+    });
+
+    saveBtn.addEventListener('click', () => {
+      if (isEditing) {
+        // 先關閉編輯
+        editBtn.click();
+      }
+      // 保存 HTML，這裡是靜態頁面本地儲存的防呆提示
+      showToast('按 Ctrl+S 即可將您修改後的網頁完整儲存至本地');
+    });
+
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  </script>
+</body>
+</html>
