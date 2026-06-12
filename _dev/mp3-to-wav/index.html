@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraAudio - MP3 轉 MAV/WAV 音訊工作站</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #030303;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(18, 18, 24, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px rgba(255, 255, 255, 0.08) solid;
+        }
+        .glass-card {
+            background: rgba(30, 30, 40, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px rgba(255, 255, 255, 0.05) solid;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(99, 102, 241, 0.05);
+        }
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.4);
+        }
+        /* Flowing gradient border for drag area */
+        @keyframes borderFlow {
+            0% { border-color: rgba(99, 102, 241, 0.3); box-shadow: 0 0 15px rgba(99, 102, 241, 0.1); }
+            50% { border-color: rgba(236, 72, 153, 0.3); box-shadow: 0 0 15px rgba(236, 72, 153, 0.1); }
+            100% { border-color: rgba(99, 102, 241, 0.3); box-shadow: 0 0 15px rgba(99, 102, 241, 0.1); }
+        }
+        .drag-active {
+            animation: borderFlow 2s infinite ease-in-out;
+            background: rgba(99, 102, 241, 0.05) !important;
+        }
+        /* Glowing blobs in background */
+        .glow-sphere-1 {
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+        }
+        .glow-sphere-2 {
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, rgba(236, 72, 153, 0) 70%);
+        }
+    </style>
+</head>
+<body class="antialiased font-sans min-h-screen relative flex flex-col justify-between">
+    <!-- Ambient Background Blobs -->
+    <div class="fixed top-[-10%] left-[-10%] w-[60vw] h-[60vw] rounded-full glow-sphere-1 pointer-events-none z-0"></div>
+    <div class="fixed bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full glow-sphere-2 pointer-events-none z-0"></div>
+    <div class="fixed top-[40%] left-[30%] w-[40vw] h-[40vw] rounded-full bg-indigo-500/5 blur-[100px] pointer-events-none z-0"></div>
+
+    <!-- Main Content Wrapper -->
+    <div class="relative z-10 w-full max-w-[1300px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 flex flex-col">
+        <!-- Header -->
+        <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/10 pb-6">
+            <div>
+                <a href="../index.html" class="inline-flex items-center text-xs font-semibold text-gray-400 hover:text-white transition-colors mb-3 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full border border-white/5">
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    返回 Dev Workspace
+                </a>
+                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white flex items-center gap-3">
+                    <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">AuraAudio 工作站</span>
+                    <span class="text-xs font-bold px-2 py-1 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">轉檔、分割、合併、音量</span>
+                </h1>
+                <p class="text-gray-400 text-sm mt-1.5 font-medium">基於瀏覽器 Web Audio 技術的無損音訊編輯與格式轉換器。支援拖曳分割、區間裁剪、多軌拼接與音量放大，100% 本機執行保護隱私。</p>
+            </div>
+            <div class="flex gap-2">
+                <span class="text-xs font-bold text-gray-400 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl">免上傳伺服器</span>
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    邊緣端加速中
+                </span>
+            </div>
+        </header>
+
+        <!-- Tool Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
+            <!-- Left Panel: Drag-Drop Area & Queue (8 Cols) -->
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                <!-- Drag-Drop Area -->
+                <div id="drop-zone" class="glass-panel rounded-3xl p-8 text-center border-dashed border-2 border-white/15 hover:border-indigo-400/40 cursor-pointer transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] relative overflow-hidden group">
+                    <input type="file" id="file-input" multiple accept="audio/mp3,audio/mpeg,audio/wav" class="hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 mb-3 transition-transform group-hover:scale-110 duration-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                    </div>
+                    
+                    <h3 class="text-base font-bold text-white mb-1">拖放音訊檔案 (MP3 / WAV) 至此</h3>
+                    <p class="text-gray-400 text-xs max-w-md">或點擊此區域選取檔案。支援一次載入多軌進行格式轉換與合併拼接。</p>
+                </div>
+
+                <!-- Queue Panel -->
+                <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col min-h-[350px]">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/10 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-1.5">
+                                <input type="checkbox" id="chk-select-all" class="w-4 h-4 rounded border-white/10 bg-zinc-900 text-indigo-500 focus:ring-0 focus:ring-offset-0">
+                                <label for="chk-select-all" class="text-xs font-bold text-gray-400 cursor-pointer">全選</label>
+                            </div>
+                            <span id="queue-badge" class="text-xs bg-white/10 text-gray-300 px-2.5 py-0.5 rounded-full font-bold">0 個檔案</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="btn-delete-selected" disabled class="text-xs font-bold bg-rose-500/10 hover:bg-rose-600 hover:text-white text-rose-400 px-3 py-2 rounded-xl transition-all border border-rose-500/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                刪除所選
+                            </button>
+                            <button id="btn-merge-selected" disabled class="text-xs font-bold bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 px-3 py-2 rounded-xl transition-all border border-indigo-500/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                合併所選音軌
+                            </button>
+                            <button id="btn-download-all" disabled class="text-xs font-bold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-3 py-2 rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                下載完成 WAV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Queue List -->
+                    <div id="queue-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-3 max-h-[380px] pr-1">
+                        <!-- Empty State -->
+                        <div id="queue-empty" class="h-full flex flex-col items-center justify-center text-center text-gray-500 py-12">
+                            <svg class="w-12 h-12 mb-3 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                            </svg>
+                            <p class="text-sm">佇列目前是空的，請載入音訊檔案。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Settings & Visualizer (4 Cols) -->
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                <!-- Settings Panel -->
+                <div class="glass-panel rounded-3xl p-6">
+                    <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
+                        </svg>
+                        輸出 WAV (MAV) 參數設定
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Volume Boost -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">輸出音量增幅 (Volume Boost)</label>
+                                <span id="setting-volume-val" class="text-xs font-bold text-indigo-400 font-mono">100% (不變)</span>
+                            </div>
+                            <input type="range" id="setting-volume" min="0" max="300" value="100" class="w-full h-1 bg-zinc-900 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                        </div>
+
+                        <!-- Sample Rate Selection -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">取樣頻率 (Sample Rate)</label>
+                            <div class="relative">
+                                <select id="setting-sample-rate" class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 appearance-none">
+                                    <option value="keep" selected>與來源檔案相同 (建議)</option>
+                                    <option value="48000">48,000 Hz (專業影音)</option>
+                                    <option value="44100">44,100 Hz (CD 標準)</option>
+                                    <option value="32000">32,000 Hz</option>
+                                    <option value="22050">22,050 Hz</option>
+                                    <option value="16000">16,000 Hz (語音識別)</option>
+                                    <option value="8000">8,000 Hz (電話音質)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                                    <svg class="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Channels Selection -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">聲道設定 (Channels)</label>
+                            <div class="relative">
+                                <select id="setting-channels" class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 appearance-none">
+                                    <option value="keep" selected>與來源檔案相同</option>
+                                    <option value="2">Stereo (雙聲道)</option>
+                                    <option value="1">Mono (單聲道)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                                    <svg class="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bit Depth Selection -->
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">位元深度 (Bit Depth)</label>
+                            <div class="relative">
+                                <select id="setting-bit-depth" class="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 appearance-none">
+                                    <option value="16" selected>16-bit PCM (標準無損 - 建議)</option>
+                                    <option value="24">24-bit PCM (高解析)</option>
+                                    <option value="32">32-bit Float PCM (專業編輯級)</option>
+                                    <option value="8">8-bit PCM (復古 Low-Fi)</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                                    <svg class="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics Panel -->
+                <div class="glass-panel rounded-3xl p-6">
+                    <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">轉換統計 (Statistics)</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5">
+                            <span class="block text-[10px] text-gray-400">已處置檔案</span>
+                            <span id="stats-converted" class="text-lg font-black text-indigo-400 mt-1">0</span>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5">
+                            <span class="block text-[10px] text-gray-400">解碼總長度</span>
+                            <span id="stats-duration" class="text-lg font-black text-pink-400 mt-1">0.0s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualizer & Player Panel -->
+                <div id="player-panel" class="glass-panel rounded-3xl p-6 hidden flex-col">
+                    <h2 class="text-base font-bold text-white mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                        </svg>
+                        音訊試聽與波形
+                    </h2>
+                    
+                    <div class="flex flex-col gap-3">
+                        <span id="player-file-title" class="text-xs font-medium text-indigo-300 truncate"></span>
+                        
+                        <!-- Canvas Waveform -->
+                        <div class="relative w-full h-20 bg-black/40 rounded-2xl border border-white/5 overflow-hidden">
+                            <canvas id="wave-canvas" class="w-full h-full block cursor-pointer"></canvas>
+                            <div id="wave-loading" class="absolute inset-0 bg-black/60 flex items-center justify-center text-xs text-indigo-300 font-medium">
+                                <span class="animate-pulse">載入中...</span>
+                            </div>
+                        </div>
+
+                        <!-- Audio Element (hidden) -->
+                        <audio id="audio-engine" class="hidden"></audio>
+
+                        <!-- Player Controls -->
+                        <div class="flex justify-between items-center px-1 mt-0.5">
+                            <span id="player-time-current" class="text-xs font-mono text-gray-400">00:00</span>
+                            <button id="btn-player-play" class="w-9 h-9 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 transition-all active:scale-95">
+                                <svg class="w-4.5 h-4.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path id="play-icon-path" d="M8 5v14l11-7z"></path>
+                                </svg>
+                            </button>
+                            <span id="player-time-total" class="text-xs font-mono text-gray-400">00:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panel: Editor Workbench Panel -->
+        <div id="editor-panel" class="glass-panel rounded-3xl p-6 mt-8 hidden flex-col">
+            <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                        <!-- Scissors Icon -->
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-4.879-4.879L21 12m-6.879 2.121l-3-3m0 0l-3-3m3 3L3 6m7 7l-7 7m7-7V4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-white">音訊編輯工作台 (本機記憶體處理)</h2>
+                        <p id="editor-file-title" class="text-xs text-indigo-300 truncate max-w-sm sm:max-w-xl"></p>
+                    </div>
+                </div>
+                <button id="btn-editor-close" class="text-gray-400 hover:text-white text-xs font-semibold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-xl border border-white/5 transition-all">
+                    關閉編輯
+                </button>
+            </div>
+
+            <!-- Waveform & Timeline Canvas Area -->
+            <div class="relative w-full h-36 bg-black/50 rounded-2xl border border-white/5 overflow-hidden mb-4">
+                <canvas id="editor-canvas" class="w-full h-full block cursor-crosshair"></canvas>
+                <div class="absolute top-2 left-2 px-2.5 py-1 rounded bg-black/75 border border-white/5 text-[10px] text-gray-400 pointer-events-none select-none">
+                    操作提示：【單擊波形】標記紅色分割點 | 【拖曳滑鼠】框選藍色剪裁範圍。
+                </div>
+            </div>
+
+            <!-- Manual Controls & Action Buttons -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <!-- Manual coordinates and volume slider -->
+                <div class="flex flex-wrap items-center gap-6">
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">選取範圍:</span>
+                        <input type="number" id="input-editor-start" step="0.01" min="0" class="w-18 bg-zinc-900 border border-white/10 rounded-lg px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-indigo-500">
+                        <span class="text-xs text-gray-500">至</span>
+                        <input type="number" id="input-editor-end" step="0.01" min="0" class="w-18 bg-zinc-900 border border-white/10 rounded-lg px-2 py-1 text-xs text-white text-center focus:outline-none focus:border-indigo-500">
+                        <span class="text-xs text-gray-400">秒</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 border-l border-white/10 pl-6">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">分割點:</span>
+                        <span id="label-editor-split" class="text-xs font-mono text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/10">未設定</span>
+                    </div>
+
+                    <!-- Volume Amplification Workbench slider -->
+                    <div class="flex items-center gap-3 border-l border-white/10 pl-6">
+                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">音量調整:</span>
+                        <input type="range" id="input-editor-volume" min="0" max="300" value="100" class="w-24 h-1 bg-zinc-900 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                        <span id="label-editor-volume" class="text-xs font-bold text-indigo-400 font-mono w-10 text-right">100%</span>
+                        <button id="btn-editor-volume-apply" class="text-[10px] font-bold bg-indigo-500/20 hover:bg-indigo-500 text-indigo-300 hover:text-white px-2 py-1 rounded transition-all">
+                            套用增益
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Button Group -->
+                <div class="flex flex-wrap gap-2 justify-end">
+                    <button id="btn-editor-preview" disabled class="text-xs font-bold bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white px-3 py-2.5 rounded-xl border border-white/5 transition-all flex items-center gap-1 disabled:opacity-35 disabled:cursor-not-allowed">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+                        播放選取區
+                    </button>
+                    
+                    <button id="btn-editor-split" disabled class="text-xs font-bold bg-indigo-500 hover:bg-indigo-600 text-white px-3.5 py-2 rounded-xl transition-all shadow-lg shadow-indigo-500/15 disabled:opacity-35 disabled:cursor-not-allowed flex items-center gap-1">
+                        ✂️ 分割為兩段
+                    </button>
+                    
+                    <button id="btn-editor-crop" disabled class="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 py-2.5 rounded-xl transition-all shadow-lg shadow-emerald-500/15 disabled:opacity-35 disabled:cursor-not-allowed">
+                        保留選取區 (Crop)
+                    </button>
+                    
+                    <button id="btn-editor-cut" disabled class="text-xs font-bold bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-2.5 rounded-xl transition-all shadow-lg shadow-rose-500/15 disabled:opacity-35 disabled:cursor-not-allowed">
+                        刪除選取區 (Cut)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-white/5 py-6 mt-12 text-center text-xs text-gray-500">
+        <p>© 2026 AuraAudio Studio. 本軟體完全於邊緣端 (Edge) 執行，不收集您的任何音訊資料。</p>
+    </footer>
+
+    <!-- Audio Editor & Converter Javascript -->
+    <script>
+        // DOM Elements
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const queueList = document.getElementById('queue-list');
+        const queueEmpty = document.getElementById('queue-empty');
+        const queueBadge = document.getElementById('queue-badge');
+        
+        const chkSelectAll = document.getElementById('chk-select-all');
+        const btnDeleteSelected = document.getElementById('btn-delete-selected');
+        const btnMergeSelected = document.getElementById('btn-merge-selected');
+        const btnDownloadAll = document.getElementById('btn-download-all');
+        
+        const settingSampleRate = document.getElementById('setting-sample-rate');
+        const settingChannels = document.getElementById('setting-channels');
+        const settingBitDepth = document.getElementById('setting-bit-depth');
+        const settingVolume = document.getElementById('setting-volume');
+        const settingVolumeVal = document.getElementById('setting-volume-val');
+        
+        const statsConverted = document.getElementById('stats-converted');
+        const statsDuration = document.getElementById('stats-duration');
+        
+        const playerPanel = document.getElementById('player-panel');
+        const playerFileTitle = document.getElementById('player-file-title');
+        const waveCanvas = document.getElementById('wave-canvas');
+        const waveLoading = document.getElementById('wave-loading');
+        const audioEngine = document.getElementById('audio-engine');
+        const btnPlayerPlay = document.getElementById('btn-player-play');
+        const playIconPath = document.getElementById('play-icon-path');
+        const playerTimeCurrent = document.getElementById('player-time-current');
+        const playerTimeTotal = document.getElementById('player-time-total');
+
+        // Editor Workbench DOM
+        const editorPanel = document.getElementById('editor-panel');
+        const editorFileTitle = document.getElementById('editor-file-title');
+        const editorCanvas = document.getElementById('editor-canvas');
+        const btnEditorClose = document.getElementById('btn-editor-close');
+        
+        const inputEditorStart = document.getElementById('input-editor-start');
+        const inputEditorEnd = document.getElementById('input-editor-end');
+        const labelEditorSplit = document.getElementById('label-editor-split');
+        
+        const inputEditorVolume = document.getElementById('input-editor-volume');
+        const labelEditorVolume = document.getElementById('label-editor-volume');
+        const btnEditorVolumeApply = document.getElementById('btn-editor-volume-apply');
+        
+        const btnEditorPreview = document.getElementById('btn-editor-preview');
+        const btnEditorSplit = document.getElementById('btn-editor-split');
+        const btnEditorCrop = document.getElementById('btn-editor-crop');
+        const btnEditorCut = document.getElementById('btn-editor-cut');
+        
+        // System variables
+        let queue = [];
+        let totalConvertedCount = 0;
+        let totalDecodedDuration = 0;
+        let activePlayerFileId = null;
+        let audioCtx = null;
+        let playerAnimationId = null;
+        let currentAudioBuffer = null;
+
+        // Editor Workbench State
+        let editingItem = null;
+        let editorSplitTime = null;
+        let editorSelectStart = null;
+        let editorSelectEnd = null;
+        let editorIsDragging = false;
+        let editorDragStartTime = 0;
+        let isPreviewPlaying = false;
+
+        // Init Audio Context on demand
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+
+        // Setup Event Listeners
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        // Drag and Drop
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('drag-active');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('drag-active');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        });
+
+        chkSelectAll.addEventListener('change', toggleSelectAll);
+        btnDeleteSelected.addEventListener('click', deleteSelectedItems);
+        btnMergeSelected.addEventListener('click', mergeSelectedItems);
+        btnDownloadAll.addEventListener('click', downloadAllWav);
+        btnEditorClose.addEventListener('click', closeEditor);
+
+        // Global settings listeners to trigger auto re-processing
+        settingVolume.addEventListener('input', (e) => {
+            const val = e.target.value;
+            settingVolumeVal.textContent = val === '100' ? '100% (不變)' : `${val}%`;
+        });
+
+        // Volume slider release -> immediately re-encode completed items to apply new volume boost
+        settingVolume.addEventListener('change', () => {
+            queue.forEach(item => {
+                if (item.status === 'success') {
+                    encodeWavAndUpdate(item);
+                }
+            });
+        });
+
+        settingSampleRate.addEventListener('change', () => {
+            resetSuccessItemsToPending();
+        });
+
+        settingChannels.addEventListener('change', () => {
+            resetSuccessItemsToPending();
+        });
+
+        settingBitDepth.addEventListener('change', () => {
+            // Re-encode all success items with new bit depth immediately
+            queue.forEach(item => {
+                if (item.status === 'success') {
+                    encodeWavAndUpdate(item);
+                }
+            });
+        });
+
+        function resetSuccessItemsToPending() {
+            let hasPending = false;
+            queue.forEach(item => {
+                // If it is a real file, we can re-process from original ArrayBuffer
+                if (item.status === 'success' && item.file && item.file.size > 0) {
+                    item.status = 'pending';
+                    item.progress = 0;
+                    const progressEl = document.getElementById(`progress-${item.id}`);
+                    const metaEl = document.getElementById(`meta-${item.id}`);
+                    if (progressEl) {
+                        progressEl.style.width = '0%';
+                        progressEl.className = 'bg-indigo-500 h-1 rounded-full';
+                    }
+                    if (metaEl) {
+                        metaEl.textContent = '狀態: 等待重新處理';
+                        metaEl.className = 'text-gray-400';
+                    }
+                    hasPending = true;
+                }
+            });
+
+            if (hasPending) {
+                processNextInQueue();
+            }
+        }
+
+        // Editor Volume Slider
+        inputEditorVolume.addEventListener('input', (e) => {
+            const val = e.target.value;
+            labelEditorVolume.textContent = `${val}%`;
+        });
+
+        btnEditorVolumeApply.addEventListener('click', applyVolumeGainToEditingBuffer);
+
+        // File Select Handler
+        function handleFileSelect(e) {
+            handleFiles(e.target.files);
+            fileInput.value = ''; // Reset
+        }
+
+        // Queue File Handler
+        function handleFiles(files) {
+            const filteredFiles = Array.from(files).filter(file => {
+                const ext = file.name.toLowerCase();
+                return file.type.startsWith('audio/') || 
+                       ext.endsWith('.mp3') || 
+                       ext.endsWith('.wav');
+            });
+
+            if (filteredFiles.length === 0) {
+                alert('請選擇有效的音訊檔案 (MP3 或 WAV)！');
+                return;
+            }
+
+            filteredFiles.forEach(file => {
+                const fileId = 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                
+                const fileObj = {
+                    id: fileId,
+                    name: file.name,
+                    size: file.size,
+                    file: file,
+                    status: 'pending', // pending, converting, success, error
+                    progress: 0,
+                    errorMsg: '',
+                    wavBlob: null,
+                    wavUrl: null,
+                    duration: 0,
+                    outputSampleRate: 0,
+                    outputChannels: 0,
+                    outputBitDepth: 16,
+                    audioBuffer: null,
+                    checked: false
+                };
+
+                queue.push(fileObj);
+                renderQueueItem(fileObj);
+            });
+
+            updateQueueUI();
+            processNextInQueue();
+        }
+
+        // Render queue item in UI
+        function renderQueueItem(item) {
+            if (queueEmpty) {
+                queueEmpty.style.display = 'none';
+            }
+
+            const isWav = item.name.toLowerCase().endsWith('.wav');
+            const formatBadge = isWav ? 'WAV' : 'MP3';
+
+            const itemHtml = `
+                <div id="${item.id}" class="glass-card rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <!-- Checkbox -->
+                        <input type="checkbox" id="chk-${item.id}" class="queue-item-checkbox w-4 h-4 rounded border-white/10 bg-zinc-900 text-indigo-500 focus:ring-0 focus:ring-offset-0 shrink-0">
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/5 text-gray-400">${formatBadge}</span>
+                                <h4 class="text-sm font-semibold text-white truncate max-w-[220px] sm:max-w-[350px]" title="${item.name}">${item.name}</h4>
+                            </div>
+                            <div class="flex items-center gap-3 text-xs text-gray-400">
+                                <span>大小: ${(item.size / (1024 * 1024)).toFixed(2)} MB</span>
+                                <span id="meta-${item.id}">狀態: 等待處理</span>
+                            </div>
+                            <!-- Progress Bar -->
+                            <div class="w-full bg-white/5 rounded-full h-1 mt-2.5 overflow-hidden">
+                                <div id="progress-${item.id}" class="bg-indigo-500 h-1 rounded-full transition-all duration-150" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                        <!-- Play Button -->
+                        <button id="play-btn-${item.id}" disabled class="w-8 h-8 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed" title="播放音訊">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>
+                        </button>
+                        <!-- Edit Button (Split/Crop) -->
+                        <button id="edit-btn-${item.id}" disabled class="w-8 h-8 rounded-full bg-white/5 hover:bg-indigo-500/20 text-gray-400 hover:text-indigo-400 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed" title="剪輯與分割">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-4.879-4.879L21 12m-6.879 2.121l-3-3m0 0l-3-3m3 3L3 6m7 7l-7 7m7-7V4"></path>
+                            </svg>
+                        </button>
+                        <!-- Download Button -->
+                        <a id="dl-btn-${item.id}" href="#" download class="hidden w-8 h-8 rounded-full bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-white flex items-center justify-center transition-all" title="下載 WAV">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                        </a>
+                        <!-- Delete Button -->
+                        <button id="del-btn-${item.id}" class="w-8 h-8 rounded-full bg-white/5 hover:bg-rose-500/20 text-gray-400 hover:text-rose-400 flex items-center justify-center transition-all" title="移除項目">
+                            <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            queueList.insertAdjacentHTML('beforeend', itemHtml);
+
+            // Bind checkbox
+            const checkbox = document.getElementById(`chk-${item.id}`);
+            checkbox.addEventListener('change', (e) => {
+                item.checked = e.target.checked;
+                updateBatchButtonsState();
+            });
+
+            // Bind buttons
+            document.getElementById(`del-btn-${item.id}`).addEventListener('click', () => removeQueueItem(item.id));
+            document.getElementById(`edit-btn-${item.id}`).addEventListener('click', () => openEditor(item));
+        }
+
+        // Toggle Select All Checkbox
+        function toggleSelectAll(e) {
+            const isChecked = e.target.checked;
+            queue.forEach(item => {
+                item.checked = isChecked;
+                const el = document.getElementById(`chk-${item.id}`);
+                if (el) el.checked = isChecked;
+            });
+            updateBatchButtonsState();
+        }
+
+        // Update Batch Buttons Enabled State
+        function updateBatchButtonsState() {
+            const checkedItems = queue.filter(item => item.checked);
+            
+            // Delete selection button
+            if (checkedItems.length > 0) {
+                btnDeleteSelected.removeAttribute('disabled');
+            } else {
+                btnDeleteSelected.setAttribute('disabled', 'true');
+            }
+
+            // Merge button requires at least 2 finished items selected
+            const successChecked = checkedItems.filter(item => item.status === 'success');
+            if (successChecked.length >= 2) {
+                btnMergeSelected.removeAttribute('disabled');
+            } else {
+                btnMergeSelected.setAttribute('disabled', 'true');
+            }
+
+            // Sync select-all checkbox visual
+            if (queue.length > 0 && checkedItems.length === queue.length) {
+                chkSelectAll.checked = true;
+                chkSelectAll.indeterminate = false;
+            } else if (checkedItems.length > 0) {
+                chkSelectAll.checked = false;
+                chkSelectAll.indeterminate = true;
+            } else {
+                chkSelectAll.checked = false;
+                chkSelectAll.indeterminate = false;
+            }
+        }
+
+        // Delete selected items from queue
+        function deleteSelectedItems() {
+            const itemsToDelete = queue.filter(item => item.checked).map(item => item.id);
+            itemsToDelete.forEach(id => removeQueueItem(id));
+        }
+
+        // Remove queue item
+        function removeQueueItem(id) {
+            const index = queue.findIndex(item => item.id === id);
+            if (index === -1) return;
+
+            const item = queue[index];
+            
+            // Clean active player if playing
+            if (activePlayerFileId === id) {
+                audioEngine.pause();
+                playerPanel.classList.add('hidden');
+                playerPanel.classList.remove('flex');
+                activePlayerFileId = null;
+                currentAudioBuffer = null;
+                if (playerAnimationId) cancelAnimationFrame(playerAnimationId);
+            }
+
+            // Clean editor if editing
+            if (editingItem && editingItem.id === id) {
+                closeEditor();
+            }
+
+            // Revoke URL to prevent leaks
+            if (item.wavUrl) {
+                URL.revokeObjectURL(item.wavUrl);
+            }
+
+            // Remove DOM
+            const el = document.getElementById(id);
+            if (el) el.remove();
+
+            queue.splice(index, 1);
+            updateQueueUI();
+            updateBatchButtonsState();
+            processNextInQueue();
+        }
+
+        // Update global Queue UI elements
+        function updateQueueUI() {
+            queueBadge.textContent = `${queue.length} 個檔案`;
+            
+            if (queue.length === 0) {
+                if (queueEmpty) queueEmpty.style.display = 'flex';
+                btnDownloadAll.setAttribute('disabled', 'true');
+            } else {
+                const hasFinished = queue.some(item => item.status === 'success');
+                if (hasFinished) {
+                    btnDownloadAll.removeAttribute('disabled');
+                } else {
+                    btnDownloadAll.setAttribute('disabled', 'true');
+                }
+            }
+        }
+
+        // Process sequentially
+        let isConverting = false;
+        async function processNextInQueue() {
+            if (isConverting) return;
+            
+            const nextItem = queue.find(item => item.status === 'pending');
+            if (!nextItem) {
+                isConverting = false;
+                return;
+            }
+
+            isConverting = true;
+            await convertFile(nextItem);
+            isConverting = false;
+            
+            processNextInQueue();
+        }
+
+        // File Converter Core
+        async function convertFile(item) {
+            const progressEl = document.getElementById(`progress-${item.id}`);
+            const metaEl = document.getElementById(`meta-${item.id}`);
+            
+            item.status = 'converting';
+            metaEl.textContent = '狀態: 讀取檔案中...';
+            metaEl.className = 'flex items-center gap-2 text-indigo-400';
+            progressEl.style.width = '10%';
+
+            try {
+                // Settings
+                const targetSampleRate = settingSampleRate.value === 'keep' ? null : parseInt(settingSampleRate.value);
+                const targetChannels = settingChannels.value === 'keep' ? null : parseInt(settingChannels.value);
+                const targetBitDepth = parseInt(settingBitDepth.value);
+
+                // 1. Read
+                const fileReader = new FileReader();
+                const arrayBuffer = await new Promise((resolve, reject) => {
+                    fileReader.onload = () => resolve(fileReader.result);
+                    fileReader.onerror = () => reject(new Error('檔案讀取失敗。'));
+                    fileReader.readAsArrayBuffer(item.file);
+                });
+
+                // 2. Decode
+                metaEl.textContent = '狀態: 解碼音訊中 (1/2)...';
+                progressEl.style.width = '30%';
+                
+                const ctx = getAudioContext();
+                const sourceAudioBuffer = await ctx.decodeAudioData(arrayBuffer);
+                item.duration = sourceAudioBuffer.duration;
+
+                // 3. Resample & Channel Merging
+                metaEl.textContent = '狀態: 重新採樣與聲道合成 (2/2)...';
+                progressEl.style.width = '60%';
+
+                const finalSampleRate = targetSampleRate || sourceAudioBuffer.sampleRate;
+                const finalChannels = targetChannels || sourceAudioBuffer.numberOfChannels;
+                
+                let processedBuffer = sourceAudioBuffer;
+                
+                if (finalSampleRate !== sourceAudioBuffer.sampleRate || finalChannels !== sourceAudioBuffer.numberOfChannels) {
+                    const offlineCtx = new OfflineAudioContext(
+                        finalChannels, 
+                        Math.ceil(sourceAudioBuffer.duration * finalSampleRate), 
+                        finalSampleRate
+                    );
+                    
+                    const bufferSource = offlineCtx.createBufferSource();
+                    bufferSource.buffer = sourceAudioBuffer;
+                    bufferSource.connect(offlineCtx.destination);
+                    bufferSource.start();
+                    
+                    processedBuffer = await offlineCtx.startRendering();
+                }
+
+                item.audioBuffer = processedBuffer;
+                item.outputSampleRate = finalSampleRate;
+                item.outputChannels = finalChannels;
+                item.outputBitDepth = targetBitDepth;
+
+                // 4. Encode WAV
+                await encodeWavAndUpdate(item);
+
+                // Update Statistics
+                totalConvertedCount++;
+                totalDecodedDuration += item.duration;
+                updateStatsUI();
+                updateQueueUI();
+                updateBatchButtonsState();
+
+            } catch (err) {
+                console.error(err);
+                item.status = 'error';
+                item.errorMsg = err.message || '格式解碼出錯。';
+                
+                progressEl.style.width = '100%';
+                progressEl.className = 'bg-rose-500 h-1';
+                metaEl.textContent = `錯誤: ${item.errorMsg}`;
+                metaEl.className = 'text-rose-400';
+            }
+        }
+
+        // Encode current item buffer to WAV PCM Blob, then update UI
+        async function encodeWavAndUpdate(item) {
+            const progressEl = document.getElementById(`progress-${item.id}`);
+            const metaEl = document.getElementById(`meta-${item.id}`);
+            const dlBtn = document.getElementById(`dl-btn-${item.id}`);
+            const playBtn = document.getElementById(`play-btn-${item.id}`);
+            const editBtn = document.getElementById(`edit-btn-${item.id}`);
+
+            metaEl.textContent = '狀態: 編碼 WAV 檔案中...';
+            if (progressEl) progressEl.style.width = '85%';
+
+            // Revoke old URL if existing
+            if (item.wavUrl) {
+                URL.revokeObjectURL(item.wavUrl);
+            }
+
+            await new Promise(r => setTimeout(r, 40));
+
+            // Apply global volume gain configuration during encoding
+            const globalVolumeBoost = parseFloat(settingVolume.value) / 100;
+            const wavBlob = bufferToWav(item.audioBuffer, item.outputBitDepth, globalVolumeBoost);
+            item.wavBlob = wavBlob;
+            item.wavUrl = URL.createObjectURL(wavBlob);
+            item.duration = item.audioBuffer.duration;
+
+            item.status = 'success';
+            if (progressEl) {
+                progressEl.style.width = '100%';
+                progressEl.className = 'bg-emerald-500 h-1 rounded-full transition-all duration-150';
+            }
+            
+            const ratio = ((wavBlob.size / item.size)).toFixed(1);
+            metaEl.textContent = `狀態: 完成 | WAV: ${(wavBlob.size / (1024*1024)).toFixed(2)}MB (${ratio}x)`;
+            metaEl.className = 'text-emerald-400';
+
+            // DL Link Setup
+            dlBtn.href = item.wavUrl;
+            const wavFileName = item.name.replace(/\.[^/.]+$/, "") + ".wav";
+            dlBtn.setAttribute('download', wavFileName);
+            dlBtn.classList.remove('hidden');
+
+            // Play & Edit bindings
+            playBtn.removeAttribute('disabled');
+            playBtn.onclick = () => selectAndPlayFile(item);
+
+            editBtn.removeAttribute('disabled');
+        }
+
+        // Update Stats UI
+        function updateStatsUI() {
+            statsConverted.textContent = totalConvertedCount;
+            statsDuration.textContent = `${totalDecodedDuration.toFixed(1)}s`;
+        }
+
+        // Batch download all success WAVs
+        function downloadAllWav() {
+            const completedItems = queue.filter(item => item.status === 'success');
+            completedItems.forEach((item, index) => {
+                setTimeout(() => {
+                    const tempLink = document.createElement('a');
+                    tempLink.href = item.wavUrl;
+                    const wavFileName = item.name.replace(/\.[^/.]+$/, "") + ".wav";
+                    tempLink.setAttribute('download', wavFileName);
+                    document.body.appendChild(tempLink);
+                    tempLink.click();
+                    document.body.removeChild(tempLink);
+                }, index * 250);
+            });
+        }
+
+        // Concatenate/Merge Selected Files
+        async function mergeSelectedItems() {
+            const checkedSuccessItems = queue.filter(item => item.checked && item.status === 'success');
+            if (checkedSuccessItems.length < 2) return;
+
+            btnMergeSelected.setAttribute('disabled', 'true');
+            btnMergeSelected.textContent = '合併中...';
+
+            try {
+                // Output Target Specs
+                const targetSampleRate = settingSampleRate.value === 'keep' ? checkedSuccessItems[0].audioBuffer.sampleRate : parseInt(settingSampleRate.value);
+                const targetChannels = settingChannels.value === 'keep' ? checkedSuccessItems[0].audioBuffer.numberOfChannels : parseInt(settingChannels.value);
+                const targetBitDepth = parseInt(settingBitDepth.value);
+
+                // 1. Resample and collect Audio Buffers
+                const buffersToMerge = [];
+                const ctx = getAudioContext();
+
+                for (let i = 0; i < checkedSuccessItems.length; i++) {
+                    const item = checkedSuccessItems[i];
+                    const buf = item.audioBuffer;
+
+                    if (buf.sampleRate !== targetSampleRate || buf.numberOfChannels !== targetChannels) {
+                        const offlineCtx = new OfflineAudioContext(
+                            targetChannels,
+                            Math.ceil(buf.duration * targetSampleRate),
+                            targetSampleRate
+                        );
+                        const source = offlineCtx.createBufferSource();
+                        source.buffer = buf;
+                        source.connect(offlineCtx.destination);
+                        source.start();
+                        
+                        const resampled = await offlineCtx.startRendering();
+                        buffersToMerge.push(resampled);
+                    } else {
+                        buffersToMerge.push(buf);
+                    }
+                }
+
+                // 2. Compute total size and allocate merged buffer
+                const totalLength = buffersToMerge.reduce((acc, b) => acc + b.length, 0);
+                const mergedBuffer = ctx.createBuffer(targetChannels, totalLength, targetSampleRate);
+
+                // 3. Stitch them
+                let offset = 0;
+                buffersToMerge.forEach(buf => {
+                    for (let ch = 0; ch < targetChannels; ch++) {
+                        const srcData = buf.getChannelData(ch);
+                        const destData = mergedBuffer.getChannelData(ch);
+                        destData.set(srcData, offset);
+                    }
+                    offset += buf.length;
+                });
+
+                // 4. Create new Queue Item for Merged File
+                const fileId = 'file-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                const mergedName = `Merged_Audio_${Date.now().toString().slice(-6)}.wav`;
+                
+                // Estimate size based on bit depth
+                const bytesPerSample = targetBitDepth / 8;
+                const estimatedSize = 44 + (totalLength * targetChannels * bytesPerSample);
+
+                const newMergedItem = {
+                    id: fileId,
+                    name: mergedName,
+                    size: estimatedSize,
+                    file: new File([], mergedName), // Dummy File
+                    status: 'success',
+                    progress: 100,
+                    errorMsg: '',
+                    wavBlob: null,
+                    wavUrl: null,
+                    duration: mergedBuffer.duration,
+                    outputSampleRate: targetSampleRate,
+                    outputChannels: targetChannels,
+                    outputBitDepth: targetBitDepth,
+                    audioBuffer: mergedBuffer,
+                    checked: false
+                };
+
+                queue.push(newMergedItem);
+                renderQueueItem(newMergedItem);
+
+                // Encode WAV immediately (this automatically respects globalVolumeBoost inside)
+                await encodeWavAndUpdate(newMergedItem);
+
+                updateQueueUI();
+                updateBatchButtonsState();
+                
+                // Auto scroll queue to bottom
+                queueList.scrollTop = queueList.scrollHeight;
+
+            } catch (err) {
+                console.error(err);
+                alert(`音軌合併失敗：${err.message}`);
+            } finally {
+                btnMergeSelected.textContent = '合併所選音軌';
+                updateBatchButtonsState();
+            }
+        }
+
+        // ================= AUDIO WAV PCM ENCODER =================
+        function bufferToWav(audioBuffer, bitDepth = 16, volumeGain = 1.0) {
+            const numOfChan = audioBuffer.numberOfChannels;
+            const sampleRate = audioBuffer.sampleRate;
+            const format = bitDepth === 32 ? 3 : 1; // 3 = IEEE float, 1 = PCM
+            const bytesPerSample = bitDepth / 8;
+            const blockAlign = numOfChan * bytesPerSample;
+            
+            const chData = [];
+            for (let i = 0; i < numOfChan; i++) {
+                chData.push(audioBuffer.getChannelData(i));
+            }
+            
+            const numSamples = audioBuffer.length;
+            const totalDataLen = numSamples * blockAlign;
+            const buffer = new ArrayBuffer(44 + totalDataLen);
+            const view = new DataView(buffer);
+            
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + totalDataLen, true);
+            writeString(view, 8, 'WAVE');
+            
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, format, true);
+            view.setUint16(22, numOfChan, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * blockAlign, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitDepth, true);
+            
+            writeString(view, 36, 'data');
+            view.setUint32(40, totalDataLen, true);
+            
+            let offset = 44;
+            for (let i = 0; i < numSamples; i++) {
+                for (let channel = 0; channel < numOfChan; channel++) {
+                    // Apply gain multiplication and limit between [-1.0, 1.0] (Clipping protection)
+                    const sample = Math.max(-1, Math.min(1, chData[channel][i] * volumeGain));
+                    
+                    if (bitDepth === 8) {
+                        const val = Math.round((sample + 1) * 127.5);
+                        view.setUint8(offset, val);
+                    } else if (bitDepth === 16) {
+                        const val = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+                        view.setInt16(offset, val, true);
+                    } else if (bitDepth === 24) {
+                        const val = Math.round(sample * (sample < 0 ? 0x800000 : 0x7FFFFF));
+                        view.setUint8(offset, val & 0xff);
+                        view.setUint8(offset + 1, (val >> 8) & 0xff);
+                        view.setUint8(offset + 2, (val >> 16) & 0xff);
+                    } else if (bitDepth === 32) {
+                        view.setFloat32(offset, sample, true);
+                    }
+                    offset += bytesPerSample;
+                }
+            }
+            
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function writeString(view, offset, string) {
+            for (let i = 0; i < string.length; i++) {
+                view.setUint8(offset + i, string.charCodeAt(i));
+            }
+        }
+
+        // ================= GENERAL PLAYER & VISUALIZER =================
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function selectAndPlayFile(item) {
+            if (activePlayerFileId === item.id) {
+                togglePlayback();
+                return;
+            }
+
+            activePlayerFileId = item.id;
+            currentAudioBuffer = item.audioBuffer;
+            playerFileTitle.textContent = item.name.replace(/\.[^/.]+$/, "") + ".wav";
+            playerPanel.classList.remove('hidden');
+            playerPanel.classList.add('flex');
+            waveLoading.style.display = 'flex';
+
+            if (playerAnimationId) cancelAnimationFrame(playerAnimationId);
+
+            audioEngine.src = item.wavUrl;
+            audioEngine.load();
+
+            drawWaveform(waveCanvas, item.audioBuffer);
+
+            audioEngine.onloadedmetadata = () => {
+                waveLoading.style.display = 'none';
+                playerTimeTotal.textContent = formatTime(audioEngine.duration);
+                playerTimeCurrent.textContent = '00:00';
+                
+                audioEngine.play();
+                updatePlayButtonIcon(true);
+                startVisualizerLoop();
+            };
+
+            audioEngine.onended = () => {
+                updatePlayButtonIcon(false);
+                if (playerAnimationId) cancelAnimationFrame(playerAnimationId);
+                drawWaveform(waveCanvas, item.audioBuffer, audioEngine.duration);
+            };
+
+            // Card highlight
+            document.querySelectorAll('.glass-card').forEach(card => {
+                card.classList.remove('border-indigo-500/50', 'bg-indigo-500/5');
+            });
+            const activeCard = document.getElementById(item.id);
+            if (activeCard) {
+                activeCard.classList.add('border-indigo-500/50', 'bg-indigo-500/5');
+            }
+        }
+
+        btnPlayerPlay.addEventListener('click', togglePlayback);
+
+        function togglePlayback() {
+            if (!activePlayerFileId) return;
+
+            if (audioEngine.paused) {
+                audioEngine.play();
+                updatePlayButtonIcon(true);
+                startVisualizerLoop();
+            } else {
+                audioEngine.pause();
+                updatePlayButtonIcon(false);
+                if (playerAnimationId) cancelAnimationFrame(playerAnimationId);
+            }
+        }
+
+        function updatePlayButtonIcon(isPlaying) {
+            if (isPlaying) {
+                playIconPath.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+            } else {
+                playIconPath.setAttribute('d', 'M8 5v14l11-7z');
+            }
+        }
+
+        // Draw waveform on target canvas
+        function drawWaveform(canvas, audioBuffer, currentTime = 0, selectionStart = null, selectionEnd = null, splitPoint = null) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
+            const height = canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            
+            const displayWidth = width / window.devicePixelRatio;
+            const displayHeight = height / window.devicePixelRatio;
+
+            ctx.clearRect(0, 0, displayWidth, displayHeight);
+
+            const data = audioBuffer.getChannelData(0);
+            const duration = audioBuffer.duration;
+            const progressRatio = currentTime / duration;
+            
+            // Grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < displayWidth; i += 20) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, displayHeight);
+                ctx.stroke();
+            }
+
+            const barWidth = 3;
+            const gap = 1;
+            const totalBars = Math.floor(displayWidth / (barWidth + gap));
+            const step = Math.floor(data.length / totalBars);
+            
+            const amp = displayHeight / 2;
+
+            for (let i = 0; i < totalBars; i++) {
+                const x = i * (barWidth + gap);
+                const currentRatio = i / totalBars;
+                const currentTimeAtBar = currentRatio * duration;
+                
+                let min = 1.0;
+                let max = -1.0;
+                for (let j = 0; j < step; j++) {
+                    const idx = (i * step) + j;
+                    if (idx < data.length) {
+                        const val = data[idx];
+                        if (val < min) min = val;
+                        if (val > max) max = val;
+                    }
+                }
+                
+                // Real PCM scaling (will reflect editingItem gain adjustments immediately)
+                const valRange = max - min;
+                const barHeight = Math.max(2.5, valRange * amp * 0.85);
+                const y = amp - (barHeight / 2);
+
+                // Selection Box Coloring
+                let inSelection = false;
+                if (selectionStart !== null && selectionEnd !== null) {
+                    inSelection = (currentTimeAtBar >= selectionStart && currentTimeAtBar <= selectionEnd);
+                }
+
+                if (inSelection) {
+                    ctx.fillStyle = '#38bdf8'; 
+                } else if (currentRatio <= progressRatio) {
+                    const grad = ctx.createLinearGradient(x, y, x, y + barHeight);
+                    grad.addColorStop(0, '#818cf8'); 
+                    grad.addColorStop(1, '#c084fc'); 
+                    ctx.fillStyle = grad;
+                } else {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                }
+                
+                ctx.beginPath();
+                ctx.roundRect(x, y, barWidth, barHeight, 1.5);
+                ctx.fill();
+            }
+
+            // Draw selection boundaries
+            if (selectionStart !== null && selectionEnd !== null) {
+                const startX = (selectionStart / duration) * displayWidth;
+                const endX = (selectionEnd / duration) * displayWidth;
+
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+                ctx.fillRect(startX, 0, endX - startX, displayHeight);
+
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
+                ctx.setLineDash([4, 4]);
+                ctx.lineWidth = 1;
+                
+                ctx.beginPath();
+                ctx.moveTo(startX, 0); ctx.lineTo(startX, displayHeight);
+                ctx.moveTo(endX, 0); ctx.lineTo(endX, displayHeight);
+                ctx.stroke();
+                ctx.setLineDash([]); 
+            }
+
+            // Draw Red Split Marker Line
+            if (splitPoint !== null) {
+                const splitX = (splitPoint / duration) * displayWidth;
+                ctx.strokeStyle = '#ef4444'; 
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(splitX, 0);
+                ctx.lineTo(splitX, displayHeight);
+                ctx.stroke();
+
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(splitX, 4, 3, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+        }
+
+        // Visualizer Loop
+        function startVisualizerLoop() {
+            if (playerAnimationId) cancelAnimationFrame(playerAnimationId);
+
+            function tick() {
+                if (!audioEngine.paused && currentAudioBuffer) {
+                    const current = audioEngine.currentTime;
+                    playerTimeCurrent.textContent = formatTime(current);
+                    
+                    if (isPreviewPlaying && editorSelectEnd !== null && current >= editorSelectEnd) {
+                        audioEngine.pause();
+                        isPreviewPlaying = false;
+                        updatePlayButtonIcon(false);
+                        audioEngine.currentTime = editorSelectStart;
+                        playerTimeCurrent.textContent = formatTime(editorSelectStart);
+                        drawWaveform(editorCanvas, editingItem.audioBuffer, editorSelectStart, editorSelectStart, editorSelectEnd);
+                        if (playerAnimationId) cancelAnimationFrame(playerAnimationId);
+                        return;
+                    }
+
+                    if (activePlayerFileId) {
+                        drawWaveform(waveCanvas, currentAudioBuffer, current);
+                    }
+                    if (editingItem && isPreviewPlaying) {
+                        drawWaveform(editorCanvas, editingItem.audioBuffer, current, editorSelectStart, editorSelectEnd, editorSplitTime);
+                    }
+
+                    playerAnimationId = requestAnimationFrame(tick);
+                }
+            }
+            playerAnimationId = requestAnimationFrame(tick);
+        }
+
+        // Seek Audio
+        waveCanvas.addEventListener('click', (e) => {
+            if (!audioEngine.src || !currentAudioBuffer) return;
+
+            const rect = waveCanvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickRatio = clickX / rect.width;
+            
+            const targetTime = clickRatio * audioEngine.duration;
+            audioEngine.currentTime = targetTime;
+            playerTimeCurrent.textContent = formatTime(targetTime);
+            
+            drawWaveform(waveCanvas, currentAudioBuffer, targetTime);
+        });
+
+
+        // ==========================================
+        // ============= AUDIO EDITOR WORKBENCH =============
+        // ==========================================
+
+        function openEditor(item) {
+            editingItem = item;
+            editorFileTitle.textContent = `${item.name} (${item.duration.toFixed(2)}s)`;
+            
+            // Clean editor values
+            editorSplitTime = null;
+            editorSelectStart = null;
+            editorSelectEnd = null;
+            
+            inputEditorStart.value = '';
+            inputEditorEnd.value = '';
+            inputEditorStart.max = item.duration;
+            inputEditorEnd.max = item.duration;
+            labelEditorSplit.textContent = '未設定';
+
+            // Reset editor volume slider
+            inputEditorVolume.value = '100';
+            labelEditorVolume.textContent = '100%';
+
+            editorPanel.classList.remove('hidden');
+            editorPanel.classList.add('flex');
+            
+            drawWaveform(editorCanvas, item.audioBuffer);
+            updateEditorControlsUI();
+
+            editorPanel.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closeEditor() {
+            editingItem = null;
+            editorPanel.classList.add('hidden');
+            editorPanel.classList.remove('flex');
+            
+            if (isPreviewPlaying) {
+                audioEngine.pause();
+                isPreviewPlaying = false;
+                updatePlayButtonIcon(false);
+            }
+        }
+
+        // Update action buttons states
+        function updateEditorControlsUI() {
+            if (editorSplitTime !== null && editingItem) {
+                btnEditorSplit.removeAttribute('disabled');
+                btnEditorSplit.textContent = `✂️ 在 ${editorSplitTime.toFixed(2)}s 分割`;
+            } else {
+                btnEditorSplit.setAttribute('disabled', 'true');
+                btnEditorSplit.textContent = `✂️ 分割為兩段`;
+            }
+
+            if (editorSelectStart !== null && editorSelectEnd !== null && editingItem) {
+                btnEditorCrop.removeAttribute('disabled');
+                btnEditorCut.removeAttribute('disabled');
+                btnEditorPreview.removeAttribute('disabled');
+            } else {
+                btnEditorCrop.setAttribute('disabled', 'true');
+                btnEditorCut.setAttribute('disabled', 'true');
+                btnEditorPreview.setAttribute('disabled', 'true');
+            }
+        }
+
+        // Synchronize manual text fields
+        [inputEditorStart, inputEditorEnd].forEach(el => {
+            el.addEventListener('change', () => {
+                if (!editingItem) return;
+
+                const valStart = parseFloat(inputEditorStart.value);
+                const valEnd = parseFloat(inputEditorEnd.value);
+                const duration = editingItem.duration;
+
+                if (!isNaN(valStart) && !isNaN(valEnd) && valStart >= 0 && valEnd <= duration && valStart < valEnd) {
+                    editorSelectStart = valStart;
+                    editorSelectEnd = valEnd;
+                    editorSplitTime = null; 
+                    
+                    labelEditorSplit.textContent = '未設定';
+                    drawWaveform(editorCanvas, editingItem.audioBuffer, 0, editorSelectStart, editorSelectEnd);
+                } else {
+                    editorSelectStart = null;
+                    editorSelectEnd = null;
+                    drawWaveform(editorCanvas, editingItem.audioBuffer);
+                }
+                updateEditorControlsUI();
+            });
+        });
+
+        // Editor Canvas Drag Events
+        editorCanvas.addEventListener('mousedown', (e) => {
+            if (!editingItem) return;
+            
+            const rect = editorCanvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const ratio = clickX / rect.width;
+            
+            editorIsDragging = true;
+            editorDragStartTime = ratio * editingItem.duration;
+            
+            editorSplitTime = null;
+            isPreviewPlaying = false;
+        });
+
+        editorCanvas.addEventListener('mousemove', (e) => {
+            if (!editorIsDragging || !editingItem) return;
+
+            const rect = editorCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const ratio = Math.max(0, Math.min(1, mouseX / rect.width));
+            const currentTime = ratio * editingItem.duration;
+
+            editorSelectStart = Math.min(editorDragStartTime, currentTime);
+            editorSelectEnd = Math.max(editorDragStartTime, currentTime);
+
+            inputEditorStart.value = editorSelectStart.toFixed(2);
+            inputEditorEnd.value = editorSelectEnd.toFixed(2);
+            labelEditorSplit.textContent = '未設定';
+
+            drawWaveform(editorCanvas, editingItem.audioBuffer, 0, editorSelectStart, editorSelectEnd);
+        });
+
+        editorCanvas.addEventListener('mouseup', (e) => {
+            if (!editorIsDragging || !editingItem) return;
+            editorIsDragging = false;
+
+            const rect = editorCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const ratio = Math.max(0, Math.min(1, mouseX / rect.width));
+            const currentTime = ratio * editingItem.duration;
+
+            const dragDistance = Math.abs(currentTime - editorDragStartTime);
+            
+            if (dragDistance < 0.08) {
+                editorSplitTime = currentTime;
+                editorSelectStart = null;
+                editorSelectEnd = null;
+                
+                inputEditorStart.value = '';
+                inputEditorEnd.value = '';
+                labelEditorSplit.textContent = `${editorSplitTime.toFixed(2)}s`;
+                
+                drawWaveform(editorCanvas, editingItem.audioBuffer, 0, null, null, editorSplitTime);
+            } else {
+                editorSplitTime = null;
+                labelEditorSplit.textContent = '未設定';
+            }
+
+            updateEditorControlsUI();
+        });
+
+        editorCanvas.addEventListener('mouseleave', () => {
+            editorIsDragging = false;
+        });
+
+        // 1. Action: Preview Region
+        btnEditorPreview.addEventListener('click', () => {
+            if (!editingItem || editorSelectStart === null || editorSelectEnd === null) return;
+
+            if (isPreviewPlaying) {
+                audioEngine.pause();
+                isPreviewPlaying = false;
+                updatePlayButtonIcon(false);
+                return;
+            }
+
+            audioEngine.src = editingItem.wavUrl;
+            audioEngine.load();
+
+            audioEngine.onloadedmetadata = () => {
+                audioEngine.currentTime = editorSelectStart;
+                audioEngine.play();
+                isPreviewPlaying = true;
+                updatePlayButtonIcon(true);
+                startVisualizerLoop();
+            };
+        });
+
+        // 2. Action: Split
+        btnEditorSplit.addEventListener('click', async () => {
+            if (!editingItem || editorSplitTime === null) return;
+
+            const item = editingItem;
+            const splitTime = editorSplitTime;
+            const sampleRate = item.audioBuffer.sampleRate;
+            const channels = item.audioBuffer.numberOfChannels;
+            const totalSamples = item.audioBuffer.length;
+            
+            const splitSampleIdx = Math.floor(splitTime * sampleRate);
+
+            if (splitSampleIdx <= 0 || splitSampleIdx >= totalSamples) {
+                alert('不可分割於邊界端！');
+                return;
+            }
+
+            const ctx = getAudioContext();
+            
+            const part1Len = splitSampleIdx;
+            const part1Buffer = ctx.createBuffer(channels, part1Len, sampleRate);
+            for (let ch = 0; ch < channels; ch++) {
+                const srcData = item.audioBuffer.getChannelData(ch);
+                part1Buffer.getChannelData(ch).set(srcData.subarray(0, part1Len));
+            }
+
+            const part2Len = totalSamples - splitSampleIdx;
+            const part2Buffer = ctx.createBuffer(channels, part2Len, sampleRate);
+            for (let ch = 0; ch < channels; ch++) {
+                const srcData = item.audioBuffer.getChannelData(ch);
+                part2Buffer.getChannelData(ch).set(srcData.subarray(splitSampleIdx));
+            }
+
+            const stemName = item.name.replace(/\.[^/.]+$/, "");
+            const name1 = `${stemName}_Pt1.wav`;
+            const name2 = `${stemName}_Pt2.wav`;
+
+            const bytesPerSample = item.outputBitDepth / 8;
+
+            const item1 = {
+                id: 'file-' + Date.now() + '-1',
+                name: name1,
+                size: 44 + (part1Len * channels * bytesPerSample),
+                file: new File([], name1),
+                status: 'success',
+                progress: 100,
+                errorMsg: '',
+                wavBlob: null,
+                wavUrl: null,
+                duration: part1Buffer.duration,
+                outputSampleRate: item.outputSampleRate,
+                outputChannels: item.outputChannels,
+                outputBitDepth: item.outputBitDepth,
+                audioBuffer: part1Buffer,
+                checked: false
+            };
+
+            const item2 = {
+                id: 'file-' + Date.now() + '-2',
+                name: name2,
+                size: 44 + (part2Len * channels * bytesPerSample),
+                file: new File([], name2),
+                status: 'success',
+                progress: 100,
+                errorMsg: '',
+                wavBlob: null,
+                wavUrl: null,
+                duration: part2Buffer.duration,
+                outputSampleRate: item.outputSampleRate,
+                outputChannels: item.outputChannels,
+                outputBitDepth: item.outputBitDepth,
+                audioBuffer: part2Buffer,
+                checked: false
+            };
+
+            const origId = item.id;
+            removeQueueItem(origId);
+
+            queue.push(item1, item2);
+            renderQueueItem(item1);
+            renderQueueItem(item2);
+
+            await encodeWavAndUpdate(item1);
+            await encodeWavAndUpdate(item2);
+
+            closeEditor();
+            updateQueueUI();
+            updateBatchButtonsState();
+        });
+
+        // 3. Action: Crop
+        btnEditorCrop.addEventListener('click', async () => {
+            if (!editingItem || editorSelectStart === null || editorSelectEnd === null) return;
+
+            const item = editingItem;
+            const sampleRate = item.audioBuffer.sampleRate;
+            const channels = item.audioBuffer.numberOfChannels;
+            
+            const startSampleIdx = Math.floor(editorSelectStart * sampleRate);
+            const endSampleIdx = Math.ceil(editorSelectEnd * sampleRate);
+            const newSamplesLen = endSampleIdx - startSampleIdx;
+
+            if (newSamplesLen <= 0) return;
+
+            const ctx = getAudioContext();
+            const croppedBuffer = ctx.createBuffer(channels, newSamplesLen, sampleRate);
+            
+            for (let ch = 0; ch < channels; ch++) {
+                const srcData = item.audioBuffer.getChannelData(ch);
+                croppedBuffer.getChannelData(ch).set(srcData.subarray(startSampleIdx, endSampleIdx));
+            }
+
+            item.audioBuffer = croppedBuffer;
+            await encodeWavAndUpdate(item);
+            openEditor(item);
+            
+            if (activePlayerFileId === item.id) {
+                audioEngine.pause();
+                activePlayerFileId = null;
+                selectAndPlayFile(item);
+            }
+        });
+
+        // 4. Action: Cut
+        btnEditorCut.addEventListener('click', async () => {
+            if (!editingItem || editorSelectStart === null || editorSelectEnd === null) return;
+
+            const item = editingItem;
+            const sampleRate = item.audioBuffer.sampleRate;
+            const channels = item.audioBuffer.numberOfChannels;
+            const totalSamples = item.audioBuffer.length;
+            
+            const startSampleIdx = Math.floor(editorSelectStart * sampleRate);
+            const endSampleIdx = Math.ceil(editorSelectEnd * sampleRate);
+            
+            const deleteSamplesLen = endSampleIdx - startSampleIdx;
+            const newSamplesLen = totalSamples - deleteSamplesLen;
+
+            if (newSamplesLen <= 0) {
+                alert('刪除區間過大，音軌將沒有剩餘訊號！');
+                return;
+            }
+
+            const ctx = getAudioContext();
+            const newBuffer = ctx.createBuffer(channels, newSamplesLen, sampleRate);
+            
+            for (let ch = 0; ch < channels; ch++) {
+                const srcData = item.audioBuffer.getChannelData(ch);
+                const destChannelData = newBuffer.getChannelData(ch);
+                
+                destChannelData.set(srcData.subarray(0, startSampleIdx));
+                destChannelData.set(srcData.subarray(endSampleIdx), startSampleIdx);
+            }
+
+            item.audioBuffer = newBuffer;
+            await encodeWavAndUpdate(item);
+            openEditor(item);
+
+            if (activePlayerFileId === item.id) {
+                audioEngine.pause();
+                activePlayerFileId = null;
+                selectAndPlayFile(item);
+            }
+        });
+
+        // 5. Action: Gain Adjustment Core (FIXED: Duplicate buffer instead of reference-editing Float32Array)
+        async function applyVolumeGainToEditingBuffer() {
+            if (!editingItem) return;
+
+            const gainFactor = parseFloat(inputEditorVolume.value) / 100;
+            if (gainFactor === 1.0) {
+                alert('音量增幅設為 100% (不變)，無需套用。');
+                return;
+            }
+
+            btnEditorVolumeApply.setAttribute('disabled', 'true');
+            btnEditorVolumeApply.textContent = '套用中...';
+
+            try {
+                // Yield thread
+                await new Promise(r => setTimeout(r, 40));
+
+                const ctx = getAudioContext();
+                const buf = editingItem.audioBuffer;
+                const channels = buf.numberOfChannels;
+                const length = buf.length;
+                const sampleRate = buf.sampleRate;
+
+                // Create a completely new AudioBuffer instance to enforce browser updates
+                const newBuffer = ctx.createBuffer(channels, length, sampleRate);
+
+                for (let ch = 0; ch < channels; ch++) {
+                    const srcData = buf.getChannelData(ch);
+                    const destData = newBuffer.getChannelData(ch);
+                    
+                    // Multiply PCM values with gain factor and apply Hard Limiter Protection [-1.0, 1.0]
+                    for (let i = 0; i < length; i++) {
+                        destData[i] = Math.max(-1.0, Math.min(1.0, srcData[i] * gainFactor));
+                    }
+                }
+
+                // Replace editing item AudioBuffer reference
+                editingItem.audioBuffer = newBuffer;
+
+                // Re-encode WAV file with modified AudioBuffer
+                await encodeWavAndUpdate(editingItem);
+
+                // Update main audio engine source if current item is being previewed
+                if (activePlayerFileId === editingItem.id) {
+                    const savedTime = audioEngine.currentTime;
+                    const wasPlaying = !audioEngine.paused;
+                    
+                    audioEngine.pause();
+                    audioEngine.src = editingItem.wavUrl;
+                    audioEngine.load();
+                    audioEngine.onloadedmetadata = () => {
+                        audioEngine.currentTime = Math.min(savedTime, audioEngine.duration);
+                        if (wasPlaying) {
+                            audioEngine.play();
+                            updatePlayButtonIcon(true);
+                            startVisualizerLoop();
+                        } else {
+                            drawWaveform(waveCanvas, editingItem.audioBuffer, audioEngine.currentTime);
+                        }
+                    };
+                }
+
+                // Redraw editor canvas
+                drawWaveform(editorCanvas, editingItem.audioBuffer, 0, editorSelectStart, editorSelectEnd, editorSplitTime);
+                
+                // Reset slide state to 100% to reflect new baseline
+                inputEditorVolume.value = '100';
+                labelEditorVolume.textContent = '100%';
+                
+                alert('音量增幅套用成功！波形圖已同步更新。');
+
+            } catch (err) {
+                console.error(err);
+                alert(`音量放大失敗：${err.message}`);
+            } finally {
+                btnEditorVolumeApply.removeAttribute('disabled');
+                btnEditorVolumeApply.textContent = '套用增益';
+            }
+        }
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            if (currentAudioBuffer && activePlayerFileId) {
+                drawWaveform(waveCanvas, currentAudioBuffer, audioEngine.currentTime);
+            }
+            if (editingItem) {
+                drawWaveform(editorCanvas, editingItem.audioBuffer, 0, editorSelectStart, editorSelectEnd, editorSplitTime);
+            }
+        });
+    </script>
+</body>
+</html>
