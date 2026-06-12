@@ -165,7 +165,7 @@
         }
 
         .intro-text {
-            font-size: 0.85rem;
+            font-size: 14pt;
             color: var(--text-muted);
             margin-bottom: 24px;
             line-height: 1.6;
@@ -289,9 +289,9 @@
             border-radius: 12px;
             padding: 12px 14px;
             margin-bottom: 16px;
-            font-size: 0.85rem;
+            font-size: 14pt;
             color: #f3f4f6;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         /* 快切導航 */
@@ -395,9 +395,19 @@
 
     <!-- 主內容區 -->
     <div class="article-body">
-        <span class="date-tag">June 10, 2026</span>
         <h1>Cloudflare 邊緣運算與<br>分佈式存儲架構深度研究</h1>
         <p class="intro-text">解構 Cloudflare R2 物件儲存、D1 邊緣 SQL 資料庫、Workers KV、Durable Objects 等核心元件之計費限制與生產環境最佳實踐。</p>
+
+        <!-- 報告核心亮點 (Executive Summary) -->
+        <div class="info-card highlight" style="border-color: rgba(249, 115, 22, 0.4); margin-bottom: 24px; background: rgba(249, 115, 22, 0.04);">
+            <div class="card-title" style="font-size: 10.5pt; color: #ff9d5c;"><i class="ph-bold ph-lightbulb"></i>報告核心亮點 (Executive Summary)</div>
+            <div style="font-size: 10.5pt; color: var(--text-muted); line-height: 1.6; margin-top: 8px;">
+                <div style="margin-bottom: 6px;"><strong>• 零流出費釋放資料重力</strong>：R2 提供免 Egress 傳輸費，搭配 Sippy 實現無縫 S3 隨需遷移。</div>
+                <div style="margin-bottom: 6px;"><strong>• 強弱一致性混合設計</strong>：以 DO 單執行緒處理即時狀態，再以 Alarms 背景推送至 D1 分析。</div>
+                <div style="margin-bottom: 6px;"><strong>• 邊緣極致快取與池化</strong>：KV 提供全網 &lt; 10ms 讀取；Hyperdrive 建立連線池防 TCP 連線耗盡。</div>
+                <div style="margin-bottom: 6px;"><strong>• 非同步解耦與削峰填谷</strong>：利用 Queues 佇列與 Workflows 狀態機實現 100% 零基礎設施成本架構。</div>
+            </div>
+        </div>
 
         <!-- ==================== MODULE 1 ==================== -->
         <div class="module-section active" id="module-1">
@@ -440,7 +450,7 @@
                         <tr>
                             <th>項目</th>
                             <th>標準層</th>
-                            <th>不頻繁存取層</th>
+                            <th>低頻存取層</th>
                             <th>免費額度</th>
                         </tr>
                     </thead>
@@ -455,13 +465,13 @@
                             <td>Class A<br>(寫入/列出)</td>
                             <td>$4.50 / 百萬次</td>
                             <td>$9.00 / 百萬次</td>
-                            <td style="color:var(--accent); font-weight:bold;">百萬次/月</td>
+                            <td style="color:var(--accent); font-weight:bold;">100 萬次/月</td>
                         </tr>
                         <tr>
                             <td>Class B<br>(讀取)</td>
                             <td>$0.36 / 百萬次</td>
                             <td>$0.90 / 百萬次</td>
-                            <td style="color:var(--accent); font-weight:bold;">千萬次/月</td>
+                            <td style="color:var(--accent); font-weight:bold;">1000 萬次/月</td>
                         </tr>
                         <tr>
                             <td>資料檢索</td>
@@ -517,7 +527,7 @@
 
             <div class="info-card highlight">
                 <div class="card-title"><i class="ph-bold ph-database"></i>D1 邊緣 SQL SQLite 全托管庫</div>
-                <p class="card-desc">D1 基於 SQLite 構建，透過前端 Worker 代理 single-thread 實例以保證絕對事務一致性。其計費採用極具顛覆性的「按讀寫列計費」模型。</p>
+                <p class="card-desc">D1 基於 SQLite 構建，透過前端 Worker 代理單執行緒（Single-thread，即單一窗口排隊處理）實例以保證絕對交易一致性（Transaction Consistency，意即確保每筆變更順序執行不衝突）。其計費採用極具顛覆性的「按讀寫列計費」模型。</p>
                 <table class="mobile-table text-slate-300">
                     <thead>
                         <tr>
@@ -545,7 +555,7 @@
                     </tbody>
                 </table>
                 <div class="alert-box" style="margin-top:12px; margin-bottom:0;">
-                    <strong>全域讀取副本 (Read Replication)：</strong>D1 原生內置主從副本同步。為防止副本延遲，應使用 <span class="code-inline">Sessions API</span> 建立書籤（withSession(bookmark)），確保順序一致性與單調讀取。
+                    <strong>全域讀取副本 (Read Replication)：</strong>D1 原生內建主從副本同步。為防止副本延遲，應使用 <span class="code-inline">Sessions API</span> 建立書籤（withSession(bookmark)），確保順序一致性與單調讀取。
                 </div>
             </div>
 
@@ -580,7 +590,7 @@
                 </table>
                 <div style="display:flex; gap:10px; margin-top:12px;">
                     <div style="flex:1; background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); border-radius:8px; padding:10px; font-size:10pt;">
-                        <strong style="color:#10b981;">最佳實踐場景</strong><br>A/B測試旗標、語系翻譯字典、微服務靜態路由配置。
+                        <strong style="color:#10b981;">最佳實踐場景</strong><br>A/B 測試旗標、語系翻譯字典、微服務靜態路由配置。
                     </div>
                     <div style="flex:1; background:rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:8px; padding:10px; font-size:10pt;">
                         <strong style="color:#f87171;">絕對反模式</strong><br>金融餘額儲存、高頻即時庫存。否則易出現嚴重的帳單與一致性撕裂。
@@ -622,20 +632,20 @@
                     <li>SQLite 存儲：免費 5GB 總額，付費單物件上限 10GB</li>
                 </ul>
                 <div class="alert-box" style="margin-top:12px; margin-bottom:0;">
-                    <strong>⚠️ 隔離性陷阱：</strong> 透過 <span class="code-inline">sql.exec()</span> 取得的游標不保證跨非同步邊界 (await) 的快照隔離。務必使用 <span class="code-inline">.toArray()</span> 在單一同步區塊內徹底消耗結果集。
+                    <strong>⚠️ 隔離性陷阱：</strong> 透過 <span class="code-inline">sql.exec()</span> 取得的游標不保證跨非同步邊界（await）的快照隔離（Snapshot Isolation，即多個讀取請求間的狀態隔離防衝突，操作時需用 <span class="code-inline">.toArray()</span> 在單一同步區塊內將結果一次取回，以防 await 之後的資料狀態變更）。
                 </div>
             </div>
 
             <div class="info-card">
-                <div class="card-title"><i class="ph-bold ph-plugs"></i>混合存儲架構最佳實踐 (The Hybrid Pattern)</div>
+                <div class="card-title"><i class="ph-bold ph-plugs"></i>混合儲存架構最佳實踐 (The Hybrid Pattern)</div>
                 <p class="card-desc">不要將 Durable Objects 當作唯一的歷史交易資料墳場。正確的微服務拓撲應該是：</p>
                 <div class="space-y-3 mt-3">
                     <div style="padding-left:12px; border-left:2px solid var(--accent);">
                         <strong style="color:#fff; font-size:11pt;">1. 當下權威即時狀態</strong>
-                        <p style="font-size:10pt; color:var(--text-muted);">寫入強一致性的 DO SQLite (單執行緒處理無 Race)</p>
+                        <p style="font-size:10pt; color:var(--text-muted);">寫入強一致性的 DO SQLite（單執行緒處理，無 Race Condition 競態問題）</p>
                     </div>
                     <div style="padding-left:12px; border-left:2px solid var(--accent);">
-                        <strong style="color:#fff; font-size:11pt;">2. 異步排程推送</strong>
+                        <strong style="color:#fff; font-size:11pt;">2. 非同步排程推送</strong>
                         <p style="font-size:10pt; color:var(--text-muted);">利用 DO 內建的 Alarms 觸發定時器，分批提取歷史穩態資料</p>
                     </div>
                     <div style="padding-left:12px; border-left:2px solid var(--accent);">
@@ -661,7 +671,7 @@
 
             <div class="info-card highlight">
                 <div class="card-title"><i class="ph-bold ph-link-simple"></i>Hyperdrive 橋接傳統資料庫</div>
-                <p class="card-desc">為了解決無伺服器架構瞬間啟動成千上萬 Worker 導致後端地端/雲端 DB 「TCP 連線耗盡 (TCP Connection Exhaustion)」 的問題，Hyperdrive 建立並長期維護全局連線池與邊緣快取機制。</p>
+                <p class="card-desc">為了解決無伺服器架構瞬間啟動成千上萬 Worker 導致後端地端或雲端資料庫「TCP 連線耗盡（TCP Connection Exhaustion，即連線數過多導致資料庫無法回應）」的問題，Hyperdrive 建立並長期維護全域連線池與邊緣快取機制。</p>
                 <ul class="bullet-list" style="margin-top:10px;">
                     <li><strong>免費方案配額：</strong> 每日 100,000 次操作。</li>
                     <li><strong>並行連線數限制：</strong> 免費層 20 / 付費層 100。</li>
@@ -703,7 +713,7 @@
             <div class="info-card highlight">
                 <div class="card-title"><i class="ph-bold ph-cpu"></i>Workers CPU 限制與 Wall-clock time</div>
                 <p class="card-desc">免費方案單次請求享 10ms 限制；付費版 CPU 上限可放寬至 5 分鐘。</p>
-                <p style="font-size:10pt; color:var(--text-muted); margin-top:8px;"><strong>重要觀念：</strong>CPU 時間僅計算 V8 引擎實際運算週期；所有的 await fetch()、D1 資料庫回源或 R2 讀寫產生的等待期，均不計入 CPU 消耗。超過 CPU 限制將擲回 1102 Worker exceeded resource limits 錯誤。</p>
+                <p style="font-size:10pt; color:var(--text-muted); margin-top:8px;"><strong>重要觀念：</strong>實際運算時間（CPU Time，指 V8 引擎實際處理運算的時間）與掛鐘總時間（Wall-clock Time，即包含在櫃檯等待回應的總耗時）不同；所有的 await fetch()、D1 資料庫回源或 R2 讀寫產生的等待期，均不計入 CPU 消耗。超過 CPU 限制將擲回 1102 Worker exceeded resource limits (Worker 超過資源限制) 錯誤。</p>
             </div>
 
             <div class="info-card">
@@ -728,12 +738,12 @@
                         <p style="color:var(--text-muted);">靜態資源丟 Pages 託管；極少變更路由、翻譯塞 KV；複雜關聯資料歸 D1 持久化。</p>
                     </div>
                     <div>
-                        <strong style="color:#fff;">③ 強一致性混合存儲 (The Hybrid DO-D1 Pattern)</strong>
+                        <strong style="color:#fff;">③ 強一致性混合儲存 (The Hybrid DO-D1 Pattern)</strong>
                         <p style="color:var(--text-muted);">並發更新使用單執行緒 Durable Objects 作為「即時真相來源」，再用 DO Alarms 定期背景同步穩態資料至 D1 作為「歷史分析來源」。</p>
                     </div>
                     <div>
-                        <strong style="color:#fff;">④ 免費額度網異步解耦 (Decouple with Queues)</strong>
-                        <p style="color:var(--text-muted);">利用 Queues 與 Workflows 進行異步非同步解耦與突發流量削峰，新創團隊甚至能實現 100% 零基礎設施成本的全球架構。</p>
+                        <strong style="color:#fff;">④ 免費額度網非同步解耦 (Decouple with Queues)</strong>
+                        <p style="color:var(--text-muted);">利用 Queues 與 Workflows 進行非同步解耦與突發流量削峰，新創團隊甚至能實現 100% 零基礎設施成本的全球架構。</p>
                     </div>
                 </div>
             </div>

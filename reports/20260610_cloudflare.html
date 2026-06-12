@@ -273,6 +273,31 @@
               </div>
             </div>
           </div>
+
+          <!-- 報告核心亮點 (Executive Summary) -->
+          <div class="bg-slate-50 border border-slate-200/60 rounded-2xl p-4.5 space-y-2.5">
+            <div class="text-[13px] font-extrabold text-cf-700 flex items-center gap-1.5">
+              <span>💡 報告核心亮點 (Executive Summary)</span>
+            </div>
+            <div class="space-y-1.5 text-[10.5pt] text-slate-600 leading-relaxed">
+              <div class="flex items-start gap-1.5">
+                <span class="text-cf-500 mt-0.5">•</span>
+                <div><strong>零流出費釋放資料重力</strong>：R2 提供免 Egress 傳輸費，搭配 Sippy 實現無縫 S3 隨需遷移。</div>
+              </div>
+              <div class="flex items-start gap-1.5">
+                <span class="text-cf-500 mt-0.5">•</span>
+                <div><strong>強弱一致性混合設計</strong>：以 DO 單執行緒處理即時狀態，再以 Alarms 背景推送至 D1 分析。</div>
+              </div>
+              <div class="flex items-start gap-1.5">
+                <span class="text-cf-500 mt-0.5">•</span>
+                <div><strong>邊緣極致快取與池化</strong>：KV 提供全網 &lt; 10ms 讀取；Hyperdrive 建立連線池防 TCP 連線耗盡。</div>
+              </div>
+              <div class="flex items-start gap-1.5">
+                <span class="text-cf-500 mt-0.5">•</span>
+                <div><strong>非同步解耦與削峰填谷</strong>：利用 Queues 佇列與 Workflows 狀態機實現 100% 零基礎設施成本架構。</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Right Side Bento Block: Start Sharded Philosophy -->
@@ -584,7 +609,7 @@
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
         <div class="flex items-center gap-2">
           <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
-          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 03 / Durable Objects (DO)：強一致性的單執行緒邊緣協調中樞</span>
+          <h2 class="text-xs font-black tracking-widest text-slate-900">CHAPTER 03 / Durable Objects (DO)：強一致性的單執行緒邊緣協調中樞</h2>
         </div>
         <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 04 / 06</span>
       </div>
@@ -646,12 +671,12 @@
               </div>
 
               <div class="p-3 bg-white border border-slate-200/80 rounded-xl">
-                <p class="font-bold text-slate-800 mb-1 flex items-center gap-1">
+                <div class="font-bold text-slate-800 mb-1 flex items-center gap-1 text-[11px]">
                   <span class="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> 隔離性陷阱與 PITR
-                </p>
-                <p class="text-[11px] text-slate-500 leading-relaxed editable-zone">
-                  透過 <code class="bg-slate-100 px-0.5 rounded text-[10px]">sql.exec()</code> 取得的游標不保證跨非同步邊界 (await) 的快照隔離。務必使用 <code class="bg-slate-100 px-0.5 rounded text-[10px]">.toArray()</code> 在單一同步區塊內徹底消耗結果集。支持 API 回滾歷史狀態至過去 30 天。
-                </p>
+                </div>
+                <div class="text-[10.5pt] text-slate-500 leading-relaxed editable-zone font-normal">
+                  透過 <code class="bg-slate-100 px-0.5 rounded text-[10px]">sql.exec()</code> 取得的游標不保證跨非同步邊界（await）的快照隔離（Snapshot Isolation，即多個讀取請求間的狀態隔離防衝突，操作時需用 <code class="bg-slate-100 px-0.5 rounded text-[10px]">.toArray()</code> 在單一同步區塊內將結果一次取回，以防 await 之後的資料狀態變更）。支援 API 回滾歷史狀態至過去 30 天。
+                </div>
               </div>
             </div>
           </div>
@@ -670,33 +695,33 @@
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
             </div>
             
-            <h4 class="text-base font-bold mb-3 tracking-tight editable-zone">混合存儲架構最佳實踐<br>(The Hybrid Storage Pattern)</h4>
+            <h4 class="text-base font-bold mb-3 tracking-tight editable-zone">混合儲存架構最佳實踐<br>(The Hybrid Storage Pattern)</h4>
             
-            <p class="text-[11px] text-slate-300 leading-relaxed mb-4 editable-zone">
+            <div class="text-[10.5pt] text-slate-300 leading-relaxed mb-4 editable-zone font-normal">
               不要將 Durable Objects 當作唯一的歷史交易資料墳場。正確的微服務拓撲應該是：
-            </p>
+            </div>
             
             <!-- Flow steps -->
             <div class="space-y-3.5 text-xs">
               <div class="flex items-start gap-2.5">
                 <span class="bg-white/10 text-cf-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">1</span>
                 <div>
-                  <p class="font-bold text-slate-200">當下權威即時狀態</p>
-                  <p class="text-[10px] text-slate-400">寫入強一致性的 DO SQLite (單執行緒處理無 Race)</p>
+                  <div class="font-bold text-slate-200">當下權威即時狀態</div>
+                  <div class="text-[10.5pt] text-slate-400 font-normal leading-tight">寫入強一致性的 DO SQLite（單執行緒處理，無 Race Condition 競態問題）</div>
                 </div>
               </div>
               <div class="flex items-start gap-2.5">
                 <span class="bg-white/10 text-cf-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">2</span>
                 <div>
-                  <p class="font-bold text-slate-200">異步排程推送</p>
-                  <p class="text-[10px] text-slate-400">利用 DO 內建的 Alarms 觸發定時器，分批提取歷史穩態資料</p>
+                  <div class="font-bold text-slate-200">非同步排程推送</div>
+                  <div class="text-[10.5pt] text-slate-400 font-normal leading-tight">利用 DO 內建的 Alarms 觸發定時器，分批提取歷史穩態資料</div>
                 </div>
               </div>
               <div class="flex items-start gap-2.5">
                 <span class="bg-white/10 text-cf-500 rounded-full w-4 h-4 flex items-center justify-center font-bold text-[9px] mt-0.5">3</span>
                 <div>
-                  <p class="font-bold text-slate-200">D1 資料庫持久化歸檔</p>
-                  <p class="text-[10px] text-slate-400">非同步推送到外圍 D1，用於歷史多維度報表與關聯分析</p>
+                  <div class="font-bold text-slate-200">D1 資料庫持久化歸檔</div>
+                  <div class="text-[10.5pt] text-slate-400 font-normal leading-tight">非同步推送到外圍 D1，用於歷史多維度報表與關聯分析</div>
                 </div>
               </div>
             </div>
@@ -704,7 +729,7 @@
 
           <div class="pt-4 border-t border-white/10 text-[10px] text-slate-400 flex justify-between">
             <span>DO 吞吐硬上限：約 1,000 rps</span>
-            <span>高並發須實施：分片 (DO-per-room)</span>
+            <span>高並發須實施：分片（DO-per-room）</span>
           </div>
         </div>
       </div>
@@ -722,7 +747,7 @@
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
         <div class="flex items-center gap-2">
           <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
-          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 04 / Hyperdrive 與 AI 檢索生態系：地端連接與次世代知識庫</span>
+          <h2 class="text-xs font-black tracking-widest text-slate-900">CHAPTER 04 / Hyperdrive 與 AI 檢索生態系：地端連接與次世代知識庫</h2>
         </div>
         <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 05 / 06</span>
       </div>
@@ -740,9 +765,9 @@
               <span class="text-[10px] text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded-full">MySQL / PG</span>
             </div>
             
-            <p class="text-[11px] text-slate-600 leading-relaxed mb-4 editable-zone">
-              為了解決無伺服器架構瞬間啟動成千上萬 Worker 導致後端地端/雲端 DB <strong>「TCP 連線耗盡 (TCP Connection Exhaustion)」</strong> 的問題，Hyperdrive 建立並長期維護全局連線池與邊緣快取機制。
-            </p>
+            <div class="text-[10.5pt] text-slate-600 leading-relaxed mb-4 editable-zone font-normal">
+              為了解決無伺服器架構瞬間啟動成千上萬 Worker 導致後端地端或雲端資料庫<strong>「TCP 連線耗盡（TCP Connection Exhaustion，即連線數過多導致資料庫無法回應）」</strong>的問題，Hyperdrive 建立並長期維護全域連線池與邊緣快取機制。
+            </div>
 
             <div class="space-y-3 text-xs">
               <div class="p-3 bg-white border border-slate-200/60 rounded-xl">
@@ -750,9 +775,9 @@
                   <span>免費方案配額：</span>
                   <span class="text-cf-600">每日 100,000 次操作</span>
                 </div>
-                <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+                <div class="text-[10.5pt] text-slate-500 leading-relaxed editable-zone font-normal">
                   不論讀取、寫入、DDL 均算為一次操作。每日額度耗盡，系統將拒絕後續連線。升級付費版則完全無限制。
-                </p>
+                </div>
               </div>
 
               <div class="p-3 bg-white border border-slate-200/60 rounded-xl">
@@ -760,9 +785,9 @@
                   <span>並行連線數限制：</span>
                   <span class="text-slate-800">免費層 20 / 付費層 100</span>
                 </div>
-                <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+                <div class="text-[10.5pt] text-slate-500 leading-relaxed editable-zone font-normal">
                   支援端到端 TLS 憑證加密（如 VERIFY_CA / VERIFY_IDENTITY），支援 mTLS 客戶端憑證。快取配置 max_age 預設 60s。
-                </p>
+                </div>
               </div>
             </div>
           </div>
@@ -781,17 +806,17 @@
                 <span class="w-1.5 h-3 bg-slate-700 rounded-full"></span>
                 Vectorize 與 AI Search 生態系統
               </h3>
-              <span class="text-[10px] text-cf-600 bg-cf-50 px-2 py-0.5 rounded-full border border-cf-100">RAG AUTOMATION</span>
+              <span class="text-[10px] text-cf-600 bg-cf-50 px-2 py-0.5 rounded-full border border-cf-100">RAG 自動化 (RAG Automation)</span>
             </div>
 
             <div class="grid grid-cols-2 gap-4 text-xs">
               <!-- Vectorize dimensions billing -->
               <div class="bg-white border border-slate-200/60 p-3.5 rounded-xl flex flex-col justify-between">
                 <div>
-                  <p class="font-bold text-slate-800 mb-1">Vectorize 向量維度計費</p>
-                  <p class="text-[10px] text-slate-500 leading-relaxed mb-3 editable-zone">
+                  <div class="font-bold text-slate-800 mb-1 text-[11px]">Vectorize 向量維度計費</div>
+                  <div class="text-[10.5pt] text-slate-500 leading-relaxed mb-3 editable-zone font-normal">
                     放棄單純請求數計費，改依「向量維度數量」計費：
-                  </p>
+                  </div>
                 </div>
                 <div class="bg-slate-50 p-2.5 rounded-lg space-y-1.5 text-[10px] text-slate-600">
                   <div class="flex justify-between">
@@ -812,10 +837,10 @@
               <!-- AI Search and Web Crawler -->
               <div class="bg-white border border-slate-200/60 p-3.5 rounded-xl flex flex-col justify-between">
                 <div>
-                  <p class="font-bold text-slate-800 mb-1">AI Search & R2 數據源整合</p>
-                  <p class="text-[10px] text-slate-500 leading-relaxed mb-3 editable-zone">
+                  <div class="font-bold text-slate-800 mb-1 text-[11px]">AI Search & R2 數據源整合</div>
+                  <div class="text-[10.5pt] text-slate-500 leading-relaxed mb-3 editable-zone font-normal">
                     自動排程讀取 R2 Bucket 作為攝取源，內建持久化存儲與 Web 爬蟲。
-                  </p>
+                  </div>
                 </div>
                 <div class="bg-slate-50 p-2.5 rounded-lg space-y-1.5 text-[10px] text-slate-600">
                   <div class="flex justify-between">
@@ -835,7 +860,7 @@
             </div>
 
             <!-- Path filtering and metadata extract -->
-            <div class="mt-4 p-3 bg-slate-900 text-slate-200 rounded-xl text-[11px] leading-relaxed editable-zone">
+            <div class="mt-4 p-3 bg-slate-900 text-slate-200 rounded-xl text-[10.5pt] leading-relaxed editable-zone font-normal">
               <span class="text-cf-500 font-bold">R2 資料攝取高階技巧：</span>
               可透過 <code class="bg-white/10 px-1 rounded text-[10px]">include</code> 與 <code class="bg-white/10 px-1 rounded text-[10px]">exclude</code> 路徑過濾規則（如排除 /docs/drafts/）精準控制索引範圍，並能動態提取 R2 自訂標頭（如 <code class="bg-white/10 px-1 rounded text-[10px]">x-amz-meta-*</code>）注入中繼資料中。
             </div>
@@ -861,7 +886,7 @@
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
         <div class="flex items-center gap-2">
           <div class="w-2.5 h-2.5 rounded-full bg-cf-500"></div>
-          <span class="text-xs font-black tracking-widest text-slate-900">CHAPTER 05 / 基礎運算、非同步任務與全域最佳化架構合成指南</span>
+          <h2 class="text-xs font-black tracking-widest text-slate-900">CHAPTER 05 / 基礎運算、非同步任務與全域最佳化架構合成指南</h2>
         </div>
         <span class="text-xs font-semibold text-slate-400 bg-slate-50 px-3 py-1 rounded-full">PAGE 06 / 06</span>
       </div>
@@ -877,13 +902,13 @@
                 <span>1. Workers CPU 限制與 Wall-clock time</span>
                 <span class="text-red-500 font-black">ALERT 1102</span>
               </h4>
-              <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
+              <div class="text-[10.5pt] text-slate-500 leading-relaxed editable-zone font-normal">
                 免費方案單次請求享 10ms 限制；付費版 CPU 上限可放寬至 5 分鐘。
-                <strong>重要觀念：</strong>CPU 時間僅計算 V8 引擎實際運算週期；所有的 <code class="bg-slate-200/50 px-1 rounded text-[9px]">await fetch()</code>、D1 資料庫回源或 R2 讀寫產生的等待期，均不計入 CPU 消耗。
-              </p>
+                <strong>重要觀念：</strong>實際運算時間（CPU Time，指 V8 引擎實際處理運算的時間）與掛鐘總時間（Wall-clock Time，即包含在櫃檯等待回應的總耗時）不同；所有的 <code class="bg-slate-200/50 px-1 rounded text-[9px]">await fetch()</code>、D1 資料庫回源或 R2 讀寫產生的等待期，均不計入 CPU 消耗。
+              </div>
             </div>
             <div class="mt-2 text-[9px] bg-red-50 border border-red-100 text-red-700 p-1.5 rounded">
-              * 超過 CPU 限制將擲回 <strong>1102 Worker exceeded resource limits</strong> 錯誤。
+              * 超過 CPU 限制將擲回 <strong>1102 Worker exceeded resource limits (Worker 超過資源限制)</strong> 錯誤。
             </div>
           </div>
 
@@ -894,10 +919,10 @@
                 <span>2. Queues 佇列與 Workflows 狀態機</span>
                 <span class="text-cf-600">FREE tier</span>
               </h4>
-              <p class="text-[10px] text-slate-500 leading-relaxed editable-zone">
-                Queues 已正式下放至免費版（最大1萬個佇列，每日1萬次操作）。Payload 以 64 KB 作為計費區塊單位。
+              <div class="text-[10.5pt] text-slate-500 leading-relaxed editable-zone font-normal">
+                Queues 已正式下放至免費版（最大 1 萬個佇列，每日 1 萬次操作）。Payload 以 64 KB 作為計費區塊單位。
                 Workflows 全面整合於現有 Workers 計費架構（僅需付 $0.20/GB-月 狀態儲存費）。
-              </p>
+              </div>
             </div>
           </div>
 
@@ -908,9 +933,9 @@
                 <h4 class="text-xs font-extrabold text-cf-500 uppercase tracking-wider">3. Workers AI 神經元經濟學</h4>
                 <span class="text-[9px] text-slate-400">DLP / Guardrails</span>
               </div>
-              <p class="text-[10px] text-slate-300 leading-relaxed editable-zone">
-                每日提供所有用戶 10,000 個免費神經元（Neurons）。耗盡後付費層按 $0.011/K神經元 計費，免費層直接阻斷並回傳 3036 異常。AI Gateway 整合 DLP 防止機密外洩。
-              </p>
+              <div class="text-[10.5pt] text-slate-300 leading-relaxed editable-zone font-normal">
+                每日提供所有用戶 10,000 個免費神經元（Neurons）。耗盡後付費層按 $0.011 / K 神經元計費，免費層直接阻斷並回傳 3036 異常。AI Gateway 整合 DLP 防止機密外洩。
+              </div>
             </div>
           </div>
         </div>
@@ -925,31 +950,31 @@
             
             <div class="space-y-3 text-xs mt-2">
               <div class="border-l-2 border-cf-500 pl-3">
-                <p class="font-bold text-slate-200 text-xs">① 責任與實體完全分離 (Object-per-entity)</p>
-                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
-                  嚴禁將任何大型 Blob、圖片或上傳文檔直接寫入 D1 或 KV。這些檔案一律歸入 R2 (免除 Egress 費)；而 D1 與 KV 僅記錄 URL 與 Meta 中繼資料。
-                </p>
+                <div class="font-bold text-slate-200 text-xs">① 責任與實體完全分離 (Object-per-entity)</div>
+                <div class="text-[10.5pt] text-slate-400 mt-0.5 leading-relaxed editable-zone font-normal">
+                  嚴禁將任何大型二進位大型物件 (Blob)、圖片或上傳文件直接寫入 D1 或 KV。這些檔案一律歸入 R2 (免除 Egress 費)；而 D1 與 KV 僅記錄 URL 與 Meta 中繼資料。
+                </div>
               </div>
 
               <div class="border-l-2 border-slate-500 pl-3">
-                <p class="font-bold text-slate-200 text-xs">② 動靜分離與快取分層 (Dynamic-Static Split)</p>
-                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
+                <div class="font-bold text-slate-200 text-xs">② 動靜分離與快取分層 (Dynamic-Static Split)</div>
+                <div class="text-[10.5pt] text-slate-400 mt-0.5 leading-relaxed editable-zone font-normal">
                   前端靜態資源丟 Pages 託管 (請求完全免費)；極少變更的路由、多語系翻譯塞 KV (享亞毫秒極致快取)；複雜關聯資料歸 D1 持久化，並開啟全域唯讀副本。
-                </p>
+                </div>
               </div>
 
               <div class="border-l-2 border-cf-600 pl-3">
-                <p class="font-bold text-slate-200 text-xs">③ 強一致性混合存儲 (The Hybrid DO-D1 Pattern)</p>
-                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
+                <div class="font-bold text-slate-200 text-xs">③ 強一致性混合儲存 (The Hybrid DO-D1 Pattern)</div>
+                <div class="text-[10.5pt] text-slate-400 mt-0.5 leading-relaxed editable-zone font-normal">
                   面對即時遊戲、協作編輯、電商秒殺等並發更新，應使用單執行緒 Durable Objects 作為「即時真相來源」，再用 DO Alarms 定期背景同步穩態資料至 D1 作為「歷史分析來源」。
-                </p>
+                </div>
               </div>
 
               <div class="border-l-2 border-slate-600 pl-3">
-                <p class="font-bold text-slate-200 text-xs">④ 免費額度網異步解耦 (Decouple with Queues)</p>
-                <p class="text-[10px] text-slate-400 mt-0.5 leading-relaxed editable-zone">
-                  巧妙劃分微服務。利用 Queues 與 Workflows 進行異步非同步解耦與突發流量削峰，新創團隊甚至能實現 100% 零基礎設施成本的全球架構。
-                </p>
+                <div class="font-bold text-slate-200 text-xs">④ 免費額度網非同步解耦 (Decouple with Queues)</div>
+                <div class="text-[10.5pt] text-slate-400 mt-0.5 leading-relaxed editable-zone font-normal">
+                  巧妙劃分微服務。利用 Queues 與 Workflows 進行非同步解耦與突發流量削峰，新創團隊甚至能實現 100% 零基礎設施成本的全球架構。
+                </div>
               </div>
             </div>
           </div>
