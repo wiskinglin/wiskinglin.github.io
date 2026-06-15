@@ -17,6 +17,7 @@
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -646,6 +647,46 @@
             filenameDisplay.textContent = '已載入檔案';
         }
 
+        // --- Stream Compression ---
+
+        function compressDocStreams(doc) {
+            const { PDFName } = PDFLib;
+            const FilterKey = PDFName.of('Filter');
+            const FlateDecode = PDFName.of('FlateDecode');
+
+            let compressedCount = 0;
+            let savedBytes = 0;
+
+            const objects = doc.context.enumerateIndirectObjects();
+
+            for (const [ref, obj] of objects) {
+                if (!obj || typeof obj !== 'object') continue;
+                // 只處理有 dict 和 contents (Uint8Array) 的串流物件
+                if (!obj.dict || !(obj.contents instanceof Uint8Array)) continue;
+
+                // 已有 Filter 的串流跳過（已壓縮）
+                const existingFilter = obj.dict.get(FilterKey);
+                if (existingFilter) continue;
+
+                // 太小的串流不值得壓縮
+                if (obj.contents.length < 128) continue;
+
+                try {
+                    const compressed = pako.deflate(obj.contents);
+                    if (compressed.length < obj.contents.length) {
+                        savedBytes += (obj.contents.length - compressed.length);
+                        obj.contents = compressed;
+                        obj.dict.set(FilterKey, FlateDecode);
+                        compressedCount++;
+                    }
+                } catch (e) {
+                    // 壓縮失敗則跳過此串流
+                }
+            }
+
+            console.log(`[PDF Compress] ${compressedCount} streams compressed, saved ~${(savedBytes / 1024 / 1024).toFixed(2)} MB`);
+        }
+
         // --- Export Logic ---
 
         async function exportPdf() {
@@ -658,20 +699,30 @@
             try {
                 const { PDFDocument, degrees } = PDFLib;
                 const newDoc = await PDFDocument.create();
-                const loadedSrcDocs = {}; // 快取已載入的原始 PDFDocument
 
-                for (let i = 0; i < pagesState.length; i++) {
-                    const pageState = pagesState[i];
+                // ── Step 1: 按來源檔案分組 ──
+                // 收集每個來源檔案需要的 originalIndex 清單
+                const fileGroups = {};  // fileId → [originalIndex, ...]
+                for (const ps of pagesState) {
+                    if (!fileGroups[ps.fileId]) fileGroups[ps.fileId] = new Set();
+                    fileGroups[ps.fileId].add(ps.originalIndex);
+                }
 
-                    // 若尚未載入該原始檔案，則進行載入
-                    if (!loadedSrcDocs[pageState.fileId]) {
-                        loadedSrcDocs[pageState.fileId] = await PDFDocument.load(sourcePdfs[pageState.fileId]);
+                // ── Step 2: 每個來源檔案只呼叫一次 copyPages ──
+                // 這樣 PDFObjectCopier 的 dedup 快取能正常共用字體/圖片/ICC 等資源
+                const copiedPagesMap = {};  // `${fileId}:${originalIndex}` → PDFPage
+                for (const [fileId, indexSet] of Object.entries(fileGroups)) {
+                    const srcDoc = await PDFDocument.load(sourcePdfs[fileId]);
+                    const indices = Array.from(indexSet).sort((a, b) => a - b);
+                    const copiedPages = await newDoc.copyPages(srcDoc, indices);
+                    for (let i = 0; i < indices.length; i++) {
+                        copiedPagesMap[`${fileId}:${indices[i]}`] = copiedPages[i];
                     }
-                    
-                    const srcDoc = loadedSrcDocs[pageState.fileId];
-                    
-                    // 從對應的原始檔案中拷貝指定頁面
-                    const [copiedPage] = await newDoc.copyPages(srcDoc, [pageState.originalIndex]);
+                }
+
+                // ── Step 3: 按使用者排列順序加入頁面 ──
+                for (const pageState of pagesState) {
+                    const copiedPage = copiedPagesMap[`${pageState.fileId}:${pageState.originalIndex}`];
 
                     // 1. 處理旋轉
                     const currentRotationObj = copiedPage.getRotation();
@@ -692,7 +743,16 @@
                     newDoc.addPage(copiedPage);
                 }
 
-                const pdfBytes = await newDoc.save();
+                // 壓縮所有未壓縮的串流
+                compressDocStreams(newDoc);
+
+                const pdfBytes = await newDoc.save({ useObjectStreams: true });
+
+                // 計算原始檔案總大小並顯示壓縮結果
+                const inputSize = Object.values(sourcePdfs).reduce((sum, buf) => sum + buf.byteLength, 0);
+                const outputSize = pdfBytes.length;
+                console.log(`[PDF Export] Input: ${(inputSize / 1024 / 1024).toFixed(2)} MB → Output: ${(outputSize / 1024 / 1024).toFixed(2)} MB`);
+
                 downloadBlob(pdfBytes, `merged_document.pdf`);
 
             } catch (err) {
