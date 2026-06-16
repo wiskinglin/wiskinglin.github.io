@@ -102,7 +102,7 @@ class FlipCardDigit {
     constructor(id) {
         this.el = document.getElementById(id);
         if (!this.el) {
-            console.error(`Flip digit container #${id} not found.`);
+            console.warn(`Flip digit container #${id} not found.`);
             return;
         }
         this.cardTop = this.el.querySelector('.card-half.card-top span');
@@ -122,7 +122,19 @@ class FlipCardDigit {
         this.cardFlipBottom.textContent = '0';
     }
 
+    // 無動畫直接設定初始數字
+    initVal(val) {
+        const newVal = parseInt(val) || 0;
+        this.currentVal = newVal;
+        if (!this.el) return;
+        this.cardTop.textContent = newVal;
+        this.cardBottom.textContent = newVal;
+        this.cardFlipTop.textContent = newVal;
+        this.cardFlipBottom.textContent = newVal;
+    }
+
     setVal(newVal, force = false) {
+        if (!this.el) return;
         newVal = parseInt(newVal);
         if (isNaN(newVal)) newVal = 0;
 
@@ -155,7 +167,7 @@ class FlipCardDigit {
 
         this.cardFlip.addEventListener('animationend', endTransition);
 
-        // Backup timeout in case tab is in background and transitionend doesn't fire
+        // Backup timeout in case tab is in background and animationend doesn't fire
         if (this.timeoutId) clearTimeout(this.timeoutId);
         this.timeoutId = setTimeout(() => {
             this.cardFlip.removeEventListener('animationend', endTransition);
@@ -330,6 +342,24 @@ class FlipClockApp {
         // Bind DOM Events
         this.bindDOMEvents();
 
+        // 取得目前時間並強制初始化卡片
+        const now = new Date();
+        let initH = now.getHours();
+        if (!this.timeFormat24) {
+            initH = initH % 12;
+            if (initH === 0) initH = 12;
+        }
+        const timeStr = initH.toString().padStart(2, '0') +
+            now.getMinutes().toString().padStart(2, '0') +
+            now.getSeconds().toString().padStart(2, '0');
+
+        this.digits.hTens.initVal(timeStr[0]);
+        this.digits.hOnes.initVal(timeStr[1]);
+        this.digits.mTens.initVal(timeStr[2]);
+        this.digits.mOnes.initVal(timeStr[3]);
+        this.digits.sTens.initVal(timeStr[4]);
+        this.digits.sOnes.initVal(timeStr[5]);
+
         // Start Engine
         this.startEngine();
     }
@@ -484,7 +514,7 @@ class FlipClockApp {
         };
 
         modalCancel.addEventListener('click', closeModal);
-        document.getElementById('timer-modal-backdrop').addEventListener('click', closeModal);
+        document.getElementById('timer-modal-backdrop') && document.getElementById('timer-modal-backdrop').addEventListener('click', closeModal);
 
         modalConfirm.addEventListener('click', () => {
             const h = Math.max(0, parseInt(document.getElementById('input-h').value) || 0);
@@ -555,7 +585,7 @@ class FlipClockApp {
                 lapRecords.classList.add('hidden');
                 secColon.classList.remove('hidden');
                 secondsGroup.classList.remove('hidden');
-                msGroup.classList.add('hidden');
+                if (msGroup) msGroup.classList.add('hidden');
                 break;
 
             case 'pomodoro':
@@ -568,7 +598,7 @@ class FlipClockApp {
                 lapRecords.classList.add('hidden');
                 secColon.classList.remove('hidden');
                 secondsGroup.classList.remove('hidden');
-                msGroup.classList.add('hidden');
+                if (msGroup) msGroup.classList.add('hidden');
 
                 actionSecBtn.classList.add('hidden'); // No secondary button for pomodoro
                 this.updatePlayPauseButtonUI(this.pomoRunning);
@@ -584,7 +614,7 @@ class FlipClockApp {
                 lapRecords.classList.add('hidden');
                 secColon.classList.remove('hidden');
                 secondsGroup.classList.remove('hidden');
-                msGroup.classList.add('hidden');
+                if (msGroup) msGroup.classList.add('hidden');
 
                 actionSecBtn.classList.remove('hidden');
                 document.getElementById('action-sec-text').textContent = '+1分鐘';
@@ -601,7 +631,7 @@ class FlipClockApp {
                 lapRecords.classList.remove('hidden');
                 secColon.classList.remove('hidden');
                 secondsGroup.classList.remove('hidden');
-                msGroup.classList.remove('hidden');
+                if (msGroup) msGroup.classList.remove('hidden');
 
                 actionSecBtn.classList.remove('hidden');
                 document.getElementById('action-sec-text').textContent = '分圈 (Lap)';
@@ -905,7 +935,7 @@ class FlipClockApp {
             this.digits.sOnes.setVal(timeStr[5], force);
         }
 
-        if (this.currentMode === 'stopwatch') {
+        if (this.currentMode === 'stopwatch' && this.digits.msTens && this.digits.msOnes) {
             this.digits.msTens.setVal(msStr[0], force);
             this.digits.msOnes.setVal(msStr[1], force);
         }
