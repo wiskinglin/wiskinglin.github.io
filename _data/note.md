@@ -1,6 +1,14 @@
 # Personal Notes
 
 ## 2026-W25 (2026/06/15 - 2026/06/21)
+### 2026-06-16 (Tue) 10:25
+📖 **[Loop Engineering 是什麼？一次解密 6 大組件，搞懂工程師為什麼不再寫提示詞](https://www.bnext.com.tw/article/91246/loop-engineering-from-prompting-to-designing-ai-coding-loops)**
+- **摘要**: 本文詳細解析了 2026 年前沿 AI 寫程式工具圈（如 Claude Code 與 OpenAI Codex）盛行的全新概念「迴圈工程（Loop Engineering）」，其核心在於將人類手動下提示詞的角色，替換為一套能自動化執行並自我修正的系統迴圈。
+  - **核心觀點與概念轉變**：開發者 Peter Steinberger 與 Boris Cherny 指出，工程師不應直接向 Agent 下提示詞，而是設計「能引導 Agent 運行的自動化迴圈」。迴圈工程是從「單次提示（給指令）」升級為「系統設計（給工作）」。迴圈依循「探索 → 規劃 → 執行 → 驗證 → 迭代」五大階段，核心是設計回饋循環以產出「可靠、已驗證」的代碼。
+  - **迴圈工程的 6 大核心組件**：包含 (1) **自動化（Automations）**：利用 `/loop` 或 `/goal` 持續執行至條件成真；(2) **工作樹（Worktree）**：透過 git worktree 隔離目錄，防止多個 Agent 衝突；(3) **技能（Skills）**：利用 `SKILL.md` 累積專案專屬知識；(4) **連接器（Connectors）**：基於 MCP 協定連接外部工具（如資料庫、Slack、Linear）；(5) **子代理（Sub-agents）**：以評估者/優化者模式進行獨立檢查，避免自我說服；(6) **記憶（Memory）**：跨對話儲存專案狀態與進度。
+  - **建置門檻與成本考量**：迴圈工程僅在「重複性高」、「能自動化驗證（測試/編譯）」、「Token 預算充裕」及「具備資深工具環境」四個條件同時成立時才劃算。一次執行通常會消耗 5 萬至 20 萬 token，因此如 DeepSeek、Kimi 等低成本中國模型的興起，將顯著提高迴圈工程在經濟上的可行性。
+  - **隱含風險與人類角色**：使用迴圈工程需警惕三大陷阱：無聲失敗的「Ralph Wiggum 迴圈」、因代碼快速交付而產生的「理解債（Comprehension Debt）」，以及盲目信任輸出的「認知投降」。工程師的工作並未消失，而是被推往更高維度的系統設計與成果審查。
+
 ### 2026-06-16 (Tue) 09:22
 📖 **[Anthropic Fable 5被美國出口管制強制下架：越獄風波、亞馬遜告密、封鎖數億人始末](https://www.bnext.com.tw/article/91244/anthropic-fable-5-us-export-control-jailbreak-and-china-ai-risk)**
 - **摘要**: 本文詳細報導了 Anthropic 最新旗艦模型 Fable 5 與 Mythos 5 在上架僅三天後，因美國商務部祭出首例針對 AI 模型的「出口管制」而被迫緊急下架的始末與各方爭議。
