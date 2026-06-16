@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 經典翻頁時鐘 - Flip Clock Studio</title>
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+TC:wght@300;500;700;900&family=Share+Tech+Mono&family=Montserrat:wght@700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="theme-dark font-sans">
+    <!-- Canvas for particle background -->
+    <canvas id="bg-particles" class="bg-canvas"></canvas>
+
+    <!-- Ambient Backglow -->
+    <div id="ambient-glow" class="ambient-glow"></div>
+
+    <!-- Main Container -->
+    <main class="app-container">
+        <!-- Top Navigation & Info Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <a href="../index.html" class="back-btn" title="返回 Dev Workspace">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        style="width: 20px; height: 20px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                        </path>
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="logo-title font-montserrat">FLIP STUDIO</h1>
+                    <p class="logo-subtitle font-mono">Experimental Lab</p>
+                </div>
+            </div>
+
+            <!-- Mode Tabs -->
+            <nav class="glass-tabs">
+                <button class="tab-btn active" data-mode="clock">
+                    <span class="tab-icon">🕒</span>
+                    <span class="tab-text">時鐘</span>
+                </button>
+                <button class="tab-btn" data-mode="pomodoro">
+                    <span class="tab-icon">🍅</span>
+                    <span class="tab-text">番茄鐘</span>
+                </button>
+                <button class="tab-btn" data-mode="timer">
+                    <span class="tab-icon">⏳</span>
+                    <span class="tab-text">計時器</span>
+                </button>
+                <button class="tab-btn" data-mode="stopwatch">
+                    <span class="tab-icon">⏱️</span>
+                    <span class="tab-text">碼表</span>
+                </button>
+            </nav>
+
+            <!-- Settings Trigger -->
+            <button id="settings-trigger" class="settings-btn" title="開啟設定">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    style="width: 20px; height: 20px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                    </path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Display Space -->
+        <section class="clock-display-wrapper">
+            <!-- Mode Status Header (Shows e.g., "🍅 Focus Time" or "⏱️ LAP 1") -->
+            <div id="mode-status" class="mode-status hidden">
+                <span id="status-dot" class="status-dot"></span>
+                <span id="status-label" class="status-label">Clock Mode</span>
+            </div>
+
+            <!-- Flip Clock Container -->
+            <div id="clock-container" class="clock-container card-classic">
+                <!-- Hours -->
+                <div class="digit-group" id="hours-group">
+                    <div class="flip-unit" id="h-tens">
+                        <div class="card-half card-top"><span>0</span></div>
+                        <div class="card-half card-bottom"><span>0</span></div>
+                        <div class="card-flip">
+                            <div class="card-flip-half card-flip-top"><span>0</span></div>
+                            <div class="card-flip-half card-flip-bottom"><span>0</span></div>
+                        </div>
+                    </div>
+                    <div class="flip-unit" id="h-ones">
+                        <div class="card-half card-top"><span>0</span></div>
+                        <div class="card-half card-bottom"><span>0</span></div>
+                        <div class="card-flip">
+                            <div class="card-flip-half card-flip-top"><span>0</span></div>
+                            <div class="card-flip-half card-flip-bottom"><span>0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colon -->
+                <div class="clock-colon" id="hour-colon">
+                    <div class="colon-dot"></div>
+                    <div class="colon-dot"></div>
+                </div>
+
+                <!-- Minutes -->
+                <div class="digit-group" id="minutes-group">
+                    <div class="flip-unit" id="m-tens">
+                        <div class="card-half card-top"><span>0</span></div>
+                        <div class="card-half card-bottom"><span>0</span></div>
+                        <div class="card-flip">
+                            <div class="card-flip-half card-flip-top"><span>0</span></div>
+                            <div class="card-flip-half card-flip-bottom"><span>0</span></div>
+                        </div>
+                    </div>
+                    <div class="flip-unit" id="m-ones">
+                        <div class="card-half card-top"><span>0</span></div>
+                        <div class="card-half card-bottom"><span>0</span></div>
+                        <div class="card-flip">
+                            <div class="card-flip-half card-flip-top"><span>0</span></div>
+                            <div class="card-flip-half card-flip-bottom"><span>0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colon -->
+                <div class="clock-colon" id="sec-colon">
+                    <div class="colon-dot"></div>
+                    <div class="colon-dot"></div>
+                </div>
+
+                <!-- Seconds -->
+                <div class="digit-group" id="seconds-group">
+                    <div class="flip-unit" id="s-tens">
+                        <div class="card-half card-top"><span>0</span></div>
+                        <div class="card-half card-bottom"><span>0</span></div>
+                        <div class="card-flip">
+                            <div class="card-flip-half card-flip-top"><span>0</span></div>
+                            <div class="card-flip-half card-flip-bottom"><span>0</span></div>
+                        </div>
+                    </div>
+                    <div class="flip-unit" id="s-ones">
+                        <div class="card-half card-top"><span>0</span></div>
+                        <div class="card-half card-bottom"><span>0</span></div>
+                        <div class="card-flip">
+                            <div class="card-flip-half card-flip-top"><span>0</span></div>
+                            <div class="card-flip-half card-flip-bottom"><span>0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date Label -->
+            <div id="clock-date" class="clock-date">
+                2026年06月16日 星期二
+            </div>
+
+            <!-- Action Controls (Play/Pause, Split, Reset) -->
+            <div id="action-controls" class="action-controls">
+                <!-- Play/Pause -->
+                <button id="btn-play-pause" class="control-btn primary">
+                    <svg class="w-5 h-5 btn-icon-play" fill="currentColor" viewBox="0 0 20 20"
+                        style="width: 18px; height: 18px;">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <svg class="w-5 h-5 btn-icon-pause hidden" fill="currentColor" viewBox="0 0 20 20"
+                        style="width: 18px; height: 18px;">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span id="play-pause-text">開始</span>
+                </button>
+
+                <!-- Lap (Stopwatch) / Time adjustment (Timer) -->
+                <button id="btn-action-sec" class="control-btn secondary">
+                    <span id="action-sec-text">分圈</span>
+                </button>
+
+                <!-- Reset -->
+                <button id="btn-reset" class="control-btn danger">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        style="width: 18px; height: 18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5"></path>
+                    </svg>
+                    <span>重設</span>
+                </button>
+            </div>
+
+            <!-- Stopwatch Lap Records Panel -->
+            <div id="lap-records" class="lap-records hidden custom-scrollbar">
+                <div class="lap-header">
+                    <span>紀錄</span>
+                    <span>分圈時間</span>
+                    <span>累計時間</span>
+                </div>
+                <div id="lap-list" class="lap-list-box">
+                    <!-- Lap items injected here -->
+                </div>
+            </div>
+
+            <!-- Quick Preset for Timer -->
+            <div id="timer-presets" class="timer-presets hidden">
+                <button class="preset-btn" data-sec="60">1分鐘</button>
+                <button class="preset-btn" data-sec="300">5分鐘</button>
+                <button class="preset-btn" data-sec="600">10分鐘</button>
+                <button class="preset-btn" data-sec="1500">25分鐘</button>
+                <button class="preset-btn" data-sec="3600">1小時</button>
+                <button class="preset-btn" id="custom-timer-trigger">自訂時間</button>
+            </div>
+        </section>
+
+        <!-- Bottom Footer -->
+        <footer class="app-footer">
+            <span>&copy; 2026 Flip Clock Studio</span>
+            <span>
+                Made with <span style="color: #ef4444;">❤️</span> by Antigravity
+            </span>
+        </footer>
+    </main>
+
+    <!-- Settings Sidebar Drawer -->
+    <div id="settings-sidebar" class="settings-sidebar">
+        <header class="settings-header">
+            <h2>時鐘設定 (Settings)</h2>
+            <button id="settings-close" class="close-btn" title="關閉">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    style="width: 24px; height: 24px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </header>
+
+        <div class="settings-body custom-scrollbar">
+            <!-- Time Formats -->
+            <div class="setting-item">
+                <h3 class="setting-title">時間格式</h3>
+                <div class="setting-grid col-2">
+                    <button id="format-12h" class="toggle-choice-btn active">12 小時制</button>
+                    <button id="format-24h" class="toggle-choice-btn">24 小時制</button>
+                </div>
+            </div>
+
+            <!-- Sound effects -->
+            <div class="setting-item row">
+                <div>
+                    <h3 class="setting-title">機械翻頁音效</h3>
+                    <p class="setting-desc">翻頁時發出輕微卡嗒聲</p>
+                </div>
+                <label class="switch-container">
+                    <input type="checkbox" id="sound-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Particle Background Toggle -->
+            <div class="setting-item row">
+                <div>
+                    <h3 class="setting-title">粒子背景</h3>
+                    <p class="setting-desc">背景浮動塵埃微粒</p>
+                </div>
+                <label class="switch-container">
+                    <input type="checkbox" id="particle-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Color Themes Selection -->
+            <div class="setting-item">
+                <h3 class="setting-title">主視覺色彩主題</h3>
+                <div class="setting-grid col-2" id="theme-grid">
+                    <button class="theme-card active" data-theme="dark">
+                        <span class="theme-preview" style="background: #18181b; border: 1px solid #6366f1;"></span>
+                        <span class="theme-name">極簡暗黑</span>
+                    </button>
+                    <button class="theme-card" data-theme="cyber">
+                        <span class="theme-preview"
+                            style="background: linear-gradient(to right, #ff007f, #00f3ff);"></span>
+                        <span class="theme-name">賽博霓虹</span>
+                    </button>
+                    <button class="theme-card" data-theme="sakura">
+                        <span class="theme-preview"
+                            style="background: linear-gradient(to right, #fda4af, #ffe4e6);"></span>
+                        <span class="theme-name">極致櫻花</span>
+                    </button>
+                    <button class="theme-card" data-theme="forest">
+                        <span class="theme-preview"
+                            style="background: linear-gradient(to right, #10b981, #042f22);"></span>
+                        <span class="theme-name">極光森林</span>
+                    </button>
+                    <button class="theme-card" data-theme="wood">
+                        <span class="theme-preview" style="background: #5c4033;"></span>
+                        <span class="theme-name">復古木紋</span>
+                    </button>
+                    <button class="theme-card" data-theme="light">
+                        <span class="theme-preview" style="background: #ffffff; border: 1px solid #cbd5e1;"></span>
+                        <span class="theme-name">經典明亮</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Digit Card Styles -->
+            <div class="setting-item">
+                <h3 class="setting-title">翻頁卡片材質</h3>
+                <div class="setting-grid col-2" id="card-style-grid">
+                    <button class="toggle-choice-btn active" data-card="classic">經典霧黑</button>
+                    <button class="toggle-choice-btn" data-card="glass">毛玻璃質感</button>
+                    <button class="toggle-choice-btn" data-card="neon">霓虹外框</button>
+                    <button class="toggle-choice-btn" data-card="wood">胡桃木紋</button>
+                </div>
+            </div>
+
+            <!-- Font Styles Selection -->
+            <div class="setting-item">
+                <h3 class="setting-title">數字字體</h3>
+                <div class="setting-item"
+                    style="gap: 0.5rem; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 12px;">
+                    <button class="font-choice-btn active font-mono" data-font="share-tech">
+                        <span>Share Tech Mono (科技)</span>
+                        <span>123</span>
+                    </button>
+                    <button class="font-choice-btn font-montserrat" data-font="montserrat">
+                        <span>Montserrat (現代)</span>
+                        <span>123</span>
+                    </button>
+                    <button class="font-choice-btn font-sans" data-font="inter"
+                        style="font-family: 'Inter', sans-serif;">
+                        <span>Inter (極簡)</span>
+                        <span>123</span>
+                    </button>
+                    <button class="font-choice-btn font-sans" data-font="noto"
+                        style="font-family: 'Noto Sans TC', sans-serif; font-weight: bold;">
+                        <span>Noto Sans (中黑)</span>
+                        <span>123</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Full Screen Mode -->
+            <div class="setting-item" style="padding-top: 1rem;">
+                <button id="fullscreen-btn" class="fullscreen-btn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        style="width: 18px; height: 18px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
+                        </path>
+                    </svg>
+                    切換全螢幕模式
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backdrop overlay for settings -->
+    <div id="settings-backdrop" class="settings-backdrop"></div>
+
+    <!-- Modal for custom Timer input -->
+    <div id="timer-modal" class="modal-wrapper">
+        <div class="modal-dialog">
+            <h3 class="modal-title">設定倒數時間</h3>
+            <div class="modal-inputs font-mono">
+                <div class="timer-num-input-group">
+                    <input type="number" id="input-h" min="0" max="99" value="0" class="timer-num-input">
+                    <label class="timer-num-label">小時</label>
+                </div>
+                <span class="modal-colon">:</span>
+                <div class="timer-num-input-group">
+                    <input type="number" id="input-m" min="0" max="59" value="10" class="timer-num-input">
+                    <label class="timer-num-label">分鐘</label>
+                </div>
+                <span class="modal-colon">:</span>
+                <div class="timer-num-input-group">
+                    <input type="number" id="input-s" min="0" max="59" value="0" class="timer-num-input">
+                    <label class="timer-num-label">秒數</label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="timer-modal-cancel" class="btn-cancel">取消</button>
+                <button id="timer-modal-confirm" class="btn-confirm">確定</button>
+            </div>
+        </div>
+        <div class="modal-backdrop"></div>
+    </div>
+
+    <!-- Alert / Toast Banner -->
+    <div id="toast-banner" class="toast-banner">
+        <span id="toast-icon">🛎️</span>
+        <span id="toast-message">時間到！</span>
+    </div>
+
+    <script src="clock.js"></script>
+</body>
+
+</html>
