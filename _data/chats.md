@@ -76,7 +76,7 @@ I am waiting for the first report's validation to complete in the background. On
     *   [PC 版報告](file:///c:/Playground26/wiskinglin.github.io/reports/20260702_codex_ai_ppt.html) | [Mobile 版報告](file:///c:/Playground26/wiskinglin.github.io/m/reports/20260702_codex_ai_ppt.html)
 *   **黃仁勳的震撼教育３堂課** ➔ 搭配 **Editorial Style** (社論雜誌風格) 風格
     *   [PC 版報告](file:///c:/Playground26/wiskinglin.github.io/reports/20260702_jensen_ai_lessons.html) | [Mobile 版報告](file:///c:/Playground26/wiskinglin.github.io/m/reports/20260702_jensen_ai_lessons.html)
-*   **把 AI 當幕僚風險（去脈絡化）** ➔ 搭配 **Data-Dense Clean** (數據密集乾淨) 風格
+*   **把 AI 當幕僚風險（去脈絡化）** ➔ 搭配 **Adaptive Dark** (適應性暗黑體驗) 風格
     *   [PC 版報告](file:///c:/Playground26/wiskinglin.github.io/reports/20260702_ai_context_risk.html) | [Mobile 版報告](file:///c:/Playground26/wiskinglin.github.io/m/reports/20260702_ai_context_risk.html)
 *   **好運人士的 5 個習慣** ➔ 搭配 **Minimalist + Whitespace** (極簡留白) 風格
     *   [PC 版報告](file:///c:/Playground26/wiskinglin.github.io/reports/20260702_lucky_habits.html) | [Mobile 版報告](file:///c:/Playground26/wiskinglin.github.io/m/reports/20260702_lucky_habits.html)
