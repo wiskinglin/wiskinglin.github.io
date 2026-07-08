@@ -45,10 +45,18 @@
   padding: 2rem;
   border-radius: var(--radius-lg);
   display: grid;
-  grid-template-areas: "title meta" "subtitle meta";
+  grid-template-areas: 
+    "badge badge"
+    "title meta"
+    "subtitle meta";
   grid-template-columns: 1fr 280px;
   gap: 1rem;
   align-items: start;
+}
+
+:root[data-theme="data-dense"] .hero-badge {
+  grid-area: badge;
+  margin-bottom: 0.5rem;
 }
 
 :root[data-theme="data-dense"] .hero h1 {
@@ -79,19 +87,29 @@
 }
 
 :root[data-theme="data-dense"] .section {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 1.5rem;
-  align-items: start;
+  display: block;
   border-bottom: 2px solid #e5e7eb;
   padding-bottom: 2rem;
 }
 
 :root[data-theme="data-dense"] .section-card {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 1.5rem;
+  align-items: start;
   box-shadow: none;
   border: none;
   background: none;
   padding: 0;
+}
+
+:root[data-theme="data-dense"] .section-card > .section-header {
+  grid-column: 1;
+  grid-row: 1 / span 10;
+}
+
+:root[data-theme="data-dense"] .section-card > *:not(.section-header) {
+  grid-column: 2;
 }
 
 :root[data-theme="data-dense"] .section-header {
@@ -183,7 +201,22 @@
 
 /* Specific densities for responsive mobile */
 @media (max-width: 768px) {
-  :root[data-theme="data-dense"] .section {
+  :root[data-theme="data-dense"] .hero {
+    grid-template-areas: 
+      "badge"
+      "title"
+      "subtitle"
+      "meta";
     grid-template-columns: 1fr;
+  }
+  :root[data-theme="data-dense"] .section-card {
+    grid-template-columns: 1fr;
+  }
+  :root[data-theme="data-dense"] .section-card > .section-header {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  :root[data-theme="data-dense"] .section-card > *:not(.section-header) {
+    grid-column: 1;
   }
 }

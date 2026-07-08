@@ -34,18 +34,28 @@ description: 處理並發佈最新 Markdown 深度報告至現有網站架構，
    - 驗證全部通過後，方可進入下一步驟。
    // turbo
 
-4. **整合至 PC 首頁 (`index.html`)**
+4. **內容品質審查 (ContentEditor Gate)**
+   - 讀取 `ContentEditor` Skill 指令（`.agents/skills/ContentEditor/SKILL.md`）。
+   - 依照 Skill 定義的四步驟 SOP 對新生成的報告執行審查：
+     - **Step 1 — 結構掃描**：讀取 PC 版（`reports/`）與 Mobile 版（`m/reports/`）HTML，盤點頁數、標題層級、字型與色系。
+     - **Step 2 — 品管診斷**：逐項檢查文字內容品質（懶人包摘要、專有名詞白話化、語氣自然度、段落精煉度）、HTML 排版易讀性（字型大小、標題層級、表格字型、CSS Specificity）、以及雙端一致性（內容同步、轉址腳本、路徑正確性）。
+     - **Step 3 — 自動修復**：針對所有不合格項目直接修改 HTML 原始碼（文字改寫、排版修復、邏輯順序優化）。
+     - **Step 4 — 修改摘要**：輸出修復前後對照表格，向使用者回報變更內容。
+   - 內容品質審查通過後，方可進入首頁整合步驟。
+   // turbo
+
+5. **整合至 PC 首頁 (`index.html`)**
    - 開啟 `index.html` 的結構，定位到最新月份區塊 `<main id="showcase">` 內的第一個卡片位置。
    - **選定風格**：參照網站根目錄的 `top50/index.html`，根據該報告的內容屬性，從 50 種 UX/UI 主流設計風格中挑選最合適的一種（例如 Bento Grid、Data-Dense Clean UI 或 Organic Shapes 等）。
    - 根據抉擇的風格插入對應尺寸與排版的 HTML 結構（例如全幅的 `editorial-card` Hero 元件，或半幅雙欄元件）。
    - 配置漸層色彩基調（如 `border-red-500/20`）、動效、卡片背景圖片 URL，填寫標題與摘要，最後設定正確的 `href` 以及對應行動端的 `data-mobile` 路徑。
 
-5. **整合至 Mobile 首頁 (`m/index.html`)**
+6. **整合至 Mobile 首頁 (`m/index.html`)**
    - 開啟 `m/index.html` 檔案，定位到 `<main id="feed-view">` 區塊最上方（第一個 `<article class="snap-start">`）。
    - 建立全新的行動版卡片結構，須具備滿版覆蓋 (`100dvh`)、漸層底部 (`card-accent-bar`)、分享按鈕 (`shareBtn()`) 操作等特性。
    - 確保底部的 `dot-nav` 分頁指示點生成邏輯能正確兼容新增的卡片數量。
 
-6. **最終檢驗與回報**
+7. **最終檢驗與回報**
    - 確保所有檔案之 HTML 標籤皆閉合正確，且無破壞既有排版。
    - 確認 `<a href="reports/...">` 各資源相對/絕對路徑正確無誤。
    - 向使用者回報作業完成，可使用本地開發環境如 `npm run dev` 或 live server 開啟瀏覽器確認成果。
