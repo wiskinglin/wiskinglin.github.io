@@ -1,0 +1,3455 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OrionX 硬體測試整合平台 v0.01</title>
+    <style>
+        /* ========================================
+         * 1. 全域變數與重置 (極致暗色科技風)
+         * ========================================
+         */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@500;700&display=swap');
+
+        :root {
+            /* 核心配色 */
+            --bg-color: #0c0d12;
+            --panel-bg: #161821;
+            --panel-bg-darker: #0e0f15;
+            --border-color: rgba(255, 255, 255, 0.08);
+            
+            /* 文字顏色 */
+            --text-primary: #e1e1e4;
+            --text-secondary: #8c8f9f;
+            
+            /* 狀態色 */
+            --accent-blue: #007aff;
+            --accent-green: #34c759;
+            --accent-orange: #ff9500;
+            --accent-red: #ff3b30;
+            --accent-amber: #ffcc00;
+            --accent-grey: #48484a;
+            
+            /* 玻璃擬態 */
+            --glass-bg: rgba(22, 24, 33, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 14px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* 隱藏卷軸 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--panel-bg-darker);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-grey);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        h2, h3, h4 {
+            color: #ffffff;
+            font-weight: 500;
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 12px;
+        }
+        h3 {
+            margin-bottom: 15px;
+            font-size: 1.25em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid var(--border-color);
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ========================================
+         * 2. 頂部導覽列 (Glassmorphism Nav)
+         * ========================================
+         */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.3em;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #007aff, #34c759);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-version {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.65em;
+            padding: 2px 6px;
+            border: 1px solid var(--accent-blue);
+            border-radius: 4px;
+            color: var(--accent-blue);
+            margin-left: 6px;
+            vertical-align: middle;
+            -webkit-text-fill-color: var(--accent-blue); /* 覆蓋 logo 的漸層 fill */
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            background: rgba(0, 122, 255, 0.15);
+            border-color: rgba(0, 122, 255, 0.3);
+            box-shadow: 0 0 10px rgba(0, 122, 255, 0.1);
+        }
+
+        /* 主容器 */
+        .app-container {
+            margin-top: 64px;
+            flex: 1;
+            width: 100%;
+            max-width: 1600px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========================================
+         * 3. 面板與通用卡片樣式
+         * ========================================
+         */
+        .panel, .card {
+            background-color: var(--panel-bg);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 8px 24px var(--glass-shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .panel:hover, .card:hover {
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+        }
+
+        /* ========================================
+         * 4. TAB 1: 系統總覽 (System Overview)
+         * ========================================
+         */
+        .sys-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 24px;
+            width: 100%;
+        }
+
+        .row-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* 音訊模組 (移植 Audio_v4.html 美學) */
+        .audio-section {
+            background: var(--panel-bg-darker);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        
+        .mic-main-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-grow: 1;
+            background-color: var(--accent-grey);
+            color: #e0e6ec;
+        }
+        .mic-main-btn:hover {
+            background-color: #5c5e6d;
+        }
+        .mic-main-btn.is-recording {
+            background-color: var(--accent-red);
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(255, 59, 48, 0.5);
+        }
+        .mic-main-btn.is-recording:hover {
+            background-color: #ff5e54;
+        }
+        .mic-main-btn.is-readytoplay,
+        .mic-main-btn.is-playing {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+        }
+        .mic-main-btn.is-readytoplay:hover,
+        .mic-main-btn.is-playing:hover {
+            background-color: #3395ff;
+        }
+
+        .mic-reset-btn {
+            background-color: var(--accent-grey);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 11px;
+            display: grid;
+            place-items: center;
+            transition: background-color 0.2s ease;
+        }
+        .mic-reset-btn:hover {
+            background-color: #5c5e6d;
+        }
+        .mic-reset-btn svg { width: 18px; height: 18px; }
+
+        .mic-visualizer {
+            display: flex;
+            align-items: center;
+            height: 24px;
+            gap: 3px;
+        }
+        .mic-visualizer .bar {
+            width: 4px;
+            height: 6px;
+            background-color: var(--accent-grey);
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+        .mic-group.is-recording .mic-visualizer .bar {
+            background-color: var(--accent-green);
+            animation: sound-wave-anim 1.2s infinite ease-in-out;
+        }
+        @keyframes sound-wave-anim {
+            0%, 100% { height: 6px; }
+            50% { height: 24px; }
+        }
+        .mic-visualizer .bar:nth-child(2) { animation-delay: -1.0s; }
+        .mic-visualizer .bar:nth-child(3) { animation-delay: -0.8s; }
+        .mic-visualizer .bar:nth-child(4) { animation-delay: -1.1s; }
+        .mic-visualizer .bar:nth-child(5) { animation-delay: -0.9s; }
+
+        /* 回放進度條 */
+        .playback-progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: var(--accent-grey);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .playback-progress-bar .progress {
+            width: 0%;
+            height: 100%;
+            background-color: var(--accent-blue);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+        .mic-group.is-playing .playback-progress-bar .progress {
+            transition: width 3s linear;
+            width: 100%;
+        }
+
+        .recording-prompt {
+            color: var(--accent-amber);
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* 喇叭控制 */
+        .speaker-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--panel-bg-darker);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .mute-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            padding: 4px;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        .mute-btn:hover { background-color: rgba(255,255,255,0.05); }
+        .mute-btn.is-muted { color: var(--accent-red); }
+        
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: var(--accent-grey);
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--panel-bg);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+        .speaker-group.is-muted input[type="range"] {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* LED */
+        .led-preview {
+            height: 80px;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            background-color: #000;
+            transition: background-color 0.3s ease;
+            margin-bottom: 16px;
+        }
+        .led-preview.is-blinking {
+            animation: led-blink-anim 0.8s infinite ease-in-out;
+        }
+        @keyframes led-blink-anim {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .color-btn {
+            height: 40px;
+            border-radius: 6px;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .color-btn.is-active {
+            border-color: #ffffff;
+            box-shadow: 0 0 8px rgba(255,255,255,0.4);
+        }
+        .mode-toggle {
+            display: flex;
+            background: var(--panel-bg-darker);
+            border-radius: 6px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .mode-opt {
+            flex: 1;
+            text-align: center;
+            padding: 6px;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            user-select: none;
+        }
+        .mode-opt.active {
+            background-color: var(--accent-grey);
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* Resources圓餅圖與狀態 */
+        .resource-group {
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+        .donut-chart {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-blue) 0% 0%, var(--border-color) 0% 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .donut-inner {
+            width: 80px;
+            height: 80px;
+            background-color: var(--panel-bg);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .donut-value {
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .donut-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        .temp-bar-container {
+            margin-top: 10px;
+        }
+        .temp-track {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .temp-fill {
+            height: 100%;
+            width: 42%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-orange));
+            transition: width 0.5s ease;
+        }
+        
+        .status-module {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px;
+            background: var(--panel-bg-darker);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .battery-icon {
+            width: 48px;
+            height: 22px;
+            border: 2px solid var(--text-secondary);
+            border-radius: 4px;
+            position: relative;
+            padding: 2px;
+            display: flex;
+        }
+        .battery-icon::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 5px;
+            width: 4px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 0 2px 2px 0;
+        }
+        .battery-level {
+            width: 80%;
+            height: 100%;
+            background-color: var(--accent-green);
+            border-radius: 1px;
+            transition: width 0.5s ease;
+        }
+        .module-info h4 {
+            margin: 0;
+            font-size: 18px;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .module-info p {
+            margin: 0;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* I/O 連接埠 */
+        .port-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        .port-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 2px;
+            background: var(--panel-bg-darker);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+            font-size: 11px;
+            text-align: center;
+        }
+        .port-item svg {
+            width: 20px;
+            height: 20px;
+            color: var(--text-secondary);
+        }
+        .port-item.connected {
+            border-color: var(--accent-green);
+            background: rgba(52, 199, 89, 0.08);
+        }
+        .port-item.connected svg {
+            color: var(--accent-green);
+        }
+        .port-item.error {
+            border-color: var(--accent-red);
+            background: rgba(255, 59, 48, 0.08);
+        }
+        .port-item.error svg {
+            color: var(--accent-red);
+        }
+
+        /* 無線網路 */
+        .wireless-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .wireless-item:last-child {
+            border-bottom: none;
+        }
+        .w-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .w-info svg {
+            width: 20px;
+            height: 20px;
+            color: #ffffff;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 42px;
+            height: 24px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--accent-grey);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            outline: none;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch:checked {
+            background: var(--accent-blue);
+        }
+        .toggle-switch:checked::after {
+            left: 20px;
+        }
+
+        /* ========================================
+         * 5. TAB 2: 電池與儲存 (Battery & Storage)
+         * ========================================
+         */
+        .workbench-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .workbench-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .test-card {
+            background-color: var(--panel-bg-darker);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+        .test-card:last-child {
+            margin-bottom: 0;
+        }
+        
+        .test-timer {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--accent-orange);
+        }
+        
+        .status-check {
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-primary {
+            padding: 12px;
+            font-size: 1.05em;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            background-color: var(--accent-green);
+            color: #ffffff;
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #2eb04e;
+        }
+        .btn-primary[disabled] {
+            background-color: #3a3a3c;
+            color: #777;
+            cursor: not-allowed;
+        }
+        
+        .status-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            background-color: var(--bg-color);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .status-item {
+            text-align: center;
+        }
+        .status-led-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: var(--accent-blue);
+            border: 3px solid rgba(255,255,255,0.1);
+            margin: 4px auto 0 auto;
+            transition: background-color 0.3s;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .info-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--panel-bg-darker);
+        }
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        .info-list .key {
+            color: var(--text-secondary);
+        }
+        .info-list .value {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-family: 'Roboto Mono', monospace;
+        }
+        
+        .info-scroll-content {
+            overflow-y: auto;
+            max-height: 380px;
+            padding-right: 6px;
+        }
+
+        .log-list-container {
+            max-height: 250px;
+            overflow-y: auto;
+            background-color: var(--panel-bg-darker);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .log-item {
+            background-color: var(--panel-bg);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+        .log-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* USB 儲存卡片 */
+        .drive-card {
+            background-color: var(--panel-bg-darker);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .drive-card.state-in-progress {
+            border: 1.5px solid var(--accent-blue);
+            box-shadow: 0 0 12px rgba(0, 123, 255, 0.15);
+        }
+        .drive-card.state-not-detected {
+            border: 1.5px dashed var(--border-color);
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .speed-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            padding: 12px 0;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .speed-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            line-height: 1.2;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--accent-grey);
+            border-radius: 10px;
+            height: 16px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-blue);
+            color: white;
+            text-align: center;
+            font-size: 10px;
+            line-height: 16px;
+            font-weight: bold;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* 精美動態儲存圖表 */
+        .chart-container {
+            background-color: var(--panel-bg-darker);
+            border-radius: 10px;
+            height: 180px;
+            position: relative;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            padding: 10px;
+        }
+        .chart-grid-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            border-bottom: 1px dashed rgba(255,255,255,0.04);
+        }
+        .canvas-usb-chart {
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
+        .btn-secondary {
+            background-color: var(--accent-grey);
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn-secondary:hover {
+            background-color: #5c5e6d;
+        }
+
+        /* ========================================
+         * 6. TAB 3: 螢幕與觸控 (Display & Touch)
+         * ========================================
+         */
+        .section-header-title {
+            font-size: 1.35rem;
+            color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-top: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .test-card-btn {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-primary);
+        }
+
+        .test-card-btn:hover, .test-card-btn:focus {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 122, 255, 0.15);
+            border-color: var(--accent-blue);
+            outline: none;
+        }
+
+        .test-card-btn h3 {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .test-card-btn p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+            flex-grow: 1;
+            line-height: 1.5;
+        }
+
+        /* ========================================
+         * 7. 全螢幕測試介面 (Test Screen Area)
+         * ========================================
+         */
+        #test-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10000;
+            background-color: #000000;
+            cursor: none;
+            touch-action: none;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #test-screen.controls-visible {
+            cursor: default;
+        }
+
+        #test-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #test-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+
+        #test-content canvas {
+            display: block;
+        }
+
+        /* 測試說明懸浮框 */
+        #test-description {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            max-width: 360px;
+            background: rgba(18, 19, 26, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px 20px;
+            z-index: 10020;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: none; /* 避免擋住點擊測試 */
+        }
+
+        #test-description h3 {
+            font-size: 1.15rem;
+            color: #ffffff;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        #test-description p {
+            font-size: 0.9em;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        #test-description .status-line {
+            font-size: 0.9em;
+            color: var(--accent-blue);
+            margin-top: 10px;
+            font-weight: bold;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        #test-description .instruction {
+            font-size: 0.95em;
+            color: var(--accent-orange);
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        #test-description .instruction.success {
+            color: var(--accent-green);
+        }
+
+        /* 退出測試按鈕 */
+        #exit-test {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            font-size: 1.8rem;
+            line-height: 40px;
+            text-align: center;
+            color: #ffffff;
+            background: rgba(18, 19, 26, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10020;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #exit-test:hover {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        /* 懸浮控制列 */
+        #control-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(18, 19, 26, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 12px 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 10020;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        #test-screen.controls-visible #control-bar {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        #test-screen.controls-visible #exit-test,
+        #test-screen.controls-visible #test-description {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .control-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .control-button:active {
+            transform: scale(0.9);
+        }
+        .control-button[data-color="#ffffff"] {
+            border-color: #888888;
+        }
+
+        /* 顯示測試圖案 CSS */
+        .gradient-pattern {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #000000, #ffffff);
+        }
+
+        .readability-pattern {
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            color: #000000;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.1;
+            overflow: hidden;
+            padding: 2%;
+            box-sizing: border-box;
+        }
+        .readability-pattern h2 {
+            font-size: 11pt;
+            color: #444444;
+            margin: 10px 0 3px 0;
+            padding: 0;
+            border-left: none;
+            font-weight: bold;
+        }
+        .readability-pattern p {
+            margin: 0;
+            padding: 0;
+            overflow-wrap: break-word;
+        }
+        .size-18 { font-size: 18pt; }
+        .size-12 { font-size: 12pt; }
+        .size-8  { font-size: 8pt; }
+
+        .ufo-pattern {
+            width: 100%;
+            height: 100%;
+            background: #222222;
+            overflow: hidden;
+            position: relative;
+        }
+        .ufo-object {
+            width: 80px;
+            height: 80px;
+            background-color: var(--accent-blue);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: move-ufo-anim 3.5s linear infinite;
+            box-shadow: 0 0 15px var(--accent-blue);
+        }
+        @keyframes move-ufo-anim {
+            0% { left: -100px; }
+            100% { left: calc(100vw + 100px); }
+        }
+
+        /* 觸控測試圖案 CSS */
+        .tap-target {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: var(--accent-blue);
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 20px var(--accent-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+            position: absolute;
+            transition: transform 0.1s, left 0.18s ease-out, top 0.18s ease-out;
+            user-select: none;
+        }
+        .tap-target:active {
+            transform: scale(0.9);
+        }
+
+        .gesture-object {
+            width: 260px;
+            height: 260px;
+            background-color: var(--panel-bg);
+            border: 2px solid var(--accent-blue);
+            border-radius: 16px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            transform-origin: center center;
+            transition: transform 0.05s linear;
+            user-select: none;
+        }
+
+        .gesture-indicator {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(10, 11, 15, 0.85);
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            white-space: nowrap;
+        }
+
+        .draggable-object {
+            width: 80px;
+            height: 80px;
+            background-color: var(--accent-orange);
+            border-radius: 12px;
+            cursor: grab;
+            position: absolute;
+            left: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10050;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #000000;
+            box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);
+        }
+        .draggable-object.dragging {
+            cursor: grabbing;
+            opacity: 0.85;
+            transform: scale(1.1) translateY(-45%);
+        }
+
+        .drop-zone {
+            width: 160px;
+            height: 160px;
+            border: 3px dashed var(--accent-grey);
+            border-radius: 20px;
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .drop-zone.over {
+            border-color: var(--accent-green);
+            background-color: rgba(52, 199, 89, 0.08);
+            color: var(--accent-green);
+        }
+
+        .touch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .multi-touch-point {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(0, 122, 255, 0.7);
+            border: 2px solid #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #ffffff;
+            font-weight: bold;
+            transform: translate(-50%, -50%);
+            user-select: none;
+            box-shadow: 0 0 15px rgba(0, 122, 255, 0.5);
+        }
+        .multi-touch-point:nth-child(2) { background-color: rgba(52, 199, 89, 0.7); box-shadow: 0 0 15px rgba(52, 199, 89, 0.5); }
+        .multi-touch-point:nth-child(3) { background-color: rgba(255, 149, 0, 0.7); box-shadow: 0 0 15px rgba(255, 149, 0, 0.5); }
+        .multi-touch-point:nth-child(4) { background-color: rgba(255, 59, 48, 0.7); box-shadow: 0 0 15px rgba(255, 59, 48, 0.5); }
+        .multi-touch-point:nth-child(5) { background-color: rgba(175, 82, 222, 0.7); box-shadow: 0 0 15px rgba(175, 82, 222, 0.5); }
+        .multi-touch-point:nth-child(n+6) { background-color: rgba(142, 142, 147, 0.7); box-shadow: 0 0 15px rgba(142, 142, 147, 0.5); }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部導覽列 -->
+    <header class="navbar">
+        <div class="nav-logo">
+            OrionX <span class="nav-version">v0.01</span>
+        </div>
+        <nav class="nav-tabs">
+            <button class="tab-btn active" id="tab-btn-system" onclick="switchTab('system')">
+                📊 系統總覽
+            </button>
+            <button class="tab-btn" id="tab-btn-battery-storage" onclick="switchTab('battery-storage')">
+                🔋 電池與儲存
+            </button>
+            <button class="tab-btn" id="tab-btn-display-touch" onclick="switchTab('display-touch')">
+                🖥️ 螢幕與觸控
+            </button>
+        </nav>
+    </header>
+
+    <!-- 主內容區 -->
+    <main class="app-container">
+
+        <!-- ==========================================
+             TAB 1: 系統總覽
+             ========================================== -->
+        <section class="tab-content active" id="tab-system">
+            <div class="sys-grid">
+                
+                <!-- 卡片 1-1：音訊輸入與輸出控制 -->
+                <div class="card">
+                    <h3>🎙️ 音訊輸入與輸出控制</h3>
+                    <div class="audio-section">
+                        <div class="row-group mic-group" id="mic-group" style="margin-bottom: 8px;">
+                            <button class="mic-main-btn" id="mic-main-btn">
+                                <!-- mic icon -->
+                                <svg class="icon-mic" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/><path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/></svg>
+                                <!-- stop icon -->
+                                <svg class="icon-stop hidden" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6A1.5 1.5 0 0 1 11 12.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/></svg>
+                                <!-- play icon -->
+                                <svg class="icon-play hidden" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.804 8 5 4.633v6.734L10.804 8zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm15 0a7 7 0 1 0-14 0 7 7 0 0 0 14 0z"/></svg>
+                                <!-- pause icon -->
+                                <svg class="icon-pause hidden" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/></svg>
+                                <span id="mic-btn-text">開始錄音</span>
+                            </button>
+                            
+                            <button class="mic-reset-btn hidden" id="mic-reset-btn" title="清除錄音">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                            </button>
+
+                            <div class="mic-visualizer" id="mic-visualizer">
+                                <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                            </div>
+                        </div>
+                        <div class="recording-prompt hidden" id="recording-prompt"></div>
+                        <div class="playback-progress-bar hidden" id="playback-progress">
+                            <div class="progress" id="playback-progress-inner"></div>
+                        </div>
+                    </div>
+
+                    <div class="speaker-group" id="speaker-group">
+                        <button class="mute-btn" id="mute-btn">
+                            <svg id="icon-vol-on" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/><path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/><path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.489 3.489 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/></svg>
+                            <svg id="icon-vol-off" class="hidden" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 0 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z"/></svg>
+                        </button>
+                        <input type="range" id="vol-slider" min="0" max="100" value="60" step="20">
+                    </div>
+                </div>
+
+                <!-- 卡片 1-2：LED 燈光測試 -->
+                <div class="card">
+                    <h3>💡 LED 燈光測試</h3>
+                    <div>
+                        <div class="row-group" style="justify-content: space-between; margin-bottom: 12px;">
+                            <span style="font-weight: 500; color: var(--text-secondary);">LED 狀態</span>
+                            <div class="mode-toggle">
+                                <div class="mode-opt active" id="mode-solid">恆亮</div>
+                                <div class="mode-opt" id="mode-blink">閃爍</div>
+                            </div>
+                        </div>
+                        <div class="led-preview" id="led-display"></div>
+                        <div class="color-grid">
+                            <div class="color-btn" data-c="#FF0000" style="background:#FF0000"></div>
+                            <div class="color-btn" data-c="#00FF00" style="background:#00FF00"></div>
+                            <div class="color-btn" data-c="#0000FF" style="background:#0000FF"></div>
+                            <div class="color-btn" data-c="#FFFF00" style="background:#FFFF00"></div>
+                            <div class="color-btn" data-c="#FF00FF" style="background:#FF00FF"></div>
+                            <div class="color-btn" data-c="#00FFFF" style="background:#00FFFF"></div>
+                            <div class="color-btn" data-c="#FFFFFF" style="background:#FFFFFF"></div>
+                            <div class="color-btn is-active" data-c="#000000" style="background:var(--panel-bg-darker); border-style:dashed; display: grid; place-items:center; color: #8c8f9f; font-size: 11px;">OFF</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 2：⚡ 系統狀態與電源 -->
+                <div class="card">
+                    <h3>⚡ 系統狀態與電源</h3>
+                    <div class="resource-group">
+                        <div class="donut-chart" id="cpu-chart">
+                            <div class="donut-inner">
+                                <span class="donut-value" id="cpu-val">12%</span>
+                                <span class="donut-label">CPU</span>
+                            </div>
+                        </div>
+                        <div class="donut-chart" id="ram-chart">
+                            <div class="donut-inner">
+                                <span class="donut-value" id="ram-val">45%</span>
+                                <span class="donut-label">RAM</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="temp-bar-container">
+                        <div class="row-group" style="justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                            <span style="color: var(--text-secondary);">Core 溫度</span>
+                            <span id="temp-val" style="font-family:'Roboto Mono'">42°C</span>
+                        </div>
+                        <div class="temp-track">
+                            <div class="temp-fill" id="temp-bar" style="width: 42%"></div>
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- 電池狀態 -->
+                    <div class="status-module">
+                        <div class="battery-icon">
+                            <div class="battery-level" id="cp-bat-level" style="width: 80%"></div>
+                        </div>
+                        <div class="module-info">
+                            <h4 id="cp-bat-text">80%</h4>
+                            <p id="cp-bat-status">放電中 (預估 3h 20m)</p>
+                        </div>
+                    </div>
+                    <!-- 即時時鐘 -->
+                    <div class="status-module" style="margin-top: 10px; margin-bottom: 0;">
+                        <svg width="22" height="22" fill="var(--accent-blue)" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                        <div style="margin-left: 10px;">
+                            <h4 id="rtc-time" style="font-family:'Roboto Mono'">--:--:--</h4>
+                            <span style="font-size:11px; color:var(--text-secondary)">RTC 本地時鐘 (UTC+8)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡片 3：📡 連接與周邊 -->
+                <div class="card">
+                    <h3>📡 連接與周邊</h3>
+                    <div>
+                        <p style="color:var(--text-secondary); margin-bottom:12px; font-size:12px;">物理連接埠狀態 (I/O Ports)</p>
+                        <div class="port-grid">
+                            <div class="port-item connected">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
+                                <span>Cam 1</span>
+                            </div>
+                            <div class="port-item connected">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
+                                <span>Cam 2</span>
+                            </div>
+                            <div class="port-item connected">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
+                                <span>Charge</span>
+                            </div>
+                            <div class="port-item">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M7.5 1v7h1V1h-1z"/><path d="M3 8.812a4.999 4.999 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812z"/></svg>
+                                <span>Power Key</span>
+                            </div>
+                            <div class="port-item connected">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-1z"/><path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2zm0 1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
+                                <span>USB-A 1</span>
+                            </div>
+                            <div class="port-item">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 3.5a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-1zM0 6h16v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6z"/></svg>
+                                <span>USB-A 2</span>
+                            </div>
+                            <div class="port-item connected">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/><path d="M3.5 6.5A.5.5 0 0 1 4 7v2a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V7a.5.5 0 0 1 .5-.5h1z"/></svg>
+                                <span>HDMI</span>
+                            </div>
+                            <div class="port-item error">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+                                <span>USB-C</span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div>
+                        <p style="color:var(--text-secondary); margin-bottom:12px; font-size:12px;">無線網路與連線 (Wireless & Network)</p>
+                        <div class="wireless-item">
+                            <div class="w-info">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.444 12.444 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c2.507 0 4.816.804 6.695 2.165a.518.518 0 0 0 .668-.05z"/><path d="M13.369 8.039a.487.487 0 0 0-.04-.7c-1.444-1.061-3.19-1.648-4.996-1.648-1.778 0-3.496.582-4.945 1.634a.487.487 0 0 0-.04.7c.19.216.495.24.698.072A7.474 7.474 0 0 1 8 6.63c1.608 0 3.13.487 4.416 1.335a.488.488 0 0 0 .698-.072z"/><path d="M11.466 9.948a.489.489 0 0 0-.029-.709 5.466 5.466 0 0 0-3.436-1.208 5.466 5.466 0 0 0-3.426 1.195.489.489 0 0 0-.028.709c.186.205.49.227.685.084A4.476 4.476 0 0 1 8 9.027c1.107 0 2.145.32 3.026.902.195.144.498.12.684-.084zM9.495 11.85a.49.49 0 0 0-.014-.716 3.465 3.465 0 0 0-2.963 0 .49.49 0 0 0-.014.716c.178.19.476.206.66.078A2.475 2.475 0 0 1 8 11.543c.434 0 .84.125 1.186.409.185.127.483.112.66-.078z"/></svg>
+                                <div>
+                                    <div style="font-weight:500">Wi-Fi 6 連線</div>
+                                    <span style="font-size:11px; color:var(--text-secondary)">SSID: Office_5G_VIP</span>
+                                </div>
+                            </div>
+                            <input type="checkbox" class="toggle-switch" id="wifi-switch" checked>
+                        </div>
+                        <div class="wireless-item">
+                            <div class="w-info">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.5 1.5A.5.5 0 0 1 9 2v4.5h4.354a.5.5 0 0 1 .354.854l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 .354-.854H6.5V2a.5.5 0 0 1 .5-.5z" transform="rotate(45 8 8)"/></svg>
+                                <div>
+                                    <div style="font-weight:500">藍牙 (Bluetooth)</div>
+                                    <span style="font-size:11px; color:var(--text-secondary)">配對狀態: 準備就緒</span>
+                                </div>
+                            </div>
+                            <input type="checkbox" class="toggle-switch" id="bt-switch">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 2: 電池與儲存
+             ========================================== -->
+        <section class="tab-content" id="tab-battery-storage">
+            <div class="workbench-container">
+                
+                <!-- 左欄：電池監控與深度測試 -->
+                <div class="panel">
+                    <h3>🔋 電池監控與深度測試</h3>
+                    
+                    <div class="test-card">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <h4 style="margin:0">放電深度測試</h4>
+                            <div class="test-timer" id="discharge-timer">00:00:00</div>
+                        </div>
+                        <p style="color:var(--text-secondary); font-size:0.9em; margin:10px 0 16px 0;">自動測試 100% 至 0% 的完整放電耗時（模擬測試）。</p>
+                        <div class="status-check">
+                            <span style="color:var(--text-secondary)">當前電量: </span>
+                            <span class="value" id="bat-val-discharge">65 %</span>
+                        </div>
+                        <button class="btn-primary" id="btn-start-discharge">開始放電測試</button>
+                    </div>
+
+                    <div class="test-card">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <h4 style="margin:0">充電效率測試</h4>
+                            <div class="test-timer" id="charge-timer">00:00:00</div>
+                        </div>
+                        <p style="color:var(--text-secondary); font-size:0.9em; margin:10px 0 16px 0;">自動測試 0% 至 100% 的完整充電耗時（模擬測試）。</p>
+                        <div class="status-check">
+                            <span style="color:var(--text-secondary)">當前電量: </span>
+                            <span class="value" id="bat-val-charge">65 %</span>
+                        </div>
+                        <button class="btn-primary" id="btn-start-charge">開始充電測試</button>
+                    </div>
+
+                    <hr>
+
+                    <div class="status-dashboard">
+                        <div class="status-item">
+                            <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">系統負載 LED</div>
+                            <div class="status-led-dot" id="bat-status-led"></div>
+                        </div>
+                        <div class="status-item">
+                            <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">充電器連接</div>
+                            <div style="font-weight:700" id="bat-charging-status">已連接</div>
+                        </div>
+                        <div class="status-item">
+                            <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">電池運行狀態</div>
+                            <div style="font-weight:700; color:var(--accent-blue)" id="bat-mode-text">充電中</div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <h4 style="font-size:0.95em; color:var(--text-secondary); border-bottom:1px solid var(--border-color); padding-bottom:5px;">即時電量參數</h4>
+                            <ul class="info-list">
+                                <li><span class="key">電量 SoC</span><span class="value" style="color:var(--accent-blue);" id="bat-soc-detail">65 %</span></li>
+                                <li><span class="key">電壓</span><span class="value" id="bat-volt-detail">11.3V</span></li>
+                                <li><span class="key">電流</span><span class="value" id="bat-curr-detail">+1.7A</span></li>
+                                <li><span class="key">即時功耗</span><span class="value" id="bat-pwr-detail">19.21 W</span></li>
+                                <li><span class="key">溫度</span><span class="value" style="color:var(--accent-orange);" id="bat-temp-detail">28.5 °C</span></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 style="font-size:0.95em; color:var(--text-secondary); border-bottom:1px solid var(--border-color); padding-bottom:5px;">電池出廠資訊</h4>
+                            <div class="info-scroll-content">
+                                <ul class="info-list">
+                                    <li><span class="key">製造商</span><span class="value">FUCO Corp</span></li>
+                                    <li><span class="key">電池型號</span><span class="value">MD-BAT03</span></li>
+                                    <li><span class="key">韌體版本</span><span class="value">v1.0.8</span></li>
+                                    <li><span class="key">PIC韌體</span><span class="value">v011</span></li>
+                                    <li><span class="key">序號 S/N</span><span class="value">SN-A8492-B4</span></li>
+                                    <li><span class="key">設計容量</span><span class="value">5000 mAh</span></li>
+                                    <li><span class="key">終止電壓</span><span class="value">8.1V</span></li>
+                                    <li><span class="key">剩餘容量</span><span class="value">3152 mAh</span></li>
+                                    <li><span class="key">實際滿電</span><span class="value">4850 mAh</span></li>
+                                    <li><span class="key">健康度 SoH</span><span class="value" style="color:var(--accent-green)">97 %</span></li>
+                                    <li><span class="key">循環次數</span><span class="value">12 次</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h4>歷史測試日誌</h4>
+                    <div class="log-list-container">
+                        <div class="log-item">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <h5 style="margin:0; font-size:1em; color:#fff;">🔋 自動放電測試 (100% → 0%)</h5>
+                                <span style="font-size:0.85em; color:var(--text-secondary)">2026-07-12 18:10</span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                                <div><span style="display:block; font-size:0.75em; color:var(--text-secondary)">開始</span><span style="font-weight:700">14:55:00</span></div>
+                                <div><span style="display:block; font-size:0.75em; color:var(--text-secondary)">結束</span><span style="font-weight:700">18:10:00</span></div>
+                                <div><span style="display:block; font-size:0.75em; color:var(--text-secondary)">耗時</span><span style="font-weight:700; color:var(--accent-green)">03:15:00</span></div>
+                            </div>
+                        </div>
+                        <div class="log-item">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <h5 style="margin:0; font-size:1em; color:#fff;">⚡ 自動充電測試 (0% → 100%)</h5>
+                                <span style="font-size:0.85em; color:var(--text-secondary)">2026-07-13 11:30</span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                                <div><span style="display:block; font-size:0.75em; color:var(--text-secondary)">開始</span><span style="font-weight:700">09:45:00</span></div>
+                                <div><span style="display:block; font-size:0.75em; color:var(--text-secondary)">結束</span><span style="font-weight:700">11:30:00</span></div>
+                                <div><span style="display:block; font-size:0.75em; color:var(--text-secondary)">耗時</span><span style="font-weight:700; color:var(--accent-green)">01:45:00</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右欄：隨身碟與儲存監控 -->
+                <div class="panel">
+                    <h3>💾 隨身碟與儲存監控</h3>
+                    
+                    <!-- 隨身碟 E Card (測試中) -->
+                    <div class="drive-card state-in-progress" id="drive-e-card">
+                        <h4 style="margin:0 0 4px 0;">E: - 隨身碟 1 (模擬測試中)</h4>
+                        <p style="color:var(--text-secondary); font-size:0.85em; margin:0 0 12px 0;">SanDisk Ultra Fit USB 3.1 / 128 GB</p>
+                        
+                        <div style="color:var(--accent-blue); font-weight:500; margin-bottom:10px; font-size: 0.9em; display:flex; align-items:center; gap:6px;">
+                            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:var(--accent-blue); animation:led-blink-anim 1s infinite;"></span>
+                            ⏳ 模擬讀寫穩定度測試進行中...
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="usb-progress-bar">0%</div>
+                        </div>
+
+                        <div class="speed-display">
+                            <div style="text-align:center; flex:1; border-right: 1px solid var(--border-color);">
+                                <div class="speed-value" style="color:var(--accent-blue);" id="usb-read-speed">0</div>
+                                <div style="font-size:0.8em; color:var(--text-secondary);">MB/s (讀取)</div>
+                            </div>
+                            <div style="text-align:center; flex:1;">
+                                <div class="speed-value" style="color:var(--accent-blue);" id="usb-write-speed">0</div>
+                                <div style="font-size:0.8em; color:var(--text-secondary);">MB/s (寫入)</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:15px; display:flex;">
+                            <button class="btn-secondary" style="width:100%; background-color: var(--accent-red);" id="btn-cancel-usb">中斷測試</button>
+                        </div>
+                    </div>
+
+                    <!-- 隨身碟 F Card (未偵測) -->
+                    <div class="drive-card state-not-detected" id="drive-f-card">
+                        <div style="font-size:2.2em; margin-bottom:8px;">🔌</div>
+                        <h4 style="color:var(--text-secondary); margin:0;">F: - 隨身碟 2</h4>
+                        <p style="margin:6px 0 0 0; font-size:0.9em;">未偵測到外接儲存裝置</p>
+                    </div>
+
+                    <!-- 即時速度趨勢圖表 -->
+                    <h4 style="margin-top:24px; margin-bottom:10px;">📈 讀寫速度即時趨勢圖</h4>
+                    <div class="chart-container">
+                        <div class="chart-grid-line" style="bottom: 25%;"></div>
+                        <div class="chart-grid-line" style="bottom: 50%;"></div>
+                        <div class="chart-grid-line" style="bottom: 75%;"></div>
+                        <canvas class="canvas-usb-chart" id="usb-speed-chart"></canvas>
+                    </div>
+
+                    <h4 style="margin-top:24px; margin-bottom:10px;">儲存測試日誌</h4>
+                    <div class="log-list-container" id="usb-log-container">
+                        <div class="log-item">隨身碟 E: 已連接並自動啟動模擬效能讀寫測試。</div>
+                        <div class="log-item">E: 磁區映射完成，開始進行連續區塊隨機寫入測試...</div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TAB 3: 螢幕與觸控
+             ========================================== -->
+        <section class="tab-content" id="tab-display-touch">
+            
+            <!-- 顯示測試區 -->
+            <div class="section-header-title">
+                <span>🖥️ 顯示測試 (Display Diagnostics)</span>
+            </div>
+            <div class="card-grid">
+                <button class="test-card-btn" data-test="pixel" data-test-type="display">
+                    <h3>壞點與亮點</h3>
+                    <p>切換純黑、純白、純紅、純綠、純藍等色彩，檢查面板是否有卡死像素。</p>
+                </button>
+                <button class="test-card-btn" data-test="gradient" data-test-type="display">
+                    <h3>色彩漸層</h3>
+                    <p>測試黑白/彩色色階過渡平滑度，檢查是否有明顯色階帶 (Banding)。</p>
+                </button>
+                <button class="test-card-btn" data-test="uniformity" data-test-type="display">
+                    <h3>亮度與均勻度</h3>
+                    <p>在不同灰度階梯下，仔細檢查螢幕背光是否有暗角、色偏或嚴重漏光。</p>
+                </button>
+                <button class="test-card-btn" data-test="response" data-test-type="display">
+                    <h3>反應時間</h3>
+                    <p>提供快速水平移動的模擬物體，檢測螢幕運動模糊與殘影 (Ghosting)。</p>
+                </button>
+                <button class="test-card-btn" data-test="readability" data-test-type="display">
+                    <h3>閱讀測試 (銳利度)</h3>
+                    <p>高密度多字級靜態排版測試，藉以確認螢幕邊緣與中央文字的清晰度。</p>
+                </button>
+                <button class="test-card-btn" data-test="testpattern" data-test-type="display">
+                    <h3>綜合測試圖</h3>
+                    <p>專業電視/顯示器校準圖案，用以檢測幾何失真、線條收斂與色度對比。</p>
+                </button>
+                <button class="test-card-btn" data-test="gamma" data-test-type="display">
+                    <h3>Gamma / 對比度</h3>
+                    <p>檢測螢幕的中間色調階調與暗部對比表現是否準確。</p>
+                </button>
+                <button class="test-card-btn" data-test="viewingangle" data-test-type="display">
+                    <h3>可視角度</h3>
+                    <p>顯示色彩參照球，檢測從上下左右傾斜觀察時的對比度與色偏程度。</p>
+                </button>
+            </div>
+
+            <!-- 觸控測試區 -->
+            <div class="section-header-title">
+                <span>👆 觸控測試 (Touch Diagnostics)</span>
+            </div>
+            <div class="card-grid">
+                <button class="test-card-btn" data-test="taps" data-test-type="touch">
+                    <h3>基礎點擊</h3>
+                    <p>測試單點點擊、雙擊與長按的硬體反饋與精準度。</p>
+                </button>
+                <button class="test-card-btn" data-test="gestures" data-test-type="touch">
+                    <h3>手勢操作</h3>
+                    <p>雙指多點縮放、旋轉與單指左右滑動圖片，確認滑動手勢流暢度。</p>
+                </button>
+                <button class="test-card-btn" data-test="drag" data-test-type="touch">
+                    <h3>拖曳與追蹤</h3>
+                    <p>測試單點持續壓住並滑動拖曳的穩定度，確認中途不會發生斷線。</p>
+                </button>
+                <button class="test-card-btn" data-test="drawing" data-test-type="touch">
+                    <h3>繪圖與精準度</h3>
+                    <p>繪圖測試，並可靜止按壓以進行 3 秒螢幕抖動與雜訊分析。</p>
+                </button>
+                <button class="test-card-btn" data-test="edges" data-test-type="touch">
+                    <h3>邊緣靈敏度</h3>
+                    <p>繪製最邊緣的格線導引，測試螢幕四周邊角死區的觸控靈敏度。</p>
+                </button>
+                <button class="test-card-btn" data-test="multitouch" data-test-type="touch">
+                    <h3>多點測試</h3>
+                    <p>直觀檢測面板支援的多指同時觸控點數極限 (最多 10 點)。</p>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         全螢幕測試顯示層 (z-index: 10000)
+         ========================================== -->
+    <div id="test-screen" class="hidden">
+        <!-- 說明懸浮框 -->
+        <div id="test-description"></div>
+        
+        <!-- 退出按鈕 -->
+        <button id="exit-test" title="結束測試">&times;</button>
+        
+        <!-- 測試用內容渲染容器 -->
+        <div id="test-content"></div>
+        
+        <!-- 下方控制列 -->
+        <div id="control-bar">
+            <!-- 壞點測試控制鈕 -->
+            <div id="controls-pixel" class="controls-set hidden">
+                <button class="control-button" data-color="#000000" style="background-color: #000000;"></button>
+                <button class="control-button" data-color="#ffffff" style="background-color: #ffffff;"></button>
+                <button class="control-button" data-color="#ff0000" style="background-color: #ff0000;"></button>
+                <button class="control-button" data-color="#00ff00" style="background-color: #00ff00;"></button>
+                <button class="control-button" data-color="#0000ff" style="background-color: #0000ff;"></button>
+            </div>
+            <!-- 均勻度測試控制鈕 -->
+            <div id="controls-uniformity" class="controls-set hidden">
+                <button class="control-button" data-color="#ffffff" style="background-color: #ffffff;" title="100% 亮度灰"></button>
+                <button class="control-button" data-color="#bfbfbf" style="background-color: #bfbfbf;" title="75% 亮度灰"></button>
+                <button class="control-button" data-color="#808080" style="background-color: #808080;" title="50% 亮度灰"></button>
+                <button class="control-button" data-color="#404040" style="background-color: #404040;" title="25% 亮度灰"></button>
+            </div>
+            <!-- 畫布/邊緣測試控制鈕 -->
+            <div id="controls-drawing" class="controls-set hidden">
+                <button id="clear-canvas-btn" class="control-button" style="background-color: #ffffff; color: #000000; font-size: 0.8rem; border: none; width: auto; padding: 0 15px; border-radius: 20px; font-weight: bold;">
+                    清除畫布
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         JAVASCRIPT 邏輯核心
+         ========================================== -->
+    <script>
+        // --- 全域變數定義 ---
+        const imagePaths = {
+            testpattern: 'images/test-pattern.png',
+            gamma: 'images/gamma.png',
+            viewingangle: 'images/viewing-angle.png'
+        };
+
+        // --- 1. 分頁切換功能 ---
+        function switchTab(tabId) {
+            // 隱藏所有分頁內容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // 取消所有導覽按鈕的 active 狀態
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 顯示當前分頁與啟動 active 按鈕
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) targetTab.classList.add('active');
+
+            const targetBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (targetBtn) targetBtn.classList.add('active');
+
+            // 如果切換到電池與儲存頁籤，且隨身碟測試尚未初始化，則繪製初始圖表
+            if (tabId === 'battery-storage') {
+                setTimeout(initUsbChart, 100);
+            }
+        }
+
+        // --- 2. 系統總覽即時狀態更新 (AIO 邏輯) ---
+        // (1) 即時時鐘
+        function updateRtcTime() {
+            const rtcEl = document.getElementById('rtc-time');
+            if (rtcEl) {
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+                rtcEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+            }
+        }
+        setInterval(updateRtcTime, 1000);
+        updateRtcTime();
+
+        // (2) 模擬系統資源消耗 Donut & Temperature
+        let cpuProgress = 12;
+        let ramProgress = 45;
+        let coreTemp = 42;
+
+        function updateSystemMetrics() {
+            // 微幅隨機震盪
+            cpuProgress = Math.max(5, Math.min(95, cpuProgress + Math.floor(Math.random() * 9) - 4));
+            ramProgress = Math.max(30, Math.min(85, ramProgress + Math.floor(Math.random() * 3) - 1));
+            coreTemp = Math.max(38, Math.min(78, coreTemp + Math.floor(Math.random() * 5) - 2));
+
+            // 更新 CPU Donut
+            const cpuChart = document.getElementById('cpu-chart');
+            const cpuVal = document.getElementById('cpu-val');
+            if (cpuChart && cpuVal) {
+                cpuVal.textContent = `${cpuProgress}%`;
+                cpuChart.style.background = `conic-gradient(var(--accent-blue) 0% ${cpuProgress}%, var(--border-color) ${cpuProgress}% 100%)`;
+            }
+
+            // 更新 RAM Donut
+            const ramChart = document.getElementById('ram-chart');
+            const ramVal = document.getElementById('ram-val');
+            if (ramChart && ramVal) {
+                ramVal.textContent = `${ramProgress}%`;
+                ramChart.style.background = `conic-gradient(var(--accent-blue) 0% ${ramProgress}%, var(--border-color) ${ramProgress}% 100%)`;
+            }
+
+            // 更新溫度
+            const tempVal = document.getElementById('temp-val');
+            const tempBar = document.getElementById('temp-bar');
+            if (tempVal && tempBar) {
+                tempVal.textContent = `${coreTemp}°C`;
+                tempBar.style.width = `${Math.min(100, (coreTemp / 90) * 100)}%`;
+                // 溫度高過 65 度變橘/紅
+                if (coreTemp > 68) {
+                    tempBar.style.background = 'linear-gradient(90deg, var(--accent-orange), var(--accent-red))';
+                } else {
+                    tempBar.style.background = 'linear-gradient(90deg, var(--accent-green), var(--accent-orange))';
+                }
+            }
+        }
+        setInterval(updateSystemMetrics, 2000);
+
+        // (3) LED 燈光控制
+        const ledDisplay = document.getElementById('led-display');
+        const modeSolid = document.getElementById('mode-solid');
+        const modeBlink = document.getElementById('mode-blink');
+        let currentLedColor = '#000000';
+
+        document.querySelectorAll('.color-grid .color-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.color-grid .color-btn').forEach(b => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+                currentLedColor = btn.dataset.c;
+                updateLedDisplay();
+            });
+        });
+
+        modeSolid.addEventListener('click', () => {
+            modeSolid.classList.add('active');
+            modeBlink.classList.remove('active');
+            ledDisplay.classList.remove('is-blinking');
+            updateLedDisplay();
+        });
+
+        modeBlink.addEventListener('click', () => {
+            modeBlink.classList.add('active');
+            modeSolid.classList.remove('active');
+            updateLedDisplay();
+            // 添加閃爍特效 class
+            ledDisplay.classList.add('is-blinking');
+        });
+
+        function updateLedDisplay() {
+            ledDisplay.style.backgroundColor = currentLedColor;
+            if (currentLedColor === '#000000') {
+                ledDisplay.style.boxShadow = 'none';
+            } else {
+                ledDisplay.style.boxShadow = `0 0 15px ${currentLedColor}`;
+            }
+        }
+
+        // (4) 無線開關
+        const wifiSwitch = document.getElementById('wifi-switch');
+        const btSwitch = document.getElementById('bt-switch');
+        wifiSwitch.addEventListener('change', () => {
+            const parent = wifiSwitch.closest('.wireless-item');
+            const sub = parent.querySelector('span');
+            if (wifiSwitch.checked) {
+                sub.textContent = 'SSID: Office_5G_VIP';
+                sub.style.color = 'var(--text-secondary)';
+            } else {
+                sub.textContent = '已斷開連線';
+                sub.style.color = 'var(--accent-red)';
+            }
+        });
+        btSwitch.addEventListener('change', () => {
+            const parent = btSwitch.closest('.wireless-item');
+            const sub = parent.querySelector('span');
+            if (btSwitch.checked) {
+                sub.textContent = '配對裝置: OrionX_Buds (已連線)';
+                sub.style.color = 'var(--accent-green)';
+            } else {
+                sub.textContent = '配對狀態: 準備就緒';
+                sub.style.color = 'var(--text-secondary)';
+            }
+        });
+
+
+        // --- 3. 完整移植 Audio_v4.html 的音訊控制邏輯 ---
+        const micGroup = document.getElementById('mic-group');
+        const micMainBtn = document.getElementById('mic-main-btn');
+        const micResetBtn = document.getElementById('mic-reset-btn');
+        const micBtnText = document.getElementById('mic-btn-text');
+        
+        // 音訊圖示
+        const iconMic = micMainBtn.querySelector('.icon-mic');
+        const iconStop = micMainBtn.querySelector('.icon-stop');
+        const iconPlay = micMainBtn.querySelector('.icon-play');
+        const iconPause = micMainBtn.querySelector('.icon-pause');
+        
+        // 進度條與提示
+        const playbackProgress = document.getElementById('playback-progress');
+        const progressInner = document.getElementById('playback-progress-inner');
+        const recordingPrompt = document.getElementById('recording-prompt');
+        
+        let micState = 'ready'; // 'ready', 'recording', 'readytoplay', 'playing'
+        let playbackTimer = null;
+
+        function setMicState(newState) {
+            micState = newState;
+            
+            // 重置 class
+            micGroup.classList.remove('is-recording', 'is-readytoplay', 'is-playing');
+            micMainBtn.classList.remove('is-recording', 'is-readytoplay', 'is-playing');
+            
+            // 隱藏所有組件
+            [iconMic, iconStop, iconPlay, iconPause, micResetBtn, playbackProgress, recordingPrompt].forEach(el => el.classList.add('hidden'));
+
+            // 重置進度條
+            clearTimeout(playbackTimer);
+            progressInner.style.transition = 'none'; 
+            progressInner.style.width = '0%'; 
+            
+            switch (newState) {
+                case 'ready':
+                    iconMic.classList.remove('hidden');
+                    micBtnText.textContent = '開始錄音';
+                    break;
+                    
+                case 'recording':
+                    micGroup.classList.add('is-recording');
+                    micMainBtn.classList.add('is-recording');
+                    iconStop.classList.remove('hidden');
+                    micBtnText.textContent = '停止錄音';
+                    
+                    // 產生並顯示錄音隨機提示 (使用 zh-TW 本地時間)
+                    const now = new Date();
+                    const timeString = now.toLocaleString('zh-TW', { 
+                        year: 'numeric', month: 'numeric', day: 'numeric', 
+                        hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                        hour12: true 
+                    });
+                    recordingPrompt.textContent = `請朗讀以下時間進行測試：\n「${timeString}」`;
+                    recordingPrompt.classList.remove('hidden');
+                    break;
+                    
+                case 'readytoplay':
+                    micGroup.classList.add('is-readytoplay');
+                    micMainBtn.classList.add('is-readytoplay');
+                    iconPlay.classList.remove('hidden');
+                    micBtnText.textContent = '播音測試';
+                    micResetBtn.classList.remove('hidden'); 
+                    playbackProgress.classList.remove('hidden'); 
+                    break;
+                    
+                case 'playing':
+                    micGroup.classList.add('is-playing');
+                    micMainBtn.classList.add('is-playing');
+                    iconPause.classList.remove('hidden');
+                    micBtnText.textContent = '播放中...';
+                    micResetBtn.classList.remove('hidden'); 
+                    playbackProgress.classList.remove('hidden'); 
+                    
+                    // 啟動進度條動畫
+                    void progressInner.offsetWidth; 
+                    progressInner.style.transition = 'width 3.0s linear';
+                    progressInner.style.width = '100%';
+                    
+                    playbackTimer = setTimeout(() => {
+                        setMicState('readytoplay'); 
+                    }, 3000);
+                    break;
+            }
+        }
+
+        micMainBtn.addEventListener('click', () => {
+            switch (micState) {
+                case 'ready': setMicState('recording'); break;
+                case 'recording': setMicState('readytoplay'); break;
+                case 'readytoplay': setMicState('playing'); break;
+                case 'playing': setMicState('readytoplay'); break;
+            }
+        });
+        
+        micResetBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setMicState('ready');
+        });
+
+        // 喇叭控制
+        const speakerGroup = document.getElementById('speaker-group');
+        const muteBtn = document.getElementById('mute-btn');
+        const iconVolOn = document.getElementById('icon-vol-on');
+        const iconVolOff = document.getElementById('icon-vol-off');
+        const volSlider = document.getElementById('vol-slider');
+        let volumeBeforeMute = volSlider.value;
+
+        muteBtn.addEventListener('click', () => {
+            const isMuted = speakerGroup.classList.contains('is-muted');
+            speakerGroup.classList.toggle('is-muted', !isMuted);
+            volSlider.disabled = !isMuted;
+            
+            if (!isMuted) {
+                iconVolOn.classList.add('hidden');
+                iconVolOff.classList.remove('hidden');
+                volumeBeforeMute = volSlider.value;
+                volSlider.value = 0;
+            } else {
+                iconVolOn.classList.remove('hidden');
+                iconVolOff.classList.add('hidden');
+                volSlider.value = volumeBeforeMute;
+            }
+            volSlider.dispatchEvent(new Event('input'));
+        });
+
+        volSlider.addEventListener('input', (e) => {
+            const value = e.target.value;
+            const percent = (value / e.target.max) * 100;
+            e.target.style.background = `linear-gradient(to right, var(--accent-blue) ${percent}%, var(--accent-grey) ${percent}%)`;
+            
+            if (value == 0) {
+                if (!speakerGroup.classList.contains('is-muted')) {
+                    volumeBeforeMute = 20; // 靜音恢復時預設 20%
+                    speakerGroup.classList.add('is-muted');
+                    volSlider.disabled = true;
+                    iconVolOn.classList.add('hidden');
+                    iconVolOff.classList.remove('hidden');
+                }
+            } else {
+                if (speakerGroup.classList.contains('is-muted')) {
+                    speakerGroup.classList.remove('is-muted');
+                    volSlider.disabled = false;
+                    iconVolOn.classList.remove('hidden');
+                    iconVolOff.classList.add('hidden');
+                }
+                volumeBeforeMute = value;
+            }
+        });
+        volSlider.dispatchEvent(new Event('input'));
+
+
+        // --- 4. TAB 2: 電池與儲存深度測試邏輯 ---
+        // (1) 電池充放電測試
+        let dischargeInterval = null;
+        let chargeInterval = null;
+        let dischargeSecs = 0;
+        let chargeSecs = 0;
+        let batteryLevel = 65;
+
+        const disTimerEl = document.getElementById('discharge-timer');
+        const chgTimerEl = document.getElementById('charge-timer');
+        const btnDischarge = document.getElementById('btn-start-discharge');
+        const btnCharge = document.getElementById('btn-start-charge');
+        const batValDis = document.getElementById('bat-val-discharge');
+        const batValChg = document.getElementById('bat-val-charge');
+        const batSocDetail = document.getElementById('bat-soc-detail');
+        const batVoltDetail = document.getElementById('bat-volt-detail');
+        const batCurrDetail = document.getElementById('bat-curr-detail');
+        const batPwrDetail = document.getElementById('bat-pwr-detail');
+        const batTempDetail = document.getElementById('bat-temp-detail');
+        const batStatusLed = document.getElementById('bat-status-led');
+        const cpBatLevel = document.getElementById('cp-bat-level');
+        const cpBatText = document.getElementById('cp-bat-text');
+        const cpBatStatus = document.getElementById('cp-bat-status');
+        const batChargingStatus = document.getElementById('bat-charging-status');
+        const batModeText = document.getElementById('bat-mode-text');
+
+        function formatTimer(totalSecs) {
+            const h = String(Math.floor(totalSecs / 3600)).padStart(2, '0');
+            const m = String(Math.floor((totalSecs % 3600) / 60)).padStart(2, '0');
+            const s = String(totalSecs % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        btnDischarge.addEventListener('click', () => {
+            if (dischargeInterval) {
+                // 停止測試
+                clearInterval(dischargeInterval);
+                dischargeInterval = null;
+                btnDischarge.textContent = '開始放電測試';
+                btnCharge.disabled = false;
+                batStatusLed.style.backgroundColor = 'var(--accent-blue)';
+            } else {
+                // 開始放電測試
+                dischargeSecs = 0;
+                disTimerEl.textContent = '00:00:00';
+                btnDischarge.textContent = '停止放電測試';
+                btnCharge.disabled = true;
+                batStatusLed.style.backgroundColor = 'var(--accent-orange)';
+                batChargingStatus.textContent = '已中斷';
+                batModeText.textContent = '放電測試中';
+                batModeText.style.color = 'var(--accent-orange)';
+                
+                dischargeInterval = setInterval(() => {
+                    dischargeSecs++;
+                    disTimerEl.textContent = formatTimer(dischargeSecs);
+                    // 模擬電量每 5 秒下降 1%
+                    if (dischargeSecs % 5 === 0 && batteryLevel > 0) {
+                        batteryLevel--;
+                        updateBatteryData(false);
+                    }
+                }, 1000);
+            }
+        });
+
+        btnCharge.addEventListener('click', () => {
+            if (chargeInterval) {
+                // 停止測試
+                clearInterval(chargeInterval);
+                chargeInterval = null;
+                btnCharge.textContent = '開始充電測試';
+                btnDischarge.disabled = false;
+                batStatusLed.style.backgroundColor = 'var(--accent-blue)';
+            } else {
+                // 開始充電測試
+                chargeSecs = 0;
+                chgTimerEl.textContent = '00:00:00';
+                btnCharge.textContent = '停止充電測試';
+                btnDischarge.disabled = true;
+                batStatusLed.style.backgroundColor = 'var(--accent-green)';
+                batChargingStatus.textContent = '已連接 (快充)';
+                batModeText.textContent = '充電測試中';
+                batModeText.style.color = 'var(--accent-green)';
+
+                chargeInterval = setInterval(() => {
+                    chargeSecs++;
+                    chgTimerEl.textContent = formatTimer(chargeSecs);
+                    // 模擬電量每 3 秒上升 1%
+                    if (chargeSecs % 3 === 0 && batteryLevel < 100) {
+                        batteryLevel++;
+                        updateBatteryData(true);
+                    }
+                }, 1000);
+            }
+        });
+
+        function updateBatteryData(isCharging) {
+            // 更新 UI
+            batValDis.textContent = `${batteryLevel} %`;
+            batValChg.textContent = `${batteryLevel} %`;
+            batSocDetail.textContent = `${batteryLevel} %`;
+            cpBatText.textContent = `${batteryLevel}%`;
+            cpBatLevel.style.width = `${batteryLevel}%`;
+
+            if (isCharging) {
+                batVoltDetail.textContent = '12.4 V';
+                batCurrDetail.textContent = '+2.2 A';
+                batPwrDetail.textContent = '27.28 W';
+                batTempDetail.textContent = '31.2 °C';
+                cpBatStatus.textContent = '快速充電中 (預估 38m)';
+                cpBatLevel.style.backgroundColor = 'var(--accent-green)';
+            } else {
+                batVoltDetail.textContent = '11.1 V';
+                batCurrDetail.textContent = '-3.1 A';
+                batPwrDetail.textContent = '34.41 W';
+                batTempDetail.textContent = '29.8 °C';
+                cpBatStatus.textContent = '放電測試中 (剩餘約 2h)';
+                cpBatLevel.style.backgroundColor = 'var(--accent-orange)';
+            }
+        }
+
+        // (2) 隨身碟儲存測試
+        let usbInterval = null;
+        let usbProgress = 0;
+        let usbReadHistory = [];
+        let usbWriteHistory = [];
+        const maxDataPoints = 30;
+
+        function initUsbChart() {
+            const canvas = document.getElementById('usb-speed-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            
+            // 響應式調整 canvas 大小
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `${rect.height}px`;
+
+            drawUsbChart();
+        }
+
+        function drawUsbChart() {
+            const canvas = document.getElementById('usb-speed-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+            
+            ctx.clearRect(0, 0, w, h);
+
+            if (usbReadHistory.length === 0) {
+                ctx.fillStyle = 'var(--text-secondary)';
+                ctx.font = '12px "Noto Sans TC"';
+                ctx.textAlign = 'center';
+                ctx.fillText('等待測試數據中...', w / 2, h / 2);
+                return;
+            }
+
+            // 繪製讀取速度曲線 (藍)
+            ctx.strokeStyle = 'var(--accent-blue)';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            const stepX = w / (maxDataPoints - 1);
+            usbReadHistory.forEach((val, idx) => {
+                const x = idx * stepX;
+                const y = h - (val / 220) * h * 0.85; // 對應最高 220 MB/s
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // 繪製寫入速度曲線 (橘)
+            ctx.strokeStyle = 'var(--accent-orange)';
+            ctx.beginPath();
+            usbWriteHistory.forEach((val, idx) => {
+                const x = idx * stepX;
+                const y = h - (val / 220) * h * 0.85;
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+        }
+
+        function startUsbTest() {
+            const pBar = document.getElementById('usb-progress-bar');
+            const readSpeedEl = document.getElementById('usb-read-speed');
+            const writeSpeedEl = document.getElementById('usb-write-speed');
+            const logContainer = document.getElementById('usb-log-container');
+
+            usbProgress = 0;
+            usbReadHistory = [];
+            usbWriteHistory = [];
+            pBar.style.width = '0%';
+            pBar.textContent = '0%';
+
+            usbInterval = setInterval(() => {
+                usbProgress += 4;
+                if (usbProgress > 100) usbProgress = 100;
+                pBar.style.width = `${usbProgress}%`;
+                pBar.textContent = `${usbProgress}%`;
+
+                // 產生隨機速率
+                const curRead = Math.floor(170 + Math.random() * 25);
+                const curWrite = Math.floor(38 + Math.random() * 12);
+                readSpeedEl.textContent = curRead;
+                writeSpeedEl.textContent = curWrite;
+
+                // 記錄進 History
+                usbReadHistory.push(curRead);
+                usbWriteHistory.push(curWrite);
+                if (usbReadHistory.length > maxDataPoints) {
+                    usbReadHistory.shift();
+                    usbWriteHistory.shift();
+                }
+                drawUsbChart();
+
+                // 寫入 Log
+                if (usbProgress % 20 === 0 && usbProgress < 100) {
+                    const item = document.createElement('div');
+                    item.className = 'log-item';
+                    item.textContent = `隨身碟 E: 寫入測試區塊 ${usbProgress}% ... 即時寫入：${curWrite} MB/s。`;
+                    logContainer.appendChild(item);
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+
+                if (usbProgress === 100) {
+                    clearInterval(usbInterval);
+                    usbInterval = null;
+                    const item = document.createElement('div');
+                    item.className = 'log-item';
+                    item.style.borderColor = 'var(--accent-green)';
+                    item.textContent = `✅ 隨身碟 E: 效能測試成功完成！平均讀取：185.3 MB/s，平均寫入：43.8 MB/s。`;
+                    logContainer.appendChild(item);
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                    document.getElementById('btn-cancel-usb').textContent = '重新測試';
+                    document.getElementById('btn-cancel-usb').style.backgroundColor = 'var(--accent-blue)';
+                }
+            }, 500);
+        }
+
+        document.getElementById('btn-cancel-usb').addEventListener('click', (e) => {
+            const btn = e.target;
+            if (usbInterval) {
+                // 中斷
+                clearInterval(usbInterval);
+                usbInterval = null;
+                btn.textContent = '重新測試';
+                btn.style.backgroundColor = 'var(--accent-blue)';
+                const item = document.createElement('div');
+                item.className = 'log-item';
+                item.style.borderColor = 'var(--accent-red)';
+                item.textContent = `❌ 測試已被使用者手動取消。`;
+                document.getElementById('usb-log-container').appendChild(item);
+            } else {
+                // 重新測試
+                btn.textContent = '中斷測試';
+                btn.style.backgroundColor = 'var(--accent-red)';
+                startUsbTest();
+            }
+        });
+
+        // 頁面初啟動
+        setTimeout(startUsbTest, 800);
+
+
+        // --- 5. TAB 3: 專業顯示與觸控測試邏輯 (移植自 TouchDisplay_v7.html) ---
+        const testScreen = document.getElementById('test-screen');
+        const exitTestBtn = document.getElementById('exit-test');
+        const testContent = document.getElementById('test-content');
+        const controlBar = document.getElementById('control-bar');
+        const testDescription = document.getElementById('test-description');
+        
+        const controlSets = {
+            pixel: document.getElementById('controls-pixel'),
+            uniformity: document.getElementById('controls-uniformity'),
+            drawing: document.getElementById('controls-drawing')
+        };
+
+        function startTest(testName, testType) {
+            // 隱藏主 Navigation
+            testScreen.classList.remove('hidden');
+
+            // 請求全螢幕體驗
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.warn(`無法自動進入全螢幕模式: ${err.message}`);
+                });
+            }
+            
+            // 清理上一輪觸控綁定
+            touchTestLogic.cleanup();
+            Object.values(controlSets).forEach(set => set.classList.add('hidden'));
+
+            testContent.style.display = 'flex';
+            testContent.innerHTML = '';
+            testScreen.style.backgroundColor = '#000000';
+            testDescription.innerHTML = '';
+            
+            if (testType === 'display') {
+                displayTestLogic.setup(testName);
+            } else if (testType === 'touch') {
+                touchTestLogic.setup(testName);
+            }
+            
+            // 100ms 後浮現控制器
+            setTimeout(() => testScreen.classList.add('controls-visible'), 100);
+        }
+
+        function endTest() {
+            testScreen.classList.add('hidden');
+            testScreen.classList.remove('controls-visible'); 
+            touchTestLogic.cleanup();
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(()=>{});
+            }
+        }
+
+        // 綁定測試按鈕點擊
+        document.querySelectorAll('.test-card-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const testName = btn.dataset.test;
+                const testType = btn.dataset.testType;
+                startTest(testName, testType);
+            });
+        });
+
+        exitTestBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            endTest();
+        });
+
+        // 點擊非功能區，切換控制列與說明的顯示
+        testScreen.addEventListener('click', (e) => {
+            const isTestContent = (e.target === testScreen || e.target === testContent || e.target.parentElement === testContent || e.target.closest('.readability-pattern'));
+            const isControl = (e.target.closest('#control-bar') || e.target.closest('#test-description') || e.target.closest('#exit-test'));
+            const isCanvas = e.target.tagName === 'CANVAS';
+            const isGestureObject = e.target.closest('.gesture-object');
+
+            if ((isTestContent || isCanvas || isGestureObject) && !isControl) {
+                 testScreen.classList.toggle('controls-visible');
+            }
+        });
+
+        // 壞點與亮度測試切換顏色
+        controlSets.pixel.addEventListener('click', (e) => {
+            if (e.target.dataset.color) {
+                testScreen.style.backgroundColor = e.target.dataset.color;
+            }
+            e.stopPropagation(); 
+        });
+
+        controlSets.uniformity.addEventListener('click', (e) => {
+            if (e.target.dataset.color) {
+                testScreen.style.backgroundColor = e.target.dataset.color;
+            }
+            e.stopPropagation(); 
+        });
+
+        // 阻止控制條與說明框本身的點擊事件穿透
+        controlBar.addEventListener('click', (e) => e.stopPropagation());
+        testDescription.addEventListener('click', (e) => e.stopPropagation());
+
+
+        // --- 6. 顯示測試邏輯與圖片加載降級渲染 ---
+        
+        // 核心載入影像與降級渲染器
+        function showImageWithFallback(type, fallbackDrawFunc) {
+            const img = new Image();
+            img.src = imagePaths[type];
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'contain';
+
+            img.onload = () => {
+                testContent.innerHTML = '';
+                testContent.appendChild(img);
+            };
+
+            img.onerror = () => {
+                console.warn(`未偵測到測試圖檔：${imagePaths[type]}。已啟動 Canvas 校準圖案渲染降級機制。`);
+                testContent.innerHTML = '';
+                const canvas = document.createElement('canvas');
+                testContent.appendChild(canvas);
+                
+                // 設置 Canvas 大小
+                const rect = testContent.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = `${rect.width}px`;
+                canvas.style.height = `${rect.height}px`;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+                
+                // 呼叫降級繪製函式
+                fallbackDrawFunc(ctx, rect.width, rect.height);
+            };
+        }
+
+        // (1) 綜合測試圖 Canvas 繪製 (Color bar + Grid)
+        function drawFallbackTestPattern(ctx, w, h) {
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, w, h);
+
+            // 畫細密背景格線
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.lineWidth = 1;
+            const grid = 30;
+            for(let x = 0; x < w; x += grid) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+            }
+            for(let y = 0; y < h; y += grid) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+
+            // 畫中央大圓形 (檢測縱橫比)
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.35, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 畫水平標準彩帶
+            const barW = (w * 0.7) / 8;
+            const barH = h * 0.18;
+            const startX = w / 2 - (barW * 4);
+            const startY = h / 2 - (barH / 2);
+            const colors = ['#ffffff', '#ffff00', '#00ffff', '#00ff00', '#ff00ff', '#ff0000', '#0000ff', '#000000'];
+            
+            colors.forEach((color, i) => {
+                ctx.fillStyle = color;
+                ctx.fillRect(startX + i * barW, startY, barW, barH);
+                ctx.strokeStyle = '#808080';
+                ctx.strokeRect(startX + i * barW, startY, barW, barH);
+            });
+
+            // 畫斜線對角線 (對焦)
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w, h); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(w, 0); ctx.lineTo(0, h); ctx.stroke();
+            
+            // 寫上標題提示
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px "Noto Sans TC"';
+            ctx.textAlign = 'center';
+            ctx.fillText('OrionX Canvas 校準降級圖樣 (幾何、收斂與色彩)', w / 2, h * 0.15);
+        }
+
+        // (2) Gamma 測試圖 Canvas 繪製 (10%~90% 對比色帶)
+        function drawFallbackGamma(ctx, w, h) {
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, w, h);
+
+            // 繪製交錯的水平細黑白條紋背景
+            ctx.fillStyle = '#000000';
+            for(let y = 0; y < h; y += 4) {
+                ctx.fillRect(0, y, w, 2);
+            }
+
+            // 中央繪製多個灰色階梯方塊 (與細密條紋進行眼睛調合測試)
+            const boxCount = 7;
+            const boxW = w * 0.1;
+            const boxH = h * 0.3;
+            const startX = w / 2 - (boxW * boxCount) / 2;
+            const startY = h / 2 - boxH / 2;
+
+            for(let i = 0; i < boxCount; i++) {
+                const opacity = 0.2 + (i * 0.1); // 20% 到 80% 亮度
+                const grayVal = Math.floor(opacity * 255);
+                ctx.fillStyle = `rgb(${grayVal},${grayVal},${grayVal})`;
+                ctx.fillRect(startX + i * boxW, startY, boxW, boxH);
+                ctx.strokeStyle = '#000000';
+                ctx.strokeRect(startX + i * boxW, startY, boxW, boxH);
+
+                // 標示灰度 %
+                ctx.fillStyle = opacity > 0.5 ? '#000000' : '#ffffff';
+                ctx.font = 'bold 14px "Roboto Mono"';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${Math.round(opacity*100)}%`, startX + i * boxW + boxW/2, startY + boxH/2 + 5);
+            }
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 16px "Noto Sans TC"';
+            ctx.textAlign = 'center';
+            ctx.fillText('Gamma 與對比階調測試 (中央區應與背景條紋亮度調和)', w / 2, h * 0.18);
+        }
+
+        // (3) 可視角度 Canvas 繪製 (球體漸變色)
+        function drawFallbackViewingAngle(ctx, w, h) {
+            ctx.fillStyle = '#111218';
+            ctx.fillRect(0, 0, w, h);
+
+            // 畫五個帶有高度漸層的球體
+            const ballRadius = Math.min(w, h) * 0.12;
+            const positions = [
+                {x: w / 2, y: h / 2, color: '#007aff', name: '中央'},
+                {x: w * 0.2, y: h * 0.25, color: '#ff3b30', name: '左上'},
+                {x: w * 0.8, y: h * 0.25, color: '#34c759', name: '右上'},
+                {x: w * 0.2, y: h * 0.75, color: '#ffcc00', name: '左下'},
+                {x: w * 0.8, y: h * 0.75, color: '#af52de', name: '右下'}
+            ];
+
+            positions.forEach(pos => {
+                // 徑向漸層模擬球體
+                const gradient = ctx.createRadialGradient(
+                    pos.x - ballRadius*0.3, pos.y - ballRadius*0.3, ballRadius*0.1, 
+                    pos.x, pos.y, ballRadius
+                );
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.2, pos.color);
+                gradient.addColorStop(1, '#000000');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, ballRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 標示名稱
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px "Noto Sans TC"';
+                ctx.textAlign = 'center';
+                ctx.fillText(pos.name, pos.x, pos.y + ballRadius + 18);
+            });
+
+            ctx.fillStyle = '#8a8d9a';
+            ctx.font = 'bold 15px "Noto Sans TC"';
+            ctx.textAlign = 'center';
+            ctx.fillText('可視角度檢測 (請由斜視觀察球體的亮度下降與色偏)', w / 2, 35);
+        }
+
+        const displayTestLogic = {
+            setup: function(testName) {
+                let descTitle = '';
+                let descText = '';
+
+                switch (testName) {
+                    case 'pixel':
+                        testScreen.style.backgroundColor = '#000000';
+                        controlSets.pixel.classList.remove('hidden');
+                        descTitle = '壞點與亮點';
+                        descText = '請使用下方的色彩切換按鈕，觀察螢幕上是否有「顏色異常」或「恆亮/恆暗」之像素顆粒。';
+                        break;
+                    case 'gradient':
+                        testContent.innerHTML = '<div class="gradient-pattern"></div>';
+                        descTitle = '色彩漸層';
+                        descText = '檢測螢幕的色階平滑度。觀察黑到白漸變是否出現斷層或垂直條紋。';
+                        break;
+                    case 'response':
+                        testContent.innerHTML = '<div class="ufo-pattern"><div class="ufo-object"></div></div>';
+                        descTitle = '反應時間';
+                        descText = '觀察飛過的快速藍色球體。藉以檢驗螢幕在高動態下是否有明顯的拖影或殘影。';
+                        break;
+                    case 'readability':
+                        testContent.style.display = 'block';
+                        const textData = "OrionX 系統測試整合平台 v0.01 螢幕銳利度測試文字。ABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890 " +
+                                         "壞點點擊觸控手勢拖曳繪圖精準邊緣靈敏多點測試。";
+                        const sizeConfigs = [
+                            { class: 'size-18', label: '18pt 測試字級' },
+                            { class: 'size-12', label: '12pt 測試字級' },
+                            { class: 'size-8',  label: '8pt 測試字級' }
+                        ];
+                        let htmlContent = '';
+                        sizeConfigs.forEach(config => {
+                            htmlContent += `<h2>${config.label}</h2>`;
+                            for (let i = 0; i < 35; i++) {
+                                htmlContent += `<p class="${config.class}">${textData}</p>`;
+                            }
+                        });
+                        testContent.innerHTML = `<div class="readability-pattern">${htmlContent}</div>`;
+                        descTitle = '閱讀銳利度';
+                        descText = '這是靜態文字銳利度排版，請觀察螢幕邊角與四邊字體是否仍能保持清晰可辨、無發虛現象。';
+                        break;
+                    case 'uniformity':
+                        testScreen.style.backgroundColor = '#808080';
+                        controlSets.uniformity.classList.remove('hidden');
+                        descTitle = '亮度與均勻度';
+                        descText = '切換下方不同灰度級，仔細觀察背光元件亮度是否分布均勻，有無暗角或色塊陰影。';
+                        break;
+                    case 'testpattern':
+                        descTitle = '綜合校準測試圖';
+                        descText = '標準測試圖。請檢驗外圍方格是否比例失真變形、線條是否清晰無黏連，以及中間色塊是否準確。';
+                        showImageWithFallback('testpattern', drawFallbackTestPattern);
+                        break;
+                    case 'gamma':
+                        descTitle = 'Gamma 對比度';
+                        descText = '標準 Gamma 檢測。正常距離下中央色塊應幾乎融入背景細紋中；若太亮或太暗即為 Gamma 不準確。';
+                        showImageWithFallback('gamma', drawFallbackGamma);
+                        break;
+                    case 'viewingangle':
+                        descTitle = '可視角度';
+                        descText = '可視角球體。請由正面直視後，再由上下左右偏斜角觀看，檢查球體亮度或顏色有無大幅偏色。';
+                        showImageWithFallback('viewingangle', drawFallbackViewingAngle);
+                        break;
+                }
+                
+                if (descTitle) {
+                    testDescription.innerHTML = `<h3>${descTitle}</h3><p>${descText}</p>`;
+                }
+            }
+        };
+
+        // --- 7. 觸控測試邏輯 (Taps, Gestures, Drag, Drawing, Edges, MultiTouch) ---
+        const touchTestLogic = {
+            cleanupTasks: [],
+            
+            setup: function(testName) {
+                testScreen.style.backgroundColor = '#000000';
+                testContent.style.display = 'block'; 
+                testContent.style.position = 'relative';
+
+                switch(testName) {
+                    case 'taps': this.taps.setup(); break;
+                    case 'gestures': this.gestures.setup(); break;
+                    case 'drag': this.drag.setup(); break;
+                    case 'drawing': this.drawing.setup(); break;
+                    case 'edges': this.edges.setup(); break;
+                    case 'multitouch': this.multitouch.setup(); break;
+                }
+            },
+            
+            cleanup: function() {
+                this.cleanupTasks.forEach(task => task()); 
+                this.cleanupTasks = []; 
+                testContent.style.position = '';
+                testContent.style.display = 'flex';
+                const canvas = testContent.querySelector('canvas');
+                if (canvas) canvas.remove();
+            },
+            
+            addCleanupTask: function(listener, target, type) {
+                if (listener && target && type) {
+                    this.cleanupTasks.push(() => target.removeEventListener(type, listener));
+                } else if (typeof listener === 'function') {
+                    this.cleanupTasks.push(listener);
+                }
+            },
+
+            updateDescription: function(title, text, status = '', instruction = '', instructionClass = '') {
+                let statusHTML = status ? `<div class="status-line">${status}</div>` : '';
+                let instructionHTML = instruction ? `<div class="instruction ${instructionClass}">${instruction}</div>` : '';
+                testDescription.innerHTML = `<h3>${title}</h3><p>${text}</p>${statusHTML}${instructionHTML}`;
+            },
+
+            // (1) 基礎點擊
+            taps: {
+                state: 'tap',
+                tapCount: 0,
+                dblTapCount: 0,
+                longPressCount: 0,
+                longPressTimer: null,
+                target: null,
+                
+                handleClick: function(e) {
+                    e.preventDefault();
+                    if (this.state === 'tap') {
+                        this.tapCount++;
+                        if (this.tapCount >= 16) { 
+                            this.state = 'double-tap';
+                            this.tapCount = 0;
+                            this.spawnTarget();
+                        } else {
+                            this.spawnTarget();
+                        }
+                    }
+                },
+                handleDoubleClick: function(e) {
+                    e.preventDefault();
+                    if (this.state === 'double-tap') {
+                        this.dblTapCount++;
+                        if (this.dblTapCount >= 3) {
+                            this.state = 'long-press';
+                            this.dblTapCount = 0;
+                            this.spawnTarget();
+                        } else {
+                            this.spawnTarget();
+                        }
+                    }
+                },
+                handlePointerDown: function(e) {
+                    if (this.state === 'long-press') {
+                        e.preventDefault();
+                        this.longPressTimer = setTimeout(() => {
+                            this.longPressCount++;
+                            if (this.longPressCount >= 2) {
+                                this.state = 'completed';
+                            }
+                            this.spawnTarget();
+                        }, 800);
+                    }
+                },
+                handlePointerUp: function() {
+                    if (this.longPressTimer) {
+                        clearTimeout(this.longPressTimer);
+                    }
+                },
+                spawnTarget: function() {
+                    if (this.state === 'tap') {
+                        const gridSize = 4;
+                        const blockWidth = window.innerWidth / gridSize;
+                        const blockHeight = window.innerHeight / gridSize;
+                        const index = this.tapCount; 
+                        const row = Math.floor(index / gridSize);
+                        const col = index % gridSize;
+                        const targetX = (col * blockWidth) + (blockWidth / 2);
+                        const targetY = (row * blockHeight) + (blockHeight / 2);
+                        const targetSize = 70; 
+                        this.target.style.left = `${targetX - (targetSize / 2)}px`;
+                        this.target.style.top = `${targetY - (targetSize / 2)}px`;
+                    } else {
+                        const padding = 100;
+                        const x = Math.random() * (window.innerWidth - padding * 2) + padding;
+                        const y = Math.random() * (window.innerHeight - padding * 2) + padding;
+                        this.target.style.left = `${x}px`;
+                        this.target.style.top = `${y}px`;
+                    }
+                    
+                    let title = '基礎點擊測試';
+                    let text = '點按圓球，測試單擊、雙擊與長按在各點的反饋。';
+                    let status = '';
+                    let instruction = '';
+                    let instructionClass = '';
+
+                    switch(this.state) {
+                        case 'tap':
+                            instruction = `請點擊藍色目標 ( ${this.tapCount + 1} / 16 )`;
+                            this.target.innerText = '單擊';
+                            break;
+                        case 'double-tap':
+                            instruction = `請「快速雙擊」目標 ( ${this.dblTapCount + 1} / 3 )`;
+                            this.target.innerText = '雙擊';
+                            break;
+                        case 'long-press':
+                            instruction = `請「長按住」目標 ( ${this.longPressCount + 1} / 2 )`;
+                            this.target.innerText = '長按';
+                            break;
+                        case 'completed':
+                            instruction = '測試完成！所有點擊反饋正常。';
+                            instructionClass = 'success';
+                            this.target.style.display = 'none';
+                            break;
+                    }
+                    touchTestLogic.updateDescription(title, text, status, instruction, instructionClass);
+                },
+                setup: function() {
+                    this.handleClick = this.handleClick.bind(this);
+                    this.handleDoubleClick = this.handleDoubleClick.bind(this);
+                    this.handlePointerDown = this.handlePointerDown.bind(this);
+                    this.handlePointerUp = this.handlePointerUp.bind(this);
+                    
+                    const target = document.createElement('div');
+                    target.className = 'tap-target';
+                    this.target = target;
+                    testContent.appendChild(target);
+                    this.target.style.display = 'flex'; 
+
+                    target.addEventListener('click', this.handleClick);
+                    target.addEventListener('dblclick', this.handleDoubleClick);
+                    target.addEventListener('pointerdown', this.handlePointerDown);
+                    target.addEventListener('pointerup', this.handlePointerUp);
+                    target.addEventListener('pointerleave', this.handlePointerUp);
+
+                    touchTestLogic.addCleanupTask(this.handleClick, target, 'click');
+                    touchTestLogic.addCleanupTask(this.handleDoubleClick, target, 'dblclick');
+                    touchTestLogic.addCleanupTask(this.handlePointerDown, target, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, target, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, target, 'pointerleave');
+                    touchTestLogic.addCleanupTask(() => clearTimeout(this.longPressTimer)); 
+                    
+                    this.state = 'tap';
+                    this.tapCount = 0;
+                    this.dblTapCount = 0;
+                    this.longPressCount = 0;
+                    this.spawnTarget();
+                }
+            },
+            
+            // (2) 手勢操作
+            gestures: {
+                target: null,
+                indicator: null,
+                state: {
+                    scale: 1, rotation: 0, initialDistance: 0, initialAngle: 0,
+                    isPinching: false, isSwiping: false, swipeStartX: 0, currentImage: 1
+                },
+                activePointers: new Map(),
+
+                updateGestureTarget: function(index) {
+                    if (!this.target || !this.indicator) return;
+                    this.indicator.innerText = `樣板圖片 ${index} / 3`;
+                    this.target.style.backgroundImage = 'none';
+                    this.target.style.backgroundColor = 'transparent';
+
+                    switch(index) {
+                        case 1:
+                            this.target.style.backgroundImage = 'linear-gradient(135deg, #007aff, #34c759)';
+                            break;
+                        case 2:
+                            this.target.style.backgroundImage = 'linear-gradient(to right, #000000, #ffffff)';
+                            break;
+                        case 3:
+                            this.target.style.backgroundColor = 'var(--accent-orange)';
+                            break;
+                    }
+                },
+
+                handlePointerDown: function(e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    this.target.setPointerCapture(e.pointerId);
+                    this.activePointers.set(e.pointerId, { x: e.pageX, y: e.pageY });
+
+                    if (this.activePointers.size === 1) {
+                        this.state.isSwiping = true;
+                        this.state.swipeStartX = e.pageX;
+                    } 
+                    else if (this.activePointers.size === 2) {
+                        this.state.isSwiping = false; 
+                        this.state.isPinching = true;
+                        const pointers = Array.from(this.activePointers.values());
+                        const dx = pointers[1].x - pointers[0].x;
+                        const dy = pointers[1].y - pointers[0].y;
+                        this.state.initialDistance = Math.hypot(dx, dy);
+                        this.state.initialAngle = Math.atan2(dy, dx);
+                    }
+                },
+
+                handlePointerMove: function(e) {
+                    if (!this.activePointers.has(e.pointerId)) return;
+                    this.activePointers.set(e.pointerId, { x: e.pageX, y: e.pageY });
+                    const pointers = Array.from(this.activePointers.values());
+
+                    if (this.state.isPinching && pointers.length === 2) {
+                        const dx = pointers[1].x - pointers[0].x;
+                        const dy = pointers[1].y - pointers[0].y;
+                        const currentDistance = Math.hypot(dx, dy);
+                        const currentAngle = Math.atan2(dy, dx);
+                        const deltaScale = currentDistance / this.state.initialDistance;
+                        const deltaAngle = currentAngle - this.state.initialAngle;
+                        this.state.scale = deltaScale;
+                        this.state.rotation = deltaAngle * (180 / Math.PI);
+                        this.target.style.transform = `scale(${this.state.scale}) rotate(${this.state.rotation}deg)`;
+                    }
+                },
+
+                handlePointerUp: function(e) {
+                    this.target.releasePointerCapture(e.pointerId);
+                    this.activePointers.delete(e.pointerId);
+
+                    if (this.activePointers.size < 2) {
+                        this.state.isPinching = false;
+                    }
+                    if (this.activePointers.size < 1) {
+                        if (this.state.isSwiping) {
+                            const deltaX = e.pageX - this.state.swipeStartX;
+                            if (Math.abs(deltaX) > 100) {
+                                if (deltaX < 0) this.state.currentImage++;
+                                else this.state.currentImage--;
+                                if (this.state.currentImage < 1) this.state.currentImage = 3;
+                                if (this.state.currentImage > 3) this.state.currentImage = 1;
+                                this.updateGestureTarget(this.state.currentImage);
+                            }
+                        }
+                        this.state.isSwiping = false;
+                        this.state.scale = 1;
+                        this.state.rotation = 0;
+                        this.target.style.transition = 'transform 0.3s ease-out';
+                        this.target.style.transform = `scale(1) rotate(0deg)`;
+                        setTimeout(() => {
+                            if (this.target) this.target.style.transition = 'transform 0.05s linear';
+                        }, 300);
+                    } 
+                    else if (this.activePointers.size === 1) { 
+                        this.state.isSwiping = true;
+                        this.state.swipeStartX = Array.from(this.activePointers.values())[0].x;
+                    }
+                },
+                
+                setup: function() {
+                    this.handlePointerDown = this.handlePointerDown.bind(this);
+                    this.handlePointerMove = this.handlePointerMove.bind(this);
+                    this.handlePointerUp = this.handlePointerUp.bind(this);
+                    this.updateGestureTarget = this.updateGestureTarget.bind(this);
+
+                    this.target = document.createElement('div');
+                    this.target.className = 'gesture-object';
+                    this.indicator = document.createElement('div');
+                    this.indicator.className = 'gesture-indicator';
+                    this.target.appendChild(this.indicator);
+                    testContent.appendChild(this.target);
+                    
+                    touchTestLogic.updateDescription(
+                        '手勢操作測試',
+                        '1. 請單指「左右滑動」該色塊物件以切換樣板圖片。<br>2. 請雙指在色塊上進行「捏合縮放」與「雙指旋轉」。',
+                        '', '請開始手勢操作...'
+                    );
+                    
+                    this.target.addEventListener('pointerdown', this.handlePointerDown);
+                    this.target.addEventListener('pointermove', this.handlePointerMove);
+                    this.target.addEventListener('pointerup', this.handlePointerUp);
+                    this.target.addEventListener('pointercancel', this.handlePointerUp);
+
+                    touchTestLogic.addCleanupTask(this.handlePointerDown, this.target, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.handlePointerMove, this.target, 'pointermove');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, this.target, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, this.target, 'pointercancel');
+                    touchTestLogic.addCleanupTask(() => { 
+                        this.activePointers.clear(); 
+                        this.target = null; 
+                        this.indicator = null;
+                    });
+                    
+                    this.state = { scale: 1, rotation: 0, isPinching: false, isSwiping: false, currentImage: 1 };
+                    this.activePointers.clear();
+                    this.updateGestureTarget(this.state.currentImage);
+                }
+            },
+
+            // (3) 拖曳與追蹤
+            drag: {
+                draggable: null,
+                dropZone: null,
+                isDragging: false,
+                activePointerId: null, 
+                offsetX: 0,
+                offsetY: 0,
+                
+                handleDragStart: function(e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    if (this.isDragging) return; 
+                    e.preventDefault();
+                    this.isDragging = true;
+                    this.activePointerId = e.pointerId;
+                    this.draggable.classList.add('dragging');
+                    this.draggable.setPointerCapture(e.pointerId);
+                    const rect = this.draggable.getBoundingClientRect();
+                    this.offsetX = e.clientX - rect.left;
+                    this.offsetY = e.clientY - rect.top;
+                    
+                    touchTestLogic.updateDescription(
+                        '拖曳與追蹤測試',
+                        '按壓並拖曳橘色物件到右側的虛線放置框中。',
+                        '觀察：物件是否持續且精準貼緊指尖？',
+                        '拖曳中...'
+                    );
+                },
+                handleDragMove: function(e) {
+                    if (!this.isDragging || e.pointerId !== this.activePointerId) return;
+                    e.preventDefault();
+                    const parentRect = testContent.getBoundingClientRect();
+                    let newX = e.clientX - parentRect.left - this.offsetX;
+                    let newY = e.clientY - parentRect.top - this.offsetY;
+                    
+                    this.draggable.style.left = `${newX}px`;
+                    this.draggable.style.top = `${newY}px`;
+                    
+                    if (this.isOverDropZone()) {
+                        this.dropZone.classList.add('over');
+                    } else {
+                        this.dropZone.classList.remove('over');
+                    }
+                },
+                handleDragEnd: function(e) {
+                    if (!this.isDragging || e.pointerId !== this.activePointerId) return;
+                    e.preventDefault();
+                    this.isDragging = false;
+                    this.activePointerId = null;
+                    this.draggable.classList.remove('dragging');
+                    this.draggable.releasePointerCapture(e.pointerId);
+                    
+                    let status = '觀察：物件是否持續且精準貼緊指尖？';
+                    let instruction = '放開了物件。請繼續拖放測試。';
+                    let instructionClass = '';
+                    
+                    if (this.isOverDropZone()) {
+                        status = '成功！物件已正確投入放置區。';
+                        instruction = '測試完成，追蹤反饋精確。';
+                        instructionClass = 'success';
+                        this.dropZone.classList.remove('over');
+                        const dzRect = this.dropZone.getBoundingClientRect();
+                        const drRect = this.draggable.getBoundingClientRect();
+                        const pRect = testContent.getBoundingClientRect();
+                        this.draggable.style.left = `${dzRect.left - pRect.left + (dzRect.width - drRect.width)/2}px`;
+                        this.draggable.style.top = `${dzRect.top - pRect.top + (dzRect.height - drRect.height)/2}px`;
+                    }
+                    
+                    touchTestLogic.updateDescription(
+                        '拖曳與追蹤測試',
+                        '按壓並拖曳橘色物件到右側的虛線放置框中。',
+                        status, instruction, instructionClass
+                    );
+                },
+                isOverDropZone: function() {
+                    const dr = this.draggable.getBoundingClientRect();
+                    const dz = this.dropZone.getBoundingClientRect();
+                    return !(dr.right < dz.left || dr.left > dz.right || dr.bottom < dz.top || dr.top > dz.bottom);
+                },
+                setup: function() {
+                    this.handleDragStart = this.handleDragStart.bind(this);
+                    this.handleDragMove = this.handleDragMove.bind(this);
+                    this.handleDragEnd = this.handleDragEnd.bind(this);
+                    
+                    this.draggable = document.createElement('div');
+                    this.draggable.className = 'draggable-object';
+                    this.draggable.innerText = '拖曳物件';
+                    this.dropZone = document.createElement('div');
+                    this.dropZone.className = 'drop-zone';
+                    this.dropZone.innerText = '放入此處';
+                    
+                    testContent.appendChild(this.draggable);
+                    testContent.appendChild(this.dropZone);
+                    
+                    this.draggable.addEventListener('pointerdown', this.handleDragStart);
+                    testScreen.addEventListener('pointermove', this.handleDragMove);
+                    testScreen.addEventListener('pointerup', this.handleDragEnd);
+                    testScreen.addEventListener('pointercancel', this.handleDragEnd);
+                    
+                    touchTestLogic.addCleanupTask(this.handleDragStart, this.draggable, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.handleDragMove, testScreen, 'pointermove');
+                    touchTestLogic.addCleanupTask(this.handleDragEnd, testScreen, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.handleDragEnd, testScreen, 'pointercancel');
+                    touchTestLogic.addCleanupTask(() => {
+                        this.draggable = null;
+                        this.dropZone = null;
+                    });
+                    
+                    touchTestLogic.updateDescription(
+                        '拖曳與追蹤測試',
+                        '按壓並拖曳橘色物件到右側的虛線放置框中。',
+                        '觀察：物件是否持續且精準貼緊指尖？',
+                        '請開始操作...'
+                    );
+                    
+                    this.isDragging = false;
+                    this.activePointerId = null;
+                }
+            },
+            
+            // (4) 繪圖畫布輔助
+            canvasHelper: {
+                canvas: null,
+                ctx: null,
+                activeDrawPointers: new Map(), 
+
+                setupCanvas: function() {
+                    this.canvas = document.createElement('canvas');
+                    this.canvas.className = 'touch-canvas';
+                    testContent.appendChild(this.canvas);
+                    this.ctx = this.canvas.getContext('2d');
+                    
+                    this.resizeCanvas = this.resizeCanvas.bind(this);
+                    this.startDrawing = this.startDrawing.bind(this);
+                    this.draw = this.draw.bind(this);
+                    this.stopDrawing = this.stopDrawing.bind(this);
+                    this.clearCanvas = this.clearCanvas.bind(this);
+
+                    window.addEventListener('resize', this.resizeCanvas);
+                    testScreen.addEventListener('pointerdown', this.startDrawing);
+                    testScreen.addEventListener('pointermove', this.draw);
+                    testScreen.addEventListener('pointerup', this.stopDrawing);
+                    testScreen.addEventListener('pointercancel', this.stopDrawing); 
+                    
+                    touchTestLogic.addCleanupTask(this.resizeCanvas, window, 'resize');
+                    touchTestLogic.addCleanupTask(this.startDrawing, testScreen, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.draw, testScreen, 'pointermove');
+                    touchTestLogic.addCleanupTask(this.stopDrawing, testScreen, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.stopDrawing, testScreen, 'pointercancel');
+                    touchTestLogic.addCleanupTask(() => this.activeDrawPointers.clear());
+
+                    controlSets.drawing.classList.remove('hidden');
+                    const clearBtn = document.getElementById('clear-canvas-btn');
+                    clearBtn.addEventListener('click', this.clearCanvas);
+                    touchTestLogic.addCleanupTask(this.clearCanvas, clearBtn, 'click');
+                    
+                    this.resizeCanvas();
+                },
+                
+                resizeCanvas: function() {
+                    if (!this.canvas) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const rect = testContent.getBoundingClientRect(); 
+                    this.canvas.width = rect.width * dpr;
+                    this.canvas.height = rect.height * dpr;
+                    this.ctx.scale(dpr, dpr);
+                    this.canvas.style.width = `${rect.width}px`;
+                    this.canvas.style.height = `${rect.height}px`;
+                    this.ctx.strokeStyle = '#007aff';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineJoin = 'round';
+                    
+                    if (touchTestLogic.drawing.isActive) touchTestLogic.drawing.drawGrid();
+                    if (touchTestLogic.edges.isActive) touchTestLogic.edges.drawGuides();
+                },
+                
+                clearCanvas: function() {
+                    if (!this.ctx) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = this.canvas.width / dpr;
+                    const h = this.canvas.height / dpr;
+                    this.ctx.clearRect(0, 0, w, h);
+                    if (touchTestLogic.drawing.isActive) touchTestLogic.drawing.drawGrid();
+                    if (touchTestLogic.edges.isActive) touchTestLogic.edges.drawGuides();
+                },
+
+                startDrawing: function(e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    if (e.target.closest('#control-bar') || e.target.closest('#test-description') || e.target.closest('#exit-test')) {
+                        return;
+                    }
+                    e.preventDefault();
+                    const rect = testContent.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.activeDrawPointers.set(e.pointerId, { x: x, y: y });
+                    
+                    if (touchTestLogic.drawing.isActive) {
+                        touchTestLogic.drawing.checkJitter(x, y);
+                    }
+                },
+                
+                draw: function(e) {
+                    if (!this.activeDrawPointers.has(e.pointerId)) return;
+                    e.preventDefault();
+                    const lastPos = this.activeDrawPointers.get(e.pointerId);
+                    const rect = testContent.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(lastPos.x, lastPos.y);
+                    this.ctx.lineTo(x, y);
+                    this.ctx.stroke();
+                    this.activeDrawPointers.set(e.pointerId, { x: x, y: y });
+                },
+                
+                stopDrawing: function(e) {
+                    if (!this.activeDrawPointers.has(e.pointerId)) return;
+                    this.activeDrawPointers.delete(e.pointerId);
+                    
+                    if (touchTestLogic.drawing.jitterTimer) {
+                        clearTimeout(touchTestLogic.drawing.jitterTimer);
+                        touchTestLogic.drawing.jitterTimer = null;
+                        touchTestLogic.updateDescription(
+                            '繪圖與精準度測試',
+                            '1. (準確度) 請點擊繪圖交叉格點。<br>2. (線性度) 請嘗試繪製對角線。<br>3. (抖動測試) 請將手指「完全靜止」點按在畫布上 3 秒。',
+                            '靜止按壓檢測中斷。',
+                            '請繼續測試...'
+                        );
+                    }
+                }
+            },
+            
+            // (5) 繪圖與精準度
+            drawing: {
+                isActive: false,
+                jitterTimer: null,
+                
+                setup: function() {
+                    this.isActive = true;
+                    touchTestLogic.canvasHelper.setupCanvas();
+                    
+                    touchTestLogic.updateDescription(
+                        '繪圖與精準度測試',
+                        '1. (準確度) 請點擊繪圖交叉格點。<br>2. (線性度) 請嘗試繪製對角線。<br>3. (抖動測試) 請將手指「完全靜止」點按在畫布上 3 秒。',
+                        '觀察：筆跡線條是否平滑流暢，有無斷點或嚴重鋸齒抖動？',
+                        '請開始在畫布上書寫...'
+                    );
+                    
+                    setTimeout(() => this.drawGrid(), 50); 
+                    touchTestLogic.addCleanupTask(() => {
+                        this.isActive = false;
+                        if (this.jitterTimer) clearTimeout(this.jitterTimer);
+                    });
+                },
+                
+                drawGrid: function() {
+                    const ctx = touchTestLogic.canvasHelper.ctx;
+                    if (!ctx) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = touchTestLogic.canvasHelper.canvas.width / dpr;
+                    const h = touchTestLogic.canvasHelper.canvas.height / dpr;
+                    ctx.save();
+                    ctx.strokeStyle = '#3a3a3c'; 
+                    ctx.lineWidth = 1;
+                    const gridSizeX = 4;
+                    const gridSizeY = 3;
+                    for (let i = 1; i < gridSizeX; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo((w / gridSizeX) * i, 0);
+                        ctx.lineTo((w / gridSizeX) * i, h);
+                        ctx.stroke();
+                    }
+                    for (let i = 1; i < gridSizeY; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, (h / gridSizeY) * i);
+                        ctx.lineTo(w, (h / gridSizeY) * i);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                },
+                
+                checkJitter: function(x, y) {
+                    const ctx = touchTestLogic.canvasHelper.ctx;
+                    touchTestLogic.updateDescription(
+                        '繪圖與精準度測試',
+                        '1. (準確度) 請點擊繪圖交叉格點。<br>2. (線性度) 請嘗試繪製對角線。<br>3. (抖動測試) 請將手指「完全靜止」點按在畫布上 3 秒。',
+                        '抖動診斷中... 請保持手指完全靜止 3 秒',
+                        ''
+                    );
+                    
+                    ctx.save();
+                    ctx.strokeStyle = 'var(--accent-red)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20, 0, Math.PI * 2); 
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    this.jitterTimer = setTimeout(() => {
+                        touchTestLogic.updateDescription(
+                            '繪圖與精準度測試',
+                            '1. (準確度) 請點擊繪圖交叉格點。<br>2. (線性度) 請嘗試繪製對角線。<br>3. (抖動測試) 請將手指「完全靜止」點按在畫布上 3 秒。',
+                            '抖動分析完成。請放開手指，檢視紅圈內是否有持續的微幅噪訊抖動點。',
+                            '完成一項抖動測試，請繼續！',
+                            'success'
+                        );
+                    }, 3000);
+                }
+            },
+            
+            // (6) 邊緣靈敏度
+            edges: {
+                isActive: false,
+                setup: function() {
+                    this.isActive = true;
+                    touchTestLogic.canvasHelper.setupCanvas();
+                    
+                    touchTestLogic.updateDescription(
+                        '邊緣靈敏度測試',
+                        '1. 請沿著螢幕「虛線邊框」環繞畫一圈。<br>2. 點擊「四個角落」的黃橘色感應方框。',
+                        '觀察：螢幕四周極邊緣地帶是否有觸控死角或中斷？',
+                        '請開始沿虛線畫圈...'
+                    );
+                    
+                    setTimeout(() => this.drawGuides(), 50); 
+                    touchTestLogic.addCleanupTask(() => this.isActive = false);
+                },
+                
+                drawGuides: function() {
+                    const ctx = touchTestLogic.canvasHelper.ctx;
+                    if (!ctx) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = touchTestLogic.canvasHelper.canvas.width / dpr;
+                    const h = touchTestLogic.canvasHelper.canvas.height / dpr;
+                    const padding = 6; 
+                    const cornerSize = 44; 
+                    
+                    ctx.save();
+                    ctx.strokeStyle = '#55555c'; 
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 6]);
+                    ctx.strokeRect(padding, padding, w - padding*2, h - padding*2);
+                    ctx.fillStyle = 'rgba(255, 149, 0, 0.4)'; 
+                    ctx.setLineDash([]);
+                    ctx.fillRect(0, 0, cornerSize, cornerSize); 
+                    ctx.fillRect(w - cornerSize, 0, cornerSize, cornerSize); 
+                    ctx.fillRect(0, h - cornerSize, cornerSize, cornerSize); 
+                    ctx.fillRect(w - cornerSize, h - cornerSize, cornerSize, cornerSize); 
+                    ctx.restore();
+                }
+            },
+
+            // (7) 多點測試
+            multitouch: {
+                handleTouch: function(e) {
+                    e.preventDefault();
+                    testContent.innerHTML = '';
+                    const touches = e.touches;
+                    let touchCount = touches.length;
+                    
+                    for (let i = 0; i < touches.length; i++) {
+                        const touch = touches[i];
+                        const touchPoint = document.createElement('div');
+                        touchPoint.className = 'multi-touch-point';
+                        touchPoint.innerText = i + 1; 
+                        touchPoint.style.left = `${touch.pageX}px`;
+                        touchPoint.style.top = `${touch.pageY}px`;
+                        testContent.appendChild(touchPoint);
+                    }
+                    
+                    touchTestLogic.updateDescription(
+                        '多點觸控測試',
+                        '請將多根手指同時放於螢幕上並隨意拖動。',
+                        `當前偵測到觸控點數：${touchCount}`,
+                        ''
+                    );
+                },
+                
+                setup: function() {
+                    this.handleTouch = this.handleTouch.bind(this);
+                    
+                    touchTestLogic.updateDescription(
+                        '多點觸控測試',
+                        '請將多根手指同時放於螢幕上並隨意拖動。',
+                        '當前偵測到觸控點數：0',
+                        '請放上您的多根手指開始測試...'
+                    );
+                    
+                    testScreen.addEventListener('touchstart', this.handleTouch);
+                    testScreen.addEventListener('touchmove', this.handleTouch);
+                    testScreen.addEventListener('touchend', this.handleTouch);
+                    testScreen.addEventListener('touchcancel', this.handleTouch);
+                    
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchstart');
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchmove');
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchend');
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchcancel');
+                }
+            }
+        };
+
+        // 初始化
+        setMicState('ready');
+
+    </script>
+</body>
+</html>

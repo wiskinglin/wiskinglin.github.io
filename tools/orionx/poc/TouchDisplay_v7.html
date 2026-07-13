@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>方案三 (v9.6 - 整合觸控測試)：專業螢幕測試儀</title>
+    <style>
+        /* --- 1. 基礎與佈局 (Base & Layout) --- */
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-text: #e0e0e0;
+            --secondary-text: #a0a0a0;
+            --border-color: #333333;
+            --accent-color: #007aff;
+            --success-color: #34c759;
+            --warning-color: #ff9500;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            overscroll-behavior: contain;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        button {
+            font-family: inherit;
+        }
+
+        /* --- 2. 主儀表板 (Dashboard) --- */
+        #dashboard {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin: 0;
+            color: #fff;
+        }
+        
+        .dashboard-section-header {
+            font-size: 1.3rem;
+            color: var(--secondary-text);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .test-card {
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box; 
+            color: var(--primary-text); 
+
+            /* [v9.5 解決方案 1: 卡片對齊] */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .test-card:hover, .test-card:focus {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            outline: 2px solid var(--accent-color);
+        }
+
+        .test-card h3 {
+            font-size: 1.15rem;
+            color: #fff;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .test-card p {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            
+            /* [v9.5 解決方案 1: 卡片對齊] */
+            flex-grow: 1; 
+            margin-bottom: 0;
+        }
+        
+        /* --- [v9.6] 根據回饋，移除了 .card-badge 樣式 --- */
+        
+        /* --- 3. 測試畫面 (Test Screen) --- */
+        #test-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+            background-color: #000; 
+            cursor: none; 
+            touch-action: none;
+        }
+        
+        #test-screen.controls-visible {
+            cursor: default;
+        }
+        
+        #test-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #test-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+        
+        #test-description {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            max-width: 350px;
+            background: rgba(40, 40, 40, 0.7);
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px 20px;
+            z-index: 1020;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+        }
+        #test-description h3 {
+            font-size: 1.1rem;
+            color: #fff;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        #test-description p {
+            font-size: 0.9rem;
+            color: var(--primary-text);
+            margin: 0;
+            line-height: 1.5;
+        }
+        #test-description .status-line {
+            font-size: 0.9rem;
+            color: var(--success-color);
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #test-description .instruction {
+            font-size: 1rem;
+            color: var(--warning-color);
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        /* [v9.5 建議保留] 成功狀態樣式 */
+        #test-description .instruction.success {
+            color: var(--success-color);
+        }
+        
+        #exit-test {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            font-size: 1.8rem;
+            line-height: 40px;
+            text-align: center;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.4);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1020;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #control-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(40, 40, 40, 0.7);
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 10px 15px;
+            display: flex;
+            gap: 12px;
+            z-index: 1020;
+            opacity: 0;
+            visibility: hidden;
+            transform: translate(-50%, 10px);
+            transition: all 0.3s ease;
+        }
+        
+        #test-screen.controls-visible #control-bar,
+        #test-screen.controls-visible #exit-test,
+        #test-screen.controls-visible #test-description {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, 0); 
+        }
+        #test-screen.controls-visible #exit-test,
+        #test-screen.controls-visible #test-description {
+             transform: none; 
+        }
+
+        .control-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+        }
+        .control-button[data-color="#ffffff"] {
+            border-color: #888;
+        }
+        
+        /* --- 4. 顯示測試樣式 (Display Test Patterns) --- */
+        .gradient-pattern {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #000, #fff);
+        }
+        .readability-pattern {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            color: #000;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.1; 
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 0.5% 1%;
+        }
+        /* [v9.5 建議保留] 閱讀測試結構 */
+        .readability-pattern h2 {
+            font-size: 10pt;
+            color: #555;
+            margin: 8px 0 2px 0;
+            padding: 0;
+            font-weight: bold;
+        }
+        .readability-pattern p { margin: 0; padding: 0; overflow-wrap: break-word; }
+        .size-18 { font-size: 18pt; }
+        .size-12 { font-size: 12pt; }
+        .size-8  { font-size: 8pt; }
+        
+        .ufo-pattern {
+            width: 100%;
+            height: 100%;
+            background: #333;
+            overflow: hidden;
+        }
+        
+        /* --- [v9.6 修正：反應時間] --- */
+        .ufo-object {
+            width: 80px;  /* 改為 80px */
+            height: 80px; /* 改為 80px */
+            background-color: var(--accent-color);
+            border-radius: 50%; /* 改為圓球 */
+            position: relative;
+            top: 50%; /* 增加，使其基準點在 50% */
+            animation: move-ufo 4s linear infinite;
+        }
+        @keyframes move-ufo {
+            /* 增加 translateY(-50%) 使其垂直置中 */
+            0% { transform: translateX(-100px) translateY(-50%); }
+            100% { transform: translateX(100vw) translateY(-50%); }
+        }
+        
+        /* --- 5. [v9 新增] 觸控測試樣式 (Touch Test Patterns) --- */
+        
+        /* 5.1 基礎點擊 (Basic Taps) */
+        .tap-target {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 20px var(--accent-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            position: absolute;
+            transition: transform 0.1s ease, left 0.15s ease-out, top 0.15s ease-out;
+        }
+        .tap-target:active {
+            transform: scale(0.9);
+        }
+        
+        /* 5.2 手勢操作 (Gestures) */
+        .gesture-object {
+            width: 250px;
+            height: 250px;
+            background-color: var(--surface-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 12px;
+            position: relative; 
+            overflow: hidden;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transform-origin: center center;
+            transition: transform 0.05s linear;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .gesture-indicator {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 10;
+            white-space: nowrap;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 5.3 拖曳測試 (Drag & Tracking) */
+        .draggable-object {
+            width: 80px;
+            height: 80px;
+            background-color: var(--warning-color);
+            border-radius: 12px;
+            cursor: grab;
+            position: absolute;
+            left: 100px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1050;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #000;
+            font-weight: bold;
+        }
+        .draggable-object.dragging {
+            cursor: grabbing;
+            opacity: 0.8;
+            transform: scale(1.1);
+        }
+        .drop-zone {
+            width: 150px;
+            height: 150px;
+            border: 3px dashed var(--border-color);
+            border-radius: 20px;
+            position: absolute;
+            right: 100px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--secondary-text);
+        }
+        .drop-zone.over {
+            border-color: var(--success-color);
+            background-color: rgba(52, 199, 89, 0.1);
+        }
+        
+        /* 5.4 繪圖與多點 (Drawing & Multi-Touch) */
+        .touch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+        }
+        
+        .multi-touch-point {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(0, 122, 255, 0.7);
+            border: 2px solid #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #fff;
+            font-weight: bold;
+            transform: translate(-50%, -50%);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .multi-touch-point:nth-child(2) { background-color: rgba(52, 199, 89, 0.7); }
+        .multi-touch-point:nth-child(3) { background-color: rgba(255, 149, 0, 0.7); }
+        .multi-touch-point:nth-child(4) { background-color: rgba(255, 45, 85, 0.7); }
+        .multi-touch-point:nth-child(5) { background-color: rgba(175, 82, 222, 0.7); }
+        .multi-touch-point:nth-child(n+6) { background-color: rgba(160, 160, 160, 0.7); }
+        
+    </style>
+</head>
+<body>
+
+    <main id="dashboard">
+        <div class="header">
+            <h1>專業測試工具箱 v9.6</h1>
+        </div>
+
+        <h2 class="dashboard-section-header">🖥️ 顯示測試 (Display Tests)</h2>
+        <div class="card-grid">
+            <button class="test-card" data-test="pixel" data-test-type="display">
+                <h3>壞點與亮點</h3>
+                <p>檢查是否有卡住或死掉的像素。</p>
+            </button>
+            <button class="test-card" data-test="gradient" data-test-type="display">
+                <h3>色彩漸層</h3>
+                <p>測試色階過渡是否平滑。</p>
+            </button>
+            
+            <button class="test-card" data-test="uniformity" data-test-type="display">
+                <h3>亮度與均勻度</h3>
+                <p>在不同亮度階梯下，檢查背光均勻性。</p>
+            </button>
+            
+            <button class="test-card" data-test="response" data-test-type="display">
+                <h3>反應時間</h3>
+                <p>測試運動模糊和殘影 (簡易動畫)。</p> </button>
+            <button class="test-card" data-test="readability" data-test-type="display">
+                <h3>閱讀測試 (銳利度)</h3>
+                <p>檢查全螢幕文字的清晰度。</p>
+            </button>
+            <button class="test-card" data-test="testpattern" data-test-type="display">
+                <h3>綜合測試圖</h3>
+                <p>檢查幾何、收斂、色彩與銳利度。</p>
+            </button>
+            <button class="test-card" data-test="gamma" data-test-type="display">
+                <h3>Gamma / 對比度</h3>
+                <p>檢查中間色調的準確性。</p>
+            </button>
+            <button class="test-card" data-test="viewingangle" data-test-type="display">
+                <h3>可視角度</h3>
+                <p>從不同角度觀察亮度與色偏。</p>
+            </button>
+        </div>
+
+        <h2 class="dashboard-section-header">👆 觸控測試 (Touch Tests)</h2>
+        <div class="card-grid">
+            <button class="test-card" data-test="taps" data-test-type="touch">
+                <h3>基礎點擊</h3>
+                <p>測試單點、雙擊與長按的反應。</p>
+            </button>
+            <button class="test-card" data-test="gestures" data-test-type="touch">
+                <h3>手勢操作</h3>
+                <p>測試滑動、縮放與旋轉的流暢度。</p>
+            </button>
+            <button class="test-card" data-test="drag" data-test-type="touch">
+                <h3>拖曳與追蹤</h3>
+                <p>檢查拖放穩定性與動態準確度。</p>
+            </button>
+            <button class="test-card" data-test="drawing" data-test-type="touch">
+                <h3>繪圖與精準度</h3>
+                <p>檢查靜態準確度、線性與抖動。</p>
+            </button>
+            
+            <button class="test-card" data-test="edges" data-test-type="touch">
+                <h3>邊緣靈敏度</h3>
+                <p>檢查邊緣與角落死角。</p>
+            </button>
+            
+            <button class="test-card" data-test="multitouch" data-test-type="touch">
+                <h3>多點測試</h3>
+                <p>檢查螢幕支援的同時觸控點數。</p>
+            </button>
+        </div>
+    </main>
+
+    <div id="test-screen" class="hidden">
+        <div id="test-description"></div>
+        <button id="exit-test" title="退出測試">&times;</button>
+        <div id="test-content"></div>
+        <div id="control-bar">
+            <div id="controls-pixel" class="controls-set hidden">
+                <button class="control-button" data-color="#000000" style="background-color: #000;"></button>
+                <button class="control-button" data-color="#ffffff" style="background-color: #fff;"></button>
+                <button class="control-button" data-color="#ff0000" style="background-color: #f00;"></button>
+                <button class="control-button" data-color="#00ff00" style="background-color: #0f0;"></button>
+                <button class="control-button" data-color="#0000ff" style="background-color: #00f;"></button>
+            </div>
+             <div id="controls-gradient" class="controls-set hidden"></div>
+             <div id="controls-uniformity" class="controls-set hidden">
+                <button class="control-button" data-color="#ffffff" style="background-color: #fff;" title="100%"></button>
+                <button class="control-button" data-color="#bfbfbf" style="background-color: #bfbfbf;" title="75%"></button>
+                <button class="control-button" data-color="#808080" style="background-color: #808080;" title="50%"></button>
+                <button class="control-button" data-color="#404040" style="background-color: #404040;" title="25%"></button>
+             </div>
+             <div id="controls-drawing" class="controls-set hidden">
+                <button id="clear-canvas-btn" class="control-button" style="background-color: #fff; color: #000; font-size: 0.8rem; border: none; width: auto; padding: 0 15px; border-radius: 20px;">
+                    清除
+                </button>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 獲取 DOM 元素 ---
+        const dashboard = document.getElementById('dashboard');
+        const testScreen = document.getElementById('test-screen');
+        const exitTestBtn = document.getElementById('exit-test');
+        const testCards = document.querySelectorAll('.test-card');
+        const testContent = document.getElementById('test-content');
+        const controlBar = document.getElementById('control-bar');
+        const testDescription = document.getElementById('test-description');
+        
+        const controlSets = {
+            pixel: document.getElementById('controls-pixel'),
+            gradient: document.getElementById('controls-gradient'),
+            uniformity: document.getElementById('controls-uniformity'),
+            drawing: document.getElementById('controls-drawing'), 
+            edges: document.getElementById('controls-drawing')
+        };
+        
+        const imagePaths = {
+            testpattern: 'images/test-pattern.png',
+            gamma: 'images/gamma.png',
+            viewingangle: 'images/viewing-angle.png'
+        };
+
+        // --- 2. 測試啟動/結束 ---
+        
+        function startTest(testName, testType) {
+            dashboard.classList.add('hidden');
+            testScreen.classList.remove('hidden');
+
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.warn(`無法自動進入全螢幕模式: ${err.message}`);
+                });
+            }
+            
+            touchTestLogic.cleanup();
+            Object.values(controlSets).forEach(set => set.classList.add('hidden'));
+
+            testContent.style.display = 'flex';
+            testContent.innerHTML = '';
+            testScreen.style.backgroundColor = '#000';
+            testDescription.innerHTML = '';
+            
+            if (testType === 'display') {
+                displayTestLogic.setup(testName);
+            } else if (testType === 'touch') {
+                touchTestLogic.setup(testName);
+            }
+            
+            setTimeout(() => testScreen.classList.add('controls-visible'), 100);
+        }
+
+        function endTest() {
+            dashboard.classList.remove('hidden');
+            testScreen.classList.add('hidden');
+            testScreen.classList.remove('controls-visible'); 
+            touchTestLogic.cleanup();
+            
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+
+        // --- 3. 顯示測試邏輯 (DisplayTestLogic) ---
+        
+        const displayTestLogic = {
+            setup: function(testName) {
+                let descTitle = '';
+                let descText = '';
+
+                switch (testName) {
+                    case 'pixel':
+                        testScreen.style.backgroundColor = '#000000';
+                        controlSets.pixel.classList.remove('hidden');
+                        descTitle = '壞點與亮點';
+                        descText = '請依序切換純色，仔細檢查螢幕是否有「顏色不對」或「恆亮/恆暗」的像素點。';
+                        break;
+                    case 'gradient':
+                        testContent.innerHTML = '<div class="gradient-pattern"></div>';
+                        descTitle = '色彩漸層';
+                        descText = '觀察黑到白的漸層。過渡是否平滑？還是出現了明顯的「色塊」或「條紋」？';
+                        break;
+                    case 'response':
+                        // [v9.6] 此處 HTML 已被 CSS (ufo-object) 更新
+                        testContent.innerHTML = '<div class="ufo-pattern"><div class="ufo-object"></div></div>';
+                        descTitle = '反應時間';
+                        descText = '觀察快速移動的物體。它是否有明顯的「拖影」或「殘影」 (Ghosting)？';
+                        break;
+                    case 'readability':
+                        testContent.style.display = 'block';
+                        const contentLine = "壞點與亮點 (Pixel Test): 檢查是否有卡住或死掉的像素。Checks for stuck or dead pixels. " +
+                                            "色彩漸層 (Gradient): 測試色階過渡是否平滑。Tests for smooth color gradients. " +
+                                            "均勻度 (Uniformity): 檢查背光或漏光 (50% 灰)。Checks for backlight uniformity (50% gray). " +
+                                            "反應時間 (Response Time): 測試運動模糊和殘影。Tests for motion blur and ghosting. " +
+                                            "閱讀測試 (Readability): 檢查全螢幕文字的清晰度。Checks for text sharpness. " +
+                                            "綜合測試圖 (Test Pattern): 檢查幾何、收斂、色彩。Checks geometry, convergence, color. " +
+                                            "Gamma / 對比度 (Gamma): 檢查中間色調的準確性。Checks for mid-tone accuracy. " +
+                                            "可視角度 (Viewing Angle): 觀察亮度與色偏。Observes brightness and color shift.";
+                        const sizes = [
+                            { class: 'size-18', label: '18pt Text' },
+                            { class: 'size-12', label: '12pt Text' },
+                            { class: 'size-8',  label: '8pt Text' }
+                        ];
+                        let htmlToInsert = '';
+                        
+                        // [v9.5 建議保留] 增加結構化標題
+                        for (const size of sizes) {
+                            htmlToInsert += `<h2>${size.label}</h2>`;
+                            for (let i = 0; i < 50; i++) {
+                                htmlToInsert += `<p class="${size.class}">${contentLine}</p>`;
+                            }
+                        }
+                        
+                        testContent.innerHTML = `<div class="readability-pattern">${htmlToInsert}</div>`;
+                        descTitle = '閱讀測試 (銳利度)';
+                        descText = '這是一個**靜態**測試。請檢查全螢幕的文字 (18, 12, 8pt)，特別是**螢幕四個角落**的文字。它們是否依然清晰、銳利？';
+                        break;
+                    
+                    case 'uniformity':
+                        testScreen.style.backgroundColor = '#808080';
+                        controlSets.uniformity.classList.remove('hidden');
+                        descTitle = '亮度與均勻度';
+                        descText = '請**手動調整您裝置的系統亮度**（高、中、低），並切換下方色階按鈕。檢查螢幕是否有「陰陽臉」或暗角。';
+                        break;
+                        
+                    case 'testpattern':
+                        testScreen.style.backgroundColor = '#808080'; 
+                        testContent.innerHTML = `<img src="${imagePaths.testpattern}" alt="綜合測試圖">`;
+                        descTitle = '綜合測試圖';
+                        descText = '這張是專業測試圖。請檢查：<br>1. 邊緣的方格：是否有幾何失真(變形)。<br>2. 左右的細線：是否有正確解析(銳利度)。<br>3. 中央色條：色彩是否飽和正確。';
+                        break;
+                    case 'gamma':
+                        testScreen.style.backgroundColor = '#808080'; 
+                        testContent.innerHTML = `<img src="${imagePaths.gamma}" alt="Gamma 測試">`;
+                        descTitle = 'Gamma / 對比度';
+                        descText = '在正常距離觀看，中央的淺灰色方塊應與周圍的背景融為一體，幾乎看不見。如果它太亮或太暗，表示 Gamma 不準確。';
+                        break;
+                    case 'viewingangle':
+                        testScreen.style.backgroundColor = '#000'; 
+                        testContent.innerHTML = `<img src="${imagePaths.viewingangle}" alt="可視角度測試">`;
+                        descTitle = '可視角度';
+                        descText = '從正中央觀看，五個圓球應看起來一致。接著，請從螢幕的上下左右不同角度觀看，檢查是否有明顯的亮度下降或顏色偏移 (Color Shift)。';
+                        break;
+                }
+                
+                if (descTitle) {
+                    testDescription.innerHTML = `<h3>${descTitle}</h3><p>${descText}</p>`;
+                }
+            }
+        };
+
+        // --- 4. 觸控測試邏輯 (TouchTestLogic) ---
+        
+        const touchTestLogic = {
+            
+            cleanupTasks: [],
+            
+            setup: function(testName) {
+                testScreen.style.backgroundColor = '#000';
+                testContent.style.display = 'block'; 
+                testContent.style.position = 'relative';
+
+                switch(testName) {
+                    case 'taps': this.taps.setup(); break;
+                    case 'gestures': this.gestures.setup(); break;
+                    case 'drag': this.drag.setup(); break;
+                    case 'drawing': this.drawing.setup(); break;
+                    case 'edges': this.edges.setup(); break;
+                    case 'multitouch': this.multitouch.setup(); break;
+                }
+            },
+            
+            cleanup: function() {
+                this.cleanupTasks.forEach(task => task()); 
+                this.cleanupTasks = []; 
+                testContent.style.position = '';
+                testContent.style.display = 'flex';
+                const canvas = testContent.querySelector('canvas');
+                if (canvas) canvas.remove();
+            },
+            
+            addCleanupTask: function(listener, target, type) {
+                if (listener && target && type) {
+                    this.cleanupTasks.push(() => target.removeEventListener(type, listener));
+                } else if (typeof listener === 'function') {
+                    this.cleanupTasks.push(listener);
+                }
+            },
+
+            // [v9.5 建議保留] 增加 instructionClass 參數
+            updateDescription: function(title, text, status = '', instruction = '', instructionClass = '') {
+                let statusHTML = status ? `<div class="status-line">${status}</div>` : '';
+                let instructionHTML = instruction ? `<div class="instruction ${instructionClass}">${instruction}</div>` : '';
+                testDescription.innerHTML = `<h3>${title}</h3><p>${text}</p>${statusHTML}${instructionHTML}`;
+            },
+
+            // -------------------------
+            // 測試 1: 基礎點擊 (Taps)
+            // -------------------------
+            taps: {
+                state: 'tap',
+                tapCount: 0,
+                dblTapCount: 0,
+                longPressCount: 0,
+                longPressTimer: null,
+                target: null,
+                
+                handleClick: function(e) {
+                    e.preventDefault();
+                    if (this.state === 'tap') {
+                        this.tapCount++;
+                        if (this.tapCount >= 16) { 
+                            this.state = 'double-tap';
+                            this.tapCount = 0;
+                            this.spawnTarget();
+                        } else {
+                            this.spawnTarget();
+                        }
+                    }
+                },
+                handleDoubleClick: function(e) {
+                    e.preventDefault();
+                    if (this.state === 'double-tap') {
+                        this.dblTapCount++;
+                        if (this.dblTapCount >= 3) {
+                            this.state = 'long-press';
+                            this.dblTapCount = 0;
+                            this.spawnTarget();
+                        } else {
+                            this.spawnTarget();
+                        }
+                    }
+                },
+                handlePointerDown: function(e) {
+                    if (this.state === 'long-press') {
+                        e.preventDefault();
+                        this.longPressTimer = setTimeout(() => {
+                            this.longPressCount++;
+                            if (this.longPressCount >= 2) {
+                                this.state = 'completed';
+                            }
+                            this.spawnTarget();
+                        }, 800);
+                    }
+                },
+                handlePointerUp: function() {
+                    if (this.longPressTimer) {
+                        clearTimeout(this.longPressTimer);
+                    }
+                },
+                spawnTarget: function() {
+                    if (this.state === 'tap') {
+                        const gridSize = 4;
+                        const blockWidth = window.innerWidth / gridSize;
+                        const blockHeight = window.innerHeight / gridSize;
+                        const index = this.tapCount; 
+                        const row = Math.floor(index / gridSize);
+                        const col = index % gridSize;
+                        const targetX = (col * blockWidth) + (blockWidth / 2);
+                        const targetY = (row * blockHeight) + (blockHeight / 2);
+                        const targetSize = 60; 
+                        this.target.style.left = `${targetX - (targetSize / 2)}px`;
+                        this.target.style.top = `${targetY - (targetSize / 2)}px`;
+                    } else {
+                        const padding = 80;
+                        const x = Math.random() * (window.innerWidth - padding * 2) + padding;
+                        const y = Math.random() * (window.innerHeight - padding * 2) + padding;
+                        this.target.style.left = `${x}px`;
+                        this.target.style.top = `${y}px`;
+                    }
+                    
+                    let title = '基礎點擊'; // [v9.6] 移除編號
+                    let text = '測試單點、雙擊與長按的反應。';
+                    let status = '';
+                    let instruction = '';
+                    let instructionClass = ''; // [v9.5 建議保留]
+
+                    switch(this.state) {
+                        case 'tap':
+                            instruction = `請「單點」 16 格目標 ( ${this.tapCount + 1} / 16 )`;
+                            this.target.innerText = '點';
+                            break;
+                        case 'double-tap':
+                            instruction = `請「雙擊」目標 ( ${this.dblTapCount} / 3 )`;
+                            this.target.innerText = '雙擊';
+                            break;
+                        case 'long-press':
+                            instruction = `請「長按」目標 ( ${this.longPressCount} / 2 )`;
+                            this.target.innerText = '長按';
+                            break;
+                        case 'completed':
+                            instruction = '測試完成！';
+                            instructionClass = 'success'; // [v9.5 建議保留]
+                            this.target.style.display = 'none';
+                            break;
+                    }
+                    touchTestLogic.updateDescription(title, text, status, instruction, instructionClass);
+                },
+                setup: function() {
+                    this.handleClick = this.handleClick.bind(this);
+                    this.handleDoubleClick = this.handleDoubleClick.bind(this);
+                    this.handlePointerDown = this.handlePointerDown.bind(this);
+                    this.handlePointerUp = this.handlePointerUp.bind(this);
+                    
+                    const target = document.createElement('div');
+                    target.className = 'tap-target';
+                    this.target = target;
+                    testContent.appendChild(target);
+                    this.target.style.display = 'flex'; 
+
+                    target.addEventListener('click', this.handleClick);
+                    target.addEventListener('dblclick', this.handleDoubleClick);
+                    target.addEventListener('pointerdown', this.handlePointerDown);
+                    target.addEventListener('pointerup', this.handlePointerUp);
+                    target.addEventListener('pointerleave', this.handlePointerUp);
+
+                    touchTestLogic.addCleanupTask(this.handleClick, target, 'click');
+                    touchTestLogic.addCleanupTask(this.handleDoubleClick, target, 'dblclick');
+                    touchTestLogic.addCleanupTask(this.handlePointerDown, target, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, target, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, target, 'pointerleave');
+                    touchTestLogic.addCleanupTask(() => clearTimeout(this.longPressTimer)); 
+                    
+                    this.state = 'tap';
+                    this.tapCount = 0;
+                    this.dblTapCount = 0;
+                    this.longPressCount = 0;
+                    this.spawnTarget();
+                }
+            },
+            
+            // -------------------------
+            // 測試 2: 手勢操作 (Gestures)
+            // -------------------------
+            gestures: {
+                target: null,
+                indicator: null,
+                state: {
+                    scale: 1, rotation: 0, initialDistance: 0, initialAngle: 0,
+                    isPinching: false, isSwiping: false, swipeStartX: 0, currentImage: 1
+                },
+                activePointers: new Map(),
+
+                updateGestureTarget: function(index) {
+                    if (!this.target || !this.indicator) return;
+                    this.indicator.innerText = `目標 ${index} / 3`;
+                    this.target.style.backgroundImage = 'none';
+                    this.target.style.backgroundColor = 'transparent';
+
+                    switch(index) {
+                        case 1:
+                            this.target.style.backgroundImage = `url(${imagePaths.testpattern})`;
+                            this.target.style.backgroundSize = 'cover';
+                            this.target.style.backgroundPosition = 'center';
+                            break;
+                        case 2:
+                            this.target.style.backgroundImage = 'linear-gradient(to right, #000, #fff)';
+                            break;
+                        case 3:
+                            this.target.style.backgroundColor = 'var(--accent-color)';
+                            break;
+                    }
+                },
+
+                handlePointerDown: function(e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    this.target.setPointerCapture(e.pointerId);
+                    this.activePointers.set(e.pointerId, { x: e.pageX, y: e.pageY });
+
+                    if (this.activePointers.size === 1) {
+                        this.state.isSwiping = true;
+                        this.state.swipeStartX = e.pageX;
+                    } 
+                    else if (this.activePointers.size === 2) {
+                        this.state.isSwiping = false; 
+                        this.state.isPinching = true;
+                        const pointers = Array.from(this.activePointers.values());
+                        const dx = pointers[1].x - pointers[0].x;
+                        const dy = pointers[1].y - pointers[0].y;
+                        this.state.initialDistance = Math.hypot(dx, dy);
+                        this.state.initialAngle = Math.atan2(dy, dx);
+                    }
+                },
+
+                handlePointerMove: function(e) {
+                    if (!this.activePointers.has(e.pointerId)) return;
+                    this.activePointers.set(e.pointerId, { x: e.pageX, y: e.pageY });
+                    const pointers = Array.from(this.activePointers.values());
+
+                    if (this.state.isPinching && pointers.length === 2) {
+                        const dx = pointers[1].x - pointers[0].x;
+                        const dy = pointers[1].y - pointers[0].y;
+                        const currentDistance = Math.hypot(dx, dy);
+                        const currentAngle = Math.atan2(dy, dx);
+                        const deltaScale = currentDistance / this.state.initialDistance;
+                        const deltaAngle = currentAngle - this.state.initialAngle;
+                        this.state.scale = deltaScale;
+                        this.state.rotation = deltaAngle * (180 / Math.PI);
+                        this.target.style.transform = `scale(${this.state.scale}) rotate(${this.state.rotation}deg)`;
+                    }
+                },
+
+                handlePointerUp: function(e) {
+                    this.target.releasePointerCapture(e.pointerId);
+                    this.activePointers.delete(e.pointerId);
+
+                    if (this.activePointers.size < 2) {
+                        this.state.isPinching = false;
+                    }
+                    if (this.activePointers.size < 1) {
+                        if (this.state.isSwiping) {
+                            const deltaX = e.pageX - this.state.swipeStartX;
+                            if (Math.abs(deltaX) > 100) {
+                                if (deltaX < 0) this.state.currentImage++;
+                                else this.state.currentImage--;
+                                if (this.state.currentImage < 1) this.state.currentImage = 3;
+                                if (this.state.currentImage > 3) this.state.currentImage = 1;
+                                this.updateGestureTarget(this.state.currentImage);
+                            }
+                        }
+                        this.state.isSwiping = false;
+                        this.state.scale = 1;
+                        this.state.rotation = 0;
+                        this.target.style.transition = 'transform 0.3s ease-out';
+                        this.target.style.transform = `scale(1) rotate(0deg)`;
+                        setTimeout(() => {
+                            if (this.target) this.target.style.transition = 'transform 0.05s linear';
+                        }, 300);
+                    } 
+                    else if (this.activePointers.size === 1) { 
+                        this.state.isSwiping = true;
+                        this.state.swipeStartX = Array.from(this.activePointers.values())[0].x;
+                    }
+                },
+                
+                setup: function() {
+                    this.handlePointerDown = this.handlePointerDown.bind(this);
+                    this.handlePointerMove = this.handlePointerMove.bind(this);
+                    this.handlePointerUp = this.handlePointerUp.bind(this);
+                    this.updateGestureTarget = this.updateGestureTarget.bind(this);
+
+                    this.target = document.createElement('div');
+                    this.target.className = 'gesture-object';
+                    this.indicator = document.createElement('div');
+                    this.indicator.className = 'gesture-indicator';
+                    this.target.appendChild(this.indicator);
+                    testContent.style.display = 'flex';
+                    testContent.appendChild(this.target);
+                    
+                    touchTestLogic.updateDescription(
+                        '手勢操作', // [v9.6] 移除編號
+                        '1. 請用「單指」左右滑動以切換目標。<br>2. 請用「兩指」縮放與旋轉此物件。',
+                        '', '請開始操作...'
+                    );
+                    
+                    this.target.addEventListener('pointerdown', this.handlePointerDown);
+                    this.target.addEventListener('pointermove', this.handlePointerMove);
+                    this.target.addEventListener('pointerup', this.handlePointerUp);
+                    this.target.addEventListener('pointercancel', this.handlePointerUp);
+
+                    touchTestLogic.addCleanupTask(this.handlePointerDown, this.target, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.handlePointerMove, this.target, 'pointermove');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, this.target, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.handlePointerUp, this.target, 'pointercancel');
+                    touchTestLogic.addCleanupTask(() => { 
+                        this.activePointers.clear(); 
+                        this.target = null; 
+                        this.indicator = null;
+                    });
+                    
+                    this.state = { ...this.state, scale: 1, rotation: 0, isPinching: false, isSwiping: false, currentImage: 1 };
+                    this.activePointers.clear();
+                    this.updateGestureTarget(this.state.currentImage);
+                }
+            },
+
+            // -------------------------
+            // 測試 3: 拖曳與追蹤 (Drag)
+            // -------------------------
+            drag: {
+                draggable: null,
+                dropZone: null,
+                isDragging: false,
+                activePointerId: null, 
+                offsetX: 0,
+                offsetY: 0,
+                
+                handleDragStart: function(e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    if (this.isDragging) return; 
+                    e.preventDefault();
+                    this.isDragging = true;
+                    this.activePointerId = e.pointerId;
+                    this.draggable.classList.add('dragging');
+                    this.draggable.setPointerCapture(e.pointerId);
+                    const rect = this.draggable.getBoundingClientRect();
+                    this.offsetX = e.clientX - rect.left;
+                    this.offsetY = e.clientY - rect.top;
+                    
+                    touchTestLogic.updateDescription(
+                        '拖曳與追蹤', // [v9.6] 移除編號
+                        '將黃色物件拖曳到右側的虛線框中。',
+                        '觀察：物件是否緊跟您的手指？',
+                        '拖曳中...'
+                    );
+                },
+                handleDragMove: function(e) {
+                    if (!this.isDragging || e.pointerId !== this.activePointerId) return;
+                    e.preventDefault();
+                    const parentRect = testContent.getBoundingClientRect();
+                    let newX = e.clientX - parentRect.left - this.offsetX;
+                    let newY = e.clientY - parentRect.top - this.offsetY;
+                    this.draggable.style.left = `${newX}px`;
+                    this.draggable.style.top = `${newY}px`;
+                    
+                    if (this.isOverDropZone()) {
+                        this.dropZone.classList.add('over');
+                    } else {
+                        this.dropZone.classList.remove('over');
+                    }
+                },
+                handleDragEnd: function(e) {
+                    if (!this.isDragging || e.pointerId !== this.activePointerId) return;
+                    e.preventDefault();
+                    this.isDragging = false;
+                    this.activePointerId = null;
+                    this.draggable.classList.remove('dragging');
+                    this.draggable.releasePointerCapture(e.pointerId);
+                    
+                    let status = '觀察：物件是否緊跟您的手指？';
+                    let instructionClass = ''; // [v9.5 建議保留]
+                    
+                    if (this.isOverDropZone()) {
+                        status = '成功！物件已放置。';
+                        instructionClass = 'success'; // [v9.5 建議保留]
+                        this.dropZone.classList.remove('over');
+                        const dzRect = this.dropZone.getBoundingClientRect();
+                        const drRect = this.draggable.getBoundingClientRect();
+                        const pRect = testContent.getBoundingClientRect();
+                        this.draggable.style.left = `${dzRect.left - pRect.left + (dzRect.width - drRect.width)/2}px`;
+                        this.draggable.style.top = `${dzRect.top - pRect.top + (dzRect.height - drRect.height)/2}px`;
+                    }
+                    
+                    touchTestLogic.updateDescription(
+                        '拖曳與追蹤', // [v9.6] 移除編號
+                        '將黃色物件拖曳到右側的虛線框中。',
+                        status, '請再次嘗試或結束測試。',
+                        instructionClass
+                    );
+                },
+                isOverDropZone: function() {
+                    const dr = this.draggable.getBoundingClientRect();
+                    const dz = this.dropZone.getBoundingClientRect();
+                    return !(dr.right < dz.left || dr.left > dz.right || dr.bottom < dz.top || dr.top > dz.bottom);
+                },
+                setup: function() {
+                    this.handleDragStart = this.handleDragStart.bind(this);
+                    this.handleDragMove = this.handleDragMove.bind(this);
+                    this.handleDragEnd = this.handleDragEnd.bind(this);
+                    
+                    this.draggable = document.createElement('div');
+                    this.draggable.className = 'draggable-object';
+                    this.draggable.innerText = '拖我';
+                    this.dropZone = document.createElement('div');
+                    this.dropZone.className = 'drop-zone';
+                    this.dropZone.innerText = '放置區';
+                    
+                    testContent.appendChild(this.draggable);
+                    testContent.appendChild(this.dropZone);
+                    
+                    this.draggable.addEventListener('pointerdown', this.handleDragStart);
+                    testScreen.addEventListener('pointermove', this.handleDragMove);
+                    testScreen.addEventListener('pointerup', this.handleDragEnd);
+                    testScreen.addEventListener('pointercancel', this.handleDragEnd);
+                    
+                    touchTestLogic.addCleanupTask(this.handleDragStart, this.draggable, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.handleDragMove, testScreen, 'pointermove');
+                    touchTestLogic.addCleanupTask(this.handleDragEnd, testScreen, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.handleDragEnd, testScreen, 'pointercancel');
+                    touchTestLogic.addCleanupTask(() => {
+                        this.draggable = null;
+                        this.dropZone = null;
+                    });
+                    
+                    touchTestLogic.updateDescription(
+                        '拖曳與追蹤', // [v9.6] 移除編號
+                        '將黃色物件拖曳到右側的虛線框中。',
+                        '觀察：物件是否緊跟您的手指？',
+                        '請開始拖曳...'
+                    );
+                    
+                    this.isDragging = false;
+                    this.activePointerId = null;
+                }
+            },
+            
+            // -------------------------
+            // 測試 4 & 5: 繪圖 & 邊緣 (Canvas 基礎)
+            // -------------------------
+            canvasHelper: {
+                canvas: null,
+                ctx: null,
+                activeDrawPointers: new Map(), 
+
+                setupCanvas: function() {
+                    this.canvas = document.createElement('canvas');
+                    this.canvas.className = 'touch-canvas';
+                    testContent.appendChild(this.canvas);
+                    this.ctx = this.canvas.getContext('2d');
+                    
+                    this.resizeCanvas = this.resizeCanvas.bind(this);
+                    this.startDrawing = this.startDrawing.bind(this);
+                    this.draw = this.draw.bind(this);
+                    this.stopDrawing = this.stopDrawing.bind(this);
+                    this.clearCanvas = this.clearCanvas.bind(this);
+
+                    window.addEventListener('resize', this.resizeCanvas);
+                    testScreen.addEventListener('pointerdown', this.startDrawing);
+                    testScreen.addEventListener('pointermove', this.draw);
+                    testScreen.addEventListener('pointerup', this.stopDrawing);
+                    testScreen.addEventListener('pointercancel', this.stopDrawing); 
+                    
+                    touchTestLogic.addCleanupTask(this.resizeCanvas, window, 'resize');
+                    touchTestLogic.addCleanupTask(this.startDrawing, testScreen, 'pointerdown');
+                    touchTestLogic.addCleanupTask(this.draw, testScreen, 'pointermove');
+                    touchTestLogic.addCleanupTask(this.stopDrawing, testScreen, 'pointerup');
+                    touchTestLogic.addCleanupTask(this.stopDrawing, testScreen, 'pointercancel');
+                    touchTestLogic.addCleanupTask(() => this.activeDrawPointers.clear());
+
+                    controlSets.drawing.classList.remove('hidden');
+                    const clearBtn = document.getElementById('clear-canvas-btn');
+                    clearBtn.addEventListener('click', this.clearCanvas);
+                    touchTestLogic.addCleanupTask(this.clearCanvas, clearBtn, 'click');
+                    
+                    this.resizeCanvas();
+                },
+                
+                resizeCanvas: function() {
+                    if (!this.canvas) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const rect = testContent.getBoundingClientRect(); 
+                    this.canvas.width = rect.width * dpr;
+                    this.canvas.height = rect.height * dpr;
+                    this.ctx.scale(dpr, dpr);
+                    this.canvas.style.width = `${rect.width}px`;
+                    this.canvas.style.height = `${rect.height}px`;
+                    this.ctx.strokeStyle = '#007aff';
+                    this.ctx.lineWidth = 4;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineJoin = 'round';
+                    
+                    if (touchTestLogic.drawing.isActive) touchTestLogic.drawing.drawGrid();
+                    if (touchTestLogic.edges.isActive) touchTestLogic.edges.drawGuides();
+                },
+                
+                clearCanvas: function() {
+                    if (!this.ctx) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = this.canvas.width / dpr;
+                    const h = this.canvas.height / dpr;
+                    this.ctx.clearRect(0, 0, w, h);
+                    if (touchTestLogic.drawing.isActive) touchTestLogic.drawing.drawGrid();
+                    if (touchTestLogic.edges.isActive) touchTestLogic.edges.drawGuides();
+                },
+
+                startDrawing: function(e) {
+                    if (e.pointerType === 'mouse' && e.button !== 0) return;
+                    if (e.target.closest('#control-bar') || e.target.closest('#test-description') || e.target.closest('#exit-test')) {
+                        return;
+                    }
+                    e.preventDefault();
+                    const rect = testContent.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.activeDrawPointers.set(e.pointerId, { x: x, y: y });
+                    
+                    if (touchTestLogic.drawing.isActive) {
+                        touchTestLogic.drawing.checkJitter(x, y);
+                    }
+                },
+                
+                draw: function(e) {
+                    if (!this.activeDrawPointers.has(e.pointerId)) return;
+                    e.preventDefault();
+                    const lastPos = this.activeDrawPointers.get(e.pointerId);
+                    const rect = testContent.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(lastPos.x, lastPos.y);
+                    this.ctx.lineTo(x, y);
+                    this.ctx.stroke();
+                    this.activeDrawPointers.set(e.pointerId, { x: x, y: y });
+                },
+                
+                stopDrawing: function(e) {
+                    if (!this.activeDrawPointers.has(e.pointerId)) return;
+                    this.activeDrawPointers.delete(e.pointerId);
+                    
+                    if (touchTestLogic.drawing.jitterTimer) {
+                        clearTimeout(touchTestLogic.drawing.jitterTimer);
+                        touchTestLogic.drawing.jitterTimer = null;
+                        touchTestLogic.updateDescription(
+                            '繪圖與精準度', // [v9.6] 移除編號
+                            '1. (準確度) 請點擊網格交叉點。<br>2. (線性度) 請緩慢畫出對角線。<br>3. (抖動) 請將手指「靜止」按在螢幕上 3 秒。',
+                            '抖動測試已停止。',
+                            '請繼續測試...'
+                        );
+                    }
+                }
+            },
+            
+            drawing: {
+                isActive: false,
+                jitterTimer: null,
+                
+                setup: function() {
+                    this.isActive = true;
+                    touchTestLogic.canvasHelper.setupCanvas();
+                    
+                    touchTestLogic.updateDescription(
+                        '繪圖與精準度', // [v9.6] 移除編號
+                        '1. (準確度) 請點擊網格交叉點。<br>2. (線性度) 請緩慢畫出對角線。<br>3. (抖動) 請將手指「靜止」按在螢幕上 3 秒。',
+                        '觀察：線條是否平滑？是否呈階梯狀/波浪狀？',
+                        '請開始繪圖...'
+                    );
+                    
+                    setTimeout(() => this.drawGrid(), 50); 
+                    touchTestLogic.addCleanupTask(() => {
+                        this.isActive = false;
+                        if (this.jitterTimer) clearTimeout(this.jitterTimer);
+                    });
+                },
+                
+                drawGrid: function() {
+                    const ctx = touchTestLogic.canvasHelper.ctx;
+                    if (!ctx) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = touchTestLogic.canvasHelper.canvas.width / dpr;
+                    const h = touchTestLogic.canvasHelper.canvas.height / dpr;
+                    ctx.save();
+                    ctx.strokeStyle = '#444'; 
+                    ctx.lineWidth = 1;
+                    const gridSizeX = 4;
+                    const gridSizeY = 3;
+                    for (let i = 1; i < gridSizeX; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo((w / gridSizeX) * i, 0);
+                        ctx.lineTo((w / gridSizeX) * i, h);
+                        ctx.stroke();
+                    }
+                    for (let i = 1; i < gridSizeY; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, (h / gridSizeY) * i);
+                        ctx.lineTo(w, (h / gridSizeY) * i);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                },
+                
+                checkJitter: function(x, y) {
+                    const ctx = touchTestLogic.canvasHelper.ctx;
+                    touchTestLogic.updateDescription(
+                        '繪圖與精準度', // [v9.6] 移除編號
+                        '1. (準確度) 請點擊網格交叉點。<br>2. (線性度) 請緩慢畫出對角線。<br>3. (抖動) 請將手指「靜止」按在螢幕上 3 秒。',
+                        '抖動測試中... 請保持手指靜止 3 秒',
+                        ''
+                    );
+                    
+                    ctx.save();
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 20, 0, Math.PI * 2); 
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    this.jitterTimer = setTimeout(() => {
+                        touchTestLogic.updateDescription(
+                            '繪圖與精準度', // [v9.6] 移除編號
+                            '1. (準確度) 請點擊網格交叉點。<br>2. (線性度) 請緩慢畫出對角線。<br>3. (抖動) 請將手指「靜止」按在螢幕上 3 秒。',
+                            '抖動測試完成。請觀察紅圈內的線條是否「顫抖」。',
+                            '請繼續測試...'
+                        );
+                    }, 3000);
+                }
+            },
+            
+            edges: {
+                isActive: false,
+                setup: function() {
+                    this.isActive = true;
+                    touchTestLogic.canvasHelper.setupCanvas();
+                    
+                    touchTestLogic.updateDescription(
+                        '邊緣靈敏度', // [v9.6] 移除編號
+                        '1. 請沿著螢幕「最邊緣」的輔助線滑動一圈。<br>2. 請點擊「四個角落」的目標方塊。',
+                        '觀察：線條是否中斷？角落是否能準確點擊？',
+                        '請開始繪圖...'
+                    );
+                    
+                    setTimeout(() => this.drawGuides(), 50); 
+                    touchTestLogic.addCleanupTask(() => this.isActive = false);
+                },
+                
+                drawGuides: function() {
+                    const ctx = touchTestLogic.canvasHelper.ctx;
+                    if (!ctx) return;
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = touchTestLogic.canvasHelper.canvas.width / dpr;
+                    const h = touchTestLogic.canvasHelper.canvas.height / dpr;
+                    const padding = 5; 
+                    const cornerSize = 40; 
+                    
+                    ctx.save();
+                    ctx.strokeStyle = '#555'; 
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeRect(padding, padding, w - padding*2, h - padding*2);
+                    ctx.fillStyle = 'rgba(255, 149, 0, 0.5)'; 
+                    ctx.setLineDash([]);
+                    ctx.fillRect(0, 0, cornerSize, cornerSize); 
+                    ctx.fillRect(w - cornerSize, 0, cornerSize, cornerSize); 
+                    ctx.fillRect(0, h - cornerSize, cornerSize, cornerSize); 
+                    ctx.fillRect(w - cornerSize, h - cornerSize, cornerSize, cornerSize); 
+                    ctx.restore();
+                }
+            },
+
+            // -------------------------
+            // 測試 6: 多點測試 (Multi-Touch)
+            // -------------------------
+            multitouch: {
+                handleTouch: function(e) {
+                    e.preventDefault();
+                    testContent.innerHTML = '';
+                    const touches = e.touches;
+                    let touchCount = touches.length;
+                    
+                    for (let i = 0; i < touches.length; i++) {
+                        const touch = touches[i];
+                        const touchPoint = document.createElement('div');
+                        touchPoint.className = 'multi-touch-point';
+                        touchPoint.innerText = i + 1; 
+                        touchPoint.style.left = `${touch.pageX}px`;
+                        touchPoint.style.top = `${touch.pageY}px`;
+                        testContent.appendChild(touchPoint);
+                    }
+                    
+                    touchTestLogic.updateDescription(
+                        '多點測試', // [v9.6] 移除編號
+                        '請將多根手指放到螢幕上。',
+                        `偵測到的觸控點數：${touchCount}`,
+                        ''
+                    );
+                },
+                
+                setup: function() {
+                    this.handleTouch = this.handleTouch.bind(this);
+                    
+                    touchTestLogic.updateDescription(
+                        '多點測試', // [v9.6] 移除編號
+                        '請將多根手指放到螢幕上。',
+                        '偵測到的觸控點數：0',
+                        '請開始操作...'
+                    );
+                    
+                    testScreen.addEventListener('touchstart', this.handleTouch);
+                    testScreen.addEventListener('touchmove', this.handleTouch);
+                    testScreen.addEventListener('touchend', this.handleTouch);
+                    testScreen.addEventListener('touchcancel', this.handleTouch);
+                    
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchstart');
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchmove');
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchend');
+                    touchTestLogic.addCleanupTask(this.handleTouch, testScreen, 'touchcancel');
+                }
+            }
+        };
+
+
+        // --- 5. 綁定事件監聽 ---
+        
+        testCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const testName = card.dataset.test;
+                const testType = card.dataset.testType || 'display';
+                startTest(testName, testType);
+            });
+        });
+
+        exitTestBtn.addEventListener('click', endTest);
+
+        testScreen.addEventListener('click', (e) => {
+            const isTestContent = (e.target === testScreen || e.target === testContent || e.target.parentElement === testContent || e.target.closest('.readability-pattern'));
+            const isControl = (e.target.closest('#control-bar') || e.target.closest('#test-description') || e.target.closest('#exit-test'));
+            const isCanvas = e.target.tagName === 'CANVAS';
+            const isGestureObject = e.target.closest('.gesture-object');
+
+            if ((isTestContent || isCanvas || isGestureObject) && !isControl) {
+                 testScreen.classList.toggle('controls-visible');
+            }
+        });
+        
+        controlSets.pixel.addEventListener('click', (e) => {
+            if (e.target.dataset.color) {
+                testScreen.style.backgroundColor = e.target.dataset.color;
+            }
+            e.stopPropagation(); 
+        });
+
+        controlSets.uniformity.addEventListener('click', (e) => {
+            if (e.target.dataset.color) {
+                testScreen.style.backgroundColor = e.target.dataset.color;
+            }
+            e.stopPropagation(); 
+        });
+        
+        controlBar.addEventListener('click', (e) => e.stopPropagation());
+        testDescription.addEventListener('click', (e) => e.stopPropagation());
+
+    </script>
+</body>
+</html>
