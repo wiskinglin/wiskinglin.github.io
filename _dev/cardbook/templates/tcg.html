@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=750, initial-scale=1.0">
+<title>TCG Card Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 750px;
+    height: 1050px;
+    background: #111;
+    font-family: 'Crimson Text', serif;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    position: relative;
+    width: 750px;
+    height: 1050px;
+    overflow: hidden;
+    border-radius: 16px;
+  }
+
+  /* ── 外框 ── */
+  .card-frame {
+    position: absolute;
+    inset: 0;
+    border: 12px solid;
+    border-image: linear-gradient(
+      135deg,
+      var(--frame-color-1) 0%,
+      var(--frame-color-2) 50%,
+      var(--frame-color-1) 100%
+    ) 1;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .card-frame-inner {
+    position: absolute;
+    inset: 14px;
+    border: 2px solid rgba(255,255,255,0.15);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* ── 卡名區域 ── */
+  .card-header {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    right: 24px;
+    height: 60px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+
+  .card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  }
+
+  .card-attribute {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+
+  /* ── 主圖區域 ── */
+  .card-image {
+    position: absolute;
+    top: 90px;
+    left: 24px;
+    right: 24px;
+    height: 520px;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.12);
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ── 星級 / 等級 ── */
+  .card-stars {
+    position: absolute;
+    top: 620px;
+    left: 24px;
+    right: 24px;
+    height: 32px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 2px;
+    padding-right: 16px;
+    z-index: 5;
+  }
+
+  .star {
+    font-size: 20px;
+    color: #FFD700;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+  }
+
+  /* ── 類型行 ── */
+  .card-type-row {
+    position: absolute;
+    top: 658px;
+    left: 24px;
+    right: 24px;
+    height: 36px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    z-index: 5;
+  }
+
+  .card-type {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ── 效果說明 ── */
+  .card-effect {
+    position: absolute;
+    top: 704px;
+    left: 24px;
+    right: 24px;
+    height: 220px;
+    background: rgba(10,10,10,0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px;
+    padding: 20px;
+    z-index: 5;
+    overflow: hidden;
+  }
+
+  .effect-text {
+    font-family: 'Crimson Text', serif;
+    font-size: 18px;
+    line-height: 1.55;
+    color: rgba(255,255,255,0.85);
+    font-style: italic;
+  }
+
+  .effect-flavor {
+    margin-top: 12px;
+    font-family: 'Crimson Text', serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.4);
+    font-style: italic;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 10px;
+  }
+
+  /* ── 攻/防 ── */
+  .card-stats {
+    position: absolute;
+    bottom: 28px;
+    left: 24px;
+    right: 24px;
+    height: 52px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 24px;
+    padding: 0 16px;
+    z-index: 5;
+  }
+
+  .stat-pair {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+  }
+
+  .stat-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+
+  .stat-separator {
+    font-size: 28px;
+    color: rgba(255,255,255,0.2);
+    margin: 0 4px;
+  }
+
+  /* ── 卡片編號 ── */
+  .card-id {
+    position: absolute;
+    bottom: 32px;
+    left: 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  /* ── 稀有度標記 ── */
+  .rarity-badge {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    z-index: 5;
+  }
+
+  /* ── 背景紋理 ── */
+  .card-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, var(--bg-glow) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, var(--bg-glow-2) 0%, transparent 60%),
+      #0a0a0a;
+    z-index: 0;
+  }
+</style>
+</head>
+<body>
+<div class="card" id="card"
+  style="--frame-color-1: #8B6914; --frame-color-2: #D4AF37; --bg-glow: rgba(139,105,20,0.15); --bg-glow-2: rgba(139,105,20,0.08);">
+
+  <div class="card-bg"></div>
+
+  <!-- 外框 -->
+  <div class="card-frame"></div>
+  <div class="card-frame-inner"></div>
+
+  <!-- 卡名 -->
+  <div class="card-header">
+    <span class="card-name" id="cardName">Blue-Eyes White Dragon</span>
+    <div class="card-attribute" id="cardAttribute" style="background: radial-gradient(circle, #4a90d9, #2563a0);">光</div>
+  </div>
+
+  <!-- 主圖 -->
+  <div class="card-image">
+    <img id="cardImage" src="" alt="Card Art">
+  </div>
+
+  <!-- 星級 -->
+  <div class="card-stars" id="cardStars"></div>
+
+  <!-- 類型 -->
+  <div class="card-type-row">
+    <span class="card-type" id="cardType">Dragon / Normal</span>
+  </div>
+
+  <!-- 效果說明 -->
+  <div class="card-effect">
+    <div class="effect-text" id="effectText">This legendary dragon is a powerful engine of destruction.</div>
+    <div class="effect-flavor" id="flavorText">Virtually invincible, very few have faced this awesome creature and lived to tell the tale.</div>
+  </div>
+
+  <!-- 攻/防 -->
+  <div class="card-stats">
+    <div class="stat-pair">
+      <span class="stat-label">ATK</span>
+      <span class="stat-number" id="atkValue">3000</span>
+    </div>
+    <span class="stat-separator">/</span>
+    <div class="stat-pair">
+      <span class="stat-label">DEF</span>
+      <span class="stat-number" id="defValue">2500</span>
+    </div>
+  </div>
+
+  <!-- 卡片編號 -->
+  <div class="card-id" id="cardId">CB-005</div>
+
+  <!-- 稀有度 -->
+  <div class="rarity-badge" id="rarityBadge">✦</div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  let cardData = {};
+  if (params.has('data')) {
+    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+  }
+  const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
+
+  // 圖片
+  const imagePath = get('image', '');
+  if (imagePath) document.getElementById('cardImage').src = imagePath;
+
+  // 卡片資訊
+  document.getElementById('cardName').textContent = get('cardName', 'Card Name');
+  document.getElementById('cardType').textContent = get('cardType', 'Type').toUpperCase();
+  document.getElementById('effectText').textContent = get('effectText', 'Effect description.');
+  document.getElementById('flavorText').textContent = get('flavorText', '');
+  document.getElementById('cardId').textContent = get('cardId', 'CB-000');
+  document.getElementById('atkValue').textContent = get('atk', '0');
+  document.getElementById('defValue').textContent = get('def', '0');
+
+  // 屬性
+  const attr = get('attribute', '光');
+  const attrColors = {
+    '光': 'radial-gradient(circle, #f5d442, #c9a116)',
+    '闇': 'radial-gradient(circle, #6a0dad, #3d0066)',
+    '火': 'radial-gradient(circle, #e63946, #9d0208)',
+    '水': 'radial-gradient(circle, #4a90d9, #1a5276)',
+    '風': 'radial-gradient(circle, #2ecc71, #1a7a3a)',
+    '地': 'radial-gradient(circle, #b07d3b, #6b4226)',
+    '神': 'radial-gradient(circle, #FFD700, #FF6B00)'
+  };
+  document.getElementById('cardAttribute').textContent = attr;
+  document.getElementById('cardAttribute').style.background = attrColors[attr] || attrColors['光'];
+
+  // 框色（依屬性）
+  const frameColors = {
+    '光': ['#D4AF37', '#8B6914'],
+    '闇': ['#6a0dad', '#3d0066'],
+    '火': ['#e63946', '#9d0208'],
+    '水': ['#4a90d9', '#1a5276'],
+    '風': ['#2ecc71', '#1a7a3a'],
+    '地': ['#b07d3b', '#6b4226'],
+    '神': ['#FFD700', '#FF6B00']
+  };
+  const fc = frameColors[attr] || frameColors['光'];
+  document.getElementById('card').style.setProperty('--frame-color-1', fc[1]);
+  document.getElementById('card').style.setProperty('--frame-color-2', fc[0]);
+  document.getElementById('card').style.setProperty('--bg-glow', fc[0].replace(')', ',0.12)').replace('rgb', 'rgba'));
+
+  // 星級
+  const level = parseInt(get('level', '8'));
+  const starsContainer = document.getElementById('cardStars');
+  for (let i = 0; i < level; i++) {
+    const star = document.createElement('span');
+    star.className = 'star';
+    star.textContent = '★';
+    starsContainer.appendChild(star);
+  }
+
+  // 稀有度
+  const rarityMap = { 'N': '●', 'R': '◆', 'SR': '✦', 'UR': '✦✦', 'SSR': '✦✦✦' };
+  const rarity = get('rarity', 'SR');
+  document.getElementById('rarityBadge').textContent = rarityMap[rarity] || rarity;
+</script>
+</body>
+</html>

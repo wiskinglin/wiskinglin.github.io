@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=750, initial-scale=1.0">
+<title>Sports Card Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 750px;
+    height: 1050px;
+    background: #111;
+    font-family: 'Oswald', sans-serif;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    position: relative;
+    width: 750px;
+    height: 1050px;
+    overflow: hidden;
+    background: #0a0a0a;
+  }
+
+  /* ── 主圖區域 ── */
+  .card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 75%;
+    overflow: hidden;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .card-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.85) 100%);
+    pointer-events: none;
+  }
+
+  /* ── 球隊色條 ── */
+  .team-stripe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 8px;
+    height: 100%;
+    z-index: 10;
+  }
+
+  .team-stripe-right {
+    left: auto;
+    right: 0;
+  }
+
+  /* ── 系列標籤 ── */
+  .series-badge {
+    position: absolute;
+    top: 24px;
+    right: 20px;
+    z-index: 10;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ── 球員資訊區域（覆蓋在圖片漸層上）── */
+  .player-info {
+    position: absolute;
+    bottom: 260px;
+    left: 32px;
+    right: 32px;
+    z-index: 5;
+  }
+
+  .player-number {
+    font-family: 'Oswald', sans-serif;
+    font-size: 72px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.12);
+    line-height: 1;
+    letter-spacing: -2px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+  }
+
+  .player-position {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--team-color);
+    margin-bottom: 6px;
+  }
+
+  .player-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.6);
+  }
+
+  .player-team {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ── 數據面板 ── */
+  .stats-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 240px;
+    background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+    border-top: 3px solid var(--team-color);
+    padding: 28px 32px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .stats-year {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .stats-label {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--team-color);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    flex: 1;
+    align-items: center;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 12px 0;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .stat-key {
+    font-family: 'Roboto Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+  }
+
+  /* ── 卡片外框 ── */
+  .card-border {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .card-corner-tl, .card-corner-tr, .card-corner-bl, .card-corner-br {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    z-index: 20;
+  }
+  .card-corner-tl { top: 12px; left: 12px; border-top: 2px solid var(--team-color); border-left: 2px solid var(--team-color); }
+  .card-corner-tr { top: 12px; right: 12px; border-top: 2px solid var(--team-color); border-right: 2px solid var(--team-color); }
+  .card-corner-bl { bottom: 12px; left: 12px; border-bottom: 2px solid var(--team-color); border-left: 2px solid var(--team-color); }
+  .card-corner-br { bottom: 12px; right: 12px; border-bottom: 2px solid var(--team-color); border-right: 2px solid var(--team-color); }
+
+  /* ── 金屬光澤裝飾 ── */
+  .metallic-accent {
+    position: absolute;
+    top: 0;
+    right: 80px;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgba(255,215,0,0.15) 30%,
+      rgba(255,215,0,0.3) 50%,
+      rgba(255,215,0,0.15) 70%,
+      transparent 100%
+    );
+    z-index: 15;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="card" id="card" style="--team-color: #005A9C;">
+
+  <!-- 主圖 -->
+  <div class="card-image">
+    <img id="cardImage" src="" alt="Player">
+  </div>
+
+  <!-- 球隊色條 -->
+  <div class="team-stripe" id="stripeLeft" style="background: linear-gradient(to bottom, #005A9C, #002D62);"></div>
+  <div class="team-stripe team-stripe-right" id="stripeRight" style="background: linear-gradient(to bottom, #005A9C, #002D62);"></div>
+
+  <!-- 系列標籤 -->
+  <div class="series-badge" id="seriesBadge">MLB ALL-STARS</div>
+
+  <!-- 球員資訊 -->
+  <div class="player-info">
+    <div class="player-number" id="playerNumber">#17</div>
+    <div class="player-position" id="playerPosition">PITCHER / DH</div>
+    <div class="player-name" id="playerName">SHOHEI<br>OHTANI</div>
+    <div class="player-team" id="playerTeam">LOS ANGELES DODGERS</div>
+  </div>
+
+  <!-- 數據面板 -->
+  <div class="stats-panel">
+    <div class="stats-header">
+      <span class="stats-year" id="statsYear">2026 SEASON</span>
+      <span class="stats-label">KEY STATS</span>
+    </div>
+    <div class="stats-grid" id="statsGrid">
+      <!-- Stats injected by JS -->
+    </div>
+  </div>
+
+  <!-- 裝飾元素 -->
+  <div class="card-border"></div>
+  <div class="card-corner-tl"></div>
+  <div class="card-corner-tr"></div>
+  <div class="card-corner-bl"></div>
+  <div class="card-corner-br"></div>
+  <div class="metallic-accent"></div>
+</div>
+
+<script>
+  // 從 URL query 參數讀取卡片資料，或使用預設值
+  const params = new URLSearchParams(window.location.search);
+
+  // 解析 JSON 資料（如果透過 data 參數傳入）
+  let cardData = {};
+  if (params.has('data')) {
+    try {
+      cardData = JSON.parse(decodeURIComponent(params.get('data')));
+    } catch (e) {
+      console.error('Failed to parse card data:', e);
+    }
+  }
+
+  // 套用資料
+  const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
+
+  // 圖片
+  const imagePath = get('image', '');
+  if (imagePath) {
+    document.getElementById('cardImage').src = imagePath;
+  }
+
+  // 球員資訊
+  document.getElementById('playerName').innerHTML = get('playerName', 'PLAYER NAME').replace(/\s+/g, '<br>');
+  document.getElementById('playerTeam').textContent = get('team', 'TEAM NAME').toUpperCase();
+  document.getElementById('playerNumber').textContent = '#' + get('number', '00');
+  document.getElementById('playerPosition').textContent = get('position', 'POSITION').toUpperCase();
+  document.getElementById('seriesBadge').textContent = get('series', 'SERIES').toUpperCase();
+  document.getElementById('statsYear').textContent = get('year', '2026') + ' SEASON';
+
+  // 球隊色
+  const teamColor = get('teamColor', '#005A9C');
+  const teamColorDark = get('teamColorDark', '#002D62');
+  document.getElementById('card').style.setProperty('--team-color', teamColor);
+  document.getElementById('stripeLeft').style.background = `linear-gradient(to bottom, ${teamColor}, ${teamColorDark})`;
+  document.getElementById('stripeRight').style.background = `linear-gradient(to bottom, ${teamColor}, ${teamColorDark})`;
+
+  // 數據
+  const stats = cardData.stats || {
+    'ERA': '2.35',
+    'W-L': '15-5',
+    'SO': '219',
+    'WHIP': '0.98'
+  };
+
+  const statsGrid = document.getElementById('statsGrid');
+  Object.entries(stats).forEach(([key, value]) => {
+    const item = document.createElement('div');
+    item.className = 'stat-item';
+    item.innerHTML = `
+      <div class="stat-value">${value}</div>
+      <div class="stat-key">${key}</div>
+    `;
+    statsGrid.appendChild(item);
+  });
+</script>
+</body>
+</html>

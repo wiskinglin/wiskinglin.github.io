@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1024, initial-scale=1.0">
+<title>Credit Card Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1024px;
+    height: 646px;
+    background: #111;
+    font-family: 'Montserrat', sans-serif;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    position: relative;
+    width: 1024px;
+    height: 646px;
+    overflow: hidden;
+    border-radius: 30px;
+    background: #0d0d0d;
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  }
+
+  /* ── 滿版背景主圖 ── */
+  .card-bg-image {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .card-bg-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ── 玻璃擬物層與暗角 ── */
+  .card-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 60%),
+                linear-gradient(210deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%);
+    z-index: 1;
+  }
+
+  /* ── 金屬拉絲 / 雷射折射模擬 ── */
+  .brushed-texture {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.01) 0px,
+      rgba(255, 255, 255, 0.01) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  /* ── 晶片 ── */
+  .chip {
+    position: absolute;
+    top: 200px;
+    left: 80px;
+    width: 110px;
+    height: 85px;
+    background: linear-gradient(135deg, #ffd700 0%, #cca008 100%);
+    border-radius: 12px;
+    z-index: 5;
+    box-shadow: inset 0 1px 3px rgba(255,255,255,0.3), 0 4px 10px rgba(0,0,0,0.3);
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+
+  .chip-line {
+    position: absolute;
+    background: rgba(0,0,0,0.25);
+  }
+  .chip-line.v1 { top: 0; left: 33%; width: 1px; height: 100%; }
+  .chip-line.v2 { top: 0; left: 66%; width: 1px; height: 100%; }
+  .chip-line.h1 { top: 33%; left: 0; width: 100%; height: 1px; }
+  .chip-line.h2 { top: 66%; left: 0; width: 100%; height: 1px; }
+  
+  .chip-center {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    width: 60%;
+    height: 60%;
+    border: 1px solid rgba(0,0,0,0.25);
+    background: inherit;
+    border-radius: 6px;
+  }
+
+  /* ── 品牌標章 ── */
+  .brand-logo {
+    position: absolute;
+    top: 60px;
+    right: 80px;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    z-index: 5;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
+  /* ── 感應圖示 ── */
+  .contactless {
+    position: absolute;
+    top: 220px;
+    left: 220px;
+    z-index: 5;
+    color: rgba(255,255,255,0.6);
+    font-size: 32px;
+    transform: rotate(90deg);
+  }
+
+  /* ── 卡號 ── */
+  .card-number {
+    position: absolute;
+    bottom: 180px;
+    left: 80px;
+    right: 80px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 42px;
+    color: #fff;
+    letter-spacing: 8px;
+    z-index: 5;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+
+  /* ── 有效期限 ── */
+  .card-valid {
+    position: absolute;
+    bottom: 110px;
+    left: 360px;
+    z-index: 5;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .valid-thru {
+    font-size: 9px;
+    line-height: 1.1;
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  .valid-date {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 24px;
+    color: #fff;
+    letter-spacing: 2px;
+  }
+
+  /* ── 持卡人 ── */
+  .card-holder {
+    position: absolute;
+    bottom: 60px;
+    left: 80px;
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    z-index: 5;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  /* ── 卡片類別 (如 Platinum, Gold) ── */
+  .card-class {
+    position: absolute;
+    bottom: 60px;
+    right: 80px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffd700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    z-index: 5;
+  }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+
+  <!-- 背景圖片 -->
+  <div class="card-bg-image">
+    <img id="cardImage" src="" alt="Card Art Background">
+  </div>
+
+  <!-- 暗角與金屬紋理 -->
+  <div class="card-overlay"></div>
+  <div class="brushed-texture"></div>
+
+  <!-- 品牌 Logo -->
+  <div class="brand-logo" id="brandLogo">PREMIUM</div>
+
+  <!-- 晶片 -->
+  <div class="chip">
+    <div class="chip-line v1"></div>
+    <div class="chip-line v2"></div>
+    <div class="chip-line h1"></div>
+    <div class="chip-line h2"></div>
+    <div class="chip-center"></div>
+  </div>
+
+  <!-- 無接觸感應 -->
+  <div class="contactless">☴</div>
+
+  <!-- 卡號 -->
+  <div class="card-number" id="cardNumber">•••• •••• •••• ••••</div>
+
+  <!-- 有效期限 -->
+  <div class="card-valid">
+    <div class="valid-thru">valid<br>thru</div>
+    <div class="valid-date" id="validDate">12/30</div>
+  </div>
+
+  <!-- 持卡人 -->
+  <div class="card-holder" id="cardHolder">CARDHOLDER NAME</div>
+
+  <!-- 卡片類別 -->
+  <div class="card-class" id="cardClass">PLATINUM</div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  let cardData = {};
+  if (params.has('data')) {
+    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+  }
+  const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
+
+  // 圖片
+  const imagePath = get('image', '');
+  if (imagePath) document.getElementById('cardImage').src = imagePath;
+
+  // 欄位填寫
+  document.getElementById('brandLogo').textContent = get('brand', 'PREMIUM').toUpperCase();
+  document.getElementById('cardNumber').textContent = get('number', '0000 0000 0000 0000');
+  document.getElementById('validDate').textContent = get('expiry', '12/30');
+  document.getElementById('cardHolder').textContent = get('holder', 'CARDHOLDER NAME').toUpperCase();
+  
+  const cardClass = get('class', 'PLATINUM').toUpperCase();
+  const classEl = document.getElementById('cardClass');
+  classEl.textContent = cardClass;
+
+  // 根據類別微調顏色
+  if (cardClass === 'GOLD') {
+    classEl.style.color = '#ffd700';
+  } else if (cardClass === 'BLACK' || cardClass === 'INFINITE') {
+    classEl.style.color = '#e5e5e5';
+  } else {
+    classEl.style.color = '#a3a3a3';
+  }
+</script>
+</body>
+</html>

@@ -43,28 +43,33 @@ description: 依據卡片美學四大支柱，自動化設計、生成與管理�
 ### 2. 處理邏輯 (Process)
 
 1. **情境識別與參數確認**：
-   * **建立新卡**：確認卡片主題與其對應的 **美學類型** (TCG / PTCG / Sports / GreedIsland / Poker / Uno / CreditCard / EasyCard)。
+   * **建立新卡**：確認卡片主題與其對應的 **美學類型** (TCG / PTCG / Sports / GreedIsland / Poker / CreditCard)。
    * **優化現有卡**：讀取 `_dev/cardbook/docs/CBD.md` 中的卡片資料與原有 Prompt，根據使用者反饋進行微調。
    * **系列卡片設計**：分析同系列已有的卡片，提煉其視覺與色彩特徵以確保一致性。
 2. **美學對齊與 Prompt 工程**：
    * 根據選定的卡片美學類型，參考四大維度設計專屬的英文 Image Prompt。
-   * **關鍵原則**：除非使用者要求，AI 生成的圖片僅為**卡面主圖 (Illustration/Key Visual)**，不要讓 AI 去繪製邊框、標題字或數值按鈕，因為這些在網頁端應由前端 CSS 渲染。
-   * **長寬比控制**：必須在 Prompt 設計中主動注入 `vertical card aspect ratio, 5:7 aspect ratio, portrait orientation` 等關鍵字，以強制生成非正方形的直式卡牌圖片。
-3. **圖片生成與品質檢查 (Image Generation & Quality Inspection)**：
-   * 調用 `generate_image` 工具生成圖片。
-   * **自主檢查機制 (Inspection Check)**：
-     1. *文字檢查*：圖片是否含有錯亂或隨機的字母/單字？（如有，在 Prompt 中加入 `no text, no words, clean illustration style`）。
-     2. *比例檢查*：圖片是否為正方形？（如果是，增強 Prompt 中 `vertical layout, 5:7 aspect ratio` 描述）。
-     3. *主視覺完整性*：主體角色是否崩壞或模糊？
-   * 若不符品質，自動修正 Prompt 並**重新生成**，最多重試 2 次。
-   * 檢查通過後，將最終圖片複製並儲存至 `_dev/cardbook/images/`，命名符合 `cb_[三位數ID]_[英文底線名稱].png`。
-4. **資料庫更新 (Database Update)**：
-   * 自動讀取最新卡片 ID 並遞增（如 `CB-001` -> `CB-002`）。
-   * 將該卡片的中英文名稱、美學類型、四大維度的設計說明、最終採用的 Prompt 與圖片路徑，以結構化 Markdown 寫入或更新至 `_dev/cardbook/docs/CBD.md`。
+   * **關鍵原則**：AI 生成的圖片僅為**卡面主圖 (Illustration/Key Visual)**，不要讓 AI 去繪製邊框、標題字或數值按鈕。
+   * **構圖控制**：必須在 Prompt 中要求 `centered composition, subject in center of frame, leave margins around edges`，為置中裁切預留空間。
+3. **圖片生成與自主品質檢查 (Image Generation & Quality Inspection)**：
+   * 調用 `generate_image` 工具生成圖片（預設 1024x1024 正方形）。
+   * 檢查圖片是否有錯亂無意義的字母，或角色主體是否偏離中心或崩壞。若不符，調整 Prompt 並重新生成（最多重試 2 次）。
+   * 暫存原始圖片至 `_dev/cardbook/images/temp_[ID].png`。
+4. **後處理裁切 (Image Post-Processing)**：
+   * 執行 `_dev/cardbook/scripts/crop_card.ps1` 進行置中裁切。
+   * **直式 (Portrait)**：Sports, TCG, PTCG, Poker, GreedIsland 裁切為 `731x1024` (5:7)。
+   * **橫式 (Landscape)**：CreditCard 裁切為 `1024x646` (8.56:5.4)。
+   * 將裁切後的圖片儲存至 `_dev/cardbook/images/cb_[三位數ID]_[英文底線名稱]_cropped.png`。
+5. **卡片資訊生成與 HTML/CSS 渲染 (Template Rendering)**：
+   * 針對卡牌主題，生成豐富的卡片資訊（如 Sports 卡生成球員名、球隊、背號、位置、賽季關鍵數據；TCG 卡生成卡名、星級、屬性、攻防、卡片效果說明等）。
+   * 選擇 `_dev/cardbook/templates/` 目錄下對應的 HTML 模板，利用本地伺服器以目標截圖解析度（直式 750x1050 / 橫式 1011x638）載入圖片並渲染卡片資訊。
+6. **截圖合成與資料庫更新 (Snapshot & Database Update)**：
+   * 使用瀏覽器在目標解析度視窗下進行全頁面截圖，將含有卡面資訊的最終卡片圖片儲存至 `_dev/cardbook/images/cb_[三位數ID]_[英文底線名稱].png`。
+   * 將該卡片的中英文名稱、美學類型、四大維度的設計說明、最終採用的 Prompt、卡牌具體屬性數據與圖片路徑，以結構化 Markdown 寫入或更新至 `_dev/cardbook/docs/CBD.md`。
 
 ### 3. 輸出 (Output)
 
-* 生成的卡片圖片檔（位於 `_dev/cardbook/images/`）。
+* 生成並裁切後的主圖檔（`cb_[ID]_[name]_cropped.png`）。
+* 合成卡牌資訊的最終卡片圖片檔（`cb_[ID]_[name].png`）。
 * 更新後的卡片清單檔案 `_dev/cardbook/docs/CBD.md`。
 
 ---
@@ -72,5 +77,6 @@ description: 依據卡片美學四大支柱，自動化設計、生成與管理�
 ## 注意事項與品質門檻
 
 * **純淨背景**：生成的卡片主圖避免出現多餘且不清晰的英文字母與數字。
-* **精準美學記錄**：在 `CBD.md` 中，必須明確寫出該卡片如何實現「構圖」、「字體（未來前端建議）」與「色調」，使後續開發網頁的人員有設計依據。
-* **標準直式卡片比例**：必須確保每次生成圖片時皆使用了長寬比控制字詞，避免產出預設的正方形圖片。
+* **精準美學記錄**：在 `CBD.md` 中，必須明確寫出該卡片如何實現「構圖」、「字體」、「色調」與「卡面資訊屬性」。
+* **正確認出卡片比例**：必須依類型使用裁切腳本，產出標準的直式 (5:7) 或橫式 (信用卡) 卡牌。
+* **資訊完整性**：最終卡片圖片必須透過 HTML/CSS 模板成功合成卡名、數值與屬性，不可只有主圖。

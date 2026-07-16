@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=750, initial-scale=1.0">
+<title>Poker Card Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 750px;
+    height: 1050px;
+    background: #111;
+    font-family: 'Cinzel', serif;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    position: relative;
+    width: 750px;
+    height: 1050px;
+    overflow: hidden;
+    background: #fbf8f3; /* Classical vintage ivory background */
+    border-radius: 24px;
+    border: 12px solid #dfd7c7;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.1), 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  /* Red suit theme override */
+  .card.suit-red {
+    border-color: #f7e4e1;
+  }
+
+  /* ── 邊框花紋 ── */
+  .poker-frame {
+    position: absolute;
+    inset: 20px;
+    border: 2px solid #c9b080;
+    border-radius: 12px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .card.suit-red .poker-frame {
+    border-color: #d99a9a;
+  }
+
+  /* ── 角落索引 (二分對稱) ── */
+  .corner-index {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 15;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    width: 80px;
+  }
+
+  .corner-index.top-left {
+    top: 40px;
+    left: 40px;
+  }
+
+  .corner-index.bottom-right {
+    bottom: 40px;
+    right: 40px;
+    transform: rotate(180deg);
+  }
+
+  .rank-val {
+    font-size: 64px;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+
+  .suit-val {
+    font-size: 48px;
+    line-height: 1;
+  }
+
+  /* ── 顏色配置 ── */
+  .color-black {
+    color: #1a1a1a;
+  }
+
+  .color-red {
+    color: #c92a2a;
+  }
+
+  /* ── 中央插圖區域 ── */
+  .center-art-container {
+    position: absolute;
+    inset: 120px 140px;
+    border: 4px solid #c9b080;
+    background: #000;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    z-index: 5;
+  }
+  .card.suit-red .center-art-container {
+    border-color: #d99a9a;
+  }
+
+  .center-art-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ── 中央裝飾 ── */
+  .center-suit-bg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 320px;
+    color: rgba(201, 176, 128, 0.07);
+    z-index: 1;
+    pointer-events: none;
+    font-family: 'Playfair Display', serif;
+  }
+  .card.suit-red .center-suit-bg {
+    color: rgba(217, 154, 154, 0.08);
+  }
+
+  /* ── 裝飾線條 ── */
+  .ornament-line {
+    position: absolute;
+    width: 100px;
+    height: 1px;
+    background: #c9b080;
+    z-index: 10;
+  }
+  .card.suit-red .ornament-line {
+    background: #d99a9a;
+  }
+  .line-top { top: 90px; left: 50%; transform: translateX(-50%); }
+  .line-bottom { bottom: 90px; left: 50%; transform: translateX(-50%); }
+  
+  .card-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    font-size: 14px;
+    letter-spacing: 4px;
+    font-weight: 700;
+  }
+  .label-top { top: 72px; color: #a69168; }
+  .label-bottom { bottom: 72px; color: #a69168; transform: translateX(-50%) rotate(180deg); }
+  .card.suit-red .label-top, .card.suit-red .label-bottom { color: #b57a7a; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <!-- 大背景花紋 -->
+  <div class="center-suit-bg" id="centerSuitBg">♠</div>
+
+  <!-- 邊框 -->
+  <div class="poker-frame"></div>
+
+  <!-- 裝飾 -->
+  <div class="ornament-line line-top"></div>
+  <div class="card-label label-top" id="cardLabelTop">ROYAL COURT</div>
+  <div class="ornament-line line-bottom"></div>
+  <div class="card-label label-bottom" id="cardLabelBottom">ROYAL COURT</div>
+
+  <!-- 左上索引 -->
+  <div class="corner-index top-left" id="topLeftIndex">
+    <span class="rank-val" id="rankTop">K</span>
+    <span class="suit-val" id="suitTop">♠</span>
+  </div>
+
+  <!-- 中央插圖 -->
+  <div class="center-art-container">
+    <img id="cardImage" src="" alt="Poker Court Art">
+  </div>
+
+  <!-- 右下索引 -->
+  <div class="corner-index bottom-right" id="bottomRightIndex">
+    <span class="rank-val" id="rankBottom">K</span>
+    <span class="suit-val" id="suitBottom">♠</span>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  let cardData = {};
+  if (params.has('data')) {
+    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+  }
+  const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
+
+  // 圖片
+  const imagePath = get('image', '');
+  if (imagePath) document.getElementById('cardImage').src = imagePath;
+
+  // 點數與花色
+  const rank = get('rank', 'K').toUpperCase();
+  const suit = get('suit', 'spade'); // spade, heart, diamond, club
+  
+  const suitSymbols = {
+    spade: '♠',
+    heart: '♥',
+    diamond: '♦',
+    club: '♣'
+  };
+
+  const isRed = (suit === 'heart' || suit === 'diamond');
+  const suitSymbol = suitSymbols[suit] || '♠';
+
+  // 套用樣式與顏色
+  const cardElement = document.getElementById('card');
+  const colorClass = isRed ? 'color-red' : 'color-black';
+  
+  if (isRed) {
+    cardElement.classList.add('suit-red');
+  }
+
+  // 填寫內容
+  document.getElementById('rankTop').textContent = rank;
+  document.getElementById('rankBottom').textContent = rank;
+  document.getElementById('suitTop').textContent = suitSymbol;
+  document.getElementById('suitBottom').textContent = suitSymbol;
+  document.getElementById('centerSuitBg').textContent = suitSymbol;
+
+  document.getElementById('topLeftIndex').className = `corner-index top-left ${colorClass}`;
+  document.getElementById('bottomRightIndex').className = `corner-index bottom-right ${colorClass}`;
+
+  // 自訂標籤
+  const labelText = get('label', 'ROYAL COURT').toUpperCase();
+  document.getElementById('cardLabelTop').textContent = labelText;
+  document.getElementById('cardLabelBottom').textContent = labelText;
+</script>
+</body>
+</html>

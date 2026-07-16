@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=750, initial-scale=1.0">
+<title>Greed Island Card Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Serif+TC:wght@500;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 750px;
+    height: 1050px;
+    background: #111;
+    font-family: 'Noto Serif TC', serif;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    position: relative;
+    width: 750px;
+    height: 1050px;
+    overflow: hidden;
+    background: #e6dfcc; /* Parchment base color */
+    border: 18px solid #3c352a;
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.6);
+  }
+
+  /* ── 雙層古典內框 ── */
+  .inner-border {
+    position: absolute;
+    inset: 12px;
+    border: 2px solid #5c5243;
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  .inner-border-2 {
+    position: absolute;
+    inset: 16px;
+    border: 1px dashed #7a6e5a;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ── 頂部區塊 (編號 & 入手難易度) ── */
+  .card-top {
+    position: absolute;
+    top: 30px;
+    left: 32px;
+    right: 32px;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px double #5c5243;
+    padding-bottom: 10px;
+    z-index: 5;
+  }
+
+  .card-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    color: #4a3e2e;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  .card-limit {
+    font-family: 'Cinzel', serif;
+    font-size: 26px;
+    color: #8a2b2b; /* Brick red for rank */
+    font-weight: 900;
+    letter-spacing: 1px;
+    background: #dfd7c0;
+    padding: 2px 16px;
+    border: 1px solid #5c5243;
+    border-radius: 4px;
+  }
+
+  /* ── 咒語名稱 ── */
+  .spell-title-container {
+    position: absolute;
+    top: 110px;
+    left: 32px;
+    right: 32px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+  }
+
+  .spell-name {
+    font-size: 38px;
+    font-weight: 900;
+    color: #2b231a;
+    letter-spacing: 4px;
+    text-align: center;
+  }
+
+  /* ── 主圖區域 ── */
+  .spell-image {
+    position: absolute;
+    top: 200px;
+    left: 48px;
+    right: 48px;
+    height: 480px;
+    background: #000;
+    border: 4px solid #4a3e2e;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    overflow: hidden;
+    z-index: 5;
+  }
+
+  .spell-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ── 效果說明 ── */
+  .spell-effect {
+    position: absolute;
+    bottom: 50px;
+    left: 48px;
+    right: 48px;
+    height: 270px;
+    background: #dfd6be;
+    border: 2px solid #5c5243;
+    padding: 24px 30px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  .spell-effect-text {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #3a3229;
+    font-weight: 700;
+    text-align: justify;
+  }
+
+  /* ── 角落裝飾符號 ── */
+  .corner-ornament {
+    position: absolute;
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: #8c7e65;
+    z-index: 10;
+  }
+  .ornament-tl { top: 22px; left: 22px; }
+  .ornament-tr { top: 22px; right: 22px; }
+  .ornament-bl { bottom: 22px; left: 22px; }
+  .ornament-br { bottom: 22px; right: 22px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- 雙層邊框 -->
+  <div class="inner-border"></div>
+  <div class="inner-border-2"></div>
+
+  <!-- 角落符號 -->
+  <div class="corner-ornament ornament-tl">🕃</div>
+  <div class="corner-ornament ornament-tr">🕄</div>
+  <div class="corner-ornament ornament-bl">🕀</div>
+  <div class="corner-ornament ornament-br">🕁</div>
+
+  <!-- 頂部資訊 -->
+  <div class="card-top">
+    <div class="card-number" id="cardNumber">No. 000</div>
+    <div class="card-limit" id="cardLimit">SS-0</div>
+  </div>
+
+  <!-- 咒語/物品名稱 -->
+  <div class="spell-title-container">
+    <h1 class="spell-name" id="spellName">咒語名稱</h1>
+  </div>
+
+  <!-- 魔法主圖 -->
+  <div class="spell-image">
+    <img id="cardImage" src="" alt="Spell Illustration">
+  </div>
+
+  <!-- 魔法效果說明 -->
+  <div class="spell-effect">
+    <p class="spell-effect-text" id="spellEffectText">
+      這裡是咒語的詳細效果描述。
+    </p>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  let cardData = {};
+  if (params.has('data')) {
+    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+  }
+  const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
+
+  // 圖片
+  const imagePath = get('image', '');
+  if (imagePath) document.getElementById('cardImage').src = imagePath;
+
+  // 欄位填寫
+  document.getElementById('cardNumber').textContent = get('cardNumber', 'No. 000');
+  document.getElementById('cardLimit').textContent = get('limit', 'G-00');
+  document.getElementById('spellName').textContent = get('spellName', '魔法/物品名稱');
+  document.getElementById('spellEffectText').textContent = get('effectText', '詳細的魔法卡片說明與限制條件。');
+</script>
+</body>
+</html>

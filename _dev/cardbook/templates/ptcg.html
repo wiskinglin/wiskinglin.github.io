@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=750, initial-scale=1.0">
+<title>PTCG Card Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 750px;
+    height: 1050px;
+    background: #111;
+    font-family: 'Nunito', sans-serif;
+    scrollbar-width: none;
+  }
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card {
+    position: relative;
+    width: 750px;
+    height: 1050px;
+    overflow: hidden;
+    border-radius: 20px;
+  }
+
+  /* ── 滿版主圖 ── */
+  .card-image {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ── 漸層覆蓋 ── */
+  .overlay-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+    z-index: 2;
+  }
+
+  .overlay-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55%;
+    background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.9) 70%, rgba(0,0,0,0.95) 100%);
+    z-index: 2;
+  }
+
+  /* ── 頂部資訊 ── */
+  .card-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    z-index: 5;
+  }
+
+  .pokemon-stage {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .pokemon-name {
+    font-size: 32px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+    letter-spacing: 1px;
+  }
+
+  .pokemon-hp {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  .hp-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+  }
+
+  .hp-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  }
+
+  .type-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 900;
+    color: #fff;
+    margin-left: 8px;
+    border: 2px solid rgba(255,255,255,0.3);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+
+  /* ── 技能區域 ── */
+  .skills-panel {
+    position: absolute;
+    bottom: 160px;
+    left: 24px;
+    right: 24px;
+    z-index: 5;
+  }
+
+  .skill {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(12px);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .skill-cost {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-right: 16px;
+    padding-top: 2px;
+    min-width: 40px;
+    align-items: center;
+  }
+
+  .energy-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .skill-info {
+    flex: 1;
+  }
+
+  .skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .skill-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  .skill-damage {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .skill-desc {
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.4;
+  }
+
+  /* ── 底部資訊列 ── */
+  .card-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    z-index: 5;
+    padding: 0 28px;
+  }
+
+  .bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .bottom-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bottom-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.35);
+  }
+
+  .bottom-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .weakness-icon, .resistance-icon, .retreat-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+    color: #fff;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 1px;
+  }
+
+  /* ── 外框 ── */
+  .card-border {
+    position: absolute;
+    inset: 6px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* ── 類型色彩 ── */
+  .type-fire { background: radial-gradient(circle, #e63946, #9d0208); }
+  .type-water { background: radial-gradient(circle, #4a90d9, #1a5276); }
+  .type-grass { background: radial-gradient(circle, #2ecc71, #1a7a3a); }
+  .type-electric { background: radial-gradient(circle, #f5d442, #c9a116); }
+  .type-psychic { background: radial-gradient(circle, #a855f7, #6b21a8); }
+  .type-fighting { background: radial-gradient(circle, #b07d3b, #6b4226); }
+  .type-dark { background: radial-gradient(circle, #4a4a6a, #2a2a3a); }
+  .type-metal { background: radial-gradient(circle, #9ca3af, #6b7280); }
+  .type-dragon { background: radial-gradient(circle, #c79a1a, #7c5e10); }
+  .type-fairy { background: radial-gradient(circle, #ec4899, #9d174d); }
+  .type-normal { background: radial-gradient(circle, #9ca3af, #6b7280); }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+
+  <!-- 滿版主圖 -->
+  <div class="card-image">
+    <img id="cardImage" src="" alt="Pokemon">
+  </div>
+  <div class="overlay-top"></div>
+  <div class="overlay-bottom"></div>
+
+  <!-- 頂部 -->
+  <div class="card-top">
+    <div>
+      <div class="pokemon-stage" id="pokemonStage">BASIC</div>
+      <div class="pokemon-name" id="pokemonName">Charizard</div>
+    </div>
+    <div class="pokemon-hp">
+      <span class="hp-label">HP</span>
+      <span class="hp-value" id="hpValue">250</span>
+      <div class="type-icon" id="typeIcon"></div>
+    </div>
+  </div>
+
+  <!-- 技能 -->
+  <div class="skills-panel" id="skillsPanel"></div>
+
+  <!-- 底部 -->
+  <div class="card-bottom">
+    <div class="bottom-row">
+      <div class="bottom-item">
+        <span class="bottom-label">Weakness</span>
+        <div class="weakness-icon" id="weaknessIcon"></div>
+        <span class="bottom-value" id="weaknessValue">×2</span>
+      </div>
+      <div class="bottom-item">
+        <span class="bottom-label">Resistance</span>
+        <div class="resistance-icon" id="resistanceIcon"></div>
+        <span class="bottom-value" id="resistanceValue">-30</span>
+      </div>
+      <div class="bottom-item">
+        <span class="bottom-label">Retreat</span>
+        <span id="retreatCost" class="bottom-value"></span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span id="cardId">CB-001</span>
+      <span id="cardIllustrator">Illus. CardGen AI</span>
+      <span id="cardRarity">✦</span>
+    </div>
+  </div>
+
+  <div class="card-border"></div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  let cardData = {};
+  if (params.has('data')) {
+    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+  }
+  const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
+
+  // 圖片
+  const imagePath = get('image', '');
+  if (imagePath) document.getElementById('cardImage').src = imagePath;
+
+  // 基本資訊
+  document.getElementById('pokemonStage').textContent = get('stage', 'BASIC').toUpperCase();
+  document.getElementById('pokemonName').textContent = get('pokemonName', 'Pokemon');
+  document.getElementById('hpValue').textContent = get('hp', '100');
+  document.getElementById('cardId').textContent = get('cardId', 'CB-000');
+
+  // 屬性
+  const type = get('type', 'fire');
+  const typeSymbols = {
+    fire: '🔥', water: '💧', grass: '🌿', electric: '⚡',
+    psychic: '👁', fighting: '✊', dark: '🌙', metal: '⚙',
+    dragon: '🐉', fairy: '✨', normal: '⭐'
+  };
+  const typeIcon = document.getElementById('typeIcon');
+  typeIcon.textContent = typeSymbols[type] || '⭐';
+  typeIcon.className = 'type-icon type-' + type;
+
+  // 弱點/抵抗
+  const weakness = get('weakness', 'water');
+  const resistance = get('resistance', '');
+  document.getElementById('weaknessIcon').textContent = typeSymbols[weakness] || '';
+  document.getElementById('weaknessIcon').className = 'weakness-icon type-' + weakness;
+  document.getElementById('weaknessValue').textContent = get('weaknessValue', '×2');
+
+  if (resistance) {
+    document.getElementById('resistanceIcon').textContent = typeSymbols[resistance] || '';
+    document.getElementById('resistanceIcon').className = 'resistance-icon type-' + resistance;
+    document.getElementById('resistanceValue').textContent = get('resistanceValue', '-30');
+  } else {
+    document.getElementById('resistanceIcon').style.display = 'none';
+    document.getElementById('resistanceValue').textContent = '-';
+  }
+
+  // 撤退費用
+  const retreat = parseInt(get('retreat', '2'));
+  const retreatEl = document.getElementById('retreatCost');
+  for (let i = 0; i < retreat; i++) {
+    const dot = document.createElement('span');
+    dot.textContent = '⚪';
+    dot.style.fontSize = '14px';
+    dot.style.marginRight = '2px';
+    retreatEl.appendChild(dot);
+  }
+
+  // 技能
+  const skills = cardData.skills || [
+    { name: 'Flare Strike', damage: '120', cost: ['fire', 'fire', 'normal'], desc: 'This Pokémon can\'t use Flare Strike during your next turn.' },
+    { name: 'Inferno Blaze', damage: '300', cost: ['fire', 'fire', 'fire', 'normal'], desc: 'Discard 3 Energy from this Pokémon.' }
+  ];
+
+  const skillsPanel = document.getElementById('skillsPanel');
+  skills.forEach(skill => {
+    const div = document.createElement('div');
+    div.className = 'skill';
+    const costHTML = (skill.cost || []).map(c =>
+      `<div class="energy-dot type-${c}">${typeSymbols[c] || '⭐'}</div>`
+    ).join('');
+    div.innerHTML = `
+      <div class="skill-cost">${costHTML}</div>
+      <div class="skill-info">
+        <div class="skill-header">
+          <span class="skill-name">${skill.name}</span>
+          <span class="skill-damage">${skill.damage || ''}</span>
+        </div>
+        ${skill.desc ? `<div class="skill-desc">${skill.desc}</div>` : ''}
+      </div>
+    `;
+    skillsPanel.appendChild(div);
+  });
+</script>
+</body>
+</html>
