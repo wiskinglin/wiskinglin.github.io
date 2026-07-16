@@ -14,6 +14,7 @@ This document tracks all custom Skills and Workflows developed for this project.
 | **pptx** | 處理 PowerPoint 文件 | `.agents/skills/pptx/` |
 | **xlsx** | 專業級 Excel 分析與編輯 | `.agents/skills/xlsx/` |
 | **UIArchitect** | 內建設計系統知識庫的介面設計建築師（EPDCA 四階段設計診斷與優化） | `.agents/skills/UIArchitect/` |
+| **CardbookGenerator** | 自動化設計與生成高品質卡片圖片 | `.agents/skills/CardbookGenerator/` |
 
 ## Workflows 盤點總覽
 
@@ -25,6 +26,7 @@ This document tracks all custom Skills and Workflows developed for this project.
 | **/pptx** | Markdown 轉精美簡報 | `.agents/workflows/pptx.md` |
 | **/note** | 將資料自動整理至 `_data/note.md` | `.agents/workflows/note.md` |
 | **/design-audit** | 對指定 HTML 頁面執行 UIArchitect 設計診斷（EPDCA） | `.agents/workflows/design-audit.md` |
+| **/cardbook** | 卡片圖片生成與管理流程 | `.agents/workflows/cardbook-generator.md` |
 
 ---
 
@@ -51,3 +53,14 @@ This document tracks all custom Skills and Workflows developed for this project.
 - **Output**: 設計診斷報告 (Artifact) + 確認後直接修改目標檔案
 - **知識庫涵蓋**: 色彩系統 (60-30-10)、字型系統 (Modular Scale)、8pt Grid 間距、尼爾森十大原則、費茲/希克/米勒/格式塔等心理法則、動效規範、10 種設計風格矩陣
 - **參考標竿**: Apple, Meta, Netflix, Vercel/Linear, Stripe + designfirst.md 全球頂尖工作室
+
+### CardbookGenerator
+- **使命**: 自動化生成高品質卡片圖片並結構化記錄規格，為前端展示做準備。
+- **Input**: `_dev/cardbook/docs/cardbook.md` 與使用者指令
+- **Logic**:
+    1. 情境識別（新卡/優化/系列）。
+    2. 繪圖 Prompt 設計（系列時分析風格關鍵字）。
+    3. 呼叫 `generate_image` 生成圖片並存至 `_dev/cardbook/images/`。
+    4. 更新資料庫。
+- **Output**: `_dev/cardbook/images/cb_*.png` 與 `_dev/cardbook/docs/cardbook.md`
+
