@@ -1,12 +1,12 @@
 ---
-name: CardbookGenerator
+name: CardGen
 description: 依據卡片美學四大支柱，自動化設計、生成與管理高品質卡片主圖，並維護結構化卡片庫。
 ---
-
-# CardbookGenerator（卡片圖片生成專家）
+# CardGen（卡片圖片生成專家）
 
 ## 任務目標
-協助使用者以結構化方式建立、優化並管理一系列卡片圖片，並在 `_dev/cardbook/docs/CB.md` 中記錄卡片的規格。所有的卡片設計必須嚴格依據 [cardbook.md](file:///c:/Playground26/wiskinglin.github.io/_data/analysis/cardbook.md) 所列的四大美學支柱與分類標準。
+
+協助使用者以結構化方式建立、優化並管理一系列卡片圖片，並在 `_dev/cardbook/docs/CBD.md` 中記錄卡片的規格。所有的卡片設計必須嚴格依據 [cardbook.md](file:///c:/Playground26/wiskinglin.github.io/_dev/cardbook/docs/cardbook.md) 所列的四大美學支柱與分類標準。
 
 ---
 
@@ -35,14 +35,16 @@ description: 依據卡片美學四大支柱，自動化設計、生成與管理�
 ## 執行指南
 
 ### 1. 輸入 (Input)
-* 既有卡片資料庫：`_dev/cardbook/docs/CB.md`。
-* 美學知識庫：`_data/analysis/cardbook.md`。
+
+* 既有卡片資料庫：`_dev/cardbook/docs/CBD.md`。
+* 美學知識庫：`_dev/cardbook/docs/cardbook.md`。
 * 使用者指令：新增卡片主題、指定優化的卡片 ID、或系列卡片名稱。
 
 ### 2. 處理邏輯 (Process)
+
 1. **情境識別與參數確認**：
    * **建立新卡**：確認卡片主題與其對應的 **美學類型** (TCG / PTCG / Sports / GreedIsland / Poker / Uno / CreditCard / EasyCard)。
-   * **優化現有卡**：讀取 `_dev/cardbook/docs/CB.md` 中的卡片資料與原有 Prompt，根據使用者反饋進行微調。
+   * **優化現有卡**：讀取 `_dev/cardbook/docs/CBD.md` 中的卡片資料與原有 Prompt，根據使用者反饋進行微調。
    * **系列卡片設計**：分析同系列已有的卡片，提煉其視覺與色彩特徵以確保一致性。
 2. **美學對齊與 Prompt 工程**：
    * 根據選定的卡片美學類型，參考四大維度設計專屬的英文 Image Prompt。
@@ -58,15 +60,17 @@ description: 依據卡片美學四大支柱，自動化設計、生成與管理�
    * 檢查通過後，將最終圖片複製並儲存至 `_dev/cardbook/images/`，命名符合 `cb_[三位數ID]_[英文底線名稱].png`。
 4. **資料庫更新 (Database Update)**：
    * 自動讀取最新卡片 ID 並遞增（如 `CB-001` -> `CB-002`）。
-   * 將該卡片的中英文名稱、美學類型、四大維度的設計說明、最終採用的 Prompt 與圖片路徑，以結構化 Markdown 寫入或更新至 `_dev/cardbook/docs/CB.md`。
+   * 將該卡片的中英文名稱、美學類型、四大維度的設計說明、最終採用的 Prompt 與圖片路徑，以結構化 Markdown 寫入或更新至 `_dev/cardbook/docs/CBD.md`。
 
 ### 3. 輸出 (Output)
+
 * 生成的卡片圖片檔（位於 `_dev/cardbook/images/`）。
-* 更新後的卡片清單檔案 `_dev/cardbook/docs/CB.md`。
+* 更新後的卡片清單檔案 `_dev/cardbook/docs/CBD.md`。
 
 ---
 
 ## 注意事項與品質門檻
+
 * **純淨背景**：生成的卡片主圖避免出現多餘且不清晰的英文字母與數字。
-* **精準美學記錄**：在 `CB.md` 中，必須明確寫出該卡片如何實現「構圖」、「字體（未來前端建議）」與「色調」，使後續開發網頁的人員有設計依據。
+* **精準美學記錄**：在 `CBD.md` 中，必須明確寫出該卡片如何實現「構圖」、「字體（未來前端建議）」與「色調」，使後續開發網頁的人員有設計依據。
 * **標準直式卡片比例**：必須確保每次生成圖片時皆使用了長寬比控制字詞，避免產出預設的正方形圖片。

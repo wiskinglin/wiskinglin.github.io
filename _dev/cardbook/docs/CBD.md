@@ -1,12 +1,13 @@
 # Cardbook 卡片資料庫
 
-本文件由 `CardbookGenerator` 自動維護，記錄所有卡片的屬性、四大美學維度與圖片路徑，以供前端網頁解析。
+本文件由 `CardGen` 自動維護，記錄所有卡片的屬性、四大美學維度與圖片路徑，以供前端網頁解析。
 
 ## 卡片列表
 
 <!-- CARD_LIST_START -->
 
 ### [CB-001] 雷電噴火龍 (Thunder Charizard)
+
 - **ID**: `CB-001`
 - **中文名稱**: 雷電噴火龍
 - **英文名稱**: Thunder Charizard
@@ -23,6 +24,7 @@
 - **建立時間**: `2026-07-15 14:44:15`
 
 ### [CB-002] 插畫家皮卡丘 (Illustrator Pikachu)
+
 - **ID**: `CB-002`
 - **中文名稱**: 插畫家皮卡丘
 - **英文名稱**: Illustrator Pikachu
@@ -39,6 +41,7 @@
 - **建立時間**: `2026-07-16 09:33:30`
 
 ### [CB-003] 經典無影初版皮卡丘 (1999 Base Set Holo Pikachu)
+
 - **ID**: `CB-003`
 - **中文名稱**: 經典無影初版皮卡丘
 - **英文名稱**: 1999 Base Set Holo Pikachu
@@ -55,6 +58,7 @@
 - **建立時間**: `2026-07-16 09:33:45`
 
 ### [CB-004] 純金紀念皮卡丘 (20th Anniversary Gold Pikachu)
+
 - **ID**: `CB-004`
 - **中文名稱**: 純金紀念皮卡丘
 - **英文名稱**: 20th Anniversary Gold Pikachu
@@ -71,6 +75,7 @@
 - **建立時間**: `2026-07-16 09:34:02`
 
 ### [CB-005] 青眼白龍 (Blue-Eyes White Dragon)
+
 - **ID**: `CB-005`
 - **中文名稱**: 青眼白龍
 - **英文名稱**: Blue-Eyes White Dragon
@@ -87,6 +92,7 @@
 - **建立時間**: `2026-07-16 09:34:19`
 
 ### [CB-006] 光之創造神 哈拉克提 (Holactie the Creator of Light)
+
 - **ID**: `CB-006`
 - **中文名稱**: 光之創造神 哈拉克提
 - **英文名稱**: Holactie the Creator of Light
