@@ -137,4 +137,118 @@
 - **圖片路徑**: `_dev/cardbook/images/cb_007_ohtani_pitch.png`
 - **建立時間**: `2026-07-16 10:32:27`
 
+### [CB-008] 精神主宰 超夢 (Psychic Overlord Mewtwo)
+
+- **ID**: `CB-008`
+- **中文名稱**: 精神主宰 超夢
+- **英文名稱**: Psychic Overlord Mewtwo
+- **類別**: 角色卡
+- **系列名稱**: 宇宙傳奇
+- **美學類型**: 寶可夢滿版插畫卡牌 (PTCG)
+- **美學維度說明**:
+  - **構圖設計**: 角色浮空居中，兩手凝聚超能力光球，留白邊緣以利裁剪。
+  - **字體選用 (建議)**: 標題使用圓潤易讀無襯線體，數值與技能使用等寬字型。
+  - **主圖片視覺**: 超夢浮空於星際宇宙中，雙手聚集巨大紫色超能力光球，渾身散發強大紫粉色氣場。
+  - **色調規劃**: 宇宙深紫、極光紫、桃紅、星空背景.
+- **繪圖 Prompt**: `Vibrant PTCG style illustration of Mewtwo floating in a cosmic void, charging a massive glowing purple psychic energy sphere between its hands, psychic aura ripples, intense glowing eyes, space dust and stars in background, centered composition, subject in center of frame, leave margins around edges, highly detailed fantasy digital art, vertical card aspect ratio, 5:7 aspect ratio, portrait orientation, no text`
+- **圖片路徑**:
+  - **主圖**: `_dev/cardbook/images/cb_008_mewtwo_img.png`
+  - **合成卡牌**: `_dev/cardbook/images/cb_008_mewtwo_card.png`
+- **建立時間**: `2026-07-16 16:30:00`
+
+### [CB-009] 黑魔導 (Dark Magician)
+
+- **ID**: `CB-009`
+- **中文名稱**: 黑魔導
+- **英文名稱**: Dark Magician
+- **類別**: 角色卡
+- **系列名稱**: 傳奇魔法
+- **美學類型**: 遊戲與蒐藏類 (TCG)
+- **美學維度說明**:
+  - **構圖設計**: 經典姿勢從巨型魔法陣背景前踏出，具有強烈出框感。
+  - **字體選用 (建議)**: 古典神聖感襯線體或裝飾性字體。
+  - **主圖片視覺**: 身穿深紫色法袍、手拿綠色魔杖的黑魔導，身後是巨大的綠色符文魔法陣，散發神秘奧術魔法氣息。
+  - **色調規劃**: 深紫法袍、翡翠綠法陣、金黃符文。
+- **繪圖 Prompt**: `Classic TCG Yu-Gi-Oh style illustration of Dark Magician, the legendary sorcerer in dark purple ornate robes and matching pointed hat, holding a green magical staff, standing in front of a giant green circular magical rune frame, cosmic spell energy swirling around, centered composition, subject in center of frame, leave space around edges, highly detailed fantasy digital art, vertical card aspect ratio, 5:7 aspect ratio, portrait orientation, no text`
+- **圖片路徑**:
+  - **主圖**: `_dev/cardbook/images/cb_009_dark_magician_img.png`
+  - **合成卡牌**: `_dev/cardbook/images/cb_009_dark_magician_card.png`
+- **建立時間**: `2026-07-16 16:30:10`
+
+### [CB-010] 麥可喬丹 經典扣籃 (Michael Jordan - Classic Dunk)
+
+- **ID**: `CB-010`
+- **中文名稱**: 麥可喬丹 經典扣籃
+- **英文名稱**: Michael Jordan - Classic Dunk
+- **類別**: 運動卡
+- **系列名稱**: 名人堂傳奇
+- **美學類型**: 運動卡 (Sports Card)
+- **美學維度說明**:
+  - **構圖設計**: 罰球線飛身扣籃瞬間，動態張力十足，背景球場聚光燈。
+  - **字體選用 (建議)**: 傾斜粗重無襯線字體，背部與數據使用等寬字型。
+  - **主圖片視覺**: 麥可喬丹身穿經典公牛隊 23 號紅球衣，飛身扣籃，肌肉線條分明，球場聚光燈從夜空中射下。
+  - **色調規劃**: 公牛隊紅、黑、白，金色與金屬銀點綴。
+- **繪圖 Prompt**: `Dynamic sports card photo of basketball legend Michael Jordan in mid-air flying towards the hoop for a dunk, wearing classic red Chicago Bulls uniform number 23, free-throw line dunk stance, intense determined expression, dramatic arena spotlight beams, motion blur on the basketball, vibrant Chicago Bulls red, black, and white color scheme, gold and silver metallic accents, detailed muscles, highly detailed sports photography style digital art, vertical card aspect ratio, 5:7 aspect ratio, portrait orientation, no text, no words, no letters, no card frame, no border, clean illustration`
+- **圖片路徑**:
+  - **主圖**: `_dev/cardbook/images/cb_010_jordan_img.png`
+  - **合成卡牌**: `_dev/cardbook/images/cb_010_jordan_card.png`
+- **建立時間**: `2026-07-16 16:30:20`
+
+### [CB-011] 聖騎士的項鍊 (Paladin's Necklace)
+
+- **ID**: `CB-011`
+- **中文名稱**: 聖騎士的項鍊
+- **英文名稱**: Paladin's Necklace
+- **類別**: 道具卡
+- **系列名稱**: 貪婪之島
+- **美學類型**: 貪婪之島卡牌 (Greed Island)
+- **美學維度說明**:
+  - **構圖設計**: 銀質項鍊置於深色絲絨墊，藍色寶石散發神聖淨化光芒。
+  - **字體選用 (建議)**: 神聖感襯線體。
+  - **主圖片視覺**: 精緻的銀製聖騎士項鍊，中央鑲嵌著一顆散發溫和藍光的大藍寶石，周圍有神聖的淨化氣場。
+  - **色調規劃**: 銀白、寶石藍、絲絨暗紅，金黃外框。
+- **繪圖 Prompt**: `Greed Island card style illustration of a beautiful silver paladin's necklace with a large glowing blue sapphire gemstone in the center, resting on a dark velvet display cushion, soft magical light radiating from the necklace, ornate silver and gold filigree, fantasy anime item art style, centered composition, subject in center of frame, leave margins around edges, no text, no border`
+- **圖片路徑**:
+  - **主圖**: `_dev/cardbook/images/cb_011_necklace_img.png`
+  - **合成卡牌**: `_dev/cardbook/images/cb_011_necklace_card.png`
+- **建立時間**: `2026-07-16 16:30:30`
+
+### [CB-012] 皇家黑桃 A (Ace of Spades - Royal Edition)
+
+- **ID**: `CB-012`
+- **中文名稱**: 皇家黑桃 A
+- **英文名稱**: Ace of Spades - Royal Edition
+- **類別**: 撲克牌
+- **系列名稱**: 皇家套牌
+- **美學類型**: 皇家撲克牌 (Poker)
+- **美學維度說明**:
+  - **構圖設計**: 對稱設計，黑桃符號內滿布金色皇家雕花與皇冠。
+  - **字體選用 (建議)**: 經典襯線字體。
+  - **主圖片視覺**: 繁複華麗的黑桃 A 設計，黑桃內充滿精緻的皇家金線雕花與王冠圖案，背景是深色紋理紙張。
+  - **色調規劃**: 尊爵黑、皇家金、暗灰底紋。
+- **繪圖 Prompt**: `Intricate gothic fantasy style Ace of Spades card art, large central spade symbol filled with detailed golden royal filigree, crowns, and flourishes, symmetrical design, dark textured background, elegant royal deck style, centered composition, subject in center of frame, leave space around edges, vertical card aspect ratio, 5:7 aspect ratio, portrait orientation, no text`
+- **圖片路徑**:
+  - **主圖**: `_dev/cardbook/images/cb_012_poker_img.png`
+  - **合成卡牌**: `_dev/cardbook/images/cb_012_poker_card.png`
+- **建立時間**: `2026-07-16 16:30:40`
+
+### [CB-013] 銀河旅人 黑卡 (Galactic Voyager Obsidian Card)
+
+- **ID**: `CB-013`
+- **中文名稱**: 銀河旅人 黑卡
+- **英文名稱**: Galactic Voyager Obsidian Card
+- **類別**: 信用卡
+- **系列名稱**: 銀河至尊
+- **美學類型**: 尊榮信用卡 (Credit Card)
+- **美學維度說明**:
+  - **構圖設計**: 橫式極簡，黑色黑曜石質感卡面，綴有星雲與金色幾何線條。
+  - **字體選用 (建議)**: 極簡現代無襯線體。
+  - **主圖片視覺**: 帶有啞光黑曜石質感的卡片封面設計，點綴精細的金色幾何射線，背景有隱約幽深的太空星雲與點點繁星。
+  - **色調規劃**: 黑曜石黑、流星金、深太空紫藍。
+- **繪圖 Prompt**: `Abstract elegant credit card face design, matte black obsidian texture with thin luxury golden geometric lines, a subtle cosmic nebula background with glowing stars, premium dark credit card aesthetic, centered composition, leave space around edges, horizontal orientation, landscape aspect ratio, 1.58:1 aspect ratio, no text, no chip, no card numbers`
+- **圖片路徑**:
+  - **主圖**: `_dev/cardbook/images/cb_013_creditcard_img.png`
+  - **合成卡牌**: `_dev/cardbook/images/cb_013_creditcard_card.png`
+- **建立時間**: `2026-07-16 16:30:50`
+
 <!-- CARD_LIST_END -->
