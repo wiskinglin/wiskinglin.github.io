@@ -28,11 +28,20 @@ description: 用於引導與自動化生成卡片圖片的 Workflow，支援新�
    - **合成卡面資訊**：
      - 根據卡牌類型與主題，設計具體卡牌資訊數據（攻防、技能、戰力、編號、持卡人等）。
      - 開啟 `_dev/cardbook/templates/` 目錄中對應的 HTML 模板並注入資訊。
-     - 透過瀏覽器以目標解析度進行視窗截圖，生成最終的合成卡片圖片（儲存於 `_dev/cardbook/images/cb_[ID]_[英文底線名稱].png`）。
+     - 透過瀏覽器以目標解析度進行視窗截圖，生成最終的合成卡片圖片（儲存於 `_dev/cardbook/images/cb_[ID]_[英文底線名稱]_card.png`）。
 
-4. **更新資料庫**:
+4. **品質檢查（CardInspector）**:
+   - 讀取 [CardInspector SKILL.md](file:///c:/Playground26/wiskinglin.github.io/.agents/skills/CardInspector/SKILL.md)。
+   - 對剛合成的卡片圖片執行 5 項品質關卡檢查（G1 主圖裁切完整性 → G2 截圖尺寸 → G3 元素溢出 → G4 資料正確性 → G5 視覺完整性）。
+   - **G1 特別注意**：比對裁切後主圖（`_cropped.png`）與最終卡片中的主圖區域，確認角色頭部/帽子/武器等標誌性部位未被模板二次裁切。
+   - 不通過則自動修復並重新截圖（上限 2 輪）。
+   - 全部通過後才進入下一步。
+   // turbo
+
+5. **更新資料庫**:
    - 將卡片規格（含中英文名稱、美學類型、四大維度說明、最終採用的 Prompt、具體屬性數據與圖片路徑）寫入或更新至 [CBD.md](file:///c:/Playground26/wiskinglin.github.io/_dev/cardbook/docs/CBD.md)。 // turbo
 
-5. **展示結果與後續操作**:
+6. **展示結果與後續操作**:
    - 向使用者展示最終合成的卡片圖片（使用絕對路徑 `![caption](file:///absolute/path/to/image)`）。
+   - 展示 CardInspector 檢查報告摘要。
    - 說明本次更新已登錄至 `CBD.md`，並提供裁切後的主圖作為備份。

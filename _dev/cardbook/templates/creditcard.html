@@ -11,8 +11,8 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    width: 1024px;
-    height: 646px;
+    width: 1011px;
+    height: 638px;
     background: #111;
     font-family: 'Montserrat', sans-serif;
     scrollbar-width: none;
@@ -23,8 +23,8 @@
 
   .card {
     position: relative;
-    width: 1024px;
-    height: 646px;
+    width: 1011px;
+    height: 638px;
     overflow: hidden;
     border-radius: 30px;
     background: #0d0d0d;
@@ -249,7 +249,11 @@
   const params = new URLSearchParams(window.location.search);
   let cardData = {};
   if (params.has('data')) {
-    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+    try {
+      cardData = JSON.parse(params.get('data'));
+    } catch(e) {
+      try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(err) {}
+    }
   }
   const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
 

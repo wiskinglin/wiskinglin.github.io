@@ -311,9 +311,13 @@
   let cardData = {};
   if (params.has('data')) {
     try {
-      cardData = JSON.parse(decodeURIComponent(params.get('data')));
+      cardData = JSON.parse(params.get('data'));
     } catch (e) {
-      console.error('Failed to parse card data:', e);
+      try {
+        cardData = JSON.parse(decodeURIComponent(params.get('data')));
+      } catch (err) {
+        console.error('Failed to parse card data:', err);
+      }
     }
   }
 

@@ -195,7 +195,11 @@
   const params = new URLSearchParams(window.location.search);
   let cardData = {};
   if (params.has('data')) {
-    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+    try {
+      cardData = JSON.parse(params.get('data'));
+    } catch(e) {
+      try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(err) {}
+    }
   }
   const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
 

@@ -109,7 +109,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: var(--img-position, center);
   }
 
   /* ── 星級 / 等級 ── */
@@ -204,9 +204,10 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 24px;
+    gap: 16px;
     padding: 0 16px;
     z-index: 5;
+    overflow: hidden;
   }
 
   .stat-pair {
@@ -330,7 +331,11 @@
   const params = new URLSearchParams(window.location.search);
   let cardData = {};
   if (params.has('data')) {
-    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+    try {
+      cardData = JSON.parse(params.get('data'));
+    } catch(e) {
+      try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(err) {}
+    }
   }
   const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
 
@@ -390,6 +395,12 @@
   const rarityMap = { 'N': '●', 'R': '◆', 'SR': '✦', 'UR': '✦✦', 'SSR': '✦✦✦' };
   const rarity = get('rarity', 'SR');
   document.getElementById('rarityBadge').textContent = rarityMap[rarity] || rarity;
+
+  // 主圖位置調整（CardInspector 修復用）
+  const imgPosition = get('imgPosition', '');
+  if (imgPosition) {
+    document.getElementById('card').style.setProperty('--img-position', imgPosition);
+  }
 </script>
 </body>
 </html>

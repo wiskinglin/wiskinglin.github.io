@@ -38,8 +38,10 @@
 
   .card-image img {
     width: 100%;
-    height: 100%;
+    height: 120%;
     object-fit: cover;
+    position: absolute;
+    top: var(--img-top, -10%);
     object-position: center;
   }
 
@@ -349,13 +351,27 @@
   const params = new URLSearchParams(window.location.search);
   let cardData = {};
   if (params.has('data')) {
-    try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(e) {}
+    try {
+      cardData = JSON.parse(params.get('data'));
+    } catch(e) {
+      try { cardData = JSON.parse(decodeURIComponent(params.get('data'))); } catch(err) {}
+    }
   }
   const get = (key, fallback) => cardData[key] || params.get(key) || fallback;
 
   // 圖片
   const imagePath = get('image', '');
   if (imagePath) document.getElementById('cardImage').src = imagePath;
+
+  const imgTop = get('imgTop', '');
+  if (imgTop) {
+    document.getElementById('card').style.setProperty('--img-top', imgTop);
+  }
+
+  const imgPosition = get('imgPosition', '');
+  if (imgPosition) {
+    document.getElementById('card').style.setProperty('--img-position', imgPosition);
+  }
 
   // 基本資訊
   document.getElementById('pokemonStage').textContent = get('stage', 'BASIC').toUpperCase();
