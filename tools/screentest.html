@@ -487,7 +487,9 @@
                 });
 
                 // 重置與觸發 HUD 顯示與自動隱藏計時
-                resetHudTimer();
+                if (!isSlideshowActive) {
+                    resetHudTimer();
+                }
             }
 
             // 2. 切換下一個色彩 (Loop)
@@ -539,11 +541,12 @@
             function resetHudTimer() {
                 showHud();
                 clearTimeout(hudTimeout);
+                const delay = isSlideshowActive ? 1200 : 2500;
                 hudTimeout = setTimeout(() => {
-                    if (hasStarted) {
+                    if (hasStarted || isSlideshowActive) {
                         hideHud();
                     }
-                }, 2500); // 2.5 秒無動作自動隱藏
+                }, delay);
             }
 
             // 6. 自動輪播功能
@@ -556,9 +559,22 @@
             }
 
             function startSlideshow() {
+                hasStarted = true;
+                if (startPrompt) {
+                    startPrompt.classList.add('fade-out');
+                    setTimeout(() => startPrompt.style.display = 'none', 500);
+                }
+
+                // 啟動自動播放時自動請求進入全螢幕
+                requestFullScreenMode();
+
                 isSlideshowActive = true;
                 btnSlideshow.classList.add('active');
                 slideshowText.textContent = '停止播放';
+
+                // 立即隱藏 HUD 控制面板與滑鼠
+                hideHud();
+
                 slideshowTimer = setInterval(() => {
                     nextColor();
                 }, 2000); // 每 2 秒自動切換下一個顏色
