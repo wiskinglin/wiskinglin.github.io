@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="專業螢幕測試工具 — 支援純白、純黑、紅、綠、藍多色全螢幕壞點與漏光檢測。">
+    <title>螢幕色彩測試工具 (Screen Test)</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Web Manifest -->
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+
+    <style>
+        /* ==========================================================================
+         * 設計系統與全域樣式 (參考 OrionX 極致暗色玻璃擬態風格)
+         * ========================================================================== */
+        :root {
+            --bg-color: #0c0d12;
+            --panel-bg: rgba(22, 24, 33, 0.85);
+            --panel-border: rgba(255, 255, 255, 0.12);
+            --text-primary: #e1e1e4;
+            --text-secondary: #9ea3b5;
+            --accent-blue: #007aff;
+            --accent-blue-hover: #3395ff;
+            --accent-green: #34c759;
+            --glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+            --font-main: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #ffffff; /* 進入時預設顯示白色 */
+            font-family: var(--font-main);
+            color: var(--text-primary);
+        }
+
+        /* 測試滿版畫布 */
+        #test-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff; /* 進入時預設顯示白色 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.15s ease-out;
+            z-index: 1;
+        }
+
+        #test-canvas.hide-cursor {
+            cursor: none !important;
+        }
+
+        /* 輔助檢測模式 */
+        #test-canvas.pattern-checkerboard {
+            background-image: 
+                linear-gradient(45deg, #808080 25%, transparent 25%), 
+                linear-gradient(-45deg, #808080 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #808080 75%), 
+                linear-gradient(-45deg, transparent 75%, #808080 75%);
+            background-size: 40px 40px;
+            background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+            background-color: #ffffff;
+        }
+
+        #test-canvas.pattern-gradient {
+            background: linear-gradient(90deg, #000000 0%, #ffffff 100%);
+        }
+
+        /* ==========================================================================
+         * 浮動控制儀表板 (HUD Overlay)
+         * ========================================================================== */
+        .hud-overlay {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            width: calc(100% - 32px);
+            max-width: 680px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: var(--glass-shadow);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .hud-overlay.hud-hidden {
+            opacity: 0;
+            transform: translate(-50%, 20px);
+            pointer-events: none;
+        }
+
+        .hud-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hud-title-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hud-badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(0, 122, 255, 0.2);
+            color: var(--accent-blue);
+            border: 1px solid rgba(0, 122, 255, 0.4);
+            letter-spacing: 0.5px;
+        }
+
+        .hud-status-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .hud-status-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 6px;
+        }
+
+        .hud-screen-info {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 色彩切換快捷按鈕區 */
+        .color-palette {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .color-btn {
+            flex: 1;
+            height: 38px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-btn.active {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.4);
+            transform: scale(1.04);
+        }
+
+        .color-btn.active::after {
+            content: '✓';
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .color-btn[data-dark="true"].active::after {
+            color: #000000;
+        }
+
+        .color-btn[data-dark="false"].active::after {
+            color: #ffffff;
+        }
+
+        /* 控制按鈕列 */
+        .hud-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-primary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: var(--font-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .action-btn.active {
+            background: var(--accent-blue);
+            color: #ffffff;
+            border-color: var(--accent-blue);
+        }
+
+        .hint-text {
+            font-size: 11px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kbd-key {
+            font-family: var(--font-mono);
+            background: rgba(255, 255, 255, 0.12);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 10px;
+        }
+
+        /* 首次點擊提示 Overlay (全螢幕前) */
+        .start-prompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(12, 13, 18, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 24px 36px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 5;
+        }
+
+        .start-prompt.fade-out {
+            opacity: 0;
+        }
+
+        .start-prompt h1 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .start-prompt p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+
+        .start-prompt .click-badge {
+            display: inline-block;
+            background: var(--accent-blue);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(0, 122, 255, 0.7); }
+            100% { transform: scale(1); box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4); }
+        }
+
+        @media (max-width: 600px) {
+            .hud-overlay {
+                bottom: 12px;
+                padding: 12px 14px;
+                border-radius: 14px;
+            }
+            .hud-status-desc {
+                display: none;
+            }
+            .hint-text {
+                display: none;
+            }
+            .color-btn {
+                height: 34px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 滿版測試畫布 -->
+    <div id="test-canvas" title="點擊任意處切換下一個顏色色塊">
+
+        <!-- 首次點擊提示浮層 -->
+        <div id="start-prompt" class="start-prompt">
+            <h1>螢幕全螢幕測試</h1>
+            <p>測試順序：白 ➔ 黑 ➔ 紅 (R) ➔ 綠 (G) ➔ 藍 (B) ➔ 循環</p>
+            <div class="click-badge">點擊畫面任意處開始全螢幕測試</div>
+        </div>
+
+        <!-- 浮動控制面板 (HUD) -->
+        <div id="hud-overlay" class="hud-overlay" onclick="event.stopPropagation()">
+            <div class="hud-header">
+                <div class="hud-title-group">
+                    <span id="hud-step-badge" class="hud-badge">1 / 5</span>
+                    <span id="hud-color-name" class="hud-status-name">純白測試 (White)</span>
+                    <span id="hud-color-desc" class="hud-status-desc">壞點 / 暗點 / 污漬檢測</span>
+                </div>
+                <div id="hud-screen-info" class="hud-screen-info">1920 × 1080</div>
+            </div>
+
+            <!-- 核心 5 色調色盤 -->
+            <div class="color-palette">
+                <button class="color-btn active" data-index="0" data-dark="true" style="background-color: #ffffff; color: #000000;" title="純白 (White)">白</button>
+                <button class="color-btn" data-index="1" data-dark="false" style="background-color: #000000; color: #ffffff;" title="純黑 (Black)">黑</button>
+                <button class="color-btn" data-index="2" data-dark="false" style="background-color: #ff0000; color: #ffffff;" title="純紅 (Red)">R</button>
+                <button class="color-btn" data-index="3" data-dark="true" style="background-color: #00ff00; color: #000000;" title="純綠 (Green)">G</button>
+                <button class="color-btn" data-index="4" data-dark="false" style="background-color: #0000ff; color: #ffffff;" title="純藍 (Blue)">B</button>
+            </div>
+
+            <!-- 控制列功能 -->
+            <div class="hud-actions">
+                <div class="hint-text">
+                    <span>切換色塊：<span class="kbd-key">點擊</span> 或 <span class="kbd-key">Space</span> / <span class="kbd-key">→</span></span>
+                    <span style="margin-left: 8px;">選單：<span class="kbd-key">H</span></span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-slideshow" class="action-btn" title="自動輪播切換色塊">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <span id="slideshow-text">自動播放</span>
+                    </button>
+                    <button id="btn-fullscreen" class="action-btn" title="切換瀏覽器全螢幕 (F)">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+                        <span>全螢幕</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * 螢幕測試 App 核心邏輯
+         * 1. 進入時預設純白全螢幕
+         * 2. 點擊畫面依序：純白 -> 純黑 -> 純紅(R) -> 純綠(G) -> 純藍(B) -> 循環
+         * 3. 自動全螢幕觸發與滑鼠閒置自動隱藏 HUD 控制面板
+         */
+        (function() {
+            // 核心測試色彩清單 (依據需求：白 -> 黑 -> R -> G -> B -> 白 loop)
+            const COLOR_SEQUENCE = [
+                {
+                    name: '純白測試 (White)',
+                    code: '#ffffff',
+                    darkText: true,
+                    desc: '暗點 / 灰塵 / 螢幕污漬檢測',
+                    step: '1 / 5'
+                },
+                {
+                    name: '純黑測試 (Black)',
+                    code: '#000000',
+                    darkText: false,
+                    desc: '亮點 / 螢幕漏光 (Light Leak) 檢測',
+                    step: '2 / 5'
+                },
+                {
+                    name: '純紅測試 (Red)',
+                    code: '#ff0000',
+                    darkText: false,
+                    desc: 'Red (R) 子像素壞點 / 色彩偏差檢測',
+                    step: '3 / 5'
+                },
+                {
+                    name: '純綠測試 (Green)',
+                    code: '#00ff00',
+                    darkText: true,
+                    desc: 'Green (G) 子像素壞點 / 色彩偏差檢測',
+                    step: '4 / 5'
+                },
+                {
+                    name: '純藍測試 (Blue)',
+                    code: '#0000ff',
+                    darkText: false,
+                    desc: 'Blue (B) 子像素壞點 / 色彩偏差檢測',
+                    step: '5 / 5'
+                }
+            ];
+
+            // DOM 元素
+            const testCanvas = document.getElementById('test-canvas');
+            const hudOverlay = document.getElementById('hud-overlay');
+            const startPrompt = document.getElementById('start-prompt');
+            const hudStepBadge = document.getElementById('hud-step-badge');
+            const hudColorName = document.getElementById('hud-color-name');
+            const hudColorDesc = document.getElementById('hud-color-desc');
+            const hudScreenInfo = document.getElementById('hud-screen-info');
+            const btnFullscreen = document.getElementById('btn-fullscreen');
+            const btnSlideshow = document.getElementById('btn-slideshow');
+            const slideshowText = document.getElementById('slideshow-text');
+            const colorButtons = document.querySelectorAll('.color-btn');
+
+            let currentIndex = 0; // 0: 白, 1: 黑, 2: 紅, 3: 綠, 4: 藍
+            let hudTimeout = null;
+            let slideshowTimer = null;
+            let isSlideshowActive = false;
+            let hasStarted = false;
+
+            // 1. 初始化與更新畫布色彩
+            function updateTestState(index) {
+                currentIndex = (index + COLOR_SEQUENCE.length) % COLOR_SEQUENCE.length;
+                const current = COLOR_SEQUENCE[currentIndex];
+
+                // 設定滿版背景顏色
+                testCanvas.style.backgroundColor = current.code;
+
+                // 更新 HUD 資訊
+                hudStepBadge.textContent = current.step;
+                hudColorName.textContent = current.name;
+                hudColorDesc.textContent = current.desc;
+
+                // 更新調色盤按鈕 active 狀態
+                colorButtons.forEach((btn, idx) => {
+                    if (idx === currentIndex) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+
+                // 重置與觸發 HUD 顯示與自動隱藏計時
+                resetHudTimer();
+            }
+
+            // 2. 切換下一個色彩 (Loop)
+            function nextColor() {
+                updateTestState(currentIndex + 1);
+            }
+
+            // 3. 切換上一個色彩
+            function prevColor() {
+                updateTestState(currentIndex - 1);
+            }
+
+            // 4. 全螢幕控制與自動請求
+            function requestFullScreenMode() {
+                const doc = document.documentElement;
+                if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement) {
+                    if (doc.requestFullscreen) {
+                        doc.requestFullscreen().catch(() => {});
+                    } else if (doc.webkitRequestFullscreen) {
+                        doc.webkitRequestFullscreen();
+                    } else if (doc.msRequestFullscreen) {
+                        doc.msRequestFullscreen();
+                    }
+                }
+            }
+
+            function toggleFullScreen() {
+                if (!document.fullscreenElement) {
+                    requestFullScreenMode();
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+
+            // 5. 滑鼠閒置時自動隱藏 HUD 控制列與鼠標
+            function showHud() {
+                hudOverlay.classList.remove('hud-hidden');
+                testCanvas.classList.remove('hide-cursor');
+            }
+
+            function hideHud() {
+                // 若未在播放或使用者閒置時隱藏，呈現 100% 無干擾檢測畫面
+                hudOverlay.classList.add('hud-hidden');
+                testCanvas.classList.add('hide-cursor');
+            }
+
+            function resetHudTimer() {
+                showHud();
+                clearTimeout(hudTimeout);
+                hudTimeout = setTimeout(() => {
+                    if (hasStarted) {
+                        hideHud();
+                    }
+                }, 2500); // 2.5 秒無動作自動隱藏
+            }
+
+            // 6. 自動輪播功能
+            function toggleSlideshow() {
+                if (isSlideshowActive) {
+                    stopSlideshow();
+                } else {
+                    startSlideshow();
+                }
+            }
+
+            function startSlideshow() {
+                isSlideshowActive = true;
+                btnSlideshow.classList.add('active');
+                slideshowText.textContent = '停止播放';
+                slideshowTimer = setInterval(() => {
+                    nextColor();
+                }, 2000); // 每 2 秒自動切換下一個顏色
+            }
+
+            function stopSlideshow() {
+                isSlideshowActive = false;
+                btnSlideshow.classList.remove('active');
+                slideshowText.textContent = '自動播放';
+                if (slideshowTimer) {
+                    clearInterval(slideshowTimer);
+                    slideshowTimer = null;
+                }
+            }
+
+            // 7. 更新螢幕解析度資訊
+            function updateScreenInfo() {
+                const width = window.innerWidth || screen.width;
+                const height = window.innerHeight || screen.height;
+                const ratio = window.devicePixelRatio || 1;
+                hudScreenInfo.textContent = `${width} × ${height} (${ratio}x)`;
+            }
+
+            // ==========================================================================
+            // 事件監聽與觸發
+            // ==========================================================================
+
+            // 點擊畫布任意處切換下一個顏色 + 自動全螢幕
+            testCanvas.addEventListener('click', (e) => {
+                // 首次點擊淡出提示字樣並嘗試開啟全螢幕
+                if (!hasStarted) {
+                    hasStarted = true;
+                    if (startPrompt) {
+                        startPrompt.classList.add('fade-out');
+                        setTimeout(() => startPrompt.style.display = 'none', 500);
+                    }
+                    requestFullScreenMode();
+                    resetHudTimer();
+                    return;
+                }
+
+                // 嘗試全螢幕 (如未開啟)
+                requestFullScreenMode();
+
+                // 切換下一個顏色 (白 -> 黑 -> R -> G -> B -> 白)
+                nextColor();
+            });
+
+            // 觸控裝置點擊支援
+            testCanvas.addEventListener('touchstart', () => {
+                resetHudTimer();
+            }, { passive: true });
+
+            // 滑鼠移動重置 HUD 顯示
+            window.addEventListener('mousemove', () => {
+                resetHudTimer();
+            });
+
+            // 鍵盤快捷鍵
+            window.addEventListener('keydown', (e) => {
+                resetHudTimer();
+                switch (e.key) {
+                    case ' ':
+                    case 'ArrowRight':
+                    case 'ArrowDown':
+                    case 'Enter':
+                        e.preventDefault();
+                        nextColor();
+                        break;
+                    case 'ArrowLeft':
+                    case 'ArrowUp':
+                    case 'Backspace':
+                        e.preventDefault();
+                        prevColor();
+                        break;
+                    case 'f':
+                    case 'F':
+                        e.preventDefault();
+                        toggleFullScreen();
+                        break;
+                    case 'h':
+                    case 'H':
+                        e.preventDefault();
+                        if (hudOverlay.classList.contains('hud-hidden')) {
+                            showHud();
+                        } else {
+                            hideHud();
+                        }
+                        break;
+                    case 'p':
+                    case 'P':
+                        e.preventDefault();
+                        toggleSlideshow();
+                        break;
+                }
+            });
+
+            // 色彩按鈕點擊切換
+            colorButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 避免觸發 testCanvas click
+                    const idx = parseInt(btn.getAttribute('data-index'), 10);
+                    updateTestState(idx);
+                });
+            });
+
+            // 按鈕點擊處理
+            btnFullscreen.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleFullScreen();
+            });
+
+            btnSlideshow.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleSlideshow();
+            });
+
+            // 視窗大小改變更新解析度
+            window.addEventListener('resize', updateScreenInfo);
+
+            // 頁面載入初始化
+            window.addEventListener('DOMContentLoaded', () => {
+                updateScreenInfo();
+                updateTestState(0); // 預設顯示純白 (Index 0)
+
+                // 嘗試頁面載入時請求全螢幕 (支援的瀏覽器)
+                try {
+                    requestFullScreenMode();
+                } catch(e) {}
+            });
+
+        })();
+    </script>
+</body>
+</html>
