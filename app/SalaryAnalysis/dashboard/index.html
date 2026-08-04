@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公司規模與薪資中位數分析</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar or Header Menu -->
+        <aside class="sidebar glass-panel">
+            <div class="sidebar-header">
+                <h2>📊 薪資分佈分析</h2>
+                <p>108年 vs 114年</p>
+            </div>
+
+            <!-- 新增獨立頁面連結 -->
+            <div class="nav-links" style="margin-bottom: 24px;">
+                <a href="trend.html" class="nav-btn">
+                    <span>薪資趨勢查詢</span>
+                    <span style="font-size: 0.8em; opacity: 0.7;">前往探索 ➔</span>
+                </a>
+            </div>
+
+            <nav class="scale-nav">
+                <h3>組織規模 (人數)</h3>
+                <ul id="scale-list">
+                    <!-- JS will populate this -->
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header glass-panel">
+                <div class="header-left">
+                    <h1 id="current-group-title">載入中...</h1>
+                    <div class="header-stats">
+                        <span class="badge">企業薪資實際分佈 (直方圖)</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- KPI Cards -->
+            <section class="kpi-grid" id="kpi-cards">
+                <!-- JS will populate this -->
+            </section>
+
+            <!-- Chart Section -->
+            <section class="chart-section">
+                <div class="chart-container glass-panel">
+                    <div class="chart-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <h3>薪資中位數分佈比較 (萬元)</h3>
+                            <button id="infoBtn" class="icon-btn" title="圖表說明">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- 個別規模的圖例 (Checkbox) -->
+                        <div class="legend-custom" id="single-legend">
+                            <label class="legend-item"
+                                style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" id="check-108" checked style="accent-color: #38bdf8;">
+                                <span class="dot color-108"></span> 108年實際分佈
+                            </label>
+                            <label class="legend-item"
+                                style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <input type="checkbox" id="check-114" checked style="accent-color: #f43f5e;">
+                                <span class="dot color-114"></span> 114年實際分佈
+                            </label>
+                        </div>
+
+                        <!-- 綜合比較的年份切換 -->
+                        <div class="summary-toggle" id="summary-toggle"
+                            style="display: none; gap: 12px; align-items: center;">
+                            <label style="color: var(--text-secondary); font-size: 0.9rem;">顯示年度：</label>
+                            <select id="summary-year-select"
+                                style="background: rgba(0,0,0,0.2); color: white; border: 1px solid var(--panel-border); border-radius: 6px; padding: 4px 8px; outline: none; font-family: 'Outfit';">
+                                <option value="114">114 年</option>
+                                <option value="108">108 年</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="chart-body"
+                        style="display: flex; gap: 20px; margin-top: 16px; align-items: stretch; flex: 1; min-height: 0;">
+                        <div class="canvas-wrapper" style="flex: 1; position: relative; min-height: 0; min-width: 0;">
+                            <canvas id="distributionChart"></canvas>
+                        </div>
+
+                        <!-- 離群值卡片 (移入圖表容器內) -->
+                        <div id="outlier-container"
+                            style="display: none; width: 240px; flex-shrink: 0; flex-direction: column; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); padding: 16px;">
+                            <h3
+                                style="color: #f43f5e; margin-bottom: 12px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                                <span>🚀</span> 200萬++
+                            </h3>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 16px;">
+                                大於 200 萬元之企業未納入：
+                            </p>
+                            <div id="outlier-content" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- JS generated content -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="infoModal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h2>📊 如何解讀此圖表？</h2>
+                <button id="closeModalBtn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>這張圖表完全採用「真實市場數據的直方圖」，幫助您精確看出過去七年薪資結構的本質變化與偏斜現象。</p>
+
+                <div class="info-card">
+                    <h4>1. 整體加薪幅度 (向右平移)</h4>
+                    <p>紅色的「分佈群」若比藍色的分佈群整個<strong>往右邊移動</strong>，代表七年來該規模企業的整體薪資水平已經提升。</p>
+                </div>
+
+                <div class="info-card">
+                    <h4>2. 貧富差距擴大 (分佈變寬變扁)</h4>
+                    <p>如果紅色的長條分佈範圍比藍色更「寬廣」，代表雖然整體薪水變高了，但<strong>企業與企業之間的「薪資落差」變得更大</strong>。給得起高薪與給不起的公司，差距正在拉開。</p>
+                </div>
+
+                <div class="info-card">
+                    <h4>3. 極端高薪拉扯 (右尾效應)</h4>
+                    <p>在 X 軸非常右側孤立的紅色長條，是拉高整體平均的「右偏尾巴」。這表示在該規模中，藏著少數極度優渥的「特許行業或科技業」。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
