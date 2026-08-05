@@ -1,6 +1,47 @@
 # Personal Notes
 
 ## 2026-W32 (2026/08/03 - 2026/08/09)
+### 2026-08-05 (Wed) 15:09
+📖 **[2026-08-05 全球重點摘要日報]**
+- **摘要**: # 2026-08-05 全球重點摘要日報
+
+本報告根據當日各家重點媒體彙整全球重點趨勢：
+
+## Yahoo 重點
+- [韓国警察がスタバを家宅捜索 報道 - Yahoo!ニュース](https://news.google.com/rss/articles/CBMiUEFVX3lxTE9WR2dCYWI0aWJPTWMxaXQ3VldPQ0N1bW1qYjU4c083ZktZRU93VmJzaFc3Z1luWUpBM3RqUjhHeXhPWFUxQmx1WVdOR1ZoOFdu?oc=5)
+- [斉藤慎二被告に懲役7年を求刑 - Yahoo!ニュース](https://news.google.com/rss/articles/CBMiUEFVX3lxTE02dks3TTFCcVBucl8wWDRxX3NYVG1PUVVYYnI3ektzREl5RmlJQTlnLUJERkFTbUJVaVlURlNCbHd1MmtOYThZMWdlM0ZXRVJ4?oc=5)
+- [オンワードHDが従業員に貴重品の常時携行を義務付け 熊本地震被災を受けて（FASHIONSNAP） - Yahoo!ニュース](https://news.google.com/rss/articles/CBMif0FVX3lxTFBVRXRYem5FUDZMZW5hU1YtOGo3ZHNiOWVGVVdmQVJuandyYU9EOFpQUXJWQ3BxOXh5Z0ljQ0pwME04ZmZJVWpsM0s5MXFvY1ZCSW9ka2N1aVJHZTA2WmpIRkhGcHYxN2JUbVFtemVnc0JFRVlpLVhfOWJmNGVSbjQ?oc=5)
+- [日本製紙社長が会見「深くおわび」熊本地震後初 煙突倒壊で9人犠牲 - Yahoo!ニュース](https://news.google.com/rss/articles/CBMiUEFVX3lxTE90SXV0M21rZVdaQTN6cHhIdFo2RmtlcVlCU0VtYWdDWkxiOXB2dXYzc2loaW44OC1TaEc0RjZZdGVNUVo0STRpdUxROFZXOGhC?oc=5)
+- [指摘に部下怒り 心身崩し上司退職 - Yahoo!ニュース](https://news.google.com/rss/articles/CBMiUEFVX3lxTE1zVW40MDRZc1hlQWxuSHBFMGFsU1JMS2pGb2pEQU42X3c1cE1fZ0xuNzlzUWU5ZG1TdzBzeDdhbnRxci02dlhOX0Q4VngxWko4?oc=5)
+
+## NewsPicks 重點
+- [アンソロピック、100億ドルでデータセンター利用契約結ぶ－関係者 - newspicks.com](https://news.google.com/rss/articles/CBMiiwJBVV95cUxQakxOWWl0QkZYR0gtalhQbVRwNTFOSzR0amNFYTYwUVJwQndSSFR0bVNuc3ZMdy10cUNENHpaMmVCcjEzbUs3bnkyQml0S1VkN0ZsVWZmd2Z3aFN3THFEUjJrM29mTUZ3N1RJVS1pRVNXbXAwS1FqdENNLUwwUGVIbk8xQnMxS29VS0t6NjNSd3dfTWZPUTdKOTFZQ01MYm1zRkFLUGE4WGtpRlM4SnBMR29XQ2RaVTM4UnpWUGc4Q0llMXc3V2hzOHhoRlotMmk1Z01lcDhvUGxfdmJocDJQUmZkZnF5U1lmcWxhdGhONnI4Nm10d0d3MmFhQWxfYy1IWkJMRFR5YjVNXzg?oc=5)
+- [独立行政法人情報処理推進機構のニュース・株価 - newspicks.com](https://news.google.com/rss/articles/CBMifkFVX3lxTE8yVkN1S3hEakxQblhDQWNJeU10bUY5S1gxbjhuczJyMEJKTmpqdm1WUUhpNG1UTXZzbkFQNG5NbU93TUUzQ3pKVG5sYTZQNjh4VVVDaTl1eTV5Vk5CYU1rOVNoUXVOS2ItcEpablZ3bW9RS1FfMU0zRDRMUFBoQQ?oc=5)
+- [ド軍ラッシング、靱帯損傷が判明 数週間は送球禁止…復帰後は打者専念の可能性も (Full-Count／フルカウント) - newspicks.com](https://news.google.com/rss/articles/CBMiWEFVX3lxTE5OeU8xdlNFZGRfQVBrSEluX1A0S1M4OHE2bWdFRzBxWThOZm92Mm52bGpycEJVOW9XUG5yMVdZdmRHcXQzWmNrRmNDb2lFWG10d3ktYW9DU3c?oc=5)
+- [「高市減税」埼玉知事が苦言 財源確保「引き下げする側の責務」 (毎日新聞) - newspicks.com](https://news.google.com/rss/articles/CBMiXkFVX3lxTE1WbHVCYzNGcHpRTFJjYkRRSnlJOWhpVUdXZU1YZFdtai01bTFLMDRJS0ZRaTdxY21qSU9SSEtRNjUzU0hIMElobUdQSk9weFFlVFZkUmlVRm1kN0RoY2c?oc=5)
+- [完全自動運転の実現、それは最終ゴールではない：チューリング──フィジカルAIの実現に挑む7つの企業 (WIRED.jp) - newspicks.com](https://news.google.com/rss/articles/CBMiYEFVX3lxTE04enBBeWJRcFNJNWNWUnZpR0tXVkgtcldKMDJUOGRFVmRzQUVwcHdmdExIVC1rSW9TVHJPQXc3eHl0RlNnWWdIMkp4OGRPeEFxR1ZDa2lMMHZVSGpqZE9FMA?oc=5)
+
+## CNN 重點
+- [Trump pleads not guilty to 34 felony counts](https://edition.cnn.com/webview/politics/live-news/trump-indictment-stormy-daniels-news-04-03-23/index.html)
+- [Haberman reveals why Trump attacked judge and his family in speech](https://www.cnn.com/videos/politics/2023/04/05/maggie-haberman-donald-trump-speech-indictment-reaction-sot-cnntm-vpx.cnn)
+- [What to know about the Trump indictment on the eve of his court appearance](https://www.cnn.com/collections/intl-trump-040223/)
+- [READ: Trump indictment related to hush money payment](https://cnn.it/411KYN7)
+- [Russian authorities detain suspect over St. Petersburg cafe blast](https://edition.cnn.com/webview/europe/live-news/russia-ukraine-war-news-04-03-23/index.html)
+
+## Naver 重點
+- [news.naver.com - NAVER](https://news.google.com/rss/articles/CBMiPkFVX3lxTE5ENTdGSnlPbHd5eWRKcFZ0SHJoaWk2WDh6NWVnQndRdlBCdWdYQ0J1LVBVYWhBNFQ4cFpybnFR?oc=5)
+- [ - NAVER](https://news.google.com/rss/articles/CBMiW0FVX3lxTE0zeGRGMm5tNVlybl9QNnFBbURzTmVjVHVaRWptSXYtQVFFeGpXSDZiakZuMllCNTlNS1RKWmd1c1g4UHFRQ0ZjMzc1R0t0UVFnMkxhSlFHX2VzOFk?oc=5)
+- [경제 - Naver News - Naver News](https://news.google.com/rss/articles/CBMiYEFVX3lxTFBaTUFieWp4VHJSVmFPLXRDbnByS2Rnak1jbFUwalVMTHBBQ0VzanBpb0xhMzY0QVREaHBpbVpQZ2FUT1NKOC0tQy11enZ3MXlwRl9ZbFVJWG1tLU0xbEU3MA?oc=5)
+- [ - NAVER](https://news.google.com/rss/articles/CBMiZkFVX3lxTE43bjVwNXc4TVZnaC1pZWVxSXR1aGZ4a09QbE9yUVhKLUVyeVJESU5KcGVpemNmc0lwTE40a1JUaTlOeTg4RHo1WXhOdWdkSkJZdENfODZSbnM0Um9WQzZMWDlCcEx0QQ?oc=5)
+- [ - NAVER](https://news.google.com/rss/articles/CBMibkFVX3lxTE9OMk4tWllwajQyc0Q0Tnd4Y3p0WDhOdUNpVjhJbXEtR2ZRNEQ1Y2hPVEtJQTNlQm81cUxwUnFXMnA4eEI2dnlrNmJzcDRvS05wTVA5SXViSnNadWZZQzNXZzJZb3pFNGQyRUk3NTlR?oc=5)
+
+## BBC 重點
+- [Video shows Russian drone chasing Ukrainian street vendor in 'human safari' attack](https://www.bbc.co.uk/news/articles/cn4n03xg981o?at_medium=RSS&at_campaign=rss)
+- [Trump says Iran will be 'hit very hard' if Hormuz Strait not open soon as oil prices fall](https://www.bbc.co.uk/news/articles/cpw9v0gnzxwo?at_medium=RSS&at_campaign=rss)
+- [Russian ballistic missile strike on Kyiv kills at least 17](https://www.bbc.co.uk/news/articles/c330pxyvzzyo?at_medium=RSS&at_campaign=rss)
+- [EU commends Spain's 'swift response' to Ceuta migrant crisis](https://www.bbc.co.uk/news/articles/c80n3j55g0do?at_medium=RSS&at_campaign=rss)
+- [Armed man arrested near Trump's golf course ahead of president's visit](https://www.bbc.co.uk/news/articles/c20jp3mp7lyo?at_medium=RSS&at_campaign=rss)
+
 ### 2026-08-05 (Wed) 15:07
 📖 **[黃仁勳AI五層蛋糕、華為18層寶塔差在哪？華為首席科學家這樣拆解半導體產業鏈|數位時代 BusinessNext](https://www.bnext.com.tw/article/91737/huawei-ai-18-layer-tower)**
 - **摘要**: 華為首席科學家廖恆首次公開提出「半導體18層寶塔」理論，與輝達（NVIDIA）執行長黃仁勳的「AI五層蛋糕」形成對比。雖然兩者都由下而上拆解AI產業，但出發點與回答的問題截然不同，反映了兩家企業在不同時空背景與地緣政治下的產業視角。
