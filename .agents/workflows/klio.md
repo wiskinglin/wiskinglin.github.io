@@ -39,8 +39,8 @@ description: 端到端自動化流程：將目標內容依序執行 筆記歸檔
 
 > 基於 Phase 1 歸檔的最新筆記內容，生成完整的 HTML 深度報告並整合至首頁。
 
-1. **讀取 `/reports_update` 工作流指令**
-   - 參照 `.agents/workflows/reports_update.md` 與相關 Skills（`reports`, `LoopRunner`, `ContentEditor`）。
+1. **讀取相關工作流指令**
+   - 參照 `.agents/workflows/reports_update.md` 與三大品質優化工作流 (`content-review.md`, `design-audit.md`, `loop-validate.md`)。
    // turbo
 
 2. **從筆記提取報告素材**
@@ -52,10 +52,13 @@ description: 端到端自動化流程：將目標內容依序執行 筆記歸檔
      - **封面配圖**：根據內容主題搜尋合適的高畫質配圖。
    // turbo
 
-3. **執行 /reports_update 子流程**
-   - 完整執行 `/reports_update` 的 7 個步驟：
-     - 確認發佈資訊 → 建立 HTML 報告 → LoopRunner 技術驗證 → ContentEditor 內容審查 → PC 首頁整合 → Mobile 首頁整合 → 最終檢驗。
-   - 所有品質關卡（LoopRunner + ContentEditor）必須全數通過，方可繼續。
+3. **執行 /reports_update 與三大品質優化子流程**
+   - 執行 `/reports_update` 建立初步 HTML 報告。
+   - **依序對 HTML 報告執行三大品質優化子流程**：
+     1. **`/content-review`**：深度審查文字品質與排版易讀性，並自動修復。
+     2. **`/design-audit`**：執行 UIArchitect 設計診斷，產出設計優化報告並實作。
+     3. **`/loop-validate`**：執行 LoopRunner 自動驗證迴圈，確保通過 5 項品質關卡（最高 3 輪）。
+   - 所有品質關卡必須全數通過，方可繼續完成 `/reports_update` 的後續首頁整合與最終檢驗步驟。
    // turbo
 
 4. **Phase 2 交接確認**
@@ -110,6 +113,6 @@ description: 端到端自動化流程：將目標內容依序執行 筆記歸檔
 ## 異常處理
 
 - **Phase 1 失敗**：若筆記歸檔失敗，停止整個流程，回報錯誤。
-- **Phase 2 品質關卡未過**：若 LoopRunner 或 ContentEditor 在 3 輪內未通過，暫停流程，回報具體問題等待人工介入。
+- **Phase 2 品質關卡未過**：若 `/content-review`、`/design-audit` 或 `/loop-validate` 在驗證後仍未通過，應重新分析錯誤原因並持續進行優化，直到全數關卡驗證通過為止，不需等待人工介入。
 - **Phase 3 合併衝突**：若 `git merge` 產生衝突，暫停流程，列出衝突檔案並等待使用者決策。
 - **任一階段中斷**：已完成的階段產出皆保留在 `dev` 分支，使用者可手動從斷點續行。
