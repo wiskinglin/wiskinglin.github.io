@@ -1,6 +1,15 @@
 # Personal Notes
 
 ## 2026-W34 (2026/08/17 - 2026/08/23)
+### 2026-08-19 (Wed) 16:50
+📖 [Link] **[錯誤的 KPI 制度，會摧毀員工的上進心！從老子《道德經》學管理|經理人](https://www.managertoday.com.tw/articles/view/56708)**
+- **摘要**: 探討 KPI 制度過度落實可能導致員工只關注績效而忽略團隊合作。文章引用《道德經》主張領導者應透過完善制度（如 Google 的多方考核與感謝獎金）來減少投機取巧，建立互助的企業文化。
+### 2026-08-19 (Wed) 16:50
+📖 [Link] **[AI 要從個人用進化成組織能力，高層主管要先想清楚的三件事|經理人](https://www.managertoday.com.tw/articles/view/72760)**
+- **摘要**: 指出許多企業導入 AI 僅停留在個人效率提升，未真正升級組織能力。真正的 AI 轉型應從自動化邁向改變價值鏈與營運模式。此外，Dynabook 提出的「全私有雲」會議解決方案，成功兼顧了企業資安與跨國協作需求。
+### 2026-08-19 (Wed) 16:50
+📖 [Link] **[面試問什麼，才能看出對方的個性？Apple 高管：這一題，能觀察出 3 個態度|經理人](https://www.managertoday.com.tw/articles/view/56777)**
+- **摘要**: Apple 高管分享面試必問題：「你曾經犯下最好的錯誤是什麼？」，藉此觀察應徵者是否具備認錯的勇氣、反省能力以及解決問題的邏輯，從而篩選出具備積極負責態度的優秀人才。
 ### 2026-08-19 (Wed) 13:57
 📖 [Link] **[秋末亮相！傳輝達開發 Nemotron 4 新 AI 模型，迎戰全球頂尖開源模型 - INSIDE](https://www.inside.com.tw/article/42067-nvidia-nemotron-4-open-source-model-trillion-parameters)**
 - **摘要**: 據外媒《The Information》報導，AI 晶片龍頭輝達（NVIDIA）正積極研發新一代開源大語言模型「Nemotron 4」，其最大版本參數規模預計突破 1 兆，達前代 Nemotron 3 Ultra 的兩倍之多，最快有望於今年深秋正式發布，正面迎戰全球頂尖的開源模型生態。
