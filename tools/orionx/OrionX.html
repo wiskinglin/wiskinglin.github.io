@@ -301,9 +301,10 @@
          */
         .sys-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 24px;
             width: 100%;
+            align-items: start;
         }
 
         .row-group {
@@ -2086,19 +2087,17 @@
         <section class="tab-content active" id="tab-system">
             <div class="sys-grid">
 
-                <!-- 卡片 1：系統核心規格 -->
+                <!-- 卡片 1：系統與顯示規格 -->
                 <div class="card">
-                    <h3>🖥️ 系統主要規格</h3>
+                    <h3>🖥️ 系統與顯示規格</h3>
                     <ul class="info-list">
                         <li><span class="key">處理器核心</span><span class="value" id="sys-cpu-cores">-- Cores</span></li>
                         <li><span class="key">裝置記憶體</span><span class="value" id="sys-ram-val">-- GB</span></li>
-                        <li><span class="key">GPU 渲染器</span><span class="value" id="sys-gpu-val"
-                                style="font-size: 11px; max-width: 200px; text-align: right; word-break: break-all;">--</span>
-                        </li>
-                        <li><span class="key">瀏覽器配額</span><span class="value" id="sys-storage-val">-- MB</span></li>
                         <li><span class="key">操作系統</span><span class="value" id="sys-os-val"
                                 style="font-size: 11px; max-width: 200px; text-align: right; word-break: break-all;">--</span>
                         </li>
+                        <li><span class="key">螢幕解析度 (物理)</span><span class="value" id="disp-resolution">-- x --</span></li>
+                        <li><span class="key">色彩深度</span><span class="value" id="disp-color-depth">-- bits</span></li>
                     </ul>
                     <hr>
                     <!-- 電池與 RTC -->
@@ -2124,96 +2123,56 @@
                     </div>
                 </div>
 
-                <!-- 卡片 2：螢幕與顯示規格 -->
-                <div class="card">
-                    <h3>📺 螢幕與顯示規格</h3>
-                    <ul class="info-list">
-                        <li><span class="key">螢幕解析度</span><span class="value" id="disp-resolution">-- x --</span></li>
-                        <li><span class="key">可用工作區</span><span class="value" id="disp-avail">-- x --</span></li>
-                        <li><span class="key">設備像素比 (DPR)</span><span class="value" id="disp-dpr">--</span></li>
-                        <li><span class="key">色彩深度</span><span class="value" id="disp-color-depth">-- bits</span></li>
-                        <li><span class="key">最大觸控點數</span><span class="value" style="color: var(--accent-blue);"
-                                id="disp-touch-points">-- 點</span></li>
-                    </ul>
-                    <p style="color:var(--text-secondary); margin-bottom:12px; margin-top:20px; font-size:12px;">連線狀態
-                        (Network & Wireless)</p>
-                    <div class="status-module" style="margin-bottom: 10px;">
-                        <svg width="22" height="22" fill="var(--accent-blue)" viewBox="0 0 16 16">
-                            <path
-                                d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.444 12.444 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c2.507 0 4.816.804 6.695 2.165a.518.518 0 0 0 .668-.05z" />
-                        </svg>
-                        <div class="module-info">
-                            <h4 id="wifi-ssid" style="font-family: inherit; font-size: 15px;">WiFi 連線</h4>
-                            <p id="wifi-speed">速率: -- Mbps</p>
-                        </div>
-                    </div>
-                    <div class="status-module" style="margin-bottom: 0;">
-                        <svg width="22" height="22" fill="var(--accent-blue)" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd"
-                                d="M8.5 1.5A.5.5 0 0 1 9 2v4.5h4.354a.5.5 0 0 1 .354.854l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 .354-.854H6.5V2a.5.5 0 0 1 .5-.5z"
-                                transform="rotate(45 8 8)" />
-                        </svg>
-                        <div class="module-info">
-                            <h4 id="bt-status" style="font-family: inherit; font-size: 15px;">藍牙通訊晶片</h4>
-                            <p id="bt-paired">配對狀態: --</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 第 3 欄群組：多媒體測試區 (音訊 + 視訊) -->
-                <div style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- 第 2 欄群組：多媒體測試區 (音訊 + 視訊) -->
+                <div style="display: flex; flex-direction: column; gap: 12px;">
                     <!-- 卡片 3：音訊測試與控制 -->
-                    <div class="card" style="flex-shrink: 0;">
-                        <h3>🎙️ 音訊測試與控制</h3>
-                        <div style="display:flex; flex-direction:column; gap: var(--space-4);">
+                    <div class="card" style="flex-shrink: 0; padding: 16px 20px;">
+                        <h3 style="margin-bottom: 12px; font-size: 16px;">🎙️ 音訊測試與控制</h3>
+                        <div style="display:flex; flex-direction:column; gap: 12px;">
     
                             <!-- 麥克風區塊 -->
                             <div class="audio-section"
-                                style="margin-bottom:0; display:flex; flex-direction:column; gap: 16px;">
+                                style="margin-bottom:0; display:flex; flex-direction:column; gap: 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 12px; min-width: 40px; color: var(--text-secondary);">輸入:</span>
+                                    <span style="font-size: 12px; min-width: 32px; color: var(--text-secondary);">輸入:</span>
                                     <select id="select-audio-input"
-                                        style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 6px 10px; font-size: 11px; outline: none; cursor: pointer; max-width: 100%; text-overflow: ellipsis; overflow: hidden;"></select>
+                                        style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 4px 8px; font-size: 11px; outline: none; cursor: pointer; max-width: 100%; text-overflow: ellipsis; overflow: hidden;"></select>
                                 </div>
                                 <div class="row-group mic-group" id="mic-group" style="margin-bottom: 0;">
                                     <button class="mic-main-btn" id="mic-main-btn"
-                                        style="flex: 1; justify-content: center;">
-                                        <svg class="icon-mic" width="16" height="16" fill="currentColor"
+                                        style="flex: 1; justify-content: center; padding: 8px;">
+                                        <svg class="icon-mic" width="14" height="14" fill="currentColor"
                                             viewBox="0 0 16 16">
                                             <path
                                                 d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z" />
                                             <path
                                                 d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z" />
                                         </svg>
-                                        <svg class="icon-stop hidden" width="16" height="16" fill="currentColor"
+                                        <svg class="icon-stop hidden" width="14" height="14" fill="currentColor"
                                             viewBox="0 0 16 16">
                                             <path
                                                 d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6A1.5 1.5 0 0 1 11 12.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z" />
                                         </svg>
-                                        <svg class="icon-play hidden" width="16" height="16" fill="currentColor"
+                                        <svg class="icon-play hidden" width="14" height="14" fill="currentColor"
                                             viewBox="0 0 16 16">
                                             <path
                                                 d="M10.804 8 5 4.633v6.734L10.804 8zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm15 0a7 7 0 1 0-14 0 7 7 0 0 0 14 0z" />
                                         </svg>
-                                        <svg class="icon-pause hidden" width="16" height="16" fill="currentColor"
+                                        <svg class="icon-pause hidden" width="14" height="14" fill="currentColor"
                                             viewBox="0 0 16 16">
                                             <path
                                                 d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z" />
                                         </svg>
-                                        <span id="mic-btn-text">開始錄音</span>
+                                        <span id="mic-btn-text" style="font-size: 13px;">開始錄音</span>
                                     </button>
-                                    <button class="mic-reset-btn hidden" id="mic-reset-btn" title="清除錄音">
-                                        <svg fill="currentColor" viewBox="0 0 16 16">
+                                    <button class="mic-reset-btn hidden" id="mic-reset-btn" title="清除錄音" style="padding: 8px;">
+                                        <svg fill="currentColor" viewBox="0 0 16 16" width="14" height="14">
                                             <path
                                                 d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
                                             <path fill-rule="evenodd"
                                                 d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
                                         </svg>
                                     </button>
-                                    <div class="mic-visualizer" id="mic-visualizer">
-                                        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span
-                                            class="bar"></span><span class="bar"></span>
-                                    </div>
                                 </div>
                                 <div class="recording-prompt hidden" id="recording-prompt"></div>
                                 <div class="playback-progress-bar hidden" id="playback-progress">
@@ -2223,15 +2182,15 @@
     
                             <!-- 喇叭區塊 -->
                             <div class="audio-section"
-                                style="margin-bottom:0; display:flex; flex-direction:column; gap: 16px;">
+                                style="margin-bottom:0; display:flex; flex-direction:column; gap: 8px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 12px; min-width: 40px; color: var(--text-secondary);">輸出:</span>
+                                    <span style="font-size: 12px; min-width: 32px; color: var(--text-secondary);">輸出:</span>
                                     <select id="select-audio-output"
-                                        style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 6px 10px; font-size: 11px; outline: none; cursor: pointer; max-width: 100%; text-overflow: ellipsis; overflow: hidden;"></select>
+                                        style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 4px 8px; font-size: 11px; outline: none; cursor: pointer; max-width: 100%; text-overflow: ellipsis; overflow: hidden;"></select>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 16px; padding: 0 8px;">
-                                    <button class="mute-btn" id="mute-btn" style="flex-shrink:0;">
-                                        <svg id="icon-vol-on" width="20" height="20" fill="currentColor"
+                                <div style="display: flex; align-items: center; gap: 16px; padding: 0 4px;">
+                                    <button class="mute-btn" id="mute-btn" style="flex-shrink:0; padding: 4px;">
+                                        <svg id="icon-vol-on" width="16" height="16" fill="currentColor"
                                             viewBox="0 0 16 16">
                                             <path
                                                 d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z" />
@@ -2240,39 +2199,39 @@
                                             <path
                                                 d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.489 3.489 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z" />
                                         </svg>
-                                        <svg id="icon-vol-off" class="hidden" width="20" height="20" fill="currentColor"
+                                        <svg id="icon-vol-off" class="hidden" width="16" height="16" fill="currentColor"
                                             viewBox="0 0 16 16">
                                             <path
                                                 d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 0 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z" />
                                         </svg>
                                     </button>
                                     <input type="range" id="vol-slider" min="0" max="100" value="60" step="20"
-                                        style="flex: 1;">
+                                        style="flex: 1; height: 4px;">
                                 </div>
                             </div>
                         </div>
                     </div>
     
                     <!-- 卡片 4：攝影機預覽測試 -->
-                    <div class="card" style="flex: 1;">
-                        <h3>📷 攝影機/視訊鏡頭預覽</h3>
-                        <div style="display:flex; flex-direction:column; gap: var(--space-4); height: 100%;">
-                            <div class="audio-section" style="margin-bottom:0; display:flex; flex-direction:column; gap: 16px; flex: 1;">
+                    <div class="card" style="flex: 1; padding: 16px 20px;">
+                        <h3 style="margin-bottom: 12px; font-size: 16px;">📷 攝影機/視訊鏡頭預覽</h3>
+                        <div style="display:flex; flex-direction:column; gap: 8px; height: 100%;">
+                            <div class="audio-section" style="margin-bottom:0; display:flex; flex-direction:column; gap: 8px; flex: 1;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="font-size: 12px; min-width: 40px; color: var(--text-secondary);">鏡頭:</span>
-                                    <select id="select-video-input" style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 6px 10px; font-size: 11px; outline: none; cursor: pointer; max-width: 100%; text-overflow: ellipsis; overflow: hidden;"></select>
+                                    <span style="font-size: 12px; min-width: 32px; color: var(--text-secondary);">鏡頭:</span>
+                                    <select id="select-video-input" style="flex: 1; background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; padding: 4px 8px; font-size: 11px; outline: none; cursor: pointer; max-width: 100%; text-overflow: ellipsis; overflow: hidden;"></select>
                                 </div>
                                 
-                                <div style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); margin: auto 0;">
-                                    <video id="webcam-preview-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
-                                    <div id="webcam-status-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.7); color: var(--text-secondary); font-size: 12px; flex-direction: column; gap: 8px;">
-                                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
+                                <div style="position: relative; width: 100%; height: 260px; max-height: 35vh; background: #000; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); margin: auto 0;">
+                                    <video id="webcam-preview-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1);"></video>
+                                    <div id="webcam-status-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.7); color: var(--text-secondary); font-size: 12px; flex-direction: column; gap: 6px;">
+                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
                                         <span>未啟動鏡頭</span>
                                     </div>
                                     <div id="webcam-resolution-badge" class="hidden" style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; font-size: 10px; font-family: 'Roboto Mono'; color: var(--accent-green); border: 1px solid rgba(255,255,255,0.1);">-- x --</div>
                                 </div>
     
-                                <button id="btn-toggle-webcam" class="mic-main-btn" style="width: 100%; justify-content: center; margin-top: auto;">
+                                <button id="btn-toggle-webcam" class="mic-main-btn" style="width: 100%; justify-content: center; margin-top: 4px; padding: 8px; font-size: 13px;">
                                     啟動鏡頭預覽
                                 </button>
                             </div>
@@ -2567,28 +2526,15 @@
         async function initSystemSpecs() {
             document.getElementById('sys-cpu-cores').textContent = `${navigator.hardwareConcurrency || '--'} 邏輯核心`;
             document.getElementById('sys-ram-val').textContent = `${navigator.deviceMemory || '>= 4'} GB`;
-            document.getElementById('sys-gpu-val').textContent = getGpuRenderer();
             document.getElementById('sys-os-val').textContent = getOSName();
 
-            // 儲存配額
-            if (navigator.storage && navigator.storage.estimate) {
-                try {
-                    const estimate = await navigator.storage.estimate();
-                    const quotaGb = (estimate.quota / (1024 * 1024 * 1024)).toFixed(1);
-                    document.getElementById('sys-storage-val').textContent = `配額: ${quotaGb} GB`;
-                } catch (e) {
-                    document.getElementById('sys-storage-val').textContent = '讀取失敗';
-                }
-            } else {
-                document.getElementById('sys-storage-val').textContent = '環境不支援';
-            }
-
-            // 顯示器資訊
-            document.getElementById('disp-resolution').textContent = `${window.screen.width} x ${window.screen.height}`;
-            document.getElementById('disp-avail').textContent = `${window.screen.availWidth} x ${window.screen.availHeight}`;
-            document.getElementById('disp-dpr').textContent = window.devicePixelRatio;
+            // 顯示器資訊 (計算物理真實解析度)
+            const dpr = window.devicePixelRatio || 1;
+            const physicalWidth = Math.round(window.screen.width * dpr);
+            const physicalHeight = Math.round(window.screen.height * dpr);
+            
+            document.getElementById('disp-resolution').textContent = `${physicalWidth} x ${physicalHeight}`;
             document.getElementById('disp-color-depth').textContent = `${window.screen.colorDepth} bits`;
-            document.getElementById('disp-touch-points').textContent = navigator.maxTouchPoints || 0;
         }
 
         // 更新實體周邊與通訊連線 API
@@ -4487,36 +4433,69 @@
                 benchRead.textContent = '...';
 
                 try {
-                    // 產生 500MB 假資料 (約 5 * 1024 * 1024 字元)
-                    const payloadSize = 500 * 1024 * 1024;
-                    const payload = 'A'.repeat(payloadSize);
+                    // 產生 500MB 假資料 (使用 Blob 陣列避免佔用連續大記憶體)
+                    const payloadSizeMB = 500;
+                    const chunks = [];
+                    const chunk50 = new Uint8Array(50 * 1024 * 1024); // 50MB chunk
+                    for(let i = 0; i < (payloadSizeMB / 50); i++) {
+                        chunks.push(chunk50);
+                    }
+                    const blob = new Blob(chunks);
 
-                    // 測試寫入 (localStorage)
+                    // 開啟 IndexedDB
+                    const db = await new Promise((resolve, reject) => {
+                        const req = indexedDB.open('OrionXBenchmark', 1);
+                        req.onupgradeneeded = e => {
+                            if (!e.target.result.objectStoreNames.contains('store')) {
+                                e.target.result.createObjectStore('store');
+                            }
+                        };
+                        req.onsuccess = e => resolve(e.target.result);
+                        req.onerror = e => reject(e.target.error);
+                    });
+
+                    // 測試寫入 (IndexedDB)
                     await new Promise(r => setTimeout(r, 100)); // 讓 UI 更新
                     const writeStart = performance.now();
-                    localStorage.setItem('orionx_bench_test', payload);
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction('store', 'readwrite');
+                        tx.oncomplete = resolve;
+                        tx.onerror = e => reject(e.target.error);
+                        const store = tx.objectStore('store');
+                        store.put(blob, 'test_file');
+                    });
                     const writeEnd = performance.now();
                     const writeTimeSec = (writeEnd - writeStart) / 1000;
-                    const writeSpeed = (5 / writeTimeSec).toFixed(1);
+                    const writeSpeed = (payloadSizeMB / writeTimeSec).toFixed(1);
                     benchWrite.textContent = writeSpeed;
 
-                    // 測試讀取
+                    // 測試讀取 (IndexedDB)
                     await new Promise(r => setTimeout(r, 100));
                     const readStart = performance.now();
-                    const readData = localStorage.getItem('orionx_bench_test');
+                    await new Promise((resolve, reject) => {
+                        const tx = db.transaction('store', 'readonly');
+                        tx.oncomplete = resolve;
+                        tx.onerror = e => reject(e.target.error);
+                        const store = tx.objectStore('store');
+                        store.get('test_file');
+                    });
                     const readEnd = performance.now();
                     const readTimeSec = (readEnd - readStart) / 1000;
-                    const readSpeed = (5 / readTimeSec).toFixed(1);
+                    const readSpeed = (payloadSizeMB / readTimeSec).toFixed(1);
                     benchRead.textContent = readSpeed;
 
                     // 清理
-                    localStorage.removeItem('orionx_bench_test');
+                    await new Promise((resolve) => {
+                        const tx = db.transaction('store', 'readwrite');
+                        tx.objectStore('store').clear().onsuccess = resolve;
+                    });
+                    db.close();
 
                 } catch (e) {
                     console.error('Storage Benchmark Error:', e);
                     benchWrite.textContent = 'ERR';
                     benchRead.textContent = 'ERR';
-                    alert('儲存測速失敗，可能因瀏覽器配額限制或無痕模式。');
+                    alert('儲存測速失敗，可能因無痕模式限制、空間不足或瀏覽器不支援 IndexedDB。');
                 } finally {
                     benchRing.classList.remove('running');
                     btnBench.disabled = false;
