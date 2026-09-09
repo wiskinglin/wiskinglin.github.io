@@ -59,6 +59,8 @@
 | **規範** | Material Design (Google) | [material.io](https://material.io/) | Google 開發的跨平台設計語言系統。 |
 | **規範** | Human Interface (Apple) | [developer.apple.com](https://developer.apple.com/design/human-interface-guidelines/) | Apple 平台的設計原則與規範。 |
 | **概念** | Atomic Design 簡介 | [medium.com](https://medium.com/uxeastmeetswest/%E7%B6%B2%E9%A0%81%E8%A8%AD%E8%A8%88-atomic-design%E7%B0%A1%E4%BB%8B%E5%8F%8A%E5%B7%A5%E4%BD%9C%E5%AF%A6%E4%BE%8B-42e666358d52) | 模組化設計的核心觀念分享。 |
+| **特效** | Pokemon Cards CSS | [github.com](https://github.com/simeydotme/pokemon-cards-css) | 逼真的 3D 全息光澤 (Holographic & Foil) 寶可夢卡牌 CSS 互動效果開源專案。 |
+| **Demo** | Pokemon Cards CSS Demo | [poke-holo.simey.me](https://poke-holo.simey.me/) | Pokemon Cards CSS 線上互動展示與各式全息卡面效果即時體驗。 |
 
 ---
 
@@ -71,4 +73,4 @@
 
 ---
 
-*資料最後更新時間: 2026-04-02*
+*資料最後更新時間: 2026-09-09*
