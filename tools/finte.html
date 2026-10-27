@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketFlow | 個人資產水位與 30 號扣款管家</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Public Sans', 'Inter', 'Noto Sans TC', 'sans-serif'],
+            mono: ['Public Sans', 'Inter', 'monospace']
+          },
+          /* Nord 配色：#ECEFF4 #E5E9F0 #D8DEE9 #81A1C1 #4C566A
+             淺色層使用指定色，深色層以 #4C566A 同色相往下推導 (Nuxt UI neutral 色階概念) */
+          colors: {
+            slate: {
+              50: '#ECEFF4', 100: '#E5E9F0', 200: '#D8DEE9', 300: '#B8C2D3',
+              400: '#8C97AB', 500: '#667186', 600: '#4C566A', 700: '#3B4252',
+              800: '#2E3440', 900: '#262B35', 950: '#1D2129'
+            },
+            /* primary = #81A1C1 */
+            indigo: {
+              50: '#ECEFF4', 100: '#DCE5EF', 200: '#C3D3E3', 300: '#A6BDD5',
+              400: '#93B0C9', 500: '#81A1C1', 600: '#5F83A8', 700: '#4C6A8C',
+              800: '#3B5270', 900: '#2F4259', 950: '#222F40'
+            },
+            purple: {
+              50: '#ECEFF4', 100: '#DCE5EF', 200: '#C3D3E3', 300: '#A6BDD5',
+              400: '#93B0C9', 500: '#81A1C1', 600: '#6F90B3', 700: '#4C6A8C',
+              800: '#3B5270', 900: '#2F4259', 950: '#222F40'
+            },
+            /* 狀態色：降低飽和度，與冷色 Nord 底色協調 */
+            rose: { 200: '#E9C3C7', 400: '#CD7C84', 500: '#BF616A', 600: '#A84E57' },
+            emerald: { 400: '#B1CA9E', 500: '#8FAE78', 600: '#6F9159' },
+            amber: { 100: '#F6E9C9', 400: '#E3BE6F', 500: '#D4A64A', 600: '#B8892F' },
+            orange: { 600: '#C98A3E' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      /* 流體比例設計變數：根據螢幕寬度 (vw) 自動等比例縮放，鎖定最小與最大值 */
+      --pad-page: clamp(0.75rem, 3.2vw, 1.75rem);
+      --pad-card: clamp(0.875rem, 3.5vw, 1.35rem);
+      --gap-grid: clamp(0.75rem, 2.8vw, 1.25rem);
+      --fs-hero: clamp(1.45rem, 5.8vw, 2.1rem);
+      --fs-h2: clamp(1.02rem, 3.8vw, 1.25rem);
+      --fs-h3: clamp(0.92rem, 3.4vw, 1.08rem);
+      --fs-body: clamp(0.78rem, 2.9vw, 0.875rem);
+      --fs-sub: clamp(0.7rem, 2.5vw, 0.78rem);
+    }
+
+    body {
+      font-family: 'Public Sans', 'Inter', 'Noto Sans TC', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+
+    /* 比例文字與數字對齊工具類 */
+    .fluid-page-pad { padding-left: var(--pad-page); padding-right: var(--pad-page); }
+    .fluid-card { padding: var(--pad-card); border-radius: clamp(1rem, 3.5vw, 1.35rem); }
+    .fluid-gap { gap: var(--gap-grid); }
+    .text-fluid-hero { font-size: var(--fs-hero); line-height: 1.15; }
+    .text-fluid-h2 { font-size: var(--fs-h2); line-height: 1.3; }
+    .text-fluid-h3 { font-size: var(--fs-h3); line-height: 1.35; }
+    .text-fluid-body { font-size: var(--fs-body); line-height: 1.45; }
+    .text-fluid-sub { font-size: var(--fs-sub); line-height: 1.35; }
+
+    /* 嚴格禁止金額與狀態標籤折行，並使用等寬對齊數字 */
+    .num-nowrap {
+      white-space: nowrap !important;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    /* 隱藏捲軸但保留滑動功能 */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* 隱藏數字輸入框預設上下箭頭 */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+
+    /* ==================== Nuxt UI 風格元件層 ====================
+       參考 Nuxt UI v3：圓角 rounded-lg、1px ring 邊框、soft 色塊、
+       2px primary focus ring、平滑 transition。 */
+    :root {
+      --ui-primary: #81A1C1;
+      --ui-radius: 0.5rem;
+      --ui-ring: #D8DEE9;
+    }
+    html.dark { --ui-ring: #3B4252; }
+
+    /* UButton / UBadge / UInput 圓角 (原 rounded-xl 一律改為 Nuxt UI 預設) */
+    html body .rounded-xl { border-radius: var(--ui-radius); }
+    html body .rounded-2xl { border-radius: 0.625rem; }
+    html body .rounded-3xl { border-radius: 0.75rem; }
+    html body .fluid-card { border-radius: 0.75rem; }
+
+    /* UCard：ring 邊框 + 極淡陰影，取代厚重 shadow */
+    html body .fluid-card {
+      box-shadow: 0 0 0 1px var(--ui-ring), 0 1px 2px rgb(76 86 106 / 0.06);
+      border-color: transparent;
+    }
+    html body .fluid-card.shadow-lg,
+    html body .fluid-card.shadow-md { box-shadow: 0 8px 24px -8px rgb(76 86 106 / 0.35); }
+
+    /* UButton：統一過渡與按下回饋 */
+    html body button,
+    html body label.cursor-pointer {
+      transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .1s ease;
+    }
+    html body button:active { transform: scale(0.98); }
+    html body button:focus-visible,
+    html body label.cursor-pointer:focus-within {
+      outline: 2px solid var(--ui-primary);
+      outline-offset: 2px;
+    }
+
+    /* UInput / USelect / UTextarea：inset ring，focus 時換成 primary */
+    html body input:not([type=range]):not([type=file]),
+    html body select,
+    html body textarea {
+      border: none !important;
+      box-shadow: inset 0 0 0 1px var(--ui-ring);
+      border-radius: var(--ui-radius);
+      outline: none;
+      transition: box-shadow .15s ease;
+    }
+    html body input:not([type=range]):not([type=file]):focus,
+    html body select:focus,
+    html body textarea:focus {
+      box-shadow: inset 0 0 0 2px var(--ui-primary);
+    }
+
+    /* URange 滑桿 */
+    html body input[type=range] { accent-color: var(--ui-primary); }
+
+    /* 頂部導覽列：半透明 + 細線，貼近 UHeader */
+    html body header.sticky { box-shadow: none; border-bottom: 1px solid var(--ui-ring); }
+
+    /* UBadge soft：文字輸出的小徽章更柔和 */
+    html body .rounded-full[class*="px-"] { font-weight: 600; letter-spacing: 0; }
+
+    /* UModal：遮罩模糊 + 柔和浮層 */
+    html body #appModal > div,
+    html body #pinLockModal > div {
+      box-shadow: 0 0 0 1px var(--ui-ring), 0 20px 40px -12px rgb(46 52 64 / 0.4);
+      border-color: transparent;
+    }
+
+    /* UTooltip / UToast 風格 */
+    html body #toastContainer > div { box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12), 0 8px 20px -6px rgb(46 52 64 / 0.4); }
+
+    ::selection { background: #81A1C1; color: #ECEFF4; }
+  </style>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 pb-28">
+
+  <!-- ==================== 本地 PIN 碼鎖定遮罩 ==================== -->
+  <div id="pinLockModal" class="fixed inset-0 z-50 bg-slate-950 flex-col items-center justify-center p-5 hidden">
+    <div class="w-full max-w-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl text-center">
+      <div class="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 class="text-fluid-h2 font-bold mb-1">安全鎖定中</h2>
+      <p class="text-fluid-sub text-slate-500 dark:text-slate-400 mb-5">請輸入 4 位數本地 PIN 碼解鎖</p>
+      
+      <div class="flex justify-center gap-3.5 mb-4" id="pinDots">
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-500 transition-all"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-500 transition-all"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-500 transition-all"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-500 transition-all"></div>
+      </div>
+      <p id="pinErrorMsg" class="text-fluid-sub text-rose-500 h-4 mb-3 font-semibold"></p>
+
+      <div class="grid grid-cols-3 gap-2.5">
+        <button onclick="enterPinDigit('1')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">1</button>
+        <button onclick="enterPinDigit('2')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">2</button>
+        <button onclick="enterPinDigit('3')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">3</button>
+        <button onclick="enterPinDigit('4')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">4</button>
+        <button onclick="enterPinDigit('5')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">5</button>
+        <button onclick="enterPinDigit('6')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">6</button>
+        <button onclick="enterPinDigit('7')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">7</button>
+        <button onclick="enterPinDigit('8')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">8</button>
+        <button onclick="enterPinDigit('9')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">9</button>
+        <button onclick="clearPinDigits()" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-semibold text-slate-500">清除</button>
+        <button onclick="enterPinDigit('0')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">0</button>
+        <button onclick="backspacePinDigit()" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500"><i class="fa-solid fa-delete-left"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 頂部純色不透明固定導覽列 (解決穿透與底部遮擋問題) ==================== -->
+  <header class="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-6xl mx-auto fluid-page-pad">
+      
+      <!-- 第一層：品牌標題 + 右側 4 個快速工具按鈕 (永遠單行對齊) -->
+      <div class="flex items-center justify-between py-2.5 gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+            <i class="fa-solid fa-wallet text-xs"></i>
+          </div>
+          <div class="truncate">
+            <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">財務總覽與 30 號檢核</h1>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+          <!-- 隱私遮罩開關 -->
+          <button onclick="togglePrivacy()" title="隱藏/顯示金額" class="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-fluid-sub font-semibold flex items-center gap-1 num-nowrap transition">
+            <i id="privacyIcon" class="fa-regular fa-eye"></i>
+            <span id="privacyText" class="hidden sm:inline">顯示金額</span>
+          </button>
+          <!-- PIN 鎖定 -->
+          <button onclick="triggerPinLockOrSetup()" title="PIN 碼安全鎖" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+            <i class="fa-solid fa-lock"></i>
+          </button>
+          <!-- 深淺色切換 -->
+          <button onclick="toggleTheme()" title="切換深淺色" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+            <i id="themeIcon" class="fa-solid fa-sun text-amber-400"></i>
+          </button>
+          <!-- 匯出 Excel -->
+          <button onclick="exportToExcelCSV()" title="匯出 Excel 報表" class="h-8 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1 num-nowrap shadow-sm transition">
+            <i class="fa-solid fa-file-excel"></i>
+            <span class="hidden sm:inline">Excel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 第二層：6 大功能分頁膠囊列 (支援手機左右滑動 & 電腦完整排列，完全避開手機底部系統按鈕) -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80">
+        <button onclick="switchTab('dashboard')" data-tab="dashboard" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>總覽檢核</span>
+        </button>
+        <button onclick="switchTab('cards')" data-tab="cards" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-credit-card"></i>
+          <span>銀行與卡費</span>
+          <span id="navBadgeCards" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] hidden">!</span>
+        </button>
+        <button onclick="switchTab('installments')" data-tab="installments" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>分期監控</span>
+        </button>
+        <button onclick="switchTab('bills')" data-tab="bills" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-bolt"></i>
+          <span>固定費用</span>
+        </button>
+        <button onclick="switchTab('stocks')" data-tab="stocks" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-arrow-trend-up"></i>
+          <span>台股水位</span>
+        </button>
+        <button onclick="switchTab('settings')" data-tab="settings" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-database"></i>
+          <span>備份匯出</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- ==================== 主內容容器 (等比例縮放網格) ==================== -->
+  <main class="max-w-6xl mx-auto fluid-page-pad pt-4">
+
+    <!-- ==================== TAB 1: 總覽與 30 號扣款檢核 ==================== -->
+    <section id="tab-dashboard" class="tab-section space-y-4">
+      
+      <!-- 三大核心指標卡片 (在手機為單欄垂直堆疊，平板/電腦為三欄等比例排列) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
+        
+        <!-- 指標 1：目前總淨資產 -->
+        <div class="fluid-card bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-700 text-white shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-fluid-sub font-bold bg-white/15 px-2.5 py-0.5 rounded-full num-nowrap">1. 目前總淨資產 (台幣)</span>
+              <span id="countdown30th" class="text-fluid-sub text-indigo-100 font-semibold num-nowrap">30號扣款</span>
+            </div>
+            <div id="kpiNetWorth" class="text-fluid-hero font-extrabold font-mono num-nowrap my-1">NT$ 0</div>
+          </div>
+
+          <div class="pt-3 mt-3 border-t border-white/15 space-y-1.5 text-fluid-sub text-indigo-100">
+            <div class="flex items-center justify-between gap-2">
+              <span class="opacity-85">總資產 (銀行+台股資金池)</span>
+              <span id="kpiTotalAssets" class="font-bold font-mono num-nowrap">NT$ 0</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="opacity-85">本月待扣繳總負債</span>
+              <span id="kpiTotalUnpaid" class="font-bold font-mono text-rose-200 num-nowrap">NT$ 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 指標 2：台股波段水位與損益 -->
+        <div onclick="switchTab('stocks')" class="fluid-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
+                <i class="fa-solid fa-chart-line text-indigo-500 mr-1"></i>2. 台股水位與損益
+              </span>
+              <span id="kpiStockAlertBadge" class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap">水位正常</span>
+            </div>
+            <div class="flex items-baseline justify-between gap-2 my-1 flex-wrap">
+              <div id="kpiStockMarketVal" class="text-fluid-hero font-extrabold font-mono num-nowrap">NT$ 0</div>
+              <div id="kpiStockPnL" class="text-fluid-sub font-bold font-mono px-2 py-0.5 rounded-lg num-nowrap">+0 (0%)</div>
+            </div>
+          </div>
+
+          <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <div class="flex justify-between text-fluid-sub font-semibold mb-1.5">
+              <span class="text-indigo-600 dark:text-indigo-400 num-nowrap">持倉水位 <strong id="kpiStockRatioText">0%</strong></span>
+              <span class="text-amber-600 dark:text-amber-400 num-nowrap">待命現金 <strong id="kpiCashRatioText">0%</strong></span>
+            </div>
+            <div class="w-full h-2.5 bg-amber-500/20 rounded-full overflow-hidden flex">
+              <div id="kpiStockRatioBar" class="bg-indigo-500 h-full transition-all duration-500" style="width: 70%"></div>
+            </div>
+            <p id="kpiStockHint" class="text-fluid-sub text-slate-400 mt-1.5 truncate">點擊調整波段持股與交割現金池</p>
+          </div>
+        </div>
+
+        <!-- 指標 3：本月卡費與固定支出總結 -->
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
+                <i class="fa-solid fa-file-invoice-dollar text-rose-500 mr-1"></i>3. 本月待扣款總結
+              </span>
+              <span class="text-fluid-sub font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 num-nowrap">30號自動扣繳</span>
+            </div>
+            <div id="kpiMonthTotalBill" class="text-fluid-hero font-extrabold font-mono text-rose-600 dark:text-rose-400 num-nowrap my-1">NT$ 0</div>
+          </div>
+
+          <!-- 左標籤、右單行金額，絕不斷成兩行 -->
+          <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-fluid-sub">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-slate-500 dark:text-slate-400 truncate">本期信用卡未繳總額</span>
+              <span id="kpiCardBillSub" class="font-bold font-mono num-nowrap">NT$ 0</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-slate-500 dark:text-slate-400 truncate">本月水電房租未繳總額</span>
+              <span id="kpiFixedBillSub" class="font-bold font-mono num-nowrap">NT$ 0</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 text-amber-600 dark:text-amber-400 pt-0.5">
+              <span class="truncate"><i class="fa-solid fa-scissors mr-1"></i>每月被分期吃掉現金流</span>
+              <span id="kpiInstallmentMonthlySub" class="font-bold font-mono num-nowrap">NT$ 0 /月</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 🔥 每月 30 號各銀行自動扣繳水位檢核 (上下分層標題，不再左右硬擠) -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+          <div class="space-y-1.5">
+            <div class="flex items-center flex-wrap gap-2">
+              <span class="w-2 h-5 rounded-full bg-indigo-500 shrink-0"></span>
+              <h2 class="text-fluid-h2 font-extrabold">每月 30 號各銀行自動扣繳水位檢核</h2>
+              <span id="bankShortfallSummaryBadge" class="text-fluid-sub px-2.5 py-0.5 rounded-full font-bold num-nowrap">檢核中</span>
+            </div>
+            <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
+              自動將「未繳信用卡」與「未繳水電房租」歸戶到指定扣款銀行，確保 30 號前餘額充足。
+            </p>
+          </div>
+          <button onclick="settleAllPendingBills()" class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition shrink-0">
+            <i class="fa-solid fa-bolt-lightning"></i>
+            <span>模擬 30 號一鍵全數扣款</span>
+          </button>
+        </div>
+
+        <!-- 各銀行水位檢核卡片網格 -->
+        <div id="bankCheckupGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <!-- JS 渲染 -->
+        </div>
+      </div>
+
+      <!-- 下方雙欄：超過 5000 大額消費雷達 & 分期現金流摘要 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 fluid-gap">
+        
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-fluid-h3 font-bold flex items-center gap-1.5">
+                <i class="fa-solid fa-magnifying-glass-dollar text-amber-500"></i>
+                <span>本期 > $5,000 大額消費雷達</span>
+              </h3>
+              <p class="text-fluid-sub text-slate-400">抓大放小：只記大筆開銷，不記瑣碎流水帳</p>
+            </div>
+            <button onclick="switchTab('cards')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i class="fa-solid fa-angle-right"></i></button>
+          </div>
+          <div id="dashboardBigExpensesList" class="space-y-2"></div>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-fluid-h3 font-bold flex items-center gap-1.5">
+                <i class="fa-solid fa-hourglass-half text-purple-500"></i>
+                <span>進行中分期付款負擔</span>
+              </h3>
+              <p class="text-fluid-sub text-slate-400">控管每月被分期綁架的固定現金流</p>
+            </div>
+            <button onclick="switchTab('installments')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">查看全部 <i class="fa-solid fa-angle-right"></i></button>
+          </div>
+          <div id="dashboardInstallmentSummary" class="space-y-2.5"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 銀行與信用卡帳單 ==================== -->
+    <section id="tab-cards" class="tab-section hidden space-y-4">
+      
+      <!-- 區塊 A：台幣銀行帳戶管理 -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-building-columns text-indigo-500"></i>
+              <span>台幣銀行帳戶餘額</span>
+            </h2>
+            <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算 30 號扣後水位</p>
+          </div>
+          <button onclick="openBankModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+            <i class="fa-solid fa-plus"></i> 新增銀行帳戶
+          </button>
+        </div>
+
+        <div id="bankAccountsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 fluid-gap"></div>
+      </div>
+
+      <!-- 區塊 B：各家信用卡帳單 -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-credit-card text-rose-500"></i>
+              <span>各家信用卡本期帳單 (10號收單 / 30號扣款)</span>
+            </h2>
+            <p class="text-fluid-sub text-slate-400">只需輸入本期帳單總額，並記下超過 $5,000 元的大額刷卡項目</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="resetAllCardsNewMonth()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold num-nowrap">
+              <i class="fa-solid fa-rotate-right mr-1"></i>新月份重置
+            </button>
+            <button onclick="openCardModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+              <i class="fa-solid fa-plus"></i> 新增信用卡
+            </button>
+          </div>
+        </div>
+
+        <div id="creditCardsList" class="grid grid-cols-1 lg:grid-cols-2 fluid-gap"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 3: 分期付款監控 ==================== -->
+    <section id="tab-installments" class="tab-section hidden space-y-4">
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
+        <div class="fluid-card bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
+          <span class="text-fluid-sub font-bold bg-white/20 px-2.5 py-0.5 rounded-full num-nowrap">每月被分期吃掉的現金流</span>
+          <div id="instMonthlyTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-2 mb-1">NT$ 0 / 月</div>
+          <p class="text-fluid-sub text-amber-100">各張信用卡分期每月應繳加總</p>
+        </div>
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-center">
+          <span class="text-fluid-sub text-slate-400 font-bold">所有分期剩餘未繳總尾款</span>
+          <div id="instRemainingTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">NT$ 0</div>
+          <p class="text-fluid-sub text-slate-400 mt-1">獨立監控，避免不知不覺累積過多分期</p>
+        </div>
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-fluid-sub text-slate-400 font-bold">進行中分期筆數</span>
+            <div id="instActiveCount" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">0 筆</div>
+          </div>
+          <button onclick="openInstallmentModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3">
+            <i class="fa-solid fa-plus"></i> 新增分期項目
+          </button>
+        </div>
+      </div>
+
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <h2 class="text-fluid-h2 font-bold">各卡分期付款明細表</h2>
+          <button onclick="advanceAllInstallmentsOnePeriod()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold num-nowrap transition">
+            <i class="fa-solid fa-forward-step mr-1"></i>全部推進一期 (+1 期)
+          </button>
+        </div>
+        <div id="installmentsListContainer" class="grid grid-cols-1 md:grid-cols-2 fluid-gap"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 4: 週期固定費用 ==================== -->
+    <section id="tab-bills" class="tab-section hidden space-y-4">
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-emerald-500"></i>
+              <span>每月 / 雙月固定生活費用 (水電、瓦斯、網路、房租)</span>
+            </h2>
+            <p class="text-fluid-sub text-slate-400">標記為「待繳」的項目會自動計入指定銀行的 30 號扣款檢核</p>
+          </div>
+          <button onclick="openBillModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+            <i class="fa-solid fa-plus"></i> 新增週期費用
+          </button>
+        </div>
+
+        <div id="recurringBillsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 fluid-gap"></div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: 台股波段與水位 ==================== -->
+    <section id="tab-stocks" class="tab-section hidden space-y-4">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-3 fluid-gap">
+        <!-- 左：台股水位視覺化 -->
+        <div class="lg:col-span-2 fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-scale-balanced text-indigo-500"></i>
+                <span>台股波段資金水位監控</span>
+              </h2>
+              <p class="text-fluid-sub text-slate-400">台股慣例：<span class="text-rose-500 font-bold">紅漲 (獲利)</span> / <span class="text-emerald-500 font-bold">綠跌 (虧損)</span></p>
+            </div>
+            <span id="stockTabAlertBadge" class="text-fluid-sub font-bold px-2.5 py-1 rounded-full num-nowrap">計算中</span>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block truncate">股市總資金池</span>
+              <span id="stockPoolTotal" class="text-fluid-h3 font-extrabold font-mono num-nowrap">NT$ 0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block truncate">目前持倉總市值</span>
+              <span id="stockHoldingsValue" class="text-fluid-h3 font-extrabold font-mono text-indigo-500 num-nowrap">NT$ 0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block truncate">波段總成本</span>
+              <span id="stockHoldingsCost" class="text-fluid-h3 font-extrabold font-mono num-nowrap">NT$ 0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block truncate">目前帳面總損益</span>
+              <span id="stockTotalPnL" class="text-fluid-h3 font-extrabold font-mono num-nowrap">+0</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-fluid-sub font-bold mb-1.5 flex-wrap gap-1">
+              <span class="text-indigo-500 num-nowrap">持倉部位：<span id="stockTabHoldRatio">0%</span></span>
+              <span class="text-amber-500 num-nowrap">待命現金：<span id="stockTabCashRatio">0%</span> (上限 <span id="stockTargetCashMaxLabel">30%</span>)</span>
+            </div>
+            <div class="w-full h-3.5 bg-amber-500/20 rounded-full overflow-hidden flex p-0.5">
+              <div id="stockTabBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500" style="width: 70%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：待命現金池設定 -->
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+          <div>
+            <h3 class="text-fluid-h3 font-bold mb-1">股市待命現金池設定</h3>
+            <p class="text-fluid-sub text-slate-400 mb-2.5">輸入交割戶備用金，即時計算持倉水位</p>
+            <label class="block text-fluid-sub font-semibold text-slate-500 mb-1">股票專用待命現金 (NT$)</label>
+            <input type="number" id="stockCashPoolInput" onchange="updateStockPoolConfig()" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-fluid-body">
+          </div>
+
+          <div>
+            <label class="block text-fluid-sub font-semibold text-slate-500 mb-1">目標最低持倉水位 (%)</label>
+            <div class="flex items-center gap-3">
+              <input type="range" id="stockMinRatioInput" min="10" max="95" step="5" onchange="updateStockPoolConfig()" oninput="document.getElementById('stockMinRatioVal').innerText = this.value + '%'" class="flex-1 accent-indigo-500">
+              <span id="stockMinRatioVal" class="font-mono font-bold text-fluid-body num-nowrap w-10 text-right">70%</span>
+            </div>
+          </div>
+
+          <button onclick="openStockModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+            <i class="fa-solid fa-plus"></i> 新增台股波段持倉
+          </button>
+        </div>
+      </div>
+
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-fluid-h2 font-bold">台股波段持倉部位清單</h2>
+            <p class="text-fluid-sub text-slate-400">可直接在卡片內修改「目前市價」或「股數」即時試算損益</p>
+          </div>
+        </div>
+        <div id="stocksListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 fluid-gap"></div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 6: 備份、Excel 匯出與單機下載 ==================== -->
+    <section id="tab-settings" class="tab-section hidden space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 fluid-gap">
+        
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-file-csv"></i>
+          </div>
+          <h3 class="text-fluid-h2 font-bold">Excel 報表匯出 & JSON 完整備份</h3>
+          <p class="text-fluid-body text-slate-500 dark:text-slate-400">
+            資料 100% 儲存在你的瀏覽器本地端。可隨時匯出成 Excel (.csv) 進行試算表分析，或匯出 `.json` 在電腦與手機之間轉移資料。
+          </p>
+          <div class="space-y-2 pt-1">
+            <button onclick="exportToExcelCSV()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
+              <i class="fa-solid fa-file-excel"></i>
+              <span>匯出 Excel 財務總表 (.CSV 不亂碼)</span>
+            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="exportDatabaseJSON()" class="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+                <i class="fa-solid fa-download"></i> 匯出 JSON 備份
+              </button>
+              <label class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold flex items-center justify-center gap-1.5 cursor-pointer num-nowrap">
+                <i class="fa-solid fa-upload"></i> 匯入 JSON 還原
+                <input type="file" accept=".json" onchange="importDatabaseJSON(event)" class="hidden">
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-laptop-code"></i>
+          </div>
+          <h3 class="text-fluid-h2 font-bold">單機離線版打包 & PIN 碼設定</h3>
+          <p class="text-fluid-body text-slate-500 dark:text-slate-400">
+            可將整個系統連同目前最新資料打包成單一 <code>.html</code> 檔案離線開啟，或上傳至 Cloudflare Pages 免費託管。
+          </p>
+          <div class="space-y-2 pt-1">
+            <button onclick="downloadStandaloneHTML()" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
+              <i class="fa-solid fa-box-archive"></i>
+              <span>下載單機版 HTML 檔案 (含目前資料)</span>
+            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="openPinSetupModal()" class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+                <i class="fa-solid fa-key text-amber-500"></i>
+                <span id="pinSetupBtnText">設定 PIN 碼</span>
+              </button>
+              <button onclick="resetToDemoData()" class="py-2.5 px-3 rounded-xl bg-rose-500/10 text-rose-500 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+                <i class="fa-solid fa-rotate-left"></i> 重置範例資料
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== 通用彈出表單 Modal ==================== -->
+  <div id="appModal" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-3.5">
+        <h3 id="modalTitle" class="text-fluid-h2 font-bold">編輯項目</h3>
+        <button onclick="closeAppModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="modalBody" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- 頂部通知 Toast -->
+  <div id="toastContainer" class="fixed top-16 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- ==================== 應用程式邏輯 ==================== -->
+  <script>
+    const STORAGE_KEY = 'pocketflow_tw_finance_v1';
+
+    const DEFAULT_STATE = {
+      settings: {
+        privacyMode: false,
+        pinCode: '',
+        stockCashPool: 450000,
+        stockMinHoldRatio: 70
+      },
+      banks: [
+        { id: 'bank_cathay', name: '國泰世華 (CUBE/主力扣款)', balance: 68000, note: '綁國泰卡、台哥大網路' },
+        { id: 'bank_ctbc', name: '中國信託 (薪轉/生活戶)', balance: 32000, note: '綁中信卡、房租與水電' },
+        { id: 'bank_fubon', name: '台北富邦 (Costco扣款)', balance: 55000, note: '綁富邦卡專用' },
+        { id: 'bank_taishin', name: '台新 Richart (高利活存)', balance: 120000, note: '綁台新 GoGo 卡' }
+      ],
+      cards: [
+        {
+          id: 'card_1',
+          name: '國泰世華 CUBE 卡',
+          bankId: 'bank_cathay',
+          statementTotal: 36800,
+          paid: false,
+          bigExpenses: [
+            { id: 'be_1', title: '日本東京來回機票', amount: 18500 },
+            { id: 'be_2', title: '高鐵商務艙與飯店住宿', amount: 7200 }
+          ]
+        },
+        {
+          id: 'card_2',
+          name: '中國信託 LINE Pay 卡',
+          bankId: 'bank_ctbc',
+          statementTotal: 24500,
+          paid: false,
+          bigExpenses: [
+            { id: 'be_3', title: '汽車定期保養與換胎', amount: 14800 }
+          ]
+        },
+        {
+          id: 'card_3',
+          name: '富邦 Costco 聯名卡',
+          bankId: 'bank_fubon',
+          statementTotal: 19200,
+          paid: false,
+          bigExpenses: [
+            { id: 'be_4', title: '好市多除濕機與大型採買', amount: 11900 }
+          ]
+        },
+        {
+          id: 'card_4',
+          name: '台新 @GoGo 卡',
+          bankId: 'bank_taishin',
+          statementTotal: 8400,
+          paid: true,
+          bigExpenses: []
+        }
+      ],
+      installments: [
+        { id: 'inst_1', title: 'MacBook Pro 14 吋 M3', cardName: '國泰 CUBE 卡', totalAmount: 59900, monthlyAmount: 4991, totalPeriods: 12, paidPeriods: 5 },
+        { id: 'inst_2', title: 'Dyson 無線吸塵器', cardName: '富邦 Costco 卡', totalAmount: 18900, monthlyAmount: 3150, totalPeriods: 6, paidPeriods: 3 },
+        { id: 'inst_3', title: '健身房年度教練課分期', cardName: '中信 LINE Pay 卡', totalAmount: 36000, monthlyAmount: 3000, totalPeriods: 12, paidPeriods: 9 }
+      ],
+      bills: [
+        { id: 'bill_1', name: '房租與管理費', cycle: '每月固定', amount: 18500, bankId: 'bank_ctbc', status: 'unpaid' },
+        { id: 'bill_2', name: '台電電費 (雙月繳)', cycle: '雙月帳單', amount: 2680, bankId: 'bank_ctbc', status: 'unpaid' },
+        { id: 'bill_3', name: '中華電信光世代+手機', cycle: '每月固定', amount: 1398, bankId: 'bank_cathay', status: 'unpaid' },
+        { id: 'bill_4', name: '自來水與天然氣瓦斯', cycle: '雙月帳單', amount: 850, bankId: 'bank_cathay', status: 'skipped' }
+      ],
+      stocks: [
+        { id: 'stk_1', code: '2330', name: '台積電', shares: 1000, avgCost: 820, currentPrice: 1035, note: '波段核心主升段' },
+        { id: 'stk_2', code: '2317', name: '鴻海', shares: 3000, avgCost: 168, currentPrice: 205, note: 'AI 伺服器波段' },
+        { id: 'stk_3', code: '0050', name: '元大台灣50', shares: 2000, avgCost: 175, currentPrice: 192, note: '市值型底倉' },
+        { id: 'stk_4', code: '2603', name: '長榮', shares: 1000, avgCost: 215, currentPrice: 198, note: '觀察季線支撐' }
+      ]
+    };
+
+    let state = loadState();
+    let currentTab = 'dashboard';
+    let enteredPin = '';
+
+    function loadState() {
+      try {
+        if (window.__EMBEDDED_STATE__) return JSON.parse(JSON.stringify(window.__EMBEDDED_STATE__));
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        const parsed = JSON.parse(raw);
+        return { ...DEFAULT_STATE, ...parsed, settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) } };
+      } catch (e) {
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function fmtMoney(num, showSign = false) {
+      const n = Number(num) || 0;
+      if (state.settings.privacyMode) return 'NT$ ••••••';
+      const sign = showSign && n > 0 ? '+' : (n < 0 ? '-' : '');
+      return `${sign}NT$ ${Math.abs(Math.round(n)).toLocaleString('zh-TW')}`;
+    }
+
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const div = document.createElement('div');
+      const colors = {
+        success: 'bg-emerald-600 text-white',
+        warn: 'bg-amber-500 text-white',
+        error: 'bg-rose-600 text-white',
+        info: 'bg-indigo-600 text-white'
+      };
+      div.className = `${colors[type] || colors.info} px-3.5 py-2.5 rounded-xl shadow-lg text-fluid-sub font-bold flex items-center gap-2 transition-all duration-300`;
+      div.innerHTML = `<i class="fa-solid fa-circle-info"></i><span>${msg}</span>`;
+      container.appendChild(div);
+      setTimeout(() => {
+        div.style.opacity = '0';
+        setTimeout(() => div.remove(), 250);
+      }, 2400);
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+      const target = document.getElementById(`tab-${tabId}`);
+      if (target) target.classList.remove('hidden');
+
+      const titles = {
+        dashboard: '財務總覽與 30 號扣款檢核',
+        cards: '銀行餘額與各家信用卡帳單',
+        installments: '獨立分期付款現金流監控',
+        bills: '每月 / 雙月週期固定費用',
+        stocks: '台股波段持倉與現金水位',
+        settings: '資料庫備份與 Excel 匯出'
+      };
+      if (titles[tabId]) {
+        document.getElementById('pageHeaderTitle').innerText = titles[tabId];
+      }
+
+      document.querySelectorAll('.tab-pill-btn').forEach(btn => {
+        if (btn.dataset.tab === tabId) {
+          btn.className = 'tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm transition shrink-0';
+        } else {
+          btn.className = 'tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-semibold flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0';
+        }
+      });
+
+      renderAll();
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('pocketflow_theme', isDark ? 'dark' : 'light');
+      updateThemeIcon();
+    }
+
+    function updateThemeIcon() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('themeIcon');
+      if (icon) icon.className = isDark ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-indigo-600';
+    }
+
+    function togglePrivacy() {
+      state.settings.privacyMode = !state.settings.privacyMode;
+      saveState();
+      renderAll();
+    }
+
+    function computeFinancialMetrics() {
+      const totalBankBalance = state.banks.reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
+
+      let stockMarketValue = 0;
+      let stockCostValue = 0;
+      state.stocks.forEach(s => {
+        const shares = Number(s.shares) || 0;
+        stockMarketValue += shares * (Number(s.currentPrice) || 0);
+        stockCostValue += shares * (Number(s.avgCost) || 0);
+      });
+      const stockPnL = stockMarketValue - stockCostValue;
+      const stockPnLPercent = stockCostValue > 0 ? (stockPnL / stockCostValue) * 100 : 0;
+      const stockCashPool = Number(state.settings.stockCashPool) || 0;
+      const stockTotalPool = stockMarketValue + stockCashPool;
+      const stockHoldRatio = stockTotalPool > 0 ? Math.round((stockMarketValue / stockTotalPool) * 100) : 0;
+      const stockCashRatio = 100 - stockHoldRatio;
+
+      const unpaidCardTotal = state.cards.filter(c => !c.paid).reduce((sum, c) => sum + (Number(c.statementTotal) || 0), 0);
+      const unpaidBillsTotal = state.bills.filter(b => b.status === 'unpaid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+      const totalUnpaidLiabilities = unpaidCardTotal + unpaidBillsTotal;
+
+      let installmentMonthlyTotal = 0;
+      let installmentRemainingTotal = 0;
+      let activeInstallmentsCount = 0;
+      state.installments.forEach(inst => {
+        const leftPeriods = Math.max(0, (Number(inst.totalPeriods) || 0) - (Number(inst.paidPeriods) || 0));
+        if (leftPeriods > 0) {
+          activeInstallmentsCount++;
+          installmentMonthlyTotal += Number(inst.monthlyAmount) || 0;
+          installmentRemainingTotal += leftPeriods * (Number(inst.monthlyAmount) || 0);
+        }
+      });
+
+      const bankCheckups = state.banks.map(bank => {
+        const boundUnpaidCards = state.cards.filter(c => c.bankId === bank.id && !c.paid);
+        const boundUnpaidBills = state.bills.filter(b => b.bankId === bank.id && b.status === 'unpaid');
+        const cardsSum = boundUnpaidCards.reduce((s, c) => s + (Number(c.statementTotal) || 0), 0);
+        const billsSum = boundUnpaidBills.reduce((s, b) => s + (Number(b.amount) || 0), 0);
+        const requiredTotal = cardsSum + billsSum;
+        const afterBalance = (Number(bank.balance) || 0) - requiredTotal;
+        return {
+          ...bank,
+          boundUnpaidCards,
+          boundUnpaidBills,
+          cardsSum,
+          billsSum,
+          requiredTotal,
+          afterBalance,
+          isShortfall: afterBalance < 0
+        };
+      });
+
+      const totalAssets = totalBankBalance + stockTotalPool;
+      const netWorth = totalAssets - totalUnpaidLiabilities;
+
+      return {
+        totalBankBalance, stockMarketValue, stockCostValue, stockPnL, stockPnLPercent,
+        stockCashPool, stockTotalPool, stockHoldRatio, stockCashRatio,
+        unpaidCardTotal, unpaidBillsTotal, totalUnpaidLiabilities,
+        installmentMonthlyTotal, installmentRemainingTotal, activeInstallmentsCount,
+        bankCheckups, totalAssets, netWorth
+      };
+    }
+
+    function renderAll() {
+      const pIcon = document.getElementById('privacyIcon');
+      const pText = document.getElementById('privacyText');
+      if (state.settings.privacyMode) {
+        pIcon.className = 'fa-regular fa-eye-slash text-amber-500';
+        pText.innerText = '已隱藏';
+      } else {
+        pIcon.className = 'fa-regular fa-eye';
+        pText.innerText = '顯示金額';
+      }
+
+      const today = new Date();
+      const day = today.getDate();
+      const countdownEl = document.getElementById('countdown30th');
+      if (day <= 10) {
+        countdownEl.innerText = `本月 ${day} 號 (10號前收單期)`;
+      } else if (day < 30) {
+        countdownEl.innerText = `距 30 號扣款剩 ${30 - day} 天`;
+      } else {
+        countdownEl.innerText = `今日為月底扣繳日`;
+      }
+
+      const m = computeFinancialMetrics();
+      renderDashboard(m);
+      renderBanksAndCards(m);
+      renderInstallments(m);
+      renderBills(m);
+      renderStocks(m);
+
+      const shortfallCount = m.bankCheckups.filter(b => b.isShortfall).length;
+      const badge = document.getElementById('navBadgeCards');
+      if (shortfallCount > 0) {
+        badge.classList.remove('hidden');
+        badge.innerText = shortfallCount;
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      const pinBtnText = document.getElementById('pinSetupBtnText');
+      if (pinBtnText) {
+        pinBtnText.innerText = state.settings.pinCode ? '修改/關閉 PIN 碼' : '設定 4 位數 PIN 碼';
+      }
+    }
+
+    function renderDashboard(m) {
+      document.getElementById('kpiNetWorth').innerText = fmtMoney(m.netWorth);
+      document.getElementById('kpiTotalAssets').innerText = fmtMoney(m.totalAssets);
+      document.getElementById('kpiTotalUnpaid').innerText = fmtMoney(m.totalUnpaidLiabilities);
+
+      document.getElementById('kpiStockMarketVal').innerText = fmtMoney(m.stockMarketValue);
+      const pnlEl = document.getElementById('kpiStockPnL');
+      const pnlSign = m.stockPnL >= 0 ? '+' : '';
+      pnlEl.innerText = `${fmtMoney(m.stockPnL, true)} (${pnlSign}${m.stockPnLPercent.toFixed(1)}%)`;
+      pnlEl.className = m.stockPnL >= 0
+        ? 'text-fluid-sub font-bold font-mono px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-500 num-nowrap'
+        : 'text-fluid-sub font-bold font-mono px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-500 num-nowrap';
+
+      document.getElementById('kpiStockRatioText').innerText = `${m.stockHoldRatio}%`;
+      document.getElementById('kpiCashRatioText').innerText = `${m.stockCashRatio}%`;
+      document.getElementById('kpiStockRatioBar').style.width = `${m.stockHoldRatio}%`;
+
+      const alertBadge = document.getElementById('kpiStockAlertBadge');
+      const stockHint = document.getElementById('kpiStockHint');
+      if (m.stockHoldRatio < state.settings.stockMinHoldRatio) {
+        alertBadge.className = 'text-fluid-sub font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 num-nowrap';
+        alertBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i>現金偏高 (${m.stockCashRatio}%)`;
+        stockHint.innerHTML = `<span class="text-amber-500 font-semibold">持倉低於目標 ${state.settings.stockMinHoldRatio}%，待命現金 ${fmtMoney(m.stockCashPool)}</span>`;
+      } else {
+        alertBadge.className = 'text-fluid-sub font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 num-nowrap';
+        alertBadge.innerHTML = `<i class="fa-solid fa-check mr-1"></i>水位健康 (${m.stockHoldRatio}%)`;
+        stockHint.innerText = `目前待命交割現金池：${fmtMoney(m.stockCashPool)}`;
+      }
+
+      document.getElementById('kpiMonthTotalBill').innerText = fmtMoney(m.totalUnpaidLiabilities);
+      document.getElementById('kpiCardBillSub').innerText = fmtMoney(m.unpaidCardTotal);
+      document.getElementById('kpiFixedBillSub').innerText = fmtMoney(m.unpaidBillsTotal);
+      document.getElementById('kpiInstallmentMonthlySub').innerText = `${fmtMoney(m.installmentMonthlyTotal)} /月`;
+
+      const shortfallBanks = m.bankCheckups.filter(b => b.isShortfall);
+      const summaryBadge = document.getElementById('bankShortfallSummaryBadge');
+      if (shortfallBanks.length > 0) {
+        const totalShortfall = shortfallBanks.reduce((s, b) => s + Math.abs(b.afterBalance), 0);
+        summaryBadge.className = 'text-fluid-sub px-2.5 py-0.5 rounded-full font-bold bg-rose-500 text-white num-nowrap';
+        summaryBadge.innerHTML = `<i class="fa-solid fa-bell mr-1"></i>${shortfallBanks.length} 銀行不足・共差 ${fmtMoney(totalShortfall)}`;
+      } else {
+        summaryBadge.className = 'text-fluid-sub px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/15 text-emerald-500 num-nowrap';
+        summaryBadge.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i>全數銀行餘額充足`;
+      }
+
+      const bankGrid = document.getElementById('bankCheckupGrid');
+      bankGrid.innerHTML = m.bankCheckups.map(b => {
+        const borderClass = b.isShortfall
+          ? 'border-2 border-rose-500/80 bg-rose-500/5 dark:bg-rose-950/20'
+          : 'border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40';
+        const statusBadge = b.isShortfall
+          ? `<span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-rose-500 text-white num-nowrap shrink-0"><i class="fa-solid fa-triangle-exclamation mr-1"></i>差 ${fmtMoney(Math.abs(b.afterBalance))}</span>`
+          : `<span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 num-nowrap shrink-0"><i class="fa-solid fa-circle-check mr-1"></i>餘額充足</span>`;
+
+        const itemsTags = [
+          ...b.boundUnpaidCards.map(c => `<span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 font-semibold num-nowrap"><i class="fa-regular fa-credit-card"></i>${c.name}: ${fmtMoney(c.statementTotal)}</span>`),
+          ...b.boundUnpaidBills.map(bill => `<span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 font-semibold num-nowrap"><i class="fa-solid fa-bolt"></i>${bill.name}: ${fmtMoney(bill.amount)}</span>`)
+        ];
+
+        return `
+          <div class="rounded-2xl p-4 ${borderClass} flex flex-col justify-between space-y-3">
+            <div>
+              <!-- 頂部：銀行標題與單行狀態標籤 -->
+              <div class="flex items-start justify-between gap-2 mb-2.5">
+                <div class="min-w-0">
+                  <h4 class="font-bold text-fluid-h3 truncate">${b.name}</h4>
+                  <p class="text-fluid-sub text-slate-400 truncate">${b.note || '自動扣繳帳戶'}</p>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <!-- 改用左標籤、右單行金額的清單式結構，解決 3 欄在窄手機斷行的問題 -->
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">目前帳戶餘額</span>
+                  <span class="font-bold font-mono num-nowrap text-fluid-body">${fmtMoney(b.balance)}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">30 號待扣總額</span>
+                  <span class="font-bold font-mono text-rose-500 num-nowrap text-fluid-body">${fmtMoney(b.requiredTotal)}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <span class="font-semibold text-slate-500 dark:text-slate-300">${b.isShortfall ? '尚缺需補金額' : '扣後預計結餘'}</span>
+                  <span class="font-extrabold font-mono num-nowrap text-fluid-body ${b.isShortfall ? 'text-rose-500' : 'text-emerald-500'}">${fmtMoney(b.afterBalance, true)}</span>
+                </div>
+              </div>
+
+              <div class="mt-2.5 flex flex-wrap gap-1.5">
+                ${itemsTags.length > 0 ? itemsTags.join('') : '<span class="text-fluid-sub text-slate-400">本月已無待扣帳單</span>'}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-fluid-sub">
+              <button onclick="openBankModal('${b.id}')" class="text-indigo-500 font-bold num-nowrap">
+                <i class="fa-solid fa-pen-to-square mr-1"></i>修改餘額
+              </button>
+              ${b.requiredTotal > 0 ? `
+                <button onclick="settleSingleBankBills('${b.id}')" class="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white font-bold num-nowrap transition">
+                  執行扣款入帳
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const allBigExpenses = [];
+      state.cards.forEach(c => {
+        (c.bigExpenses || []).forEach(be => {
+          allBigExpenses.push({ ...be, cardName: c.name, paid: c.paid });
+        });
+      });
+      const bigListEl = document.getElementById('dashboardBigExpensesList');
+      if (allBigExpenses.length === 0) {
+        bigListEl.innerHTML = `<div class="text-center py-5 text-fluid-sub text-slate-400">本期尚無超過 $5,000 元的大額刷卡紀錄</div>`;
+      } else {
+        bigListEl.innerHTML = allBigExpenses.map(item => `
+          <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-800">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="px-2 py-1 rounded-lg bg-amber-500/15 text-amber-500 text-fluid-sub font-bold num-nowrap shrink-0">>5K</span>
+              <div class="truncate">
+                <div class="text-fluid-body font-bold truncate">${item.title}</div>
+                <div class="text-fluid-sub text-slate-400 truncate">${item.cardName}</div>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <div class="text-fluid-body font-extrabold font-mono text-rose-500 num-nowrap">${fmtMoney(item.amount)}</div>
+              <span class="text-fluid-sub num-nowrap ${item.paid ? 'text-emerald-500' : 'text-slate-400'}">${item.paid ? '已結清' : '待扣款'}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const instSummaryEl = document.getElementById('dashboardInstallmentSummary');
+      instSummaryEl.innerHTML = `
+        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <span class="text-fluid-body font-bold text-amber-600 dark:text-amber-400 block truncate">每月被分期吃掉總額</span>
+            <span class="text-fluid-sub text-slate-400 block truncate">共 ${m.activeInstallmentsCount} 筆・總尾款 ${fmtMoney(m.installmentRemainingTotal)}</span>
+          </div>
+          <span class="text-fluid-h3 font-extrabold font-mono text-amber-600 dark:text-amber-400 num-nowrap shrink-0">${fmtMoney(m.installmentMonthlyTotal)}/月</span>
+        </div>
+        <div class="space-y-2">
+          ${state.installments.slice(0, 3).map(inst => {
+            const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
+            const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
+            return `
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-fluid-sub">
+                <div class="flex items-center justify-between gap-2 font-bold mb-1">
+                  <span class="truncate">${inst.title} <span class="font-normal text-slate-400">(${inst.cardName})</span></span>
+                  <span class="font-mono num-nowrap shrink-0">${fmtMoney(inst.monthlyAmount)}/月 (剩${left}期)</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div class="bg-purple-500 h-full" style="width:${pct}%"></div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function renderBanksAndCards(m) {
+      const bankListEl = document.getElementById('bankAccountsList');
+      bankListEl.innerHTML = m.bankCheckups.map(b => `
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div class="min-w-0">
+              <h4 class="font-bold text-fluid-h3 truncate">${b.name}</h4>
+              <p class="text-fluid-sub text-slate-400 truncate">${b.note || '台幣帳戶'}</p>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <button onclick="openBankModal('${b.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="deleteBank('${b.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-fluid-sub text-slate-400 block mb-1">目前帳戶餘額 (點擊直接改數字)</span>
+            <input type="number" value="${b.balance}" onchange="updateBankBalanceInline('${b.id}', this.value)"
+              class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-fluid-sub">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-slate-400">30 號待扣總額</span>
+              <span class="font-mono font-bold num-nowrap">${fmtMoney(b.requiredTotal)}</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-slate-400">${b.isShortfall ? '尚缺需補' : '扣後剩餘'}</span>
+              <span class="font-mono font-extrabold num-nowrap ${b.isShortfall ? 'text-rose-500' : 'text-emerald-500'}">
+                ${b.isShortfall ? `不足 ${fmtMoney(Math.abs(b.afterBalance))}` : fmtMoney(b.afterBalance)}
+              </span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      const cardListEl = document.getElementById('creditCardsList');
+      cardListEl.innerHTML = state.cards.map(c => {
+        const bank = state.banks.find(b => b.id === c.bankId);
+        const bankName = bank ? bank.name : '未綁定銀行';
+        const bigSum = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
+        const otherSmallSum = Math.max(0, (Number(c.statementTotal) || 0) - bigSum);
+
+        return `
+          <div class="rounded-2xl p-4 border ${c.paid ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} flex flex-col justify-between space-y-3.5">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2.5">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="font-bold text-fluid-h3 truncate">${c.name}</h4>
+                    <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap ${c.paid ? 'bg-emerald-500 text-white' : 'bg-rose-500/15 text-rose-500'}">
+                      ${c.paid ? '已繳清' : '30號待扣繳'}
+                    </span>
+                  </div>
+                  <p class="text-fluid-sub text-slate-400 mt-0.5 truncate">
+                    <i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i>扣款戶：${bankName}
+                  </p>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button onclick="openCardModal('${c.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteCard('${c.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 mb-3">
+                <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                  <span class="text-fluid-sub font-semibold text-slate-500">本期帳單總額 (NT$)</span>
+                  <button onclick="toggleCardPaidStatus('${c.id}')" class="text-fluid-sub font-bold num-nowrap ${c.paid ? 'text-slate-400 hover:text-rose-500' : 'text-emerald-500 hover:underline'}">
+                    ${c.paid ? '設為未繳' : '✓ 標記已扣款'}
+                  </button>
+                </div>
+                <input type="number" value="${c.statementTotal}" onchange="updateCardTotalInline('${c.id}', this.value)"
+                  class="w-full px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-extrabold text-fluid-h2 text-rose-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                
+                <div class="flex items-center justify-between gap-2 text-fluid-sub text-slate-400 mt-2 flex-wrap">
+                  <span class="num-nowrap">>5K 大額：${fmtMoney(bigSum)}</span>
+                  <span class="num-nowrap">一般瑣碎：${fmtMoney(otherSmallSum)}</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <span class="text-fluid-sub font-bold text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-fire text-amber-500 mr-1"></i>單筆 > $5,000 大額項目
+                  </span>
+                  <button onclick="openBigExpenseModal('${c.id}')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">
+                    + 記一筆大額
+                  </button>
+                </div>
+                <div class="space-y-1.5">
+                  ${(c.bigExpenses || []).length === 0
+                    ? `<div class="text-fluid-sub text-slate-400 py-2 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">本期無超過 $5,000 大額刷卡</div>`
+                    : (c.bigExpenses || []).map(be => `
+                        <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-fluid-sub">
+                          <span class="font-medium truncate">${be.title}</span>
+                          <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-mono font-bold text-amber-500 num-nowrap">${fmtMoney(be.amount)}</span>
+                            <button onclick="deleteBigExpense('${c.id}', '${be.id}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+                          </div>
+                        </div>
+                      `).join('')
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderInstallments(m) {
+      document.getElementById('instMonthlyTotal').innerText = `${fmtMoney(m.installmentMonthlyTotal)} / 月`;
+      document.getElementById('instRemainingTotal').innerText = fmtMoney(m.installmentRemainingTotal);
+      document.getElementById('instActiveCount').innerText = `${m.activeInstallmentsCount} 筆`;
+
+      const container = document.getElementById('installmentsListContainer');
+      if (state.installments.length === 0) {
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400">目前沒有任何分期付款，現金流非常健康！</div>`;
+        return;
+      }
+
+      container.innerHTML = state.installments.map(inst => {
+        const leftPeriods = Math.max(0, inst.totalPeriods - inst.paidPeriods);
+        const leftAmount = leftPeriods * inst.monthlyAmount;
+        const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
+        const isDone = leftPeriods === 0;
+
+        return `
+          <div class="p-4 rounded-2xl border ${isDone ? 'border-emerald-500/30 bg-emerald-500/5 opacity-75' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} space-y-3">
+            <!-- 頂部：卡別標籤與單行操作按鈕 (+1期 絕不折行) -->
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-400 num-nowrap">${inst.cardName}</span>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="stepInstallment('${inst.id}', 1)" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold num-nowrap">+1 期</button>
+                <button onclick="openInstallmentModal('${inst.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                <button onclick="deleteInstallment('${inst.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+
+            <h4 class="font-bold text-fluid-h3">${inst.title}</h4>
+
+            <!-- 改為清晰的三行對齊列表，徹底消除手機三欄擠壓斷行 -->
+            <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">每期吃掉現金流</span>
+                <span class="font-extrabold font-mono text-amber-500 text-fluid-body num-nowrap">${fmtMoney(inst.monthlyAmount)} /月</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">剩餘未繳尾款</span>
+                <span class="font-extrabold font-mono text-fluid-body num-nowrap">${fmtMoney(leftAmount)}</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">原始分期總額</span>
+                <span class="font-bold font-mono text-slate-400 num-nowrap">${fmtMoney(inst.totalAmount)}</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-fluid-sub font-bold mb-1">
+                <span class="num-nowrap">進度：已繳 ${inst.paidPeriods} / ${inst.totalPeriods} 期</span>
+                <span class="num-nowrap ${isDone ? 'text-emerald-500' : 'text-indigo-400'}">${isDone ? '🎉 已結清' : `還剩 ${leftPeriods} 期`}</span>
+              </div>
+              <div class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBills(m) {
+      const container = document.getElementById('recurringBillsList');
+      container.innerHTML = state.bills.map(b => {
+        const bank = state.banks.find(x => x.id === b.bankId);
+        const bankName = bank ? bank.name : '未指定銀行';
+
+        return `
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3.5">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="min-w-0">
+                  <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-400 num-nowrap">${b.cycle}</span>
+                  <h4 class="font-bold text-fluid-h3 mt-1 truncate">${b.name}</h4>
+                  <p class="text-fluid-sub text-slate-400 mt-0.5 truncate"><i class="fa-solid fa-building-columns mr-1"></i>${bankName}</p>
+                </div>
+                <div class="flex gap-1 shrink-0">
+                  <button onclick="openBillModal('${b.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteBill('${b.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+
+              <div class="mt-2">
+                <label class="text-fluid-sub text-slate-400 block mb-1">當期金額 (NT$，可直接修改)</label>
+                <input type="number" value="${b.amount}" onchange="updateBillAmountInline('${b.id}', this.value)"
+                  class="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+
+            <div class="pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60">
+              <div class="grid grid-cols-3 gap-1.5 text-fluid-sub font-bold">
+                <button onclick="setBillStatus('${b.id}', 'unpaid')" class="py-1.5 rounded-xl border num-nowrap ${b.status === 'unpaid' ? 'bg-rose-500 text-white border-rose-500' : 'border-slate-200 dark:border-slate-700 text-slate-400'}">待繳</button>
+                <button onclick="setBillStatus('${b.id}', 'paid')" class="py-1.5 rounded-xl border num-nowrap ${b.status === 'paid' ? 'bg-emerald-600 text-white border-emerald-600' : 'border-slate-200 dark:border-slate-700 text-slate-400'}">已繳</button>
+                <button onclick="setBillStatus('${b.id}', 'skipped')" class="py-1.5 rounded-xl border num-nowrap ${b.status === 'skipped' ? 'bg-slate-600 text-white border-slate-600' : 'border-slate-200 dark:border-slate-700 text-slate-400'}">免繳</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderStocks(m) {
+      document.getElementById('stockPoolTotal').innerText = fmtMoney(m.stockTotalPool);
+      document.getElementById('stockHoldingsValue').innerText = fmtMoney(m.stockMarketValue);
+      document.getElementById('stockHoldingsCost').innerText = fmtMoney(m.stockCostValue);
+
+      const pnlEl = document.getElementById('stockTotalPnL');
+      const sign = m.stockPnL >= 0 ? '+' : '';
+      pnlEl.innerText = `${fmtMoney(m.stockPnL, true)} (${sign}${m.stockPnLPercent.toFixed(1)}%)`;
+      pnlEl.className = `text-fluid-h3 font-extrabold font-mono num-nowrap ${m.stockPnL >= 0 ? 'text-rose-500' : 'text-emerald-500'}`;
+
+      document.getElementById('stockTabHoldRatio').innerText = `${m.stockHoldRatio}%`;
+      document.getElementById('stockTabCashRatio').innerText = `${m.stockCashRatio}%`;
+      document.getElementById('stockTargetCashMaxLabel').innerText = `${100 - state.settings.stockMinHoldRatio}%`;
+      document.getElementById('stockTabBar').style.width = `${m.stockHoldRatio}%`;
+
+      document.getElementById('stockCashPoolInput').value = state.settings.stockCashPool;
+      document.getElementById('stockMinRatioInput').value = state.settings.stockMinHoldRatio;
+      document.getElementById('stockMinRatioVal').innerText = `${state.settings.stockMinHoldRatio}%`;
+
+      const badge = document.getElementById('stockTabAlertBadge');
+      if (m.stockHoldRatio < state.settings.stockMinHoldRatio) {
+        badge.className = 'text-fluid-sub font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-500 num-nowrap';
+        badge.innerHTML = `⚠️ 現金偏高 (${m.stockCashRatio}%)・目標持倉 ${state.settings.stockMinHoldRatio}%`;
+      } else {
+        badge.className = 'text-fluid-sub font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-500 num-nowrap';
+        badge.innerHTML = `✅ 波段持倉達標 (${m.stockHoldRatio}%)`;
+      }
+
+      const listEl = document.getElementById('stocksListContainer');
+      listEl.innerHTML = state.stocks.map(s => {
+        const marketVal = s.shares * s.currentPrice;
+        const costVal = s.shares * s.avgCost;
+        const pnl = marketVal - costVal;
+        const pnlPct = costVal > 0 ? (pnl / costVal) * 100 : 0;
+        const weightPct = m.stockTotalPool > 0 ? ((marketVal / m.stockTotalPool) * 100).toFixed(1) : '0.0';
+        const isGain = pnl >= 0;
+
+        return `
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-fluid-sub font-mono font-bold px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 num-nowrap">${s.code}</span>
+                    <h4 class="font-bold text-fluid-h3 truncate">${s.name}</h4>
+                  </div>
+                  <p class="text-fluid-sub text-slate-400 mt-0.5 truncate">${s.note || '波段持股'}・佔資金池 ${weightPct}%</p>
+                </div>
+                <div class="flex gap-1 shrink-0">
+                  <button onclick="openStockModal('${s.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteStock('${s.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1 text-fluid-sub my-2">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">目前持倉市值</span>
+                  <span class="font-extrabold font-mono text-fluid-body num-nowrap">${fmtMoney(marketVal)}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">波段損益 (紅漲綠跌)</span>
+                  <span class="font-extrabold font-mono text-fluid-body num-nowrap ${isGain ? 'text-rose-500' : 'text-emerald-500'}">
+                    ${fmtMoney(pnl, true)} (${isGain ? '+' : ''}${pnlPct.toFixed(1)}%)
+                  </span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 text-fluid-sub">
+                <div>
+                  <label class="text-slate-400 block mb-1 truncate">股數</label>
+                  <input type="number" value="${s.shares}" onchange="updateStockInline('${s.id}', 'shares', this.value)"
+                    class="w-full px-2 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+                </div>
+                <div>
+                  <label class="text-slate-400 block mb-1 truncate">成本均價</label>
+                  <input type="number" step="0.01" value="${s.avgCost}" onchange="updateStockInline('${s.id}', 'avgCost', this.value)"
+                    class="w-full px-2 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+                </div>
+                <div>
+                  <label class="text-indigo-400 font-bold block mb-1 truncate">目前市價</label>
+                  <input type="number" step="0.01" value="${s.currentPrice}" onchange="updateStockInline('${s.id}', 'currentPrice', this.value)"
+                    class="w-full px-2 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/40 font-mono font-extrabold text-indigo-500 dark:text-indigo-300">
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateBankBalanceInline(bankId, val) {
+      const bank = state.banks.find(b => b.id === bankId);
+      if (bank) {
+        bank.balance = Number(val) || 0;
+        saveState();
+        renderAll();
+        showToast(`已更新「${bank.name}」餘額`);
+      }
+    }
+
+    function updateCardTotalInline(cardId, val) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (card) {
+        card.statementTotal = Number(val) || 0;
+        saveState();
+        renderAll();
+        showToast(`已更新「${card.name}」本期總額`);
+      }
+    }
+
+    function toggleCardPaidStatus(cardId) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const bank = state.banks.find(b => b.id === card.bankId);
+      if (!card.paid) {
+        card.paid = true;
+        if (bank) {
+          bank.balance = (Number(bank.balance) || 0) - (Number(card.statementTotal) || 0);
+          showToast(`已標記繳清，並自 ${bank.name} 扣款`);
+        }
+      } else {
+        card.paid = false;
+        if (bank) bank.balance = (Number(bank.balance) || 0) + (Number(card.statementTotal) || 0);
+        showToast(`已恢復為未繳狀態`, 'info');
+      }
+      saveState();
+      renderAll();
+    }
+
+    function settleSingleBankBills(bankId) {
+      const bank = state.banks.find(b => b.id === bankId);
+      if (!bank) return;
+      let deducted = 0;
+      state.cards.forEach(c => {
+        if (c.bankId === bankId && !c.paid) {
+          deducted += Number(c.statementTotal) || 0;
+          c.paid = true;
+        }
+      });
+      state.bills.forEach(b => {
+        if (b.bankId === bankId && b.status === 'unpaid') {
+          deducted += Number(b.amount) || 0;
+          b.status = 'paid';
+        }
+      });
+      bank.balance = (Number(bank.balance) || 0) - deducted;
+      saveState();
+      renderAll();
+      showToast(`${bank.name} 已扣款 ${fmtMoney(deducted)}！`);
+    }
+
+    function settleAllPendingBills() {
+      let totalDeducted = 0;
+      state.banks.forEach(bank => {
+        state.cards.forEach(c => {
+          if (c.bankId === bank.id && !c.paid) {
+            const amt = Number(c.statementTotal) || 0;
+            bank.balance -= amt;
+            totalDeducted += amt;
+            c.paid = true;
+          }
+        });
+        state.bills.forEach(b => {
+          if (b.bankId === bank.id && b.status === 'unpaid') {
+            const amt = Number(b.amount) || 0;
+            bank.balance -= amt;
+            totalDeducted += amt;
+            b.status = 'paid';
+          }
+        });
+      });
+      if (totalDeducted === 0) return showToast('目前所有帳單皆已結清', 'info');
+      saveState();
+      renderAll();
+      showToast(`已完成 30 號全數自動扣繳，共扣除 ${fmtMoney(totalDeducted)}！`);
+    }
+
+    function resetAllCardsNewMonth() {
+      state.cards.forEach(c => { c.paid = false; });
+      state.bills.forEach(b => { if (b.status === 'paid') b.status = 'unpaid'; });
+      saveState();
+      renderAll();
+      showToast('已重置為新月份「待繳」狀態！', 'info');
+    }
+
+    function stepInstallment(id, delta) {
+      const inst = state.installments.find(x => x.id === id);
+      if (inst) {
+        inst.paidPeriods = Math.min(inst.totalPeriods, Math.max(0, (Number(inst.paidPeriods) || 0) + delta));
+        saveState();
+        renderAll();
+        showToast(`「${inst.title}」已更新為 ${inst.paidPeriods}/${inst.totalPeriods} 期`);
+      }
+    }
+
+    function advanceAllInstallmentsOnePeriod() {
+      state.installments.forEach(inst => {
+        if (inst.paidPeriods < inst.totalPeriods) inst.paidPeriods += 1;
+      });
+      saveState();
+      renderAll();
+      showToast('所有進行中分期皆已推進 +1 期！');
+    }
+
+    function updateBillAmountInline(id, val) {
+      const bill = state.bills.find(b => b.id === id);
+      if (bill) {
+        bill.amount = Number(val) || 0;
+        saveState();
+        renderAll();
+        showToast(`已更新「${bill.name}」金額`);
+      }
+    }
+
+    function setBillStatus(id, newStatus) {
+      const bill = state.bills.find(b => b.id === id);
+      if (!bill) return;
+      const bank = state.banks.find(x => x.id === bill.bankId);
+      if (bill.status !== 'paid' && newStatus === 'paid' && bank) {
+        bank.balance -= Number(bill.amount) || 0;
+      } else if (bill.status === 'paid' && newStatus !== 'paid' && bank) {
+        bank.balance += Number(bill.amount) || 0;
+      }
+      bill.status = newStatus;
+      saveState();
+      renderAll();
+    }
+
+    function updateStockPoolConfig() {
+      state.settings.stockCashPool = Number(document.getElementById('stockCashPoolInput').value) || 0;
+      state.settings.stockMinHoldRatio = Number(document.getElementById('stockMinRatioInput').value) || 70;
+      saveState();
+      renderAll();
+      showToast('已更新台股現金池設定');
+    }
+
+    function updateStockInline(id, field, val) {
+      const stk = state.stocks.find(s => s.id === id);
+      if (stk) {
+        stk[field] = Number(val) || 0;
+        saveState();
+        renderAll();
+      }
+    }
+
+    function openAppModal(title, htmlContent) {
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalBody').innerHTML = htmlContent;
+      const modal = document.getElementById('appModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeAppModal() {
+      const modal = document.getElementById('appModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openBankModal(bankId = null) {
+      const existing = state.banks.find(b => b.id === bankId) || { name: '', balance: 0, note: '' };
+      openAppModal(bankId ? '編輯台幣銀行帳戶' : '新增台幣銀行帳戶', `
+        <div class="space-y-3 text-fluid-body">
+          <div>
+            <label class="font-bold block mb-1">銀行名稱</label>
+            <input id="mBankName" type="text" value="${existing.name}" placeholder="例如：永豐大戶、國泰世華" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <div>
+            <label class="font-bold block mb-1">目前台幣餘額 (NT$)</label>
+            <input id="mBankBal" type="number" value="${existing.balance}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+          </div>
+          <div>
+            <label class="font-bold block mb-1">用途備註</label>
+            <input id="mBankNote" type="text" value="${existing.note || ''}" placeholder="例如：主力信用卡扣款戶" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <button onclick="saveBankForm('${bankId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存銀行帳戶</button>
+        </div>
+      `);
+    }
+
+    function saveBankForm(bankId) {
+      const name = document.getElementById('mBankName').value.trim();
+      const balance = Number(document.getElementById('mBankBal').value) || 0;
+      const note = document.getElementById('mBankNote').value.trim();
+      if (!name) return showToast('請輸入銀行名稱', 'warn');
+      if (bankId) {
+        const b = state.banks.find(x => x.id === bankId);
+        if (b) Object.assign(b, { name, balance, note });
+      } else {
+        state.banks.push({ id: 'bank_' + Date.now(), name, balance, note });
+      }
+      saveState(); closeAppModal(); renderAll();
+    }
+
+    function deleteBank(bankId) {
+      state.banks = state.banks.filter(b => b.id !== bankId);
+      saveState(); renderAll();
+    }
+
+    function openCardModal(cardId = null) {
+      const existing = state.cards.find(c => c.id === cardId) || { name: '', bankId: (state.banks[0]?.id || ''), statementTotal: 0 };
+      const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
+      openAppModal(cardId ? '編輯信用卡' : '新增信用卡', `
+        <div class="space-y-3 text-fluid-body">
+          <div>
+            <label class="font-bold block mb-1">信用卡名稱</label>
+            <input id="mCardName" type="text" value="${existing.name}" placeholder="例如：玉山 U Bear 卡" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <div>
+            <label class="font-bold block mb-1">綁定 30 號扣款銀行</label>
+            <select id="mCardBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
+          </div>
+          <div>
+            <label class="font-bold block mb-1">本期帳單總額 (NT$)</label>
+            <input id="mCardTotal" type="number" value="${existing.statementTotal}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+          </div>
+          <button onclick="saveCardForm('${cardId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存信用卡</button>
+        </div>
+      `);
+    }
+
+    function saveCardForm(cardId) {
+      const name = document.getElementById('mCardName').value.trim();
+      const bankId = document.getElementById('mCardBank').value;
+      const statementTotal = Number(document.getElementById('mCardTotal').value) || 0;
+      if (!name) return showToast('請輸入信用卡名稱', 'warn');
+      if (cardId) {
+        const c = state.cards.find(x => x.id === cardId);
+        if (c) Object.assign(c, { name, bankId, statementTotal });
+      } else {
+        state.cards.push({ id: 'card_' + Date.now(), name, bankId, statementTotal, paid: false, bigExpenses: [] });
+      }
+      saveState(); closeAppModal(); renderAll();
+    }
+
+    function deleteCard(cardId) {
+      state.cards = state.cards.filter(c => c.id !== cardId);
+      saveState(); renderAll();
+    }
+
+    function openBigExpenseModal(cardId) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      openAppModal(`新增 >$5,000 大額刷卡 (${card.name})`, `
+        <div class="space-y-3 text-fluid-body">
+          <div>
+            <label class="font-bold block mb-1">消費項目說明</label>
+            <input id="mBigTitle" type="text" placeholder="例如：保費、機票、百貨週年慶" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <div>
+            <label class="font-bold block mb-1">單筆金額 (NT$)</label>
+            <input id="mBigAmount" type="number" value="5000" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+          </div>
+          <label class="flex items-center gap-2 pt-1 cursor-pointer text-fluid-sub">
+            <input type="checkbox" id="mBigAddTotal" class="accent-indigo-600">
+            <span>同時將此金額加進「本期帳單總額」</span>
+          </label>
+          <button onclick="saveBigExpenseForm('${cardId}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">新增大額紀錄</button>
+        </div>
+      `);
+    }
+
+    function saveBigExpenseForm(cardId) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const title = document.getElementById('mBigTitle').value.trim();
+      const amount = Number(document.getElementById('mBigAmount').value) || 0;
+      const addTotal = document.getElementById('mBigAddTotal').checked;
+      if (!title || amount <= 0) return showToast('請填寫完整名稱與金額', 'warn');
+      card.bigExpenses = card.bigExpenses || [];
+      card.bigExpenses.push({ id: 'be_' + Date.now(), title, amount });
+      if (addTotal) card.statementTotal = (Number(card.statementTotal) || 0) + amount;
+      saveState(); closeAppModal(); renderAll();
+    }
+
+    function deleteBigExpense(cardId, beId) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      card.bigExpenses = (card.bigExpenses || []).filter(x => x.id !== beId);
+      saveState(); renderAll();
+    }
+
+    function openInstallmentModal(instId = null) {
+      const existing = state.installments.find(x => x.id === instId) || {
+        title: '', cardName: (state.cards[0]?.name || '國泰 CUBE 卡'), totalAmount: 30000, monthlyAmount: 2500, totalPeriods: 12, paidPeriods: 1
+      };
+      openAppModal(instId ? '編輯分期付款' : '新增獨立分期追蹤', `
+        <div class="space-y-3 text-fluid-body">
+          <div>
+            <label class="font-bold block mb-1">分期項目名稱</label>
+            <input id="mInstTitle" type="text" value="${existing.title}" placeholder="例如：MacBook Pro / 大型家電" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <div>
+            <label class="font-bold block mb-1">所屬信用卡</label>
+            <input id="mInstCard" type="text" value="${existing.cardName}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1">分期總額 (NT$)</label>
+              <input id="mInstTotal" type="number" value="${existing.totalAmount}" oninput="autoCalcInstMonthly()" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">總期數 (月)</label>
+              <input id="mInstPeriods" type="number" value="${existing.totalPeriods}" oninput="autoCalcInstMonthly()" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1 text-amber-500">每期扣款 (NT$/月)</label>
+              <input id="mInstMonthly" type="number" value="${existing.monthlyAmount}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">已繳期數</label>
+              <input id="mInstPaid" type="number" value="${existing.paidPeriods}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+            </div>
+          </div>
+          <button onclick="saveInstallmentForm('${instId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存分期項目</button>
+        </div>
+      `);
+    }
+
+    function autoCalcInstMonthly() {
+      const total = Number(document.getElementById('mInstTotal').value) || 0;
+      const periods = Number(document.getElementById('mInstPeriods').value) || 1;
+      if (total > 0 && periods > 0) document.getElementById('mInstMonthly').value = Math.round(total / periods);
+    }
+
+    function saveInstallmentForm(instId) {
+      const title = document.getElementById('mInstTitle').value.trim();
+      const cardName = document.getElementById('mInstCard').value.trim();
+      const totalAmount = Number(document.getElementById('mInstTotal').value) || 0;
+      const totalPeriods = Math.max(1, Number(document.getElementById('mInstPeriods').value) || 1);
+      const monthlyAmount = Number(document.getElementById('mInstMonthly').value) || 0;
+      const paidPeriods = Math.min(totalPeriods, Math.max(0, Number(document.getElementById('mInstPaid').value) || 0));
+      if (!title) return showToast('請輸入分期名稱', 'warn');
+      if (instId) {
+        const item = state.installments.find(x => x.id === instId);
+        if (item) Object.assign(item, { title, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
+      } else {
+        state.installments.push({ id: 'inst_' + Date.now(), title, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
+      }
+      saveState(); closeAppModal(); renderAll();
+    }
+
+    function deleteInstallment(id) {
+      state.installments = state.installments.filter(x => x.id !== id);
+      saveState(); renderAll();
+    }
+
+    function openBillModal(billId = null) {
+      const existing = state.bills.find(b => b.id === billId) || { name: '', cycle: '每月固定', amount: 1000, bankId: (state.banks[0]?.id || ''), status: 'unpaid' };
+      const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
+      openAppModal(billId ? '編輯週期固定費用' : '新增週期固定費用', `
+        <div class="space-y-3 text-fluid-body">
+          <div>
+            <label class="font-bold block mb-1">費用名稱</label>
+            <input id="mBillName" type="text" value="${existing.name}" placeholder="例如：房租、台電電費、網路費" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1">繳費週期</label>
+              <select id="mBillCycle" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <option value="每月固定" ${existing.cycle === '每月固定' ? 'selected' : ''}>每月固定</option>
+                <option value="雙月帳單" ${existing.cycle === '雙月帳單' ? 'selected' : ''}>雙月帳單</option>
+                <option value="季繳/年繳" ${existing.cycle === '季繳/年繳' ? 'selected' : ''}>季繳/年繳</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold block mb-1">當期金額 (NT$)</label>
+              <input id="mBillAmt" type="number" value="${existing.amount}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold block mb-1">指定扣款銀行</label>
+            <select id="mBillBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
+          </div>
+          <button onclick="saveBillForm('${billId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存固定費用</button>
+        </div>
+      `);
+    }
+
+    function saveBillForm(billId) {
+      const name = document.getElementById('mBillName').value.trim();
+      const cycle = document.getElementById('mBillCycle').value;
+      const amount = Number(document.getElementById('mBillAmt').value) || 0;
+      const bankId = document.getElementById('mBillBank').value;
+      if (!name) return showToast('請輸入費用名稱', 'warn');
+      if (billId) {
+        const b = state.bills.find(x => x.id === billId);
+        if (b) Object.assign(b, { name, cycle, amount, bankId });
+      } else {
+        state.bills.push({ id: 'bill_' + Date.now(), name, cycle, amount, bankId, status: 'unpaid' });
+      }
+      saveState(); closeAppModal(); renderAll();
+    }
+
+    function deleteBill(id) {
+      state.bills = state.bills.filter(b => b.id !== id);
+      saveState(); renderAll();
+    }
+
+    function openStockModal(stkId = null) {
+      const existing = state.stocks.find(s => s.id === stkId) || { code: '', name: '', shares: 1000, avgCost: 100, currentPrice: 110, note: '' };
+      openAppModal(stkId ? '編輯台股波段持倉' : '新增台股波段部位', `
+        <div class="space-y-3 text-fluid-body">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1">台股代號</label>
+              <input id="mStkCode" type="text" value="${existing.code}" placeholder="2330" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">股票名稱</label>
+              <input id="mStkName" type="text" value="${existing.name}" placeholder="台積電" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold block mb-1">持有股數 (1張=1000股)</label>
+            <input id="mStkShares" type="number" value="${existing.shares}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1">買入均價</label>
+              <input id="mStkCost" type="number" step="0.01" value="${existing.avgCost}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">目前市價</label>
+              <input id="mStkPrice" type="number" step="0.01" value="${existing.currentPrice}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-indigo-500">
+            </div>
+          </div>
+          <div>
+            <label class="font-bold block mb-1">波段策略備註</label>
+            <input id="mStkNote" type="text" value="${existing.note || ''}" placeholder="例如：破月線減碼" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <button onclick="saveStockForm('${stkId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存台股部位</button>
+        </div>
+      `);
+    }
+
+    function saveStockForm(stkId) {
+      const code = document.getElementById('mStkCode').value.trim();
+      const name = document.getElementById('mStkName').value.trim();
+      const shares = Number(document.getElementById('mStkShares').value) || 0;
+      const avgCost = Number(document.getElementById('mStkCost').value) || 0;
+      const currentPrice = Number(document.getElementById('mStkPrice').value) || 0;
+      const note = document.getElementById('mStkNote').value.trim();
+      if (!code || !name) return showToast('請填寫台股代號與名稱', 'warn');
+      if (stkId) {
+        const s = state.stocks.find(x => x.id === stkId);
+        if (s) Object.assign(s, { code, name, shares, avgCost, currentPrice, note });
+      } else {
+        state.stocks.push({ id: 'stk_' + Date.now(), code, name, shares, avgCost, currentPrice, note });
+      }
+      saveState(); closeAppModal(); renderAll();
+    }
+
+    function deleteStock(id) {
+      state.stocks = state.stocks.filter(s => s.id !== id);
+      saveState(); renderAll();
+    }
+
+    function openPinSetupModal() {
+      openAppModal('設定 4 位數本地安全 PIN 碼', `
+        <div class="space-y-3 text-fluid-body">
+          <p class="text-fluid-sub text-slate-400">設定後，開啟網頁或點擊鎖頭時需輸入 PIN 碼（留空儲存即可關閉）。</p>
+          <input id="mPinInput" type="password" maxlength="4" value="${state.settings.pinCode || ''}" placeholder="4位數字 (如 8888)" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-center text-lg tracking-widest">
+          <button onclick="savePinCodeConfig()" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold">儲存安全設定</button>
+        </div>
+      `);
+    }
+
+    function savePinCodeConfig() {
+      const val = document.getElementById('mPinInput').value.trim();
+      if (val !== '' && !/^\d{4}$/.test(val)) return showToast('請輸入 4 位數字，或留空關閉', 'warn');
+      state.settings.pinCode = val;
+      saveState(); closeAppModal(); renderAll();
+      showToast(val ? '已啟用 PIN 碼！' : '已關閉 PIN 碼鎖定');
+    }
+
+    function triggerPinLockOrSetup() {
+      if (!state.settings.pinCode) openPinSetupModal();
+      else lockScreenNow();
+    }
+
+    function lockScreenNow() {
+      enteredPin = '';
+      updatePinDotsUI();
+      document.getElementById('pinErrorMsg').innerText = '';
+      const lockModal = document.getElementById('pinLockModal');
+      lockModal.classList.remove('hidden');
+      lockModal.classList.add('flex');
+    }
+
+    function enterPinDigit(digit) {
+      if (enteredPin.length >= 4) return;
+      enteredPin += digit;
+      updatePinDotsUI();
+      if (enteredPin.length === 4) {
+        if (enteredPin === state.settings.pinCode) {
+          const lockModal = document.getElementById('pinLockModal');
+          lockModal.classList.add('hidden');
+          lockModal.classList.remove('flex');
+          enteredPin = '';
+        } else {
+          document.getElementById('pinErrorMsg').innerText = 'PIN 碼錯誤';
+          enteredPin = '';
+          setTimeout(updatePinDotsUI, 300);
+        }
+      }
+    }
+
+    function backspacePinDigit() { enteredPin = enteredPin.slice(0, -1); updatePinDotsUI(); }
+    function clearPinDigits() { enteredPin = ''; updatePinDotsUI(); }
+    function updatePinDotsUI() {
+      document.querySelectorAll('#pinDots > div').forEach((dot, idx) => {
+        dot.classList.toggle('bg-indigo-500', idx < enteredPin.length);
+      });
+    }
+
+    function exportToExcelCSV() {
+      const m = computeFinancialMetrics();
+      const rows = [
+        ['【PocketFlow 個人財務與 30 號扣款檢核報表】', `匯出時間：${new Date().toLocaleString('zh-TW')}`],
+        ['目前總淨資產', m.netWorth, '總資產(銀行+股市資金池)', m.totalAssets, '本月待繳總負債', m.totalUnpaidLiabilities],
+        [],
+        ['=== 一、每月 30 號各銀行自動扣繳水位檢核 ==='],
+        ['銀行名稱', '目前餘額', '30號待扣卡費', '30號待扣固定費', '30號待扣總計', '扣後預計結餘', '狀態']
+      ];
+      m.bankCheckups.forEach(b => {
+        rows.push([b.name, b.balance, b.cardsSum, b.billsSum, b.requiredTotal, b.afterBalance, b.isShortfall ? '餘額不足' : '餘額充足']);
+      });
+      rows.push([], ['=== 二、信用卡本期帳單與 >5000 大額明細 ==='], ['信用卡名稱', '扣款銀行', '本期總額', '狀態', '>5000大額明細']);
+      state.cards.forEach(c => {
+        const bankName = state.banks.find(b => b.id === c.bankId)?.name || '';
+        const bigStr = (c.bigExpenses || []).map(x => `${x.title}($${x.amount})`).join(' / ');
+        rows.push([c.name, bankName, c.statementTotal, c.paid ? '已繳清' : '未繳', bigStr || '無']);
+      });
+      rows.push([], ['=== 三、獨立分期付款追蹤 ==='], ['分期項目', '信用卡', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
+      state.installments.forEach(inst => {
+        const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
+        rows.push([inst.title, inst.cardName, inst.monthlyAmount, inst.totalPeriods, inst.paidPeriods, left * inst.monthlyAmount]);
+      });
+      rows.push([], ['=== 四、台股波段持倉部位 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
+      state.stocks.forEach(s => {
+        const val = s.shares * s.currentPrice;
+        const cost = s.shares * s.avgCost;
+        rows.push([s.code, s.name, s.shares, s.avgCost, s.currentPrice, val, val - cost]);
+      });
+
+      const csvContent = '\uFEFF' + rows.map(r => r.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PocketFlow_財務報表_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已匯出 Excel (CSV) 報表！');
+    }
+
+    function exportDatabaseJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PocketFlow_備份_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已匯出 JSON 備份檔！');
+    }
+
+    function importDatabaseJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported.banks || !imported.cards) throw new Error('Invalid');
+          state = imported;
+          saveState(); renderAll();
+          showToast('成功還原資料庫備份！');
+        } catch (err) {
+          showToast('匯入失敗：檔案格式不符', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function downloadStandaloneHTML() {
+      const cloneDoc = document.documentElement.cloneNode(true);
+      const embedScript = document.createElement('script');
+      embedScript.textContent = `window.__EMBEDDED_STATE__ = ${JSON.stringify(state)};`;
+      cloneDoc.querySelector('head').appendChild(embedScript);
+      const fullHtml = '<!DOCTYPE html>\n' + cloneDoc.outerHTML;
+      const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PocketFlow_單機版_${new Date().toISOString().slice(0, 10)}.html`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('已下載單機版 HTML！');
+    }
+
+    function resetToDemoData() {
+      state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      saveState(); renderAll();
+      showToast('已重置回預設範例資料', 'info');
+    }
+
+    window.onload = function() {
+      const savedTheme = localStorage.getItem('pocketflow_theme');
+      if (savedTheme === 'light') document.documentElement.classList.remove('dark');
+      else document.documentElement.classList.add('dark');
+      updateThemeIcon();
+      if (state.settings.pinCode) lockScreenNow();
+      switchTab('dashboard');
+    };
+  </script>
+</body>
+</html>
