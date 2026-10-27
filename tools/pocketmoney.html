@@ -264,13 +264,16 @@
     .spotlight-tooltip {
       position: fixed;
       z-index: 160;
-      width: 360px;
-      max-width: calc(100vw - 2rem);
+      width: 380px;
+      max-width: calc(100vw - 1.5rem);
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
       opacity: 0;
       visibility: hidden;
       transform: translateY(10px);
-      transition: opacity 0.25s ease, transform 0.25s ease, top 0.3s ease, left 0.3s ease;
+      transition: opacity 0.25s ease, transform 0.25s ease;
       pointer-events: auto;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
     }
     .spotlight-tooltip.active {
       opacity: 1;
@@ -278,13 +281,12 @@
       transform: translateY(0);
     }
     @media (max-width: 640px) {
-      .spotlight-tooltip.active {
-        width: auto !important;
-        max-width: none !important;
-        left: 12px !important;
-        right: 12px !important;
-        top: auto !important;
-        bottom: 16px !important;
+      .spotlight-tooltip {
+        width: auto;
+        left: 12px;
+        right: 12px;
+        max-width: none;
+        max-height: 48vh;
       }
     }
     #confettiCanvas {
@@ -1033,17 +1035,16 @@
                     <i class="fa-solid fa-seedling"></i>初級大人
                   </span>
                   <span
-                    class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 num-nowrap">&lt;30
-                    小資族</span>
+                    class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 num-nowrap">單一銀行卡 (新手預設)</span>
                 </div>
                 <p class="text-fluid-sub text-slate-500 dark:text-slate-400 leading-relaxed">
-                  一個銀行帳戶 + 一張信用卡 + 0050 定期定額，剛出社會簡單好掌握
+                  單一銀行帳戶 + 單一信用卡 + 簡易數字模擬，剛開始使用最直覺清晰
                 </p>
               </div>
               <div
                 class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1 pt-1 border-t border-emerald-500/10">
                 <i class="fa-solid fa-arrow-rotate-right group-hover:rotate-180 transition duration-300"></i>
-                載入小資族模型
+                載入新手預設模型
               </div>
             </button>
 
@@ -1136,8 +1137,8 @@
     const PRESET_SCENARIOS = {
       junior: {
         label: '初級大人',
-        badge: '<30 小資族',
-        desc: '一個銀行帳戶 + 一張信用卡 + 0050 定期定額，剛出社會簡單好掌握',
+        badge: '新手預設模型',
+        desc: '單一銀行帳戶 + 單一信用卡 + 簡易數字模擬，剛開始使用最直覺清晰',
         state: {
           settings: {
             privacyMode: false,
@@ -1146,14 +1147,14 @@
             securitiesBankIds: ['bank_taishin']
           },
           banks: [
-            { id: 'bank_taishin', name: '台新 Richart', balance: 52000, note: '日常薪轉·活存3.2%·證券交割' }
+            { id: 'bank_taishin', name: '台新 Richart (主力戶)', balance: 50000, note: '日常薪轉·信用卡扣繳·證券交割' }
           ],
           cards: [
             {
               id: 'card_gogo',
               name: '台新 @GoGo卡 (台新)',
               bankId: 'bank_taishin',
-              statementTotal: 11450,
+              statementTotal: 12000,
               paid: false,
               bigExpenses: [
                 { id: 'exp_1', title: 'UNIQLO 換季服飾添購', amount: 5600 }
@@ -1161,16 +1162,14 @@
             }
           ],
           installments: [
-            { id: 'inst_1', title: 'iPhone 16 官網 12 期零利率', cardId: 'card_gogo', cardName: '台新 @GoGo卡 (台新)', totalAmount: 29900, monthlyAmount: 2491, totalPeriods: 12, paidPeriods: 4 }
+            { id: 'inst_1', title: 'iPhone 16 官網 12 期零利率', cardId: 'card_gogo', cardName: '台新 @GoGo卡 (台新)', totalAmount: 30000, monthlyAmount: 2500, totalPeriods: 12, paidPeriods: 4 }
           ],
           bills: [
-            { id: 'bill_1', name: '獨立套房月租金', cycle: '每月固定', amount: 12500, bankId: 'bank_taishin', status: 'unpaid' },
-            { id: 'bill_2', name: '租屋夏季電費 (一度5元)', cycle: '雙月帳單', amount: 1680, bankId: 'bank_taishin', status: 'unpaid' },
-            { id: 'bill_3', name: '中華電信 5G 行動門號', cycle: '每月固定', amount: 599, bankId: 'bank_taishin', status: 'unpaid' },
-            { id: 'bill_4', name: 'Spotify + Netflix 數位訂閱', cycle: '每月固定', amount: 540, bankId: 'bank_taishin', status: 'paid' }
+            { id: 'bill_1', name: '套房租金與水電費', cycle: '每月固定', amount: 12000, bankId: 'bank_taishin', status: 'unpaid' },
+            { id: 'bill_2', name: '行動電話 5G 門號', cycle: '每月固定', amount: 599, bankId: 'bank_taishin', status: 'unpaid' }
           ],
           stocks: [
-            { id: 'stk_1', code: '0050', name: '元大台灣50', shares: 1500, avgCost: 165, currentPrice: 192, note: '每月 6 號定期定額 6,000' }
+            { id: 'stk_1', code: '0050', name: '元大台灣50', shares: 1000, avgCost: 160, currentPrice: 190, note: '市值型 ETF 定期定額' }
           ]
         }
       },
@@ -1306,7 +1305,7 @@
       }
     };
 
-    const DEFAULT_STATE = PRESET_SCENARIOS.senior.state;
+    const DEFAULT_STATE = PRESET_SCENARIOS.junior.state;
 
     let state = loadState();
     let currentTab = 'dashboard';
@@ -1770,8 +1769,8 @@
       }
 
       const bankListEl = document.getElementById('bankAccountsList');
-      bankListEl.innerHTML = m.bankCheckups.map(b => `
-        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
+      bankListEl.innerHTML = m.bankCheckups.map((b, idx) => `
+        <div id="${idx === 0 ? 'firstBankCard' : 'bankCard_' + b.id}" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
               <h4 class="font-bold text-fluid-h3 truncate">${b.name}</h4>
@@ -1805,7 +1804,7 @@
       `).join('');
 
       const cardListEl = document.getElementById('creditCardsList');
-      cardListEl.innerHTML = state.cards.map(c => {
+      cardListEl.innerHTML = state.cards.map((c, idx) => {
         const bank = state.banks.find(b => b.id === c.bankId);
         const bankName = bank ? bank.name : '未綁定銀行';
         const bigSum = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
@@ -1820,7 +1819,7 @@
         const boundInstMonthly = boundInsts.reduce((sum, inst) => sum + (Number(inst.monthlyAmount) || 0), 0);
 
         return `
-          <div class="rounded-2xl p-4 border ${c.paid ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} flex flex-col justify-between space-y-3.5">
+          <div id="${idx === 0 ? 'firstCreditCard' : 'cardItem_' + c.id}" class="rounded-2xl p-4 border ${c.paid ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} flex flex-col justify-between space-y-3.5">
             <div>
               <div class="flex items-start justify-between gap-2 mb-2.5">
                 <div class="min-w-0">
@@ -2865,7 +2864,7 @@
     }
 
     function resetToDemoData() {
-      loadPresetScenario('senior');
+      loadPresetScenario('junior');
     }
 
     /* ==========================================================================
@@ -2873,26 +2872,76 @@
        ========================================================================== */
     const ONBOARDING_STEPS = [
       {
-        targetId: 'overviewKpiContainer',
-        title: '💡 不記瑣碎流水帳，算清手頭還能安心花多少錢',
-        body: '每月只需花 3 分鐘更新「銀行存款」與「本期卡費總額」，系統即刻自動扣除待繳支出，算清當月真正能安心花費的<strong class="text-indigo-500">安全可用結餘</strong>與總資產。告別瑣碎記帳疲勞！',
-        btnText: '下一步：檢查扣款 ➔'
+        tab: 'cards',
+        targetId: 'firstBankCard',
+        fallbackTargetId: 'bankAccountsList',
+        type: 'bank_input',
+        title: '🏦 步驟 1 / 4：設置你的主力銀行存款',
+        body: '實踐「抓大放小」第一步：填入主要扣款銀行的活存餘額。告別瑣碎記帳疲勞，每月只需 3 分鐘確認一次存款水位！',
+        btnText: '下一步：設置信用卡 ➔'
       },
       {
+        tab: 'cards',
+        targetId: 'firstCreditCard',
+        fallbackTargetId: 'creditCardsList',
+        type: 'card_input',
+        title: '💳 步驟 2 / 4：設置你的信用卡本期費用',
+        body: '打開行動銀行或查看帳單，填入本期應繳卡費總額。只需填一個總數，不需逐筆記咖啡發票！',
+        btnText: '下一步：檢查扣款防線 ➔'
+      },
+      {
+        tab: 'dashboard',
         targetId: 'autoDebitAuditCard',
-        title: '🛡️ 戶頭裡的錢，夠不夠扣卡費與生活開銷？',
-        body: '系統自動將所有未繳信用卡與水電房租精準歸戶至扣款銀行：<br><br>🟢 <strong class="text-emerald-500">安全綠燈</strong>：活存充裕，月底扣繳萬無一失。<br>🔴 <strong class="text-rose-500">警示紅燈</strong>：提早 15~20 天預警不足差額，提醒你自主力戶轉帳，不怕被收違約金或扣信用！',
-        btnText: '下一步：分期監控 ➔'
+        type: 'info',
+        title: '🛡️ 步驟 3 / 4：戶頭裡的錢，夠不夠扣卡費？',
+        body: '系統已自動將你設置的卡費與水電租金歸戶進行壓力測試：<br><br>🟢 <strong class="text-emerald-500">安全綠燈</strong>：存款充足，月底扣繳萬無一失。<br>🔴 <strong class="text-rose-500">警示紅燈</strong>：存款不足應繳時提早預警缺口，提醒你提早轉帳補錢，絕不怕被罰違約金或影響信用！',
+        btnText: '下一步：查看簡易模擬 ➔'
       },
       {
-        targetId: 'installmentModule',
-        title: '🔍 買東西分期很無痛？算算每個月默默被扣了多少錢',
-        body: '零利率分期看似無痛，累積起來卻可能悄悄吸乾每月現金儲備。這裡幫你算好<strong class="text-amber-500">每月固定攤提總額</strong>與<strong class="text-indigo-500">剩餘總負債</strong>，讓每筆分期透明可控，不再盲目透支未來收入！',
+        tab: 'dashboard',
+        targetId: 'overviewKpiContainer',
+        type: 'info',
+        title: '✨ 步驟 4 / 4：簡易數字模擬，算清手頭能安心花多少',
+        body: '其他功能已為你準備好<strong>簡易數字模擬</strong>（1 筆生活分期、日常租金固定開銷、0050 ETF 投資部位）。系統即刻扣除待繳，算清真正自由支配的<strong class="text-indigo-500">安全可用結餘</strong>！',
         btnText: '完成導覽，開始體驗 🎉'
       }
     ];
 
     let currentTourIndex = 0;
+
+    function handleTourBankBalanceChange(val) {
+      const num = Math.max(0, Number(val) || 0);
+      if (state.banks && state.banks[0]) {
+        state.banks[0].balance = num;
+        saveState();
+        const m = computeFinancialMetrics();
+        renderBanksAndCards(m);
+        renderDashboard(m);
+      }
+    }
+
+    function setTourBankQuick(val) {
+      const input = document.getElementById('tourBankBalanceInput');
+      if (input) input.value = val;
+      handleTourBankBalanceChange(val);
+    }
+
+    function handleTourCardTotalChange(val) {
+      const num = Math.max(0, Number(val) || 0);
+      if (state.cards && state.cards[0]) {
+        state.cards[0].statementTotal = num;
+        saveState();
+        const m = computeFinancialMetrics();
+        renderBanksAndCards(m);
+        renderDashboard(m);
+      }
+    }
+
+    function setTourCardQuick(val) {
+      const input = document.getElementById('tourCardTotalInput');
+      if (input) input.value = val;
+      handleTourCardTotalChange(val);
+    }
 
     function openWelcomeModal() {
       endSpotlightTour();
@@ -2914,98 +2963,279 @@
 
     function loadDemoAndClose() {
       closeWelcomeModal();
-      loadPresetScenario('senior');
+      loadPresetScenario('junior');
+    }
+
+    let tourTrackingRafId = null;
+
+    function getTourTargetElement(step) {
+      if (!step) return null;
+      let el = document.getElementById(step.targetId);
+      if (!el && step.fallbackTargetId) {
+        el = document.getElementById(step.fallbackTargetId);
+      }
+      return el;
+    }
+
+    function scrollTourTargetIntoView(targetEl, onComplete) {
+      const header = document.querySelector('header.sticky');
+      const headerH = header ? header.offsetHeight : 90;
+      const rect = targetEl.getBoundingClientRect();
+      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
+      const elementAbsoluteTop = rect.top + currentScrollY;
+
+      // 理想滾動位置：元素頂部距離 header 保持 16px 安全間隔，絕不被 header 覆蓋
+      const targetScrollY = Math.max(0, elementAbsoluteTop - headerH - 16);
+
+      window.scrollTo({
+        top: targetScrollY,
+        behavior: 'smooth'
+      });
+
+      // 滾動防抖與結束確認
+      let scrollTimer;
+      const checkScrollDone = () => {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+          window.removeEventListener('scroll', checkScrollDone);
+          if (onComplete) onComplete();
+        }, 80);
+      };
+      window.addEventListener('scroll', checkScrollDone, { passive: true });
+      setTimeout(() => {
+        window.removeEventListener('scroll', checkScrollDone);
+        if (onComplete) onComplete();
+      }, 340);
+    }
+
+    function updateSpotlightCutout(rect) {
+      const cutout = document.getElementById('spotlightCutout');
+      if (!cutout || !rect) return;
+      const isMobile = window.innerWidth <= 640;
+      const padding = isMobile ? 8 : 12;
+
+      cutout.setAttribute('x', Math.max(0, rect.left - padding));
+      cutout.setAttribute('y', Math.max(0, rect.top - padding));
+      cutout.setAttribute('width', Math.min(window.innerWidth, rect.width + (padding * 2)));
+      cutout.setAttribute('height', rect.height + (padding * 2));
+    }
+
+    function positionTooltip(targetRect) {
+      const tooltip = document.getElementById('spotlightTooltip');
+      if (!tooltip || !targetRect) return;
+
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const header = document.querySelector('header.sticky');
+      const headerH = header ? header.offsetHeight : 90;
+      const tooltipH = tooltip.offsetHeight || 260;
+
+      // ==================== 手機端 Mobile (<= 640px) ====================
+      if (windowWidth <= 640) {
+        tooltip.style.left = '12px';
+        tooltip.style.right = '12px';
+        tooltip.style.width = 'auto';
+        tooltip.style.maxWidth = 'none';
+
+        // 依據目標在當前可視視窗中的垂直中心位置進行智慧上下避讓，絕不重疊遮擋
+        const targetCenterY = targetRect.top + (targetRect.height / 2);
+        if (targetCenterY > windowHeight * 0.48) {
+          // 目標偏螢幕下半部：氣泡置頂（緊接在 sticky header 下方 8px）
+          tooltip.style.top = `${headerH + 8}px`;
+          tooltip.style.bottom = 'auto';
+        } else {
+          // 目標偏螢幕上半部：氣泡置底（距螢幕底端 12px）
+          tooltip.style.top = 'auto';
+          tooltip.style.bottom = '12px';
+        }
+        return;
+      }
+
+      // ==================== 電腦端 PC (> 640px) ====================
+      const tooltipWidth = 380;
+      tooltip.style.right = 'auto';
+      tooltip.style.bottom = 'auto';
+      tooltip.style.width = `${tooltipWidth}px`;
+
+      // 水平方向：置中對齊目標中心，並限制在視窗可見安全邊界內
+      let left = targetRect.left + (targetRect.width / 2) - (tooltipWidth / 2);
+      if (left < 16) left = 16;
+      if (left + tooltipWidth > windowWidth - 16) left = windowWidth - tooltipWidth - 16;
+
+      // 垂直方向：計算避開頂部 header 與底部安全距離
+      const minTop = headerH + 12;
+      const maxTop = windowHeight - tooltipH - 16;
+
+      let top = 0;
+      // 1. 優先放置在目標下方
+      if (targetRect.bottom + 12 + tooltipH <= windowHeight - 16) {
+        top = targetRect.bottom + 12;
+      }
+      // 2. 下方空間不足，則放置在目標上方
+      else if (targetRect.top - 12 - tooltipH >= minTop) {
+        top = targetRect.top - 12 - tooltipH;
+      }
+      // 3. 上下都緊繃（目標高度較大）
+      else {
+        // 若右側放得下，靠右浮動
+        if (targetRect.right + 16 + tooltipWidth <= windowWidth - 16) {
+          left = targetRect.right + 16;
+          top = Math.max(minTop, Math.min(targetRect.top, maxTop));
+        } else {
+          // 否則吸附在視窗右下角安全區域
+          left = windowWidth - tooltipWidth - 20;
+          top = maxTop;
+        }
+      }
+
+      // 確保頂部與底部不超出螢幕
+      top = Math.max(minTop, Math.min(top, maxTop));
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    }
+
+    function syncTourSpotlight() {
+      if (!document.getElementById('spotlightOverlay').classList.contains('active')) return;
+      const step = ONBOARDING_STEPS[currentTourIndex];
+      const targetEl = getTourTargetElement(step);
+      if (!targetEl) return;
+      const rect = targetEl.getBoundingClientRect();
+      updateSpotlightCutout(rect);
+      positionTooltip(rect);
+    }
+
+    function onTourScrollOrResize() {
+      if (tourTrackingRafId) cancelAnimationFrame(tourTrackingRafId);
+      tourTrackingRafId = requestAnimationFrame(syncTourSpotlight);
     }
 
     function startSpotlightTour() {
       closeWelcomeModal();
+      // 使用單一銀行與信用卡的預設模型啟動導覽
+      state = JSON.parse(JSON.stringify(PRESET_SCENARIOS.junior.state));
+      saveState();
+      renderAll();
       currentTourIndex = 0;
-      switchTab('dashboard');
       document.getElementById('spotlightOverlay').classList.add('active');
       document.getElementById('spotlightTooltip').classList.add('active');
+
+      window.addEventListener('scroll', onTourScrollOrResize, { passive: true });
+      window.addEventListener('resize', onTourScrollOrResize);
+
       renderTourStep(currentTourIndex);
     }
 
     function endSpotlightTour() {
       document.getElementById('spotlightOverlay').classList.remove('active');
       document.getElementById('spotlightTooltip').classList.remove('active');
+      window.removeEventListener('scroll', onTourScrollOrResize);
+      window.removeEventListener('resize', onTourScrollOrResize);
       localStorage.setItem('PocketMoney_onboarding_completed', 'true');
+      switchTab('dashboard');
+      renderAll();
     }
 
     function renderTourStep(index) {
       const step = ONBOARDING_STEPS[index];
-      const targetEl = document.getElementById(step.targetId);
-      if (!targetEl) return;
+      if (!step) return;
 
-      const isMobile = window.innerWidth <= 640;
-      targetEl.scrollIntoView({ behavior: 'smooth', block: isMobile ? 'start' : 'center' });
+      if (step.tab && currentTab !== step.tab) {
+        switchTab(step.tab);
+      }
 
+      // 給予分頁切換足夠的重繪緩衝後執行目標對齊與滾動
       setTimeout(() => {
-        const rect = targetEl.getBoundingClientRect();
-        const cutout = document.getElementById('spotlightCutout');
-        const padding = 10;
+        const targetEl = getTourTargetElement(step);
+        if (!targetEl) return;
 
-        cutout.setAttribute('x', Math.max(0, rect.left - padding));
-        cutout.setAttribute('y', Math.max(0, rect.top - padding));
-        cutout.setAttribute('width', rect.width + (padding * 2));
-        cutout.setAttribute('height', rect.height + (padding * 2));
-
+        // 注入 Tooltip 內容
         document.getElementById('tourStepBadge').innerText = `Step ${index + 1} / ${ONBOARDING_STEPS.length}`;
         document.getElementById('tourTitle').innerHTML = step.title;
-        document.getElementById('tourBody').innerHTML = step.body;
+
+        let bodyHtml = `<p class="text-xs text-slate-500 dark:text-slate-400 mb-2 leading-relaxed">${step.body}</p>`;
+        if (step.type === 'bank_input') {
+          const currentBank = (state.banks && state.banks[0]) ? state.banks[0] : { balance: 50000 };
+          bodyHtml += `
+            <div class="mt-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">主力銀行目前存款 (NT$)</span>
+                <span class="text-[10px] font-mono text-indigo-500 font-semibold">可直接在此修改</span>
+              </div>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-mono font-bold text-slate-400 text-sm">$</span>
+                <input id="tourBankBalanceInput" type="number" 
+                  value="${currentBank.balance}" 
+                  oninput="handleTourBankBalanceChange(this.value)"
+                  class="w-full pl-7 pr-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                  placeholder="50000">
+              </div>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                <button type="button" onclick="setTourBankQuick(30000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">3萬</button>
+                <button type="button" onclick="setTourBankQuick(50000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">5萬 (預設)</button>
+                <button type="button" onclick="setTourBankQuick(80000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">8萬</button>
+                <button type="button" onclick="setTourBankQuick(100000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">10萬</button>
+              </div>
+            </div>
+          `;
+        } else if (step.type === 'card_input') {
+          const currentCard = (state.cards && state.cards[0]) ? state.cards[0] : { statementTotal: 12000 };
+          bodyHtml += `
+            <div class="mt-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">本期信用卡帳單總額 (NT$)</span>
+                <span class="text-[10px] font-mono text-rose-500 font-semibold">可直接在此修改</span>
+              </div>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-mono font-bold text-slate-400 text-sm">$</span>
+                <input id="tourCardTotalInput" type="number" 
+                  value="${currentCard.statementTotal}" 
+                  oninput="handleTourCardTotalChange(this.value)"
+                  class="w-full pl-7 pr-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 text-rose-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                  placeholder="12000">
+              </div>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                <button type="button" onclick="setTourCardQuick(8000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">8千</button>
+                <button type="button" onclick="setTourCardQuick(12000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">1.2萬 (預設)</button>
+                <button type="button" onclick="setTourCardQuick(20000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">2萬</button>
+                <button type="button" onclick="setTourCardQuick(35000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">3.5萬</button>
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById('tourBody').innerHTML = bodyHtml;
         document.getElementById('tourNextBtn').innerText = step.btnText;
 
         const prevBtn = document.getElementById('tourPrevBtn');
         prevBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
 
-        positionTooltip(rect);
-      }, 260);
-    }
-
-    function positionTooltip(targetRect) {
-      const tooltip = document.getElementById('spotlightTooltip');
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-
-      // 手機端底置模式
-      if (windowWidth <= 640) {
-        tooltip.style.left = '12px';
-        tooltip.style.right = '12px';
-        tooltip.style.width = 'auto';
-        tooltip.style.maxWidth = 'none';
-        tooltip.style.top = 'auto';
-        tooltip.style.bottom = '16px';
-        return;
-      }
-
-      // 桌面跟隨
-      const tooltipWidth = 360;
-      tooltip.style.right = 'auto';
-      tooltip.style.width = `${tooltipWidth}px`;
-      tooltip.style.bottom = 'auto';
-
-      let top = 0;
-      let left = targetRect.left + (targetRect.width / 2) - (tooltipWidth / 2);
-      if (left < 16) left = 16;
-      if (left + tooltipWidth > windowWidth - 16) left = windowWidth - tooltipWidth - 16;
-
-      if (targetRect.bottom + 230 < windowHeight) {
-        top = targetRect.bottom + 16;
-      } else {
-        top = Math.max(16, targetRect.top - 220);
-      }
-      tooltip.style.left = `${left}px`;
-      tooltip.style.top = `${top}px`;
+        // 啟動精準滾動，避開頂部 header 並對齊聚光燈與氣泡
+        scrollTourTargetIntoView(targetEl, () => {
+          const rect = targetEl.getBoundingClientRect();
+          updateSpotlightCutout(rect);
+          positionTooltip(rect);
+        });
+      }, 70);
     }
 
     function nextTourStep() {
+      const bankInput = document.getElementById('tourBankBalanceInput');
+      if (bankInput && state.banks && state.banks[0]) {
+        state.banks[0].balance = Math.max(0, Number(bankInput.value) || 0);
+      }
+      const cardInput = document.getElementById('tourCardTotalInput');
+      if (cardInput && state.cards && state.cards[0]) {
+        state.cards[0].statementTotal = Math.max(0, Number(cardInput.value) || 0);
+      }
+      saveState();
+
       if (currentTourIndex < ONBOARDING_STEPS.length - 1) {
         currentTourIndex++;
         renderTourStep(currentTourIndex);
       } else {
         endSpotlightTour();
         triggerConfetti();
-        showToast('🎉 新手導覽圓滿完成！請從上方清單開啟真實設定。');
+        showToast('🎉 新手導覽圓滿完成！安全扣款防線建立完成。');
       }
     }
 
@@ -3016,11 +3246,6 @@
       }
     }
 
-    window.addEventListener('resize', () => {
-      if (document.getElementById('spotlightOverlay').classList.contains('active')) {
-        renderTourStep(currentTourIndex);
-      }
-    });
 
     /* ==========================================================================
        微型檢查清單動態感應判定 (State-Driven Checklist)
@@ -3228,7 +3453,7 @@
       <div class="flex flex-col gap-2">
         <button onclick="startSpotlightTour()" class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-fluid-sub shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>✨ 帶我導覽 3 分鐘 (快速上手)</span>
+          <span>✨ 帶我導覽 3 分鐘 (親自設置存款與卡費)</span>
         </button>
         <div class="grid grid-cols-2 gap-2">
           <button onclick="loadDemoAndClose()" class="py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-fluid-sub text-slate-700 dark:text-slate-300 transition">

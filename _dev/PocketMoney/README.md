@@ -16,8 +16,8 @@
   - 7. 測試案例與驗證標準 (QA Test Cases TC-01 ~ TC-06)
   - 8. 未來架構演進建議 (TypeScript、Web Worker、PWA)
 
-- **新手教學互動模擬頁面 (Demo)**：[`onboarding_demo.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/onboarding_demo.html)
-  - 完整演示「首次造訪歡迎彈窗」➔「原生 0 依賴 SVG 聚光燈導覽」➔「首頁收合式微型檢查清單」全流程體驗。
+- **新手教學引導功能 (Onboarding Engine)**：已正式整併至主程式 [`tools/pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/tools/pocketmoney.html)
+  - 整合「首次造訪歡迎彈窗」➔「原生 0 依賴 SVG 聚光燈導覽 (支援使用者親自設置存款與卡費)」➔「首頁收合式微型檢查清單」全流程體驗。
 - **後續功能開發計畫與架構設計書**：[`DEVELOPMENT_PLAN.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/DEVELOPMENT_PLAN.md)
   - **最新待開發功能規劃（置頂）**：
     - 項目 1：新手初次使用引導體驗設計（歡迎彈窗 + 原生 Spotlight + 動態微型檢查清單）
