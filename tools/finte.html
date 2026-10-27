@@ -355,7 +355,7 @@
         <button onclick="switchTab('cards')" data-tab="cards"
           class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-credit-card"></i>
-          <span>銀行餘額與本期信用卡費</span>
+          <span>銀行餘額與信用卡費</span>
           <span id="navBadgeCards" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] hidden">!</span>
         </button>
         <button onclick="switchTab('installments')" data-tab="installments"
@@ -392,12 +392,12 @@
       <!-- 三大核心指標卡片 (在手機為單欄垂直堆疊，平板/電腦為三欄等比例排列) -->
       <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
 
-        <!-- 指標 1：目前總淨資產 -->
+        <!-- 指標 1：總淨資產 -->
         <div
           class="fluid-card bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-700 text-white shadow-lg flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="text-fluid-sub font-bold bg-white/15 px-2.5 py-0.5 rounded-full num-nowrap">目前總淨資產
+              <span class="text-fluid-sub font-bold bg-white/15 px-2.5 py-0.5 rounded-full num-nowrap">總淨資產
               </span>
               <span id="countdown30th" class="text-fluid-sub text-indigo-100 font-semibold num-nowrap">30號扣款</span>
             </div>
@@ -410,8 +410,12 @@
               <span id="kpiTotalAssets" class="font-bold font-mono num-nowrap">NT$ 0</span>
             </div>
             <div class="flex items-center justify-between gap-2">
-              <span class="opacity-85">本月待扣繳總負債</span>
+              <span class="opacity-85">卡費與固定支出合計</span>
               <span id="kpiTotalUnpaid" class="font-bold font-mono text-rose-200 num-nowrap">NT$ 0</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="opacity-85">分期未繳負債</span>
+              <span id="kpiInstallmentRemaining" class="font-bold font-mono text-amber-200 num-nowrap">NT$ 0</span>
             </div>
           </div>
         </div>
@@ -554,21 +558,26 @@
 
       <!-- 銀行與卡費三大統計小計卡片 -->
       <div class="grid grid-cols-1 sm:grid-cols-3 fluid-gap">
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
           <span class="text-fluid-sub text-slate-400 font-bold">銀行總存款餘額</span>
-          <div id="bankTotalBalanceKPI" class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 0</div>
+          <div id="bankTotalBalanceKPI"
+            class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 0</div>
           <span id="bankAfterTotalBalanceKPI" class="text-fluid-sub text-slate-400 mt-2">30 號待扣後剩餘 NT$ 0</span>
         </div>
 
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
           <span class="text-fluid-sub text-slate-400 font-bold">本期待繳卡費總額</span>
-          <div id="cardsUnpaidTotalKPI" class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">NT$ 0</div>
+          <div id="cardsUnpaidTotalKPI" class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">
+            NT$ 0</div>
           <span id="cardsStatusSummaryKPI" class="text-fluid-sub text-slate-400 mt-2">待繳 0 張卡・已繳清 0 張卡</span>
         </div>
 
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
           <div>
-            <span class="text-fluid-sub text-slate-400 font-bold">30 號扣款帳戶安全水位</span>
+            <span class="text-fluid-sub text-slate-400 font-bold">卡費扣款帳戶餘額檢核</span>
             <div id="bankShortfallStatusKPI" class="mt-1">
               <span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">✅ 全數帳戶餘額充足</span>
             </div>
@@ -632,14 +641,14 @@
 
       <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
         <div class="fluid-card bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
-          <span class="text-fluid-sub font-bold bg-white/20 px-2.5 py-0.5 rounded-full num-nowrap">每月被分期吃掉的現金流</span>
+          <span class="text-fluid-sub font-bold bg-white/20 px-2.5 py-0.5 rounded-full num-nowrap">每月分期現金支出</span>
           <div id="instMonthlyTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-2 mb-1">NT$ 0 / 月
           </div>
           <p class="text-fluid-sub text-amber-100">各張信用卡分期每月應繳加總</p>
         </div>
         <div
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-center">
-          <span class="text-fluid-sub text-slate-400 font-bold">所有分期剩餘未繳總尾款</span>
+          <span class="text-fluid-sub text-slate-400 font-bold">分期未繳負債</span>
           <div id="instRemainingTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">NT$ 0</div>
           <p class="text-fluid-sub text-slate-400 mt-1">負債監控，避免負債持續增加造成每月現金流壓力</p>
         </div>
@@ -676,15 +685,15 @@
       <div class="grid grid-cols-1 sm:grid-cols-3 fluid-gap">
         <div
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
-          <span class="text-fluid-sub text-slate-400 font-bold">當期 30 號待繳總額</span>
+          <span class="text-fluid-sub text-slate-400 font-bold">本月待繳總額</span>
           <div id="billsUnpaidTotal" class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">NT$
             0</div>
-          <span class="text-fluid-sub text-slate-400 mt-2">計入指定銀行 30 號扣款檢核</span>
+          <span class="text-fluid-sub text-slate-400 mt-2">計入指定銀行自動扣款檢核</span>
         </div>
 
         <div
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
-          <span class="text-fluid-sub text-slate-400 font-bold">常態每月固定支出 (平準化)</span>
+          <span class="text-fluid-sub text-slate-400 font-bold">平均月固定支出</span>
           <div id="billsMonthlyBaseCost"
             class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 0 / 月</div>
           <span class="text-fluid-sub text-slate-400 mt-2">雙月折半、季繳除三的基本生活成本</span>
@@ -716,7 +725,7 @@
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
               <i class="fa-solid fa-bolt text-emerald-500"></i>
-              <span>每月 / 雙月固定生活費用 (水電、瓦斯、網路、房租)</span>
+              <span>固定生活費用 (水電、瓦斯、網路、房租)</span>
             </h2>
             <p class="text-fluid-sub text-slate-400">標記為「待繳」的項目會自動計入指定銀行的 30 號扣款檢核</p>
           </div>
@@ -1146,8 +1155,8 @@
       if (target) target.classList.remove('hidden');
 
       const titles = {
-        dashboard: 'PocketMoney 你不理財，財不理你',
-        cards: '銀行餘額與各家信用卡帳單',
+        dashboard: 'PocketMoney ',
+        cards: '銀行餘額與信用卡帳單',
         installments: '分期付款&現金流監控',
         bills: '定期性固定費用管理',
         stocks: '股票與資金',
@@ -1327,6 +1336,8 @@
       document.getElementById('kpiNetWorth').innerText = fmtMoney(m.netWorth);
       document.getElementById('kpiTotalAssets').innerText = fmtMoney(m.totalAssets);
       document.getElementById('kpiTotalUnpaid').innerText = fmtMoney(m.totalUnpaidLiabilities);
+      const instRemEl = document.getElementById('kpiInstallmentRemaining');
+      if (instRemEl) instRemEl.innerText = fmtMoney(m.installmentRemainingTotal);
 
       document.getElementById('kpiStockMarketVal').innerText = fmtMoney(m.stockMarketValue);
       const pnlEl = document.getElementById('kpiStockPnL');
@@ -1460,7 +1471,7 @@
       instSummaryEl.innerHTML = `
         <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-2">
           <div class="min-w-0">
-            <span class="text-fluid-body font-bold text-amber-600 dark:text-amber-400 block truncate">每月被分期吃掉總額</span>
+            <span class="text-fluid-body font-bold text-amber-600 dark:text-amber-400 block truncate">每月分期總額支出</span>
             <span class="text-fluid-sub text-slate-400 block truncate">共 ${m.activeInstallmentsCount} 筆・總尾款 ${fmtMoney(m.installmentRemainingTotal)}</span>
           </div>
           <span class="text-fluid-h3 font-extrabold font-mono text-amber-600 dark:text-amber-400 num-nowrap shrink-0">${fmtMoney(m.installmentMonthlyTotal)}/月</span>
@@ -2450,8 +2461,8 @@
     function exportToExcelCSV() {
       const m = computeFinancialMetrics();
       const rows = [
-        ['【PocketFlow 個人財務與 30 號扣款檢核報表】', `匯出時間：${new Date().toLocaleString('zh-TW')}`],
-        ['目前總淨資產', m.netWorth, '總資產(銀行+股票市值)', m.totalAssets, '本月待繳總負債', m.totalUnpaidLiabilities],
+        ['PocketFlow 個人財務與費用扣款檢核報表', `匯出時間：${new Date().toLocaleString('zh-TW')}`],
+        ['總淨資產', m.netWorth, '總資產(銀行+股票市值)', m.totalAssets, '本月待繳總負債', m.totalUnpaidLiabilities],
         ['常態每月固定生活支出', m.billsMonthlyBaseCost, '現金部位', m.stockCashPool, '波段持倉總市值', m.stockMarketValue],
         [],
         ['=== 一、銀行自動扣繳餘額檢查 ==='],
