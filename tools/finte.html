@@ -687,7 +687,7 @@
 
   <!-- ==================== 應用程式邏輯 ==================== -->
   <script>
-    const STORAGE_KEY = 'pocketflow_tw_finance_v1';
+    const STORAGE_KEY = 'pocketflow_tw_finance_v3';
 
     const DEFAULT_STATE = {
       settings: {
@@ -697,56 +697,101 @@
         stockMinHoldRatio: 70
       },
       banks: [
-        { id: 'bank_cathay', name: '國泰世華 (CUBE/主力扣款)', balance: 68000, note: '綁國泰卡、台哥大網路' },
-        { id: 'bank_ctbc', name: '中國信託 (薪轉/生活戶)', balance: 32000, note: '綁中信卡、房租與水電' },
-        { id: 'bank_fubon', name: '台北富邦 (Costco扣款)', balance: 55000, note: '綁富邦卡專用' },
-        { id: 'bank_taishin', name: '台新 Richart (高利活存)', balance: 120000, note: '綁台新 GoGo 卡' }
+        { id: 'bank_megabank', name: '兆豐台幣', balance: 88888, note: '' },
+        { id: 'bank_esun_sec', name: '玉山證券', balance: 88888, note: '' },
+        { id: 'bank_esun_salary', name: '玉山薪轉', balance: 88888, note: '' },
+        { id: 'bank_ctbc_sec', name: '中信證券', balance: 88888, note: '' },
+        { id: 'bank_ctbc', name: '中信台幣', balance: 88888, note: '生活戶' },
+        { id: 'bank_fubon', name: '富邦證券', balance: 88888, note: '' },
+        { id: 'bank_taishin', name: '台新數位', balance: 88888, note: '數位高利活存' },
+        { id: 'bank_cathay', name: '國泰台幣', balance: 88888, note: '主力扣款戶' }
       ],
       cards: [
         {
           id: 'card_1',
-          name: '國泰世華 CUBE 卡',
-          bankId: 'bank_cathay',
-          statementTotal: 36800,
+          name: '玉山Unicard (玉山)',
+          bankId: 'bank_esun_salary',
+          statementTotal: 23385,
           paid: false,
-          bigExpenses: [
-            { id: 'be_1', title: '日本東京來回機票', amount: 18500 },
-            { id: 'be_2', title: '高鐵商務艙與飯店住宿', amount: 7200 }
-          ]
+          bigExpenses: []
         },
         {
           id: 'card_2',
-          name: '中國信託 LINE Pay 卡',
-          bankId: 'bank_ctbc',
-          statementTotal: 24500,
+          name: '國泰Cube (國泰)',
+          bankId: 'bank_cathay',
+          statementTotal: 37654,
           paid: false,
-          bigExpenses: [
-            { id: 'be_3', title: '汽車定期保養與換胎', amount: 14800 }
-          ]
+          bigExpenses: []
         },
         {
           id: 'card_3',
-          name: '富邦 Costco 聯名卡',
-          bankId: 'bank_fubon',
-          statementTotal: 19200,
+          name: '星展飛行 (玉山)',
+          bankId: 'bank_esun_salary',
+          statementTotal: 5305,
           paid: false,
-          bigExpenses: [
-            { id: 'be_4', title: '好市多除濕機與大型採買', amount: 11900 }
-          ]
+          bigExpenses: []
         },
         {
           id: 'card_4',
-          name: '台新 @GoGo 卡',
+          name: '富邦數位 (兆豐)',
+          bankId: 'bank_megabank',
+          statementTotal: 1999,
+          paid: false,
+          bigExpenses: []
+        },
+        {
+          id: 'card_5',
+          name: '中信英雄(中信)',
+          bankId: 'bank_ctbc',
+          statementTotal: 3630,
+          paid: false,
+          bigExpenses: []
+        },
+        {
+          id: 'card_6',
+          name: '台新大潤發 (台新)',
           bankId: 'bank_taishin',
-          statementTotal: 8400,
-          paid: true,
+          statementTotal: 4973,
+          paid: false,
+          bigExpenses: []
+        },
+        {
+          id: 'card_7',
+          name: '富邦好事多(停卡)',
+          bankId: 'bank_fubon',
+          statementTotal: 1729,
+          paid: false,
+          bigExpenses: []
+        },
+        {
+          id: 'card_8',
+          name: '台新Richart',
+          bankId: 'bank_taishin',
+          statementTotal: 0,
+          paid: false,
+          bigExpenses: []
+        },
+        {
+          id: 'card_9',
+          name: '富邦J卡',
+          bankId: 'bank_fubon',
+          statementTotal: 0,
+          paid: false,
+          bigExpenses: []
+        },
+        {
+          id: 'card_10',
+          name: '中信LINEPAY',
+          bankId: 'bank_ctbc',
+          statementTotal: 0,
+          paid: false,
           bigExpenses: []
         }
       ],
       installments: [
-        { id: 'inst_1', title: 'MacBook Pro 14 吋 M3', cardName: '國泰 CUBE 卡', totalAmount: 59900, monthlyAmount: 4991, totalPeriods: 12, paidPeriods: 5 },
-        { id: 'inst_2', title: 'Dyson 無線吸塵器', cardName: '富邦 Costco 卡', totalAmount: 18900, monthlyAmount: 3150, totalPeriods: 6, paidPeriods: 3 },
-        { id: 'inst_3', title: '健身房年度教練課分期', cardName: '中信 LINE Pay 卡', totalAmount: 36000, monthlyAmount: 3000, totalPeriods: 12, paidPeriods: 9 }
+        { id: 'inst_1', title: 'MacBook Pro 14 吋 M3', cardName: '國泰Cube (國泰)', totalAmount: 59900, monthlyAmount: 4991, totalPeriods: 12, paidPeriods: 5 },
+        { id: 'inst_2', title: 'Dyson 無線吸塵器', cardName: '玉山Unicard (玉山)', totalAmount: 18900, monthlyAmount: 3150, totalPeriods: 6, paidPeriods: 3 },
+        { id: 'inst_3', title: '健身房年度教練課分期', cardName: '中信英雄(中信)', totalAmount: 36000, monthlyAmount: 3000, totalPeriods: 12, paidPeriods: 9 }
       ],
       bills: [
         { id: 'bill_1', name: '房租與管理費', cycle: '每月固定', amount: 18500, bankId: 'bank_ctbc', status: 'unpaid' },
