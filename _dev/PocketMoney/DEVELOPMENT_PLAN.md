@@ -5,8 +5,7 @@
 ## 一、文件概述
 - **文件版本**：v1.2.0
 - **更新日期**：2026-10-27
-- **目標系統**：PocketMoney (`tools/pocketmoney.html`)
-- **相關文件**：[`SDD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/SDD.md)、[`README.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/README.md)、[`onboarding_demo.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/onboarding_demo.html)（獨立互動模擬展示頁）
+- **相關文件**：[`SDD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/SDD.md)、[`README.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/README.md)（主程式：[`tools/pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/tools/pocketmoney.html)）
 - **最新狀態**：Stage 5 新手引導體驗規劃中 (In Planning)
 - **結構導覽**：
   - **[二、最新待開發功能架構規劃（新規劃置頂）](#二最新待開發功能架構規劃current-planning)**：項目 1 新手首次進入導覽與引導體驗設計
