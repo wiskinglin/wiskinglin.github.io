@@ -1,11 +1,11 @@
-# PocketFlow 系統設計規格書 (Software Design Document, SDD)
+# PocketMoney 系統設計規格書 (Software Design Document, SDD)
 
 ---
 
 ## 文件資訊
-- **軟體名稱**：PocketFlow (個人財務總覽與 30 號扣繳檢核系統)
-- **軟體版本**：`0.0.1` (儲存 Schema: `pocketflow_tw_finance_v3`)
-- **檔案路徑**：[`tools/finte.html`](file:///c:/Playground26/wiskinglin.github.io/tools/finte.html)
+- **軟體名稱**：PocketMoney (個人財務總覽與 30 號扣繳檢核系統)
+- **軟體版本**：`0.0.1` (儲存 Schema: `PocketMoney_tw_finance_v3`)
+- **檔案路徑**：[`tools/pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/tools/pocketmoney.html)
 - **文件狀態**：正式版本 (Active)
 - **適用對象**：前端工程師、系統架構師、UI/UX 設計師、測試工程師
 
@@ -14,10 +14,10 @@
 ## 1. 系統架構與設計概述 (System Overview & Architecture)
 
 ### 1.1 系統定位與核心理念
-PocketFlow 是一套專為個人財務設計的**無伺服器單頁應用程式 (Serverless Local-First SPA)**。其核心價值在於解決多帳戶、多信用卡與多筆分期付款時，月底扣繳可能面臨的資金斷鏈風險。
+PocketMoney 是一套專為個人財務設計的**無伺服器單頁應用程式 (Serverless Local-First SPA)**。其核心價值在於解決多帳戶、多信用卡與多筆分期付款時，月底扣繳可能面臨的資金斷鏈風險。
 系統奉行三大核心原則：
-1. **抓大放小 (Focus on Significant Expenses)**：不浪費精力記錄瑣碎流水帳，專注於各卡本期總額與單筆超過 NT$ 5,000 的大額消費。
-2. **月底扣繳水位檢核 (Liquidity Checkup on 30th)**：以每月 10 號收單、30 號銀行自動扣繳為週期基準，自動歸戶並檢核各扣款銀行的資產水位。
+1. **抓大放小 (Focus on Real Cash Availability)**：不記瑣碎流水帳，算清手頭還能安心花多少錢（專注於各卡本期總額與大額消費，告別瑣碎記帳疲勞）。
+2. **月底扣款防跳票 (戶頭裡的錢，夠不夠扣卡費與生活開銷？)**：以每月自動扣繳為基準，自動歸戶並檢核各扣款銀行的資產健康度，提早攔截扣款失敗與信用違約風險。
 3. **本地優先與絕對隱私 (Local-First & Absolute Privacy)**：100% 運行於使用者瀏覽器本地端，無後端伺服器依賴，支援 4 位數 PIN 碼、離線單機版封裝與 CSV/JSON 遷移。
 
 ### 1.2 系統架構圖 (Architecture Diagram)
@@ -35,7 +35,7 @@ graph TD
         end
         
         subgraph StorageLayer ["Persistence & I/O Layer"]
-            LocalStore[("LocalStorage: pocketflow_tw_finance_v3")]
+            LocalStore[("LocalStorage: PocketMoney_tw_finance_v3")]
             Migration["Legacy Key Migrator (v1/v2 -> v3)"]
             PersistAPI["navigator.storage.persist API"]
             Exporter["Export / Import / Standalone HTML Bundler"]
@@ -70,21 +70,21 @@ sequenceDiagram
     participant Renderer as UI 渲染引擎
     participant PINModal as PIN 鎖定層
 
-    User->>Browser: 開啟 PocketFlow 頁面
+    User->>Browser: 開啟 PocketMoney 頁面
     Browser->>Init: 觸發 onload 事件
-    Init->>Init: 讀取主題設定 (pocketflow_theme)，設定 dark/light class
+    Init->>Init: 讀取主題設定 (PocketMoney_theme)，設定 dark/light class
     Init->>Migrator: 執行 readStoredRaw()
     alt 發現 window.__EMBEDDED_STATE__ (單機離線打包版)
         Migrator-->>Init: 返回嵌入之完整 State
     else 檢查目前 STORAGE_KEY
-        Migrator->>LocalStorage: getItem(pocketflow_tw_finance_v3)
+        Migrator->>LocalStorage: getItem(PocketMoney_tw_finance_v3)
         alt 存在資料
             LocalStorage-->>Init: 返回目前 State
         else 不存在資料，檢查 LEGACY_STORAGE_KEYS
-            Migrator->>LocalStorage: getItem(pocketflow_tw_finance_v2 / v1)
+            Migrator->>LocalStorage: getItem(PocketMoney_tw_finance_v2 / v1 或舊版 pocketflow_*)
             alt 發現舊版資料
                 LocalStorage-->>Migrator: 返回舊版資料
-                Migrator->>LocalStorage: setItem(pocketflow_tw_finance_v3, legacy)
+                Migrator->>LocalStorage: setItem(PocketMoney_tw_finance_v3, legacy)
                 Migrator-->>Init: 搬移完成並載入
             else 完全無資料
                 Migrator-->>Init: 載入預設資料集 DEFAULT_STATE
@@ -163,7 +163,7 @@ flowchart TD
 
 ## 3. UI 設計規範 (Design Tokens & UI Standards)
 
-PocketFlow 嚴格依循 **Nord 主題配色** 與 **Nuxt UI v3 元件層哲學**，採用純 Vanilla CSS + Tailwind CSS 實作，摒棄重量級前端框架，確保極速載入與流暢動態體驗。
+PocketMoney 嚴格依循 **Nord 主題配色** 與 **Nuxt UI v3 元件層哲學**，採用純 Vanilla CSS + Tailwind CSS 實作，摒棄重量級前端框架，確保極速載入與流暢動態體驗。
 
 ### 3.1 色彩系統 (Color Palette - Nord Theme Inspired)
 
@@ -404,8 +404,14 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
 為保證使用者在系統升級時資料不丟失，系統採用雙層容錯架構：
 1. **多鍵容錯讀取**：
    ```javascript
-   const STORAGE_KEY = 'pocketflow_tw_finance_v3';
-   const LEGACY_STORAGE_KEYS = ['pocketflow_tw_finance_v2', 'pocketflow_tw_finance_v1'];
+   const STORAGE_KEY = 'PocketMoney_tw_finance_v3';
+   const LEGACY_STORAGE_KEYS = [
+     'PocketMoney_tw_finance_v2',
+     'PocketMoney_tw_finance_v1',
+     'pocketflow_tw_finance_v3',
+     'pocketflow_tw_finance_v2',
+     'pocketflow_tw_finance_v1'
+   ];
    ```
    若最新 key 查無資料，依序探查舊版 key，一旦查獲立即遷回最新 key，並輸出 Console 日誌。
 2. **持久化儲存保障**：
@@ -425,9 +431,9 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
 
 | 匯出/匯入格式 | 檔名命名規範 | 實作機制 | 目的與特性 |
 | :--- | :--- | :--- | :--- |
-| **Excel 財務總表 (.CSV)** | `PocketFlow_財務報表_YYYYMMDD_HHmmss.csv` | `Blob` + `\uFEFF` (UTF-8 BOM Header) | 解決微軟 Excel 開啟 UTF-8 CSV 中文亂碼問題，支援試算表二次分析，內含銀行、信用卡、分期、股票與固定費用 5 大專題表。 |
-| **JSON 完整備份 (.json)** | `PocketFlow_備份_YYYYMMDD_HHmmss.json` | `JSON.stringify(state, null, 2)` | 跨瀏覽器、跨裝置完整備份與無損資料還原。 |
-| **單機版 HTML 打包 (.html)** | `PocketFlow_單機版_YYYYMMDD_HHmmss.html` | `document.documentElement.cloneNode(true)` + 注入 `<script>window.__EMBEDDED_STATE__ = ...</script>` | 將系統本體與當前所有財務資料封裝為單一 `.html` 檔案，支援點擊直接離線開啟使用。 |
+| **Excel 財務總表 (.CSV)** | `PocketMoney_財務報表_YYYYMMDD_HHmmss.csv` | `Blob` + `\uFEFF` (UTF-8 BOM Header) | 解決微軟 Excel 開啟 UTF-8 CSV 中文亂碼問題，支援試算表二次分析，內含銀行、信用卡、分期、股票與固定費用 5 大專題表。 |
+| **JSON 完整備份 (.json)** | `PocketMoney_備份_YYYYMMDD_HHmmss.json` | `JSON.stringify(state, null, 2)` | 跨瀏覽器、跨裝置完整備份與無損資料還原。 |
+| **單機版 HTML 打包 (.html)** | `PocketMoney_單機版_YYYYMMDD_HHmmss.html` | `document.documentElement.cloneNode(true)` + 注入 `<script>window.__EMBEDDED_STATE__ = ...</script>` | 將系統本體與當前所有財務資料封裝為單一 `.html` 檔案，支援點擊直接離線開啟使用。 |
 
 ---
 
@@ -466,7 +472,7 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
 | :--- | :--- | :--- | :--- |
 | **TC-01** | 銀行不足額檢核 | 帳戶餘額 NT$ 10,000，綁定卡費 NT$ 12,000 | 顯示「差 NT$ 2,000」，卡片紅框警示，導覽列出現紅底警告徽章。 |
 | **TC-02** | 扣款入帳扣除 | 帳戶餘額 NT$ 20,000，扣繳 NT$ 5,000 | 餘額更新為 NT$ 15,000，卡片標記為「已繳清」，待扣總額降為 0。 |
-| **TC-03** | 舊版資料無縫升級 | LocalStorage 僅含 `pocketflow_tw_finance_v2` | 自動遷移至 `v3` Key，資料完整載入，Console 輸出遷移日誌。 |
+| **TC-03** | 舊版資料無縫升級 | LocalStorage 僅含舊版 `pocketflow_tw_finance_v3` 或 `PocketMoney_tw_finance_v2` | 自動遷移至 `PocketMoney_tw_finance_v3` Key，資料完整載入，Console 輸出遷移日誌。 |
 | **TC-04** | Excel CSV 中文編碼 | 匯出 CSV 並以 Windows Excel 開啟 | 中文文字（銀行名稱、消費項目）無亂碼，數字格式正確對齊。 |
 | **TC-05** | PIN 碼阻擋驗證 | 設定 PIN 碼 1234，重新整理頁面 | 全螢幕彈出鎖定遮罩，輸入錯誤代碼提示「PIN 碼錯誤」，輸入 1234 順利解除。 |
 | **TC-06** | 單機版離線自閉包 | 執行「下載單機版 HTML」，拔除網路開啟 | 介面正常運作，包含當前所有資料，無需任何外部 CDN 亦可讀取 State。 |
