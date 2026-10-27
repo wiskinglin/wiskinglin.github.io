@@ -386,6 +386,16 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
    - **刪除保護與解綁**：當使用者欲刪除尚有分期綁定的信用卡時，系統主動跳出確認警示，刪除後分期項目自動解綁並標記為「已刪除卡片」，防止資料孤島或渲染中斷。
    - **向後相容遷移機制**：`loadState()` 內建修復管線，若舊版資料僅含 `cardName` 字串而無 `cardId`，系統在載入時自動依據名稱進行匹配賦值，確保舊版資料平滑升級。
 
+### 4.4 人生階段示範情境資料模型 (Preset Scenarios - 代入感模擬)
+
+為提升新使用者初次體驗與不同財務生命週期的代入感，系統提供 3 組具備鮮明生活情境的預設資料模組（`PRESET_SCENARIOS`），並提供一鍵切換與確認機制：
+
+| 示範情境 | 目標族群 | 帳戶與信用卡架構 | 核心負債與生活支出 | 投資與資產規模 (代入感側寫) |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. 初級大人** | `<30` 歲小資族 | 1 個銀行戶 (台新 Richart 數位高利活存)<br>1 張信用卡 (台新 @GoGo 黑狗卡) | 套房租金 (NT$ 12,500/月)<br>5G 門號 (NT$ 599)<br>iPhone 16 官網 12 期分期 | 0050 元大台灣50 每月定期定額 6,000 元（累積市值約 28.8 萬），總淨資產約 31 萬，清楚好掌控。 |
+| **2. 少子化勇者** | `30-40` 歲家庭用戶 | 3 個專戶 (中信房貸戶、國泰家庭生活戶、富邦證券備用户)<br>2 張家庭信用卡 (國泰 CUBE、富邦 J 卡) | 首購房屋貸款 (NT$ 38,500/月)<br>幼兒園安親費 (NT$ 16,500/月)<br>大樓管費與家庭水電<br>滾筒洗衣機與兒童汽座分期 | 3-5 檔穩健權值股 (台積電、鴻海、0050、00878)，銀行存款約 50 萬，股票市值破 200 萬，呈現資金分流扣款檢核精髓。 |
+| **3. 高級大人** | `40+` 歲高資產族群 | 5 大多幣專戶 (國泰尊爵VIP、兆豐美金定存、富邦證券、中信物業、玉山私備)<br>3 張頂級卡 (AE簽帳白金、國泰世界卡、富邦尊御) | 豪宅置產房貸 (NT$ 72,000/月)<br>雙語私校教育基金 (NT$ 35,000/月)<br>百坪物業管費<br>Porsche Macan EV 尊榮分期 | 台積電 5 張、聯發科 2 張、0050 15 張、鴻海 5 張與美債 ETF 30 張，股票市值破 1200 萬，流動資產逾 500 萬，展現多幣抗風險韌性。 |
+
 ---
 
 ## 5. 工程實作與系統特性 (Engineering & System Features)
@@ -427,6 +437,8 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
 | :--- | :--- | :--- | :--- |
 | **狀態核心** | `loadState()` | 無 | 載入並校驗 LocalStorage 或內嵌 State，平滑相容舊版缺漏之 `cardId` 與 `securitiesBankIds`。 |
 | **狀態核心** | `saveState()` | 無 | 將當前 `state` 物件序列化寫入 LocalStorage。 |
+| **情境切換** | `loadPresetScenario(key)`| `key: 'junior' \| 'family' \| 'senior'` | 彈出確認對話方塊，一鍵覆寫載入對應年齡層與財務型態之完整示範資料。 |
+| **情境切換** | `resetToDemoData()` | 無 | 相容舊版呼叫，預設載入高級大人高資產情境資料。 |
 | **計算引擎** | `computeFinancialMetrics()` | 無 | 計算全站淨資產、銀行檢核、分期負擔、固定費用平準化與證券戶動態待命金。 |
 | **視圖控制器** | `renderAll()` | 無 | 協調呼叫各子模組渲染函式，更新全域徽章與倒數資訊。 |
 | **視圖控制器** | `switchTab(tabId)` | `tabId: string` | 切換當前頁籤（dashboard, cards, installments, bills, stocks, settings）。 |
@@ -436,7 +448,9 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
 | **固定費用** | `toggleAllBimonthlyBillsStatus()` | 無 | 一鍵切換所有雙月帳單狀態（在「本期免繳」與「待繳」間快速翻轉）。 |
 | **分期模組** | `stepInstallment(id, delta)` | `id: string, delta: number` | 調整單筆分期已繳期數（+1 或 -1）。 |
 | **分期模組** | `advanceAllInstallmentsOnePeriod()`| 無 | 所有進行中分期批次推進 1 期。 |
-| **台股模組** | `toggleSecuritiesBank(bankId)` | `bankId: string` | 切換指定銀行是否納入股市待命現金池加總。 |
+| **台股模組** | `openSecuritiesBanksModal()` | 無 | 開啟證券待命現金關聯帳戶設定彈窗表單。 |
+| **台股模組** | `renderSecuritiesBanksModalList()` | 無 | 渲染彈窗內各銀行核取狀態與已勾選待命金即時加總預覽。 |
+| **台股模組** | `toggleSecuritiesBank(bankId)` | `bankId: string` | 切換指定銀行是否納入股市待命現金池加總，立即自動儲存並同步更新背景數值。 |
 | **台股模組** | `updateStockMinRatioConfig()` | 無 | 讀取目標最低持倉水位滑桿並更新儲存。 |
 | **台股模組** | `updateStockInline(id, field, val)`| `id, field, val` | 即時內聯更新股票股數、市價或成本均價。 |
 | **安全控制** | `enterPinDigit(digit)` | `digit: string` | 處理 PIN 碼輸入，比對滿 4 碼時自動驗證。 |
