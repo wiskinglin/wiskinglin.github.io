@@ -5,6 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>PocketFlow</title>
+  <!-- Web Manifest & Icons -->
+  <link rel="manifest" href="finte.webmanifest">
+  <link rel="apple-touch-icon" href="icons/finte.png">
+  <link rel="icon" type="image/png" href="icons/finte.png">
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome Icons -->
@@ -499,7 +503,7 @@
           <button onclick="settleAllPendingBills()"
             class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition shrink-0">
             <i class="fa-solid fa-bolt-lightning"></i>
-            <span>模擬 30 號一鍵全數扣款</span>
+            <span>信用卡全數扣款</span>
           </button>
         </div>
 
@@ -575,14 +579,14 @@
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
               <i class="fa-solid fa-credit-card text-rose-500"></i>
-              <span>各家信用卡本期帳單 (10號收單 / 30號扣款)</span>
+              <span>各家信用卡本期帳單 (10號收單 / 20號扣款)</span>
             </h2>
             <p class="text-fluid-sub text-slate-400">只需輸入本期帳單總額，並記下超過 $5,000 元的大額刷卡項目</p>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="resetAllCardsNewMonth()"
               class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold num-nowrap">
-              <i class="fa-solid fa-rotate-right mr-1"></i>新月份重置
+              <i class="fa-solid fa-rotate-right mr-1"></i>新月份卡費已登錄
             </button>
             <button onclick="openCardModal()"
               class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
@@ -641,6 +645,36 @@
 
     <!-- ==================== TAB 4: 週期固定費用 ==================== -->
     <section id="tab-bills" class="tab-section hidden space-y-4">
+      <!-- 固定費用三大統計指標卡片 -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 fluid-gap">
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">當期 30 號待繳總額</span>
+          <div id="billsUnpaidTotal" class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">NT$ 0</div>
+          <span class="text-fluid-sub text-slate-400 mt-2">計入指定銀行 30 號扣款檢核</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">常態每月固定支出 (平準化)</span>
+          <div id="billsMonthlyBaseCost" class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 0 / 月</div>
+          <span class="text-fluid-sub text-slate-400 mt-2">雙月折半、季繳除三的基本生活成本</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-fluid-sub text-slate-400 font-bold">本期費用狀態分佈</span>
+            <div id="billsStatusSummary" class="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span class="px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-500 font-bold text-fluid-sub">待繳 0 筆</span>
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-500 font-bold text-fluid-sub">已繳 0 筆</span>
+              <span class="px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold text-fluid-sub">免繳 0 筆</span>
+            </div>
+          </div>
+          <button onclick="toggleAllBimonthlyBillsStatus()"
+            class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3 transition">
+            <i class="fa-solid fa-arrows-rotate"></i> 雙月帳單一鍵切換免繳/待繳
+          </button>
+        </div>
+      </div>
+
       <div
         class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
@@ -715,21 +749,26 @@
           </div>
         </div>
 
-        <!-- 右：待命現金池設定 -->
+        <!-- 右：待命現金池設定 (連動證券戶) -->
         <div
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
           <div>
-            <h3 class="text-fluid-h3 font-bold mb-1">股市待命現金池設定</h3>
-            <p class="text-fluid-sub text-slate-400 mb-2.5">輸入交割戶備用金，即時計算持倉水位</p>
-            <label class="block text-fluid-sub font-semibold text-slate-500 mb-1">股票專用待命現金 (NT$)</label>
-            <input type="number" id="stockCashPoolInput" onchange="updateStockPoolConfig()"
-              class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-fluid-body">
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <h3 class="text-fluid-h3 font-bold">股市待命現金池 (證券戶)</h3>
+              <span id="stockSecuritiesCashTotal" class="font-mono font-extrabold text-amber-500 text-fluid-body num-nowrap">NT$ 0</span>
+            </div>
+            <p class="text-fluid-sub text-slate-400 mb-2">已連結下方勾選之銀行證券戶餘額，自動計算持倉水位</p>
+            
+            <div class="mb-2">
+              <span class="block text-fluid-sub font-semibold text-slate-500 mb-1">勾選作為股市待命金之銀行戶：</span>
+              <div id="securitiesBanksCheckboxes" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+            </div>
           </div>
 
           <div>
             <label class="block text-fluid-sub font-semibold text-slate-500 mb-1">目標最低持倉水位 (%)</label>
             <div class="flex items-center gap-3">
-              <input type="range" id="stockMinRatioInput" min="10" max="95" step="5" onchange="updateStockPoolConfig()"
+              <input type="range" id="stockMinRatioInput" min="10" max="95" step="5" onchange="updateStockMinRatioConfig()"
                 oninput="document.getElementById('stockMinRatioVal').innerText = this.value + '%'"
                 class="flex-1 accent-indigo-500">
               <span id="stockMinRatioVal"
@@ -857,7 +896,8 @@
         privacyMode: false,
         pinCode: '',
         stockCashPool: 450000,
-        stockMinHoldRatio: 70
+        stockMinHoldRatio: 70,
+        securitiesBankIds: ['bank_esun_sec', 'bank_ctbc_sec', 'bank_fubon']
       },
       banks: [
         { id: 'bank_megabank', name: '兆豐台幣', balance: 88888, note: '' },
@@ -1011,6 +1051,12 @@
             }
           });
         }
+        // 向後相容遷移：若設定中缺少 securitiesBankIds，預設勾選名稱含「證券」的銀行帳戶
+        if (!Array.isArray(loaded.settings.securitiesBankIds) && loaded.banks) {
+          loaded.settings.securitiesBankIds = loaded.banks
+            .filter(b => b.name.includes('證券') || b.id.includes('sec'))
+            .map(b => b.id);
+        }
         return loaded;
       } catch (e) {
         console.error('[PocketFlow] 讀取本地資料失敗，改用預設值：', e);
@@ -1115,13 +1161,33 @@
       });
       const stockPnL = stockMarketValue - stockCostValue;
       const stockPnLPercent = stockCostValue > 0 ? (stockPnL / stockCostValue) * 100 : 0;
-      const stockCashPool = Number(state.settings.stockCashPool) || 0;
+      
+      // 待命現金餘額：動態加總所有勾選之證券帳戶餘額
+      const secBankIds = Array.isArray(state.settings.securitiesBankIds)
+        ? state.settings.securitiesBankIds
+        : state.banks.filter(b => b.name.includes('證券') || b.id.includes('sec')).map(b => b.id);
+      const stockCashPool = state.banks
+        .filter(b => secBankIds.includes(b.id))
+        .reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
       const stockTotalPool = stockMarketValue + stockCashPool;
       const stockHoldRatio = stockTotalPool > 0 ? Math.round((stockMarketValue / stockTotalPool) * 100) : 0;
       const stockCashRatio = 100 - stockHoldRatio;
 
       const unpaidCardTotal = state.cards.filter(c => !c.paid).reduce((sum, c) => sum + (Number(c.statementTotal) || 0), 0);
       const unpaidBillsTotal = state.bills.filter(b => b.status === 'unpaid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+      const paidBillsTotal = state.bills.filter(b => b.status === 'paid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+      const unpaidBillsCount = state.bills.filter(b => b.status === 'unpaid').length;
+      const paidBillsCount = state.bills.filter(b => b.status === 'paid').length;
+      const skippedBillsCount = state.bills.filter(b => b.status === 'skipped').length;
+
+      // 常態每月基本生活固定支出 (每月 100%、雙月 /2、季繳 /3、年繳 /12)
+      let billsMonthlyBaseCost = 0;
+      state.bills.forEach(b => {
+        const amt = Number(b.amount) || 0;
+        if (b.cycle === '雙月帳單') billsMonthlyBaseCost += Math.round(amt / 2);
+        else if (b.cycle === '季繳/年繳') billsMonthlyBaseCost += Math.round(amt / 3);
+        else billsMonthlyBaseCost += amt;
+      });
       const totalUnpaidLiabilities = unpaidCardTotal + unpaidBillsTotal;
 
       let installmentMonthlyTotal = 0;
@@ -1160,8 +1226,9 @@
 
       return {
         totalBankBalance, stockMarketValue, stockCostValue, stockPnL, stockPnLPercent,
-        stockCashPool, stockTotalPool, stockHoldRatio, stockCashRatio,
-        unpaidCardTotal, unpaidBillsTotal, totalUnpaidLiabilities,
+        stockCashPool, stockTotalPool, stockHoldRatio, stockCashRatio, secBankIds,
+        unpaidCardTotal, unpaidBillsTotal, paidBillsTotal, unpaidBillsCount, paidBillsCount, skippedBillsCount,
+        billsMonthlyBaseCost, totalUnpaidLiabilities,
         installmentMonthlyTotal, installmentRemainingTotal, activeInstallmentsCount,
         bankCheckups, totalAssets, netWorth
       };
@@ -1417,7 +1484,7 @@
         const bankName = bank ? bank.name : '未綁定銀行';
         const bigSum = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
         const otherSmallSum = Math.max(0, (Number(c.statementTotal) || 0) - bigSum);
-        
+
         // 取得綁定此信用卡的進行中分期
         const boundInsts = state.installments.filter(inst => {
           const matchCard = inst.cardId ? (inst.cardId === c.id) : (inst.cardName === c.name);
@@ -1576,6 +1643,14 @@
     }
 
     function renderBills(m) {
+      document.getElementById('billsUnpaidTotal').innerText = fmtMoney(m.unpaidBillsTotal);
+      document.getElementById('billsMonthlyBaseCost').innerText = `${fmtMoney(m.billsMonthlyBaseCost)} / 月`;
+      document.getElementById('billsStatusSummary').innerHTML = `
+        <span class="px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-500 font-bold text-fluid-sub num-nowrap">待繳 ${m.unpaidBillsCount} 筆</span>
+        <span class="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-500 font-bold text-fluid-sub num-nowrap">已繳 ${m.paidBillsCount} 筆</span>
+        <span class="px-2 py-0.5 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-400 font-bold text-fluid-sub num-nowrap">免繳 ${m.skippedBillsCount} 筆</span>
+      `;
+
       const container = document.getElementById('recurringBillsList');
       container.innerHTML = state.bills.map(b => {
         const bank = state.banks.find(x => x.id === b.bankId);
@@ -1615,10 +1690,27 @@
       }).join('');
     }
 
+    function toggleAllBimonthlyBillsStatus() {
+      const bimonthlyBills = state.bills.filter(b => b.cycle === '雙月帳單');
+      if (bimonthlyBills.length === 0) return showToast('目前無雙月帳單項目', 'info');
+
+      const allSkipped = bimonthlyBills.every(b => b.status === 'skipped');
+      const targetStatus = allSkipped ? 'unpaid' : 'skipped';
+
+      bimonthlyBills.forEach(b => {
+        b.status = targetStatus;
+      });
+      saveState();
+      renderAll();
+      showToast(targetStatus === 'skipped' ? '已將所有雙月帳單切換為「本期免繳」' : '已將所有雙月帳單切換為「待繳」');
+    }
+
     function renderStocks(m) {
       document.getElementById('stockPoolTotal').innerText = fmtMoney(m.stockTotalPool);
       document.getElementById('stockHoldingsValue').innerText = fmtMoney(m.stockMarketValue);
       document.getElementById('stockHoldingsCost').innerText = fmtMoney(m.stockCostValue);
+      const secCashTotalEl = document.getElementById('stockSecuritiesCashTotal');
+      if (secCashTotalEl) secCashTotalEl.innerText = fmtMoney(m.stockCashPool);
 
       const pnlEl = document.getElementById('stockTotalPnL');
       const sign = m.stockPnL >= 0 ? '+' : '';
@@ -1634,9 +1726,26 @@
       document.getElementById('stockTargetCashMaxLabel').innerText = `${100 - state.settings.stockMinHoldRatio}%`;
       document.getElementById('stockTabBar').style.width = `${m.stockHoldRatio}%`;
 
-      document.getElementById('stockCashPoolInput').value = state.settings.stockCashPool;
       document.getElementById('stockMinRatioInput').value = state.settings.stockMinHoldRatio;
       document.getElementById('stockMinRatioVal').innerText = `${state.settings.stockMinHoldRatio}%`;
+
+      // 渲染證券戶勾選 Checkbox 清單
+      const secCheckboxContainer = document.getElementById('securitiesBanksCheckboxes');
+      if (secCheckboxContainer) {
+        secCheckboxContainer.innerHTML = state.banks.map(b => {
+          const isChecked = m.secBankIds.includes(b.id);
+          return `
+            <label class="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 text-fluid-sub">
+              <div class="flex items-center gap-2 min-w-0">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleSecuritiesBank('${b.id}')"
+                  class="rounded text-indigo-600 focus:ring-indigo-500">
+                <span class="font-bold truncate ${isChecked ? 'text-indigo-500 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}">${b.name}</span>
+              </div>
+              <span class="font-mono font-bold num-nowrap text-slate-500 dark:text-slate-400">${fmtMoney(b.balance)}</span>
+            </label>
+          `;
+        }).join('');
+      }
 
       const badge = document.getElementById('stockTabAlertBadge');
       if (m.stockHoldRatio < state.settings.stockMinHoldRatio) {
@@ -1847,12 +1956,26 @@
       renderAll();
     }
 
-    function updateStockPoolConfig() {
-      state.settings.stockCashPool = Number(document.getElementById('stockCashPoolInput').value) || 0;
+    function toggleSecuritiesBank(bankId) {
+      if (!Array.isArray(state.settings.securitiesBankIds)) {
+        state.settings.securitiesBankIds = [];
+      }
+      const idx = state.settings.securitiesBankIds.indexOf(bankId);
+      if (idx > -1) {
+        state.settings.securitiesBankIds.splice(idx, 1);
+      } else {
+        state.settings.securitiesBankIds.push(bankId);
+      }
+      saveState();
+      renderAll();
+      showToast('已更新股市待命現金帳戶綁定');
+    }
+
+    function updateStockMinRatioConfig() {
       state.settings.stockMinHoldRatio = Number(document.getElementById('stockMinRatioInput').value) || 70;
       saveState();
       renderAll();
-      showToast('已更新台股現金池設定');
+      showToast('已更新目標持倉水位');
     }
 
     function updateStockInline(id, field, val) {
@@ -2258,13 +2381,20 @@
       });
     }
 
+    function getExportTimestamp() {
+      const d = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    }
+
     function exportToExcelCSV() {
       const m = computeFinancialMetrics();
       const rows = [
         ['【PocketFlow 個人財務與 30 號扣款檢核報表】', `匯出時間：${new Date().toLocaleString('zh-TW')}`],
         ['目前總淨資產', m.netWorth, '總資產(銀行+股市資金池)', m.totalAssets, '本月待繳總負債', m.totalUnpaidLiabilities],
+        ['常態每月固定生活支出', m.billsMonthlyBaseCost, '股市待命現金池(證券戶)', m.stockCashPool, '波段持倉總市值', m.stockMarketValue],
         [],
-        ['=== 銀行自動扣繳餘額檢查 ==='],
+        ['=== 一、銀行自動扣繳餘額檢查 ==='],
         ['銀行名稱', '目前餘額', '30號待扣卡費', '30號待扣固定費', '30號待扣總計', '扣後預計結餘', '狀態']
       ];
       m.bankCheckups.forEach(b => {
@@ -2291,13 +2421,19 @@
         const cost = s.shares * s.avgCost;
         rows.push([s.code, s.name, s.shares, s.avgCost, s.currentPrice, val, val - cost]);
       });
+      rows.push([], ['=== 五、每月/雙月週期固定費用 ==='], ['費用名稱', '繳費週期', '扣款銀行', '當期金額', '狀態']);
+      state.bills.forEach(b => {
+        const bankName = state.banks.find(x => x.id === b.bankId)?.name || '未指定';
+        const statusMap = { unpaid: '待繳', paid: '已繳', skipped: '免繳' };
+        rows.push([b.name, b.cycle, bankName, b.amount, statusMap[b.status] || b.status]);
+      });
 
       const csvContent = '\uFEFF' + rows.map(r => r.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `PocketFlow_財務報表_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `PocketFlow_財務報表_${getExportTimestamp()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       showToast('已匯出 Excel (CSV) 報表！');
@@ -2308,7 +2444,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `PocketFlow_備份_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `PocketFlow_備份_${getExportTimestamp()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showToast('已匯出 JSON 備份檔！');
@@ -2342,7 +2478,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `PocketFlow_單機版_${new Date().toISOString().slice(0, 10)}.html`;
+      a.download = `PocketFlow_單機版_${getExportTimestamp()}.html`;
       a.click();
       URL.revokeObjectURL(url);
       showToast('已下載單機版 HTML！');

@@ -313,7 +313,7 @@ erDiagram
     SETTINGS {
         boolean privacyMode "隱私遮罩模式"
         string pinCode "4位數字安全碼 (可為空)"
-        number stockCashPool "台股專用待命現金 (NT$)"
+        array securitiesBankIds "作為股市待命金之證券交割戶 ID 集合"
         number stockMinHoldRatio "目標最低持倉水位 (預設 70%)"
     }
 ```
@@ -334,7 +334,15 @@ $$LeftPeriods(I_k) = \max(0, I_k.totalPeriods - I_k.paidPeriods)$$
 $$MonthlyBurn = \sum_{I_k \in Installments, LeftPeriods(I_k) > 0} I_k.monthlyAmount$$
 $$RemainingLiability = \sum_{I_k \in Installments} (LeftPeriods(I_k) \times I_k.monthlyAmount)$$
 
-#### 3. 台股波段水位與帳面損益 (Stock Pool & PnL Formulae)
+#### 3. 固定費用分析與平準化支出公式 (Recurring Bills Formulae)
+對於生活週期固定費用集合 $Bills$：
+$$BillsUnpaidTotal = \sum_{b \in Bills, b.status = 'unpaid'} b.amount$$
+$$BillsMonthlyBaseCost = \sum_{b \in Bills} \left( \begin{cases} \mathrm{round}(b.amount / 2) & \text{if cycle = '雙月帳單'} \\ \mathrm{round}(b.amount / 3) & \text{if cycle = '季繳/年繳'} \\ b.amount & \text{otherwise} \end{cases} \right)$$
+
+#### 4. 台股波段水位與帳面損益 (Stock Pool & PnL Formulae)
+待命現金餘額由勾選之證券帳戶動態加總計算：
+$$StockCashPool = \sum_{B_i \in Banks, B_i.id \in Settings.securitiesBankIds} B_i.balance$$
+
 對於持有持股集合 $Stocks$：
 $$MarketVal(S_j) = S_j.shares \times S_j.currentPrice$$
 $$CostVal(S_j) = S_j.shares \times S_j.avgCost$$
@@ -342,11 +350,11 @@ $$StockMarketValue = \sum MarketVal(S_j)$$
 $$StockCostValue = \sum CostVal(S_j)$$
 $$StockPnL = StockMarketValue - StockCostValue$$
 $$StockPnL\% = \begin{cases} \frac{StockPnL}{StockCostValue} \times 100\% & \text{if } StockCostValue > 0 \\ 0 & \text{otherwise} \end{cases}$$
-$$StockTotalPool = StockMarketValue + Settings.stockCashPool$$
+$$StockTotalPool = StockMarketValue + StockCashPool$$
 $$StockHoldRatio = \begin{cases} \mathrm{round}\left(\frac{StockMarketValue}{StockTotalPool} \times 100\right) & \text{if } StockTotalPool > 0 \\ 0 & \text{otherwise} \end{cases}$$
 $$StockCashRatio = 100 - StockHoldRatio$$
 
-#### 4. 全局淨資產 (Total Net Worth)
+#### 5. 全局淨資產 (Total Net Worth)
 $$TotalAssets = \sum B_i.balance + StockTotalPool$$
 $$TotalLiabilities = \sum_{c.paid=false} c.statementTotal + \sum_{b.status='unpaid'} b.amount$$
 $$NetWorth = TotalAssets - TotalLiabilities$$
@@ -393,11 +401,13 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
 
 ### 5.3 離線備份與單機打包引擎 (Portability Engine)
 
-| 匯出/匯入格式 | 實作機制 | 目的與特性 |
-| :--- | :--- | :--- |
-| **Excel 財務總表 (.CSV)** | `Blob` + `\uFEFF` (UTF-8 BOM Header) | 解決微軟 Excel 開啟 UTF-8 CSV 中文亂碼問題，支援試算表二次分析。 |
-| **JSON 完整備份 (.json)** | `JSON.stringify(state, null, 2)` | 跨瀏覽器、跨裝置完整備份與無損資料還原。 |
-| **單機版 HTML 打包 (.html)** | `document.documentElement.cloneNode(true)` + 注入 `<script>window.__EMBEDDED_STATE__ = ...</script>` | 將系統本體與當前所有財務資料封裝為單一 `.html` 檔案，支援點擊直接離線開啟使用。 |
+所有匯出檔案檔名均透過 `getExportTimestamp()` 自動加上 `YYYYMMDD_HHmmss` 時間戳記，確保同一天內多次備份匯出不會產生同名覆蓋。
+
+| 匯出/匯入格式 | 檔名命名規範 | 實作機制 | 目的與特性 |
+| :--- | :--- | :--- | :--- |
+| **Excel 財務總表 (.CSV)** | `PocketFlow_財務報表_YYYYMMDD_HHmmss.csv` | `Blob` + `\uFEFF` (UTF-8 BOM Header) | 解決微軟 Excel 開啟 UTF-8 CSV 中文亂碼問題，支援試算表二次分析，內含銀行、信用卡、分期、股票與固定費用 5 大專題表。 |
+| **JSON 完整備份 (.json)** | `PocketFlow_備份_YYYYMMDD_HHmmss.json` | `JSON.stringify(state, null, 2)` | 跨瀏覽器、跨裝置完整備份與無損資料還原。 |
+| **單機版 HTML 打包 (.html)** | `PocketFlow_單機版_YYYYMMDD_HHmmss.html` | `document.documentElement.cloneNode(true)` + 注入 `<script>window.__EMBEDDED_STATE__ = ...</script>` | 將系統本體與當前所有財務資料封裝為單一 `.html` 檔案，支援點擊直接離線開啟使用。 |
 
 ---
 
@@ -405,18 +415,22 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
 
 | 模組分類 | 函式名稱 | 參數 | 責任與行為說明 |
 | :--- | :--- | :--- | :--- |
-| **狀態核心** | `loadState()` | 無 | 載入並校驗 LocalStorage 或內嵌 State，合併預設屬性。 |
+| **狀態核心** | `loadState()` | 無 | 載入並校驗 LocalStorage 或內嵌 State，平滑相容舊版缺漏之 `cardId` 與 `securitiesBankIds`。 |
 | **狀態核心** | `saveState()` | 無 | 將當前 `state` 物件序列化寫入 LocalStorage。 |
-| **計算引擎** | `computeFinancialMetrics()` | 無 | 計算全站淨資產、銀行檢核陣列、分期負擔、股票損益與水位。 |
+| **計算引擎** | `computeFinancialMetrics()` | 無 | 計算全站淨資產、銀行檢核、分期負擔、固定費用平準化與證券戶動態待命金。 |
 | **視圖控制器** | `renderAll()` | 無 | 協調呼叫各子模組渲染函式，更新全域徽章與倒數資訊。 |
 | **視圖控制器** | `switchTab(tabId)` | `tabId: string` | 切換當前頁籤（dashboard, cards, installments, bills, stocks, settings）。 |
 | **銀行扣繳** | `settleSingleBankBills(bankId)` | `bankId: string` | 針對指定單一銀行執行扣繳（扣餘額並標記卡費與固定費用已繳）。 |
 | **銀行扣繳** | `settleAllPendingBills()` | 無 | 模擬 30 號全數銀行一鍵批次扣款。 |
-| **銀行扣繳** | `resetAllCardsNewMonth()` | 無 | 重置所有卡片為未繳，進入下一個月檢核週期。 |
+| **銀行扣繳** | `resetAllCardsNewMonth()` | 無 | 重置所有卡片與固定費用為未繳，進入下一個月檢核週期。 |
+| **固定費用** | `toggleAllBimonthlyBillsStatus()` | 無 | 一鍵切換所有雙月帳單狀態（在「本期免繳」與「待繳」間快速翻轉）。 |
 | **分期模組** | `stepInstallment(id, delta)` | `id: string, delta: number` | 調整單筆分期已繳期數（+1 或 -1）。 |
 | **分期模組** | `advanceAllInstallmentsOnePeriod()`| 無 | 所有進行中分期批次推進 1 期。 |
+| **台股模組** | `toggleSecuritiesBank(bankId)` | `bankId: string` | 切換指定銀行是否納入股市待命現金池加總。 |
+| **台股模組** | `updateStockMinRatioConfig()` | 無 | 讀取目標最低持倉水位滑桿並更新儲存。 |
 | **台股模組** | `updateStockInline(id, field, val)`| `id, field, val` | 即時內聯更新股票股數、市價或成本均價。 |
 | **安全控制** | `enterPinDigit(digit)` | `digit: string` | 處理 PIN 碼輸入，比對滿 4 碼時自動驗證。 |
+| **打包匯出** | `getExportTimestamp()` | 無 | 產生 `YYYYMMDD_HHmmss` 精確時間戳記字串。 |
 | **打包匯出** | `exportToExcelCSV()` | 無 | 產出含 UTF-8 BOM 之 CSV 報表。 |
 | **打包匯出** | `downloadStandaloneHTML()` | 無 | DOM 自複製並注入當前狀態，下載單機 HTML。 |
 
