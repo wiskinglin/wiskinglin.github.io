@@ -418,7 +418,7 @@
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
               <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
-                <i class="fa-solid fa-chart-line text-indigo-500 mr-1"></i>2. 台股水位與損益
+                <i class="fa-solid fa-chart-line text-indigo-500 mr-1"></i>股票投資損益
               </span>
               <span id="kpiStockAlertBadge"
                 class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap">水位正常</span>
@@ -451,7 +451,7 @@
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
               <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
-                <i class="fa-solid fa-file-invoice-dollar text-rose-500 mr-1"></i>3. 本月待扣款總結
+                <i class="fa-solid fa-file-invoice-dollar text-rose-500 mr-1"></i>本月待扣款總結
               </span>
               <span
                 class="text-fluid-sub font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 num-nowrap">30號自動扣繳</span>
@@ -488,7 +488,7 @@
           <div class="space-y-1.5">
             <div class="flex items-center flex-wrap gap-2">
               <span class="w-2 h-5 rounded-full bg-indigo-500 shrink-0"></span>
-              <h2 class="text-fluid-h2 font-extrabold">每月 30 號各銀行自動扣繳水位檢核</h2>
+              <h2 class="text-fluid-h2 font-extrabold">銀行自動扣繳餘額檢核</h2>
               <span id="bankShortfallSummaryBadge"
                 class="text-fluid-sub px-2.5 py-0.5 rounded-full font-bold num-nowrap">檢核中</span>
             </div>
@@ -557,7 +557,7 @@
               <i class="fa-solid fa-building-columns text-indigo-500"></i>
               <span>台幣銀行帳戶餘額</span>
             </h2>
-            <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算 30 號扣後水位</p>
+            <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算扣繳餘額</p>
           </div>
           <button onclick="openBankModal()"
             class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
@@ -610,7 +610,7 @@
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-center">
           <span class="text-fluid-sub text-slate-400 font-bold">所有分期剩餘未繳總尾款</span>
           <div id="instRemainingTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">NT$ 0</div>
-          <p class="text-fluid-sub text-slate-400 mt-1">分期監控，避免分期費用造成每月現金流壓力</p>
+          <p class="text-fluid-sub text-slate-400 mt-1">負債監控，避免負債持續增加造成每月現金流壓力</p>
         </div>
         <div
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
@@ -1219,8 +1219,8 @@
         stockHint.innerHTML = `<span class="text-amber-500 font-semibold">持倉低於目標 ${state.settings.stockMinHoldRatio}%，待命現金 ${fmtMoney(m.stockCashPool)}</span>`;
       } else {
         alertBadge.className = 'text-fluid-sub font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 num-nowrap';
-        alertBadge.innerHTML = `<i class="fa-solid fa-check mr-1"></i>水位健康 (${m.stockHoldRatio}%)`;
-        stockHint.innerText = `目前待命交割現金池：${fmtMoney(m.stockCashPool)}`;
+        alertBadge.innerHTML = `<i class="fa-solid fa-check mr-1"></i>持股比例 (${m.stockHoldRatio}%)`;
+        stockHint.innerText = `目前現金餘額：${fmtMoney(m.stockCashPool)}`;
       }
 
       document.getElementById('kpiMonthTotalBill').innerText = fmtMoney(m.totalUnpaidLiabilities);
@@ -1372,7 +1372,7 @@
           </div>
 
           <div>
-            <span class="text-fluid-sub text-slate-400 block mb-1">目前帳戶餘額 (點擊直接改數字)</span>
+            <span class="text-fluid-sub text-slate-400 block mb-1">目前帳戶餘額</span>
             <input type="number" value="${b.balance}" onchange="updateBankBalanceInline('${b.id}', this.value)"
               class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
@@ -1549,7 +1549,7 @@
               </div>
 
               <div class="mt-2">
-                <label class="text-fluid-sub text-slate-400 block mb-1">當期金額 (NT$，可直接修改)</label>
+                <label class="text-fluid-sub text-slate-400 block mb-1">NT$當期金額</label>
                 <input type="number" value="${b.amount}" onchange="updateBillAmountInline('${b.id}', this.value)"
                   class="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
@@ -1631,7 +1631,7 @@
                   <span class="font-extrabold font-mono text-fluid-body num-nowrap">${fmtMoney(marketVal)}</span>
                 </div>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="text-slate-400">波段損益 (紅漲綠跌)</span>
+                  <span class="text-slate-400">波段損益</span>
                   <span class="font-extrabold font-mono text-fluid-body num-nowrap ${isGain ? 'text-rose-500' : 'text-emerald-500'}">
                     ${fmtMoney(pnl, true)} (${isGain ? '+' : ''}${pnlPct.toFixed(1)}%)
                   </span>
