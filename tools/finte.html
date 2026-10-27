@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-TW" class="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PocketFlow | 個人資產水位與 30 號扣款管家</title>
+  <title>PocketFlow</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+    rel="stylesheet">
 
   <script>
     tailwind.config = {
@@ -70,14 +73,44 @@
     }
 
     /* 比例文字與數字對齊工具類 */
-    .fluid-page-pad { padding-left: var(--pad-page); padding-right: var(--pad-page); }
-    .fluid-card { padding: var(--pad-card); border-radius: clamp(1rem, 3.5vw, 1.35rem); }
-    .fluid-gap { gap: var(--gap-grid); }
-    .text-fluid-hero { font-size: var(--fs-hero); line-height: 1.15; }
-    .text-fluid-h2 { font-size: var(--fs-h2); line-height: 1.3; }
-    .text-fluid-h3 { font-size: var(--fs-h3); line-height: 1.35; }
-    .text-fluid-body { font-size: var(--fs-body); line-height: 1.45; }
-    .text-fluid-sub { font-size: var(--fs-sub); line-height: 1.35; }
+    .fluid-page-pad {
+      padding-left: var(--pad-page);
+      padding-right: var(--pad-page);
+    }
+
+    .fluid-card {
+      padding: var(--pad-card);
+      border-radius: clamp(1rem, 3.5vw, 1.35rem);
+    }
+
+    .fluid-gap {
+      gap: var(--gap-grid);
+    }
+
+    .text-fluid-hero {
+      font-size: var(--fs-hero);
+      line-height: 1.15;
+    }
+
+    .text-fluid-h2 {
+      font-size: var(--fs-h2);
+      line-height: 1.3;
+    }
+
+    .text-fluid-h3 {
+      font-size: var(--fs-h3);
+      line-height: 1.35;
+    }
+
+    .text-fluid-body {
+      font-size: var(--fs-body);
+      line-height: 1.45;
+    }
+
+    .text-fluid-sub {
+      font-size: var(--fs-sub);
+      line-height: 1.35;
+    }
 
     /* 嚴格禁止金額與狀態標籤折行，並使用等寬對齊數字 */
     .num-nowrap {
@@ -87,14 +120,20 @@
     }
 
     /* 隱藏捲軸但保留滑動功能 */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
     /* 隱藏數字輸入框預設上下箭頭 */
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
-      -webkit-appearance: none; 
-      margin: 0; 
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     /* ==================== Nuxt UI 風格元件層 ====================
@@ -105,28 +144,49 @@
       --ui-radius: 0.5rem;
       --ui-ring: #D8DEE9;
     }
-    html.dark { --ui-ring: #3B4252; }
+
+    html.dark {
+      --ui-ring: #3B4252;
+    }
 
     /* UButton / UBadge / UInput 圓角 (原 rounded-xl 一律改為 Nuxt UI 預設) */
-    html body .rounded-xl { border-radius: var(--ui-radius); }
-    html body .rounded-2xl { border-radius: 0.625rem; }
-    html body .rounded-3xl { border-radius: 0.75rem; }
-    html body .fluid-card { border-radius: 0.75rem; }
+    html body .rounded-xl {
+      border-radius: var(--ui-radius);
+    }
+
+    html body .rounded-2xl {
+      border-radius: 0.625rem;
+    }
+
+    html body .rounded-3xl {
+      border-radius: 0.75rem;
+    }
+
+    html body .fluid-card {
+      border-radius: 0.75rem;
+    }
 
     /* UCard：ring 邊框 + 極淡陰影，取代厚重 shadow */
     html body .fluid-card {
       box-shadow: 0 0 0 1px var(--ui-ring), 0 1px 2px rgb(76 86 106 / 0.06);
       border-color: transparent;
     }
+
     html body .fluid-card.shadow-lg,
-    html body .fluid-card.shadow-md { box-shadow: 0 8px 24px -8px rgb(76 86 106 / 0.35); }
+    html body .fluid-card.shadow-md {
+      box-shadow: 0 8px 24px -8px rgb(76 86 106 / 0.35);
+    }
 
     /* UButton：統一過渡與按下回饋 */
     html body button,
     html body label.cursor-pointer {
       transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .1s ease;
     }
-    html body button:active { transform: scale(0.98); }
+
+    html body button:active {
+      transform: scale(0.98);
+    }
+
     html body button:focus-visible,
     html body label.cursor-pointer:focus-within {
       outline: 2px solid var(--ui-primary);
@@ -143,6 +203,7 @@
       outline: none;
       transition: box-shadow .15s ease;
     }
+
     html body input:not([type=range]):not([type=file]):focus,
     html body select:focus,
     html body textarea:focus {
@@ -150,39 +211,55 @@
     }
 
     /* URange 滑桿 */
-    html body input[type=range] { accent-color: var(--ui-primary); }
+    html body input[type=range] {
+      accent-color: var(--ui-primary);
+    }
 
     /* 頂部導覽列：半透明 + 細線，貼近 UHeader */
-    html body header.sticky { box-shadow: none; border-bottom: 1px solid var(--ui-ring); }
+    html body header.sticky {
+      box-shadow: none;
+      border-bottom: 1px solid var(--ui-ring);
+    }
 
     /* UBadge soft：文字輸出的小徽章更柔和 */
-    html body .rounded-full[class*="px-"] { font-weight: 600; letter-spacing: 0; }
+    html body .rounded-full[class*="px-"] {
+      font-weight: 600;
+      letter-spacing: 0;
+    }
 
     /* UModal：遮罩模糊 + 柔和浮層 */
-    html body #appModal > div,
-    html body #pinLockModal > div {
+    html body #appModal>div,
+    html body #pinLockModal>div {
       box-shadow: 0 0 0 1px var(--ui-ring), 0 20px 40px -12px rgb(46 52 64 / 0.4);
       border-color: transparent;
     }
 
     /* UTooltip / UToast 風格 */
-    html body #toastContainer > div { box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12), 0 8px 20px -6px rgb(46 52 64 / 0.4); }
+    html body #toastContainer>div {
+      box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12), 0 8px 20px -6px rgb(46 52 64 / 0.4);
+    }
 
-    ::selection { background: #81A1C1; color: #ECEFF4; }
+    ::selection {
+      background: #81A1C1;
+      color: #ECEFF4;
+    }
   </style>
 </head>
 
-<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 pb-28">
+<body
+  class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 pb-28">
 
   <!-- ==================== 本地 PIN 碼鎖定遮罩 ==================== -->
   <div id="pinLockModal" class="fixed inset-0 z-50 bg-slate-950 flex-col items-center justify-center p-5 hidden">
-    <div class="w-full max-w-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl text-center">
-      <div class="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center mx-auto mb-3 text-xl">
+    <div
+      class="w-full max-w-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl text-center">
+      <div
+        class="w-12 h-12 rounded-2xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center mx-auto mb-3 text-xl">
         <i class="fa-solid fa-shield-halved"></i>
       </div>
       <h2 class="text-fluid-h2 font-bold mb-1">安全鎖定中</h2>
       <p class="text-fluid-sub text-slate-500 dark:text-slate-400 mb-5">請輸入 4 位數本地 PIN 碼解鎖</p>
-      
+
       <div class="flex justify-center gap-3.5 mb-4" id="pinDots">
         <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-500 transition-all"></div>
         <div class="w-3.5 h-3.5 rounded-full border-2 border-indigo-500 transition-all"></div>
@@ -192,30 +269,44 @@
       <p id="pinErrorMsg" class="text-fluid-sub text-rose-500 h-4 mb-3 font-semibold"></p>
 
       <div class="grid grid-cols-3 gap-2.5">
-        <button onclick="enterPinDigit('1')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">1</button>
-        <button onclick="enterPinDigit('2')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">2</button>
-        <button onclick="enterPinDigit('3')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">3</button>
-        <button onclick="enterPinDigit('4')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">4</button>
-        <button onclick="enterPinDigit('5')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">5</button>
-        <button onclick="enterPinDigit('6')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">6</button>
-        <button onclick="enterPinDigit('7')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">7</button>
-        <button onclick="enterPinDigit('8')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">8</button>
-        <button onclick="enterPinDigit('9')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">9</button>
-        <button onclick="clearPinDigits()" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-semibold text-slate-500">清除</button>
-        <button onclick="enterPinDigit('0')" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">0</button>
-        <button onclick="backspacePinDigit()" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500"><i class="fa-solid fa-delete-left"></i></button>
+        <button onclick="enterPinDigit('1')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">1</button>
+        <button onclick="enterPinDigit('2')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">2</button>
+        <button onclick="enterPinDigit('3')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">3</button>
+        <button onclick="enterPinDigit('4')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">4</button>
+        <button onclick="enterPinDigit('5')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">5</button>
+        <button onclick="enterPinDigit('6')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">6</button>
+        <button onclick="enterPinDigit('7')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">7</button>
+        <button onclick="enterPinDigit('8')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">8</button>
+        <button onclick="enterPinDigit('9')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">9</button>
+        <button onclick="clearPinDigits()"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-semibold text-slate-500">清除</button>
+        <button onclick="enterPinDigit('0')"
+          class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 active:bg-indigo-600 active:text-white font-bold text-base">0</button>
+        <button onclick="backspacePinDigit()" class="h-12 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500"><i
+            class="fa-solid fa-delete-left"></i></button>
       </div>
     </div>
   </div>
 
   <!-- ==================== 頂部純色不透明固定導覽列 (解決穿透與底部遮擋問題) ==================== -->
-  <header class="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+  <header
+    class="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
     <div class="max-w-6xl mx-auto fluid-page-pad">
-      
+
       <!-- 第一層：品牌標題 + 右側 4 個快速工具按鈕 (永遠單行對齊) -->
       <div class="flex items-center justify-between py-2.5 gap-2">
         <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+          <div
+            class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
             <i class="fa-solid fa-wallet text-xs"></i>
           </div>
           <div class="truncate">
@@ -225,20 +316,24 @@
 
         <div class="flex items-center gap-1.5 shrink-0">
           <!-- 隱私遮罩開關 -->
-          <button onclick="togglePrivacy()" title="隱藏/顯示金額" class="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-fluid-sub font-semibold flex items-center gap-1 num-nowrap transition">
+          <button onclick="togglePrivacy()" title="隱藏/顯示金額"
+            class="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-fluid-sub font-semibold flex items-center gap-1 num-nowrap transition">
             <i id="privacyIcon" class="fa-regular fa-eye"></i>
             <span id="privacyText" class="hidden sm:inline">顯示金額</span>
           </button>
           <!-- PIN 鎖定 -->
-          <button onclick="triggerPinLockOrSetup()" title="PIN 碼安全鎖" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+          <button onclick="triggerPinLockOrSetup()" title="PIN 碼安全鎖"
+            class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
             <i class="fa-solid fa-lock"></i>
           </button>
           <!-- 深淺色切換 -->
-          <button onclick="toggleTheme()" title="切換深淺色" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+          <button onclick="toggleTheme()" title="切換深淺色"
+            class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
             <i id="themeIcon" class="fa-solid fa-sun text-amber-400"></i>
           </button>
           <!-- 匯出 Excel -->
-          <button onclick="exportToExcelCSV()" title="匯出 Excel 報表" class="h-8 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1 num-nowrap shadow-sm transition">
+          <button onclick="exportToExcelCSV()" title="匯出 Excel 報表"
+            class="h-8 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1 num-nowrap shadow-sm transition">
             <i class="fa-solid fa-file-excel"></i>
             <span class="hidden sm:inline">Excel</span>
           </button>
@@ -246,29 +341,36 @@
       </div>
 
       <!-- 第二層：6 大功能分頁膠囊列 (支援手機左右滑動 & 電腦完整排列，完全避開手機底部系統按鈕) -->
-      <nav class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80">
-        <button onclick="switchTab('dashboard')" data-tab="dashboard" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+      <nav
+        class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80">
+        <button onclick="switchTab('dashboard')" data-tab="dashboard"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-chart-pie"></i>
           <span>總覽檢核</span>
         </button>
-        <button onclick="switchTab('cards')" data-tab="cards" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+        <button onclick="switchTab('cards')" data-tab="cards"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-credit-card"></i>
           <span>銀行與卡費</span>
           <span id="navBadgeCards" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] hidden">!</span>
         </button>
-        <button onclick="switchTab('installments')" data-tab="installments" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+        <button onclick="switchTab('installments')" data-tab="installments"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-layer-group"></i>
           <span>分期監控</span>
         </button>
-        <button onclick="switchTab('bills')" data-tab="bills" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+        <button onclick="switchTab('bills')" data-tab="bills"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-bolt"></i>
           <span>固定費用</span>
         </button>
-        <button onclick="switchTab('stocks')" data-tab="stocks" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+        <button onclick="switchTab('stocks')" data-tab="stocks"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-arrow-trend-up"></i>
           <span>台股水位</span>
         </button>
-        <button onclick="switchTab('settings')" data-tab="settings" class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+        <button onclick="switchTab('settings')" data-tab="settings"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-database"></i>
           <span>備份匯出</span>
         </button>
@@ -282,15 +384,17 @@
 
     <!-- ==================== TAB 1: 總覽與 30 號扣款檢核 ==================== -->
     <section id="tab-dashboard" class="tab-section space-y-4">
-      
+
       <!-- 三大核心指標卡片 (在手機為單欄垂直堆疊，平板/電腦為三欄等比例排列) -->
       <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
-        
+
         <!-- 指標 1：目前總淨資產 -->
-        <div class="fluid-card bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-700 text-white shadow-lg flex flex-col justify-between">
+        <div
+          class="fluid-card bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-700 text-white shadow-lg flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="text-fluid-sub font-bold bg-white/15 px-2.5 py-0.5 rounded-full num-nowrap">1. 目前總淨資產 (台幣)</span>
+              <span class="text-fluid-sub font-bold bg-white/15 px-2.5 py-0.5 rounded-full num-nowrap">1. 目前總淨資產
+                (台幣)</span>
               <span id="countdown30th" class="text-fluid-sub text-indigo-100 font-semibold num-nowrap">30號扣款</span>
             </div>
             <div id="kpiNetWorth" class="text-fluid-hero font-extrabold font-mono num-nowrap my-1">NT$ 0</div>
@@ -309,42 +413,52 @@
         </div>
 
         <!-- 指標 2：台股波段水位與損益 -->
-        <div onclick="switchTab('stocks')" class="fluid-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div onclick="switchTab('stocks')"
+          class="fluid-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
               <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
                 <i class="fa-solid fa-chart-line text-indigo-500 mr-1"></i>2. 台股水位與損益
               </span>
-              <span id="kpiStockAlertBadge" class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap">水位正常</span>
+              <span id="kpiStockAlertBadge"
+                class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap">水位正常</span>
             </div>
             <div class="flex items-baseline justify-between gap-2 my-1 flex-wrap">
               <div id="kpiStockMarketVal" class="text-fluid-hero font-extrabold font-mono num-nowrap">NT$ 0</div>
-              <div id="kpiStockPnL" class="text-fluid-sub font-bold font-mono px-2 py-0.5 rounded-lg num-nowrap">+0 (0%)</div>
+              <div id="kpiStockPnL" class="text-fluid-sub font-bold font-mono px-2 py-0.5 rounded-lg num-nowrap">+0 (0%)
+              </div>
             </div>
           </div>
 
           <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/80">
             <div class="flex justify-between text-fluid-sub font-semibold mb-1.5">
-              <span class="text-indigo-600 dark:text-indigo-400 num-nowrap">持倉水位 <strong id="kpiStockRatioText">0%</strong></span>
-              <span class="text-amber-600 dark:text-amber-400 num-nowrap">待命現金 <strong id="kpiCashRatioText">0%</strong></span>
+              <span class="text-indigo-600 dark:text-indigo-400 num-nowrap">持倉水位 <strong
+                  id="kpiStockRatioText">0%</strong></span>
+              <span class="text-amber-600 dark:text-amber-400 num-nowrap">待命現金 <strong
+                  id="kpiCashRatioText">0%</strong></span>
             </div>
             <div class="w-full h-2.5 bg-amber-500/20 rounded-full overflow-hidden flex">
-              <div id="kpiStockRatioBar" class="bg-indigo-500 h-full transition-all duration-500" style="width: 70%"></div>
+              <div id="kpiStockRatioBar" class="bg-indigo-500 h-full transition-all duration-500" style="width: 70%">
+              </div>
             </div>
             <p id="kpiStockHint" class="text-fluid-sub text-slate-400 mt-1.5 truncate">點擊調整波段持股與交割現金池</p>
           </div>
         </div>
 
         <!-- 指標 3：本月卡費與固定支出總結 -->
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
               <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
                 <i class="fa-solid fa-file-invoice-dollar text-rose-500 mr-1"></i>3. 本月待扣款總結
               </span>
-              <span class="text-fluid-sub font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 num-nowrap">30號自動扣繳</span>
+              <span
+                class="text-fluid-sub font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 num-nowrap">30號自動扣繳</span>
             </div>
-            <div id="kpiMonthTotalBill" class="text-fluid-hero font-extrabold font-mono text-rose-600 dark:text-rose-400 num-nowrap my-1">NT$ 0</div>
+            <div id="kpiMonthTotalBill"
+              class="text-fluid-hero font-extrabold font-mono text-rose-600 dark:text-rose-400 num-nowrap my-1">NT$ 0
+            </div>
           </div>
 
           <!-- 左標籤、右單行金額，絕不斷成兩行 -->
@@ -367,19 +481,23 @@
       </div>
 
       <!-- 🔥 每月 30 號各銀行自動扣繳水位檢核 (上下分層標題，不再左右硬擠) -->
-      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+      <div
+        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
           <div class="space-y-1.5">
             <div class="flex items-center flex-wrap gap-2">
               <span class="w-2 h-5 rounded-full bg-indigo-500 shrink-0"></span>
               <h2 class="text-fluid-h2 font-extrabold">每月 30 號各銀行自動扣繳水位檢核</h2>
-              <span id="bankShortfallSummaryBadge" class="text-fluid-sub px-2.5 py-0.5 rounded-full font-bold num-nowrap">檢核中</span>
+              <span id="bankShortfallSummaryBadge"
+                class="text-fluid-sub px-2.5 py-0.5 rounded-full font-bold num-nowrap">檢核中</span>
             </div>
             <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
               自動將「未繳信用卡」與「未繳水電房租」歸戶到指定扣款銀行，確保 30 號前餘額充足。
             </p>
           </div>
-          <button onclick="settleAllPendingBills()" class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition shrink-0">
+          <button onclick="settleAllPendingBills()"
+            class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition shrink-0">
             <i class="fa-solid fa-bolt-lightning"></i>
             <span>模擬 30 號一鍵全數扣款</span>
           </button>
@@ -393,7 +511,7 @@
 
       <!-- 下方雙欄：超過 5000 大額消費雷達 & 分期現金流摘要 -->
       <div class="grid grid-cols-1 lg:grid-cols-2 fluid-gap">
-        
+
         <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
           <div class="flex items-center justify-between gap-2 mb-3">
             <div>
@@ -403,7 +521,8 @@
               </h3>
               <p class="text-fluid-sub text-slate-400">抓大放小：只記大筆開銷，不記瑣碎流水帳</p>
             </div>
-            <button onclick="switchTab('cards')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i class="fa-solid fa-angle-right"></i></button>
+            <button onclick="switchTab('cards')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i
+                class="fa-solid fa-angle-right"></i></button>
           </div>
           <div id="dashboardBigExpensesList" class="space-y-2"></div>
         </div>
@@ -417,7 +536,8 @@
               </h3>
               <p class="text-fluid-sub text-slate-400">控管每月被分期綁架的固定現金流</p>
             </div>
-            <button onclick="switchTab('installments')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">查看全部 <i class="fa-solid fa-angle-right"></i></button>
+            <button onclick="switchTab('installments')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">查看全部
+              <i class="fa-solid fa-angle-right"></i></button>
           </div>
           <div id="dashboardInstallmentSummary" class="space-y-2.5"></div>
         </div>
@@ -427,9 +547,10 @@
 
     <!-- ==================== TAB 2: 銀行與信用卡帳單 ==================== -->
     <section id="tab-cards" class="tab-section hidden space-y-4">
-      
+
       <!-- 區塊 A：台幣銀行帳戶管理 -->
-      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div
+        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
@@ -438,7 +559,8 @@
             </h2>
             <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算 30 號扣後水位</p>
           </div>
-          <button onclick="openBankModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+          <button onclick="openBankModal()"
+            class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
             <i class="fa-solid fa-plus"></i> 新增銀行帳戶
           </button>
         </div>
@@ -447,7 +569,8 @@
       </div>
 
       <!-- 區塊 B：各家信用卡帳單 -->
-      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div
+        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
@@ -457,10 +580,12 @@
             <p class="text-fluid-sub text-slate-400">只需輸入本期帳單總額，並記下超過 $5,000 元的大額刷卡項目</p>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="resetAllCardsNewMonth()" class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold num-nowrap">
+            <button onclick="resetAllCardsNewMonth()"
+              class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold num-nowrap">
               <i class="fa-solid fa-rotate-right mr-1"></i>新月份重置
             </button>
-            <button onclick="openCardModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+            <button onclick="openCardModal()"
+              class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
               <i class="fa-solid fa-plus"></i> 新增信用卡
             </button>
           </div>
@@ -473,33 +598,39 @@
 
     <!-- ==================== TAB 3: 分期付款監控 ==================== -->
     <section id="tab-installments" class="tab-section hidden space-y-4">
-      
+
       <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
         <div class="fluid-card bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
           <span class="text-fluid-sub font-bold bg-white/20 px-2.5 py-0.5 rounded-full num-nowrap">每月被分期吃掉的現金流</span>
-          <div id="instMonthlyTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-2 mb-1">NT$ 0 / 月</div>
+          <div id="instMonthlyTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-2 mb-1">NT$ 0 / 月
+          </div>
           <p class="text-fluid-sub text-amber-100">各張信用卡分期每月應繳加總</p>
         </div>
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-center">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-center">
           <span class="text-fluid-sub text-slate-400 font-bold">所有分期剩餘未繳總尾款</span>
           <div id="instRemainingTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">NT$ 0</div>
           <p class="text-fluid-sub text-slate-400 mt-1">獨立監控，避免不知不覺累積過多分期</p>
         </div>
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
           <div>
             <span class="text-fluid-sub text-slate-400 font-bold">進行中分期筆數</span>
             <div id="instActiveCount" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">0 筆</div>
           </div>
-          <button onclick="openInstallmentModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3">
+          <button onclick="openInstallmentModal()"
+            class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3">
             <i class="fa-solid fa-plus"></i> 新增分期項目
           </button>
         </div>
       </div>
 
-      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div
+        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <h2 class="text-fluid-h2 font-bold">各卡分期付款明細表</h2>
-          <button onclick="advanceAllInstallmentsOnePeriod()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold num-nowrap transition">
+          <button onclick="advanceAllInstallmentsOnePeriod()"
+            class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold num-nowrap transition">
             <i class="fa-solid fa-forward-step mr-1"></i>全部推進一期 (+1 期)
           </button>
         </div>
@@ -510,7 +641,8 @@
 
     <!-- ==================== TAB 4: 週期固定費用 ==================== -->
     <section id="tab-bills" class="tab-section hidden space-y-4">
-      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div
+        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
@@ -519,7 +651,8 @@
             </h2>
             <p class="text-fluid-sub text-slate-400">標記為「待繳」的項目會自動計入指定銀行的 30 號扣款檢核</p>
           </div>
-          <button onclick="openBillModal()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+          <button onclick="openBillModal()"
+            class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
             <i class="fa-solid fa-plus"></i> 新增週期費用
           </button>
         </div>
@@ -530,19 +663,22 @@
 
     <!-- ==================== TAB 5: 台股波段與水位 ==================== -->
     <section id="tab-stocks" class="tab-section hidden space-y-4">
-      
+
       <div class="grid grid-cols-1 lg:grid-cols-3 fluid-gap">
         <!-- 左：台股水位視覺化 -->
-        <div class="lg:col-span-2 fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+        <div
+          class="lg:col-span-2 fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
           <div class="flex items-center justify-between gap-2 flex-wrap">
             <div>
               <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
                 <i class="fa-solid fa-scale-balanced text-indigo-500"></i>
                 <span>台股波段資金水位監控</span>
               </h2>
-              <p class="text-fluid-sub text-slate-400">台股慣例：<span class="text-rose-500 font-bold">紅漲 (獲利)</span> / <span class="text-emerald-500 font-bold">綠跌 (虧損)</span></p>
+              <p class="text-fluid-sub text-slate-400">台股慣例：<span class="text-rose-500 font-bold">紅漲 (獲利)</span> / <span
+                  class="text-emerald-500 font-bold">綠跌 (虧損)</span></p>
             </div>
-            <span id="stockTabAlertBadge" class="text-fluid-sub font-bold px-2.5 py-1 rounded-full num-nowrap">計算中</span>
+            <span id="stockTabAlertBadge"
+              class="text-fluid-sub font-bold px-2.5 py-1 rounded-full num-nowrap">計算中</span>
           </div>
 
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -552,7 +688,8 @@
             </div>
             <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
               <span class="text-fluid-sub text-slate-400 block truncate">目前持倉總市值</span>
-              <span id="stockHoldingsValue" class="text-fluid-h3 font-extrabold font-mono text-indigo-500 num-nowrap">NT$ 0</span>
+              <span id="stockHoldingsValue"
+                class="text-fluid-h3 font-extrabold font-mono text-indigo-500 num-nowrap">NT$ 0</span>
             </div>
             <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
               <span class="text-fluid-sub text-slate-400 block truncate">波段總成本</span>
@@ -567,38 +704,48 @@
           <div>
             <div class="flex justify-between text-fluid-sub font-bold mb-1.5 flex-wrap gap-1">
               <span class="text-indigo-500 num-nowrap">持倉部位：<span id="stockTabHoldRatio">0%</span></span>
-              <span class="text-amber-500 num-nowrap">待命現金：<span id="stockTabCashRatio">0%</span> (上限 <span id="stockTargetCashMaxLabel">30%</span>)</span>
+              <span class="text-amber-500 num-nowrap">待命現金：<span id="stockTabCashRatio">0%</span> (上限 <span
+                  id="stockTargetCashMaxLabel">30%</span>)</span>
             </div>
             <div class="w-full h-3.5 bg-amber-500/20 rounded-full overflow-hidden flex p-0.5">
-              <div id="stockTabBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500" style="width: 70%"></div>
+              <div id="stockTabBar"
+                class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500"
+                style="width: 70%"></div>
             </div>
           </div>
         </div>
 
         <!-- 右：待命現金池設定 -->
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
           <div>
             <h3 class="text-fluid-h3 font-bold mb-1">股市待命現金池設定</h3>
             <p class="text-fluid-sub text-slate-400 mb-2.5">輸入交割戶備用金，即時計算持倉水位</p>
             <label class="block text-fluid-sub font-semibold text-slate-500 mb-1">股票專用待命現金 (NT$)</label>
-            <input type="number" id="stockCashPoolInput" onchange="updateStockPoolConfig()" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-fluid-body">
+            <input type="number" id="stockCashPoolInput" onchange="updateStockPoolConfig()"
+              class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-fluid-body">
           </div>
 
           <div>
             <label class="block text-fluid-sub font-semibold text-slate-500 mb-1">目標最低持倉水位 (%)</label>
             <div class="flex items-center gap-3">
-              <input type="range" id="stockMinRatioInput" min="10" max="95" step="5" onchange="updateStockPoolConfig()" oninput="document.getElementById('stockMinRatioVal').innerText = this.value + '%'" class="flex-1 accent-indigo-500">
-              <span id="stockMinRatioVal" class="font-mono font-bold text-fluid-body num-nowrap w-10 text-right">70%</span>
+              <input type="range" id="stockMinRatioInput" min="10" max="95" step="5" onchange="updateStockPoolConfig()"
+                oninput="document.getElementById('stockMinRatioVal').innerText = this.value + '%'"
+                class="flex-1 accent-indigo-500">
+              <span id="stockMinRatioVal"
+                class="font-mono font-bold text-fluid-body num-nowrap w-10 text-right">70%</span>
             </div>
           </div>
 
-          <button onclick="openStockModal()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+          <button onclick="openStockModal()"
+            class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
             <i class="fa-solid fa-plus"></i> 新增台股波段持倉
           </button>
         </div>
       </div>
 
-      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <div
+        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-fluid-h2 font-bold">台股波段持倉部位清單</h2>
@@ -613,8 +760,9 @@
     <!-- ==================== TAB 6: 備份、Excel 匯出與單機下載 ==================== -->
     <section id="tab-settings" class="tab-section hidden space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 fluid-gap">
-        
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5">
+
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5">
           <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
             <i class="fa-solid fa-file-csv"></i>
           </div>
@@ -623,15 +771,18 @@
             資料 100% 儲存在你的瀏覽器本地端。可隨時匯出成 Excel (.csv) 進行試算表分析，或匯出 `.json` 在電腦與手機之間轉移資料。
           </p>
           <div class="space-y-2 pt-1">
-            <button onclick="exportToExcelCSV()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
+            <button onclick="exportToExcelCSV()"
+              class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
               <i class="fa-solid fa-file-excel"></i>
               <span>匯出 Excel 財務總表 (.CSV 不亂碼)</span>
             </button>
             <div class="grid grid-cols-2 gap-2">
-              <button onclick="exportDatabaseJSON()" class="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+              <button onclick="exportDatabaseJSON()"
+                class="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
                 <i class="fa-solid fa-download"></i> 匯出 JSON 備份
               </button>
-              <label class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold flex items-center justify-center gap-1.5 cursor-pointer num-nowrap">
+              <label
+                class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold flex items-center justify-center gap-1.5 cursor-pointer num-nowrap">
                 <i class="fa-solid fa-upload"></i> 匯入 JSON 還原
                 <input type="file" accept=".json" onchange="importDatabaseJSON(event)" class="hidden">
               </label>
@@ -639,7 +790,8 @@
           </div>
         </div>
 
-        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5">
+        <div
+          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5">
           <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-lg">
             <i class="fa-solid fa-laptop-code"></i>
           </div>
@@ -648,16 +800,19 @@
             可將整個系統連同目前最新資料打包成單一 <code>.html</code> 檔案離線開啟，或上傳至 Cloudflare Pages 免費託管。
           </p>
           <div class="space-y-2 pt-1">
-            <button onclick="downloadStandaloneHTML()" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
+            <button onclick="downloadStandaloneHTML()"
+              class="w-full py-2.5 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
               <i class="fa-solid fa-box-archive"></i>
               <span>下載單機版 HTML 檔案 (含目前資料)</span>
             </button>
             <div class="grid grid-cols-2 gap-2">
-              <button onclick="openPinSetupModal()" class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+              <button onclick="openPinSetupModal()"
+                class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
                 <i class="fa-solid fa-key text-amber-500"></i>
                 <span id="pinSetupBtnText">設定 PIN 碼</span>
               </button>
-              <button onclick="resetToDemoData()" class="py-2.5 px-3 rounded-xl bg-rose-500/10 text-rose-500 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+              <button onclick="resetToDemoData()"
+                class="py-2.5 px-3 rounded-xl bg-rose-500/10 text-rose-500 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
                 <i class="fa-solid fa-rotate-left"></i> 重置範例資料
               </button>
             </div>
@@ -672,10 +827,12 @@
 
   <!-- ==================== 通用彈出表單 Modal ==================== -->
   <div id="appModal" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-5 shadow-2xl">
+    <div
+      class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-5 shadow-2xl">
       <div class="flex items-center justify-between mb-3.5">
         <h3 id="modalTitle" class="text-fluid-h2 font-bold">編輯項目</h3>
-        <button onclick="closeAppModal()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+        <button onclick="closeAppModal()"
+          class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
@@ -1181,9 +1338,9 @@
         </div>
         <div class="space-y-2">
           ${state.installments.slice(0, 3).map(inst => {
-            const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
-            const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
-            return `
+        const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
+        const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
+        return `
               <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-fluid-sub">
                 <div class="flex items-center justify-between gap-2 font-bold mb-1">
                   <span class="truncate">${inst.title} <span class="font-normal text-slate-400">(${inst.cardName})</span></span>
@@ -1194,7 +1351,7 @@
                 </div>
               </div>
             `;
-          }).join('')}
+      }).join('')}
         </div>
       `;
     }
@@ -1290,8 +1447,8 @@
                 </div>
                 <div class="space-y-1.5">
                   ${(c.bigExpenses || []).length === 0
-                    ? `<div class="text-fluid-sub text-slate-400 py-2 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">本期無超過 $5,000 大額刷卡</div>`
-                    : (c.bigExpenses || []).map(be => `
+            ? `<div class="text-fluid-sub text-slate-400 py-2 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">本期無超過 $5,000 大額刷卡</div>`
+            : (c.bigExpenses || []).map(be => `
                         <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-fluid-sub">
                           <span class="font-medium truncate">${be.title}</span>
                           <div class="flex items-center gap-2 shrink-0">
@@ -1300,7 +1457,7 @@
                           </div>
                         </div>
                       `).join('')
-                  }
+          }
                 </div>
               </div>
             </div>
@@ -2084,7 +2241,7 @@
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         try {
           const imported = JSON.parse(e.target.result);
           if (!imported.banks || !imported.cards) throw new Error('Invalid');
@@ -2120,7 +2277,7 @@
       showToast('已重置回預設範例資料', 'info');
     }
 
-    window.onload = function() {
+    window.onload = function () {
       const savedTheme = localStorage.getItem('pocketflow_theme');
       if (savedTheme === 'light') document.documentElement.classList.remove('dark');
       else document.documentElement.classList.add('dark');
@@ -2131,4 +2288,5 @@
     };
   </script>
 </body>
+
 </html>
