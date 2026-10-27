@@ -355,21 +355,27 @@ $$StockHoldRatio = \begin{cases} \mathrm{round}\left(\frac{StockMarketValue}{Sto
 $$StockCashRatio = 100 - StockHoldRatio$$
 
 #### 5. 全局淨資產 (Total Net Worth)
-$$TotalAssets = \sum B_i.balance + StockTotalPool$$
+由於銀行證券交割戶本身已納入 $\sum B_i.balance$ 之中，為避免證券戶待命現金被雙重重複累加，全局實質總資產僅加計股票持有市值（$StockTotalPool$ 僅作股票分頁內持股與現金部位占比試算）：
+$$TotalAssets = \sum B_i.balance + StockMarketValue$$
 $$TotalLiabilities = \sum_{c.paid=false} c.statementTotal + \sum_{b.status='unpaid'} b.amount$$
 $$NetWorth = TotalAssets - TotalLiabilities$$
 
 ### 4.3 狀態轉換邏輯與交互約束 (State Transition & Constraints)
 
-1. **信用卡結清與復原**：
+1. **銀行餘額與信用卡帳單三大 KPI 小計 (Bank & Card Bill Summary)**：
+   - 於「銀行餘額與各家信用卡帳單」頁籤頂部提供即時小計卡片：
+     - **銀行總存款餘額**：即時統計全行餘額，並提示 30 號待扣卡費與固定費用後之預估安全結餘。
+     - **本期待繳卡費總額**：彙整所有未繳清信用卡之總待繳金額，並顯示待繳與已結清卡片數。
+     - **30 號扣款帳戶安全水位**：即時檢驗各扣繳銀行是否存在不足額（Shortfall），若不足則以紅色警示提示調度轉帳補足。
+2. **信用卡結清與復原**：
    - 當信用卡由 `paid=false` 切換至 `paid=true` 時，系統自動自對應扣款銀行餘額扣除 `statementTotal`。
    - 當信用卡由 `paid=true` 逆向切換至 `paid=false` 時，系統回補該銀行餘額，以利誤觸復原。
-2. **固定費用狀態流轉**：
+3. **固定費用狀態流轉**：
    - 狀態機包含三態：`unpaid` (待繳)、`paid` (已繳)、`skipped` (本期免繳，如隔月水電費)。
    - 切換至 `paid` 即時自扣款銀行扣款；切換為非 `paid` 狀態自動回補銀行餘額。
-3. **大額消費 (>5,000) 聯動約束**：
+4. **大額消費 (>5,000) 聯動約束**：
    - 新增大額消費時，提供勾選框 `mBigAddTotal`。若勾選，自動將該金額累加至所屬卡片之 `statementTotal`；若取消則僅作備忘明細，不影響總額。
-4. **信用卡與分期付款的關聯模型與雙向可視設計 (Installment-Card-Bank Association)**：
+5. **信用卡與分期付款的關聯模型與雙向可視設計 (Installment-Card-Bank Association)**：
    - **外鍵連結**：分期項目透過 `cardId`（外鍵）明確綁定至 `state.cards`，表單以下拉選單取代原本的手動字串輸入，並在選項中標明該信用卡所綁定的扣款銀行。
    - **三級連動關係 (分期 → 信用卡 → 扣款銀行)**：在分期付款清單中，系統透過 `cardId` 自動反查所屬信用卡與該卡綁定的扣款帳戶，在頂部以徽章呈現（例如 `玉山 Unicard` + `玉山薪轉`）。
    - **雙向可視性 (信用卡卡片聚合分期資訊)**：在信用卡卡片檢視時，系統自動統計並顯示綁定於該信用卡的進行中分期筆數與每月固定攤提額度（例如 `含 2 筆分期 (NT$ 8,141/月)`），點擊可直接切換至分期管理檢視明細。
