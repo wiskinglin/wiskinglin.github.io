@@ -360,6 +360,10 @@ $$TotalAssets = \sum B_i.balance + StockMarketValue$$
 $$TotalLiabilities = \sum_{c.paid=false} c.statementTotal + \sum_{b.status='unpaid'} b.amount$$
 $$NetWorth = TotalAssets - TotalLiabilities$$
 
+在首頁總覽「目前總淨資產」指標卡片中，負債採取分層透視展示：
+- **卡費與固定支出合計**：當月 30 號預計扣除之即期待扣負債（$TotalLiabilities$）。
+- **分期未繳負債**：未來尚未攤提完畢之長期分期總尾款（$\sum LeftPeriods(I_k) \times monthlyAmount$），不重複折抵當期現金，但提供全局負債監控。
+
 ### 4.3 狀態轉換邏輯與交互約束 (State Transition & Constraints)
 
 1. **銀行餘額與信用卡帳單三大 KPI 小計 (Bank & Card Bill Summary)**：
