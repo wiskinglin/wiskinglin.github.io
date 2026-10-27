@@ -952,9 +952,9 @@
         }
       ],
       installments: [
-        { id: 'inst_1', title: 'MacBook Pro 14 吋 M3', cardName: '國泰Cube (國泰)', totalAmount: 59900, monthlyAmount: 4991, totalPeriods: 12, paidPeriods: 5 },
-        { id: 'inst_2', title: 'Dyson 無線吸塵器', cardName: '玉山Unicard (玉山)', totalAmount: 18900, monthlyAmount: 3150, totalPeriods: 6, paidPeriods: 3 },
-        { id: 'inst_3', title: '健身房年度教練課分期', cardName: '中信英雄(中信)', totalAmount: 36000, monthlyAmount: 3000, totalPeriods: 12, paidPeriods: 9 }
+        { id: 'inst_1', title: 'MacBook Pro 14 吋 M3', cardId: 'card_2', cardName: '國泰Cube (國泰)', totalAmount: 59900, monthlyAmount: 4991, totalPeriods: 12, paidPeriods: 5 },
+        { id: 'inst_2', title: 'Dyson 無線吸塵器', cardId: 'card_1', cardName: '玉山Unicard (玉山)', totalAmount: 18900, monthlyAmount: 3150, totalPeriods: 6, paidPeriods: 3 },
+        { id: 'inst_3', title: '健身房年度教練課分期', cardId: 'card_5', cardName: '中信英雄(中信)', totalAmount: 36000, monthlyAmount: 3000, totalPeriods: 12, paidPeriods: 9 }
       ],
       bills: [
         { id: 'bill_1', name: '房租與管理費', cycle: '每月固定', amount: 18500, bankId: 'bank_ctbc', status: 'unpaid' },
@@ -990,11 +990,28 @@
 
     function loadState() {
       try {
-        if (window.__EMBEDDED_STATE__) return JSON.parse(JSON.stringify(window.__EMBEDDED_STATE__));
-        const raw = readStoredRaw();
-        if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
-        const parsed = JSON.parse(raw);
-        return { ...DEFAULT_STATE, ...parsed, settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) } };
+        let loaded;
+        if (window.__EMBEDDED_STATE__) {
+          loaded = JSON.parse(JSON.stringify(window.__EMBEDDED_STATE__));
+        } else {
+          const raw = readStoredRaw();
+          if (!raw) loaded = JSON.parse(JSON.stringify(DEFAULT_STATE));
+          else {
+            const parsed = JSON.parse(raw);
+            loaded = { ...DEFAULT_STATE, ...parsed, settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) } };
+          }
+        }
+        // 向後相容遷移：若分期項目缺少 cardId，依據 cardName 自動連結至對應信用卡
+        if (loaded.installments && loaded.cards) {
+          loaded.installments.forEach(inst => {
+            if (!inst.cardId && inst.cardName) {
+              const matched = loaded.cards.find(c => c.name === inst.cardName);
+              if (matched) inst.cardId = matched.id;
+              else if (loaded.cards[0]) inst.cardId = loaded.cards[0].id;
+            }
+          });
+        }
+        return loaded;
       } catch (e) {
         console.error('[PocketFlow] 讀取本地資料失敗，改用預設值：', e);
         return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -1338,12 +1355,14 @@
         </div>
         <div class="space-y-2">
           ${state.installments.slice(0, 3).map(inst => {
+        const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
+        const cardName = card ? card.name : (inst.cardName || '未指定卡片');
         const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
         const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
         return `
               <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-fluid-sub">
                 <div class="flex items-center justify-between gap-2 font-bold mb-1">
-                  <span class="truncate">${inst.title} <span class="font-normal text-slate-400">(${inst.cardName})</span></span>
+                  <span class="truncate">${inst.title} <span class="font-normal text-slate-400">(${cardName})</span></span>
                   <span class="font-mono num-nowrap shrink-0">${fmtMoney(inst.monthlyAmount)}/月 (剩${left}期)</span>
                 </div>
                 <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -1398,6 +1417,14 @@
         const bankName = bank ? bank.name : '未綁定銀行';
         const bigSum = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
         const otherSmallSum = Math.max(0, (Number(c.statementTotal) || 0) - bigSum);
+        
+        // 取得綁定此信用卡的進行中分期
+        const boundInsts = state.installments.filter(inst => {
+          const matchCard = inst.cardId ? (inst.cardId === c.id) : (inst.cardName === c.name);
+          const left = Math.max(0, (Number(inst.totalPeriods) || 0) - (Number(inst.paidPeriods) || 0));
+          return matchCard && left > 0;
+        });
+        const boundInstMonthly = boundInsts.reduce((sum, inst) => sum + (Number(inst.monthlyAmount) || 0), 0);
 
         return `
           <div class="rounded-2xl p-4 border ${c.paid ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} flex flex-col justify-between space-y-3.5">
@@ -1410,9 +1437,17 @@
                       ${c.paid ? '已繳清' : '30號待扣繳'}
                     </span>
                   </div>
-                  <p class="text-fluid-sub text-slate-400 mt-0.5 truncate">
-                    <i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i>扣款戶：${bankName}
-                  </p>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap text-fluid-sub">
+                    <span class="text-slate-400 truncate">
+                      <i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i>扣款戶：${bankName}
+                    </span>
+                    ${boundInsts.length > 0 ? `
+                      <span onclick="switchTab('installments')" title="點擊切換至分期管理"
+                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 font-semibold num-nowrap cursor-pointer hover:underline">
+                        <i class="fa-solid fa-layer-group"></i>含 ${boundInsts.length} 筆分期 (${fmtMoney(boundInstMonthly)}/月)
+                      </span>
+                    ` : ''}
+                  </div>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
                   <button onclick="openCardModal('${c.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
@@ -1482,12 +1517,25 @@
         const leftAmount = leftPeriods * inst.monthlyAmount;
         const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
         const isDone = leftPeriods === 0;
+        const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
+        const cardName = card ? card.name : (inst.cardName || '未指定卡片');
+        const bank = card ? state.banks.find(b => b.id === card.bankId) : null;
+        const bankName = bank ? bank.name : '';
 
         return `
           <div class="p-4 rounded-2xl border ${isDone ? 'border-emerald-500/30 bg-emerald-500/5 opacity-75' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} space-y-3">
-            <!-- 頂部：卡別標籤與單行操作按鈕 (+1期 絕不折行) -->
+            <!-- 頂部：所屬信用卡與連動扣款銀行標籤 -->
             <div class="flex items-center justify-between gap-2">
-              <span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-400 num-nowrap">${inst.cardName}</span>
+              <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                <span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-400 num-nowrap truncate">
+                  <i class="fa-solid fa-credit-card mr-1"></i>${cardName}
+                </span>
+                ${bankName ? `
+                  <span class="text-fluid-sub px-2 py-0.5 rounded-lg bg-slate-200/60 dark:bg-slate-700/60 text-slate-500 dark:text-slate-300 num-nowrap truncate">
+                    <i class="fa-solid fa-building-columns mr-1"></i>${bankName}
+                  </span>
+                ` : ''}
+              </div>
               <div class="flex items-center gap-1.5 shrink-0">
                 <button onclick="stepInstallment('${inst.id}', 1)" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold num-nowrap">+1 期</button>
                 <button onclick="openInstallmentModal('${inst.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
@@ -1907,6 +1955,16 @@
     }
 
     function deleteCard(cardId) {
+      const boundCount = state.installments.filter(x => x.cardId === cardId).length;
+      if (boundCount > 0) {
+        if (!confirm(`此信用卡目前有 ${boundCount} 筆進行中的分期付款綁定！\n確定要刪除這張卡嗎？（刪除後分期項目仍會保留並標記為未指定卡片）`)) return;
+        state.installments.forEach(x => {
+          if (x.cardId === cardId) {
+            x.cardId = '';
+            x.cardName = '已刪除信用卡';
+          }
+        });
+      }
       state.cards = state.cards.filter(c => c.id !== cardId);
       saveState(); renderAll();
     }
@@ -1955,17 +2013,26 @@
 
     function openInstallmentModal(instId = null) {
       const existing = state.installments.find(x => x.id === instId) || {
-        title: '', cardName: (state.cards[0]?.name || '國泰 CUBE 卡'), totalAmount: 30000, monthlyAmount: 2500, totalPeriods: 12, paidPeriods: 1
+        title: '', cardId: (state.cards[0]?.id || ''), cardName: (state.cards[0]?.name || ''), totalAmount: 30000, monthlyAmount: 2500, totalPeriods: 12, paidPeriods: 1
       };
-      openAppModal(instId ? '編輯分期付款' : '新增獨立分期追蹤', `
+      const activeCardId = existing.cardId || state.cards.find(c => c.name === existing.cardName)?.id || state.cards[0]?.id || '';
+      const cardOptions = state.cards.length === 0
+        ? `<option value="">尚無信用卡，請先新增</option>`
+        : state.cards.map(c => {
+          const bank = state.banks.find(b => b.id === c.bankId);
+          const bankText = bank ? ` (扣款：${bank.name})` : '';
+          return `<option value="${c.id}" ${c.id === activeCardId ? 'selected' : ''}>${c.name}${bankText}</option>`;
+        }).join('');
+
+      openAppModal(instId ? '編輯信用卡分期' : '新增信用卡分期項目', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">分期項目名稱</label>
             <input id="mInstTitle" type="text" value="${existing.title}" placeholder="例如：MacBook Pro / 大型家電" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <div>
-            <label class="font-bold block mb-1">所屬信用卡</label>
-            <input id="mInstCard" type="text" value="${existing.cardName}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <label class="font-bold block mb-1">所屬信用卡 (自動連動扣款帳戶)</label>
+            <select id="mInstCard" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${cardOptions}</select>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -2000,7 +2067,9 @@
 
     function saveInstallmentForm(instId) {
       const title = document.getElementById('mInstTitle').value.trim();
-      const cardName = document.getElementById('mInstCard').value.trim();
+      const cardId = document.getElementById('mInstCard').value;
+      const targetCard = state.cards.find(c => c.id === cardId);
+      const cardName = targetCard ? targetCard.name : '';
       const totalAmount = Number(document.getElementById('mInstTotal').value) || 0;
       const totalPeriods = Math.max(1, Number(document.getElementById('mInstPeriods').value) || 1);
       const monthlyAmount = Number(document.getElementById('mInstMonthly').value) || 0;
@@ -2008,9 +2077,9 @@
       if (!title) return showToast('請輸入分期名稱', 'warn');
       if (instId) {
         const item = state.installments.find(x => x.id === instId);
-        if (item) Object.assign(item, { title, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
+        if (item) Object.assign(item, { title, cardId, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
       } else {
-        state.installments.push({ id: 'inst_' + Date.now(), title, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
+        state.installments.push({ id: 'inst_' + Date.now(), title, cardId, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
       }
       saveState(); closeAppModal(); renderAll();
     }
@@ -2207,10 +2276,14 @@
         const bigStr = (c.bigExpenses || []).map(x => `${x.title}($${x.amount})`).join(' / ');
         rows.push([c.name, bankName, c.statementTotal, c.paid ? '已繳清' : '未繳', bigStr || '無']);
       });
-      rows.push([], ['=== 三、獨立分期付款追蹤 ==='], ['分期項目', '信用卡', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
+      rows.push([], ['=== 三、獨立分期付款追蹤 ==='], ['分期項目', '所屬信用卡', '扣款銀行', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
       state.installments.forEach(inst => {
+        const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
+        const cardName = card ? card.name : (inst.cardName || '未指定');
+        const bank = card ? state.banks.find(b => b.id === card.bankId) : null;
+        const bankName = bank ? bank.name : '-';
         const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
-        rows.push([inst.title, inst.cardName, inst.monthlyAmount, inst.totalPeriods, inst.paidPeriods, left * inst.monthlyAmount]);
+        rows.push([inst.title, cardName, bankName, inst.monthlyAmount, inst.totalPeriods, inst.paidPeriods, left * inst.monthlyAmount]);
       });
       rows.push([], ['=== 四、台股波段持倉部位 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
       state.stocks.forEach(s => {
