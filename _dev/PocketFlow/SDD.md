@@ -265,7 +265,7 @@ erDiagram
     BANK ||--o{ CREDIT_CARD : "作為扣款帳戶 (bankId)"
     BANK ||--o{ RECURRING_BILL : "作為扣繳銀行 (bankId)"
     CREDIT_CARD ||--o{ BIG_EXPENSE : "包含 >5000 大額消費 (cardId)"
-    CREDIT_CARD ||--o{ INSTALLMENT : "承載分期款 (cardName 關聯)"
+    CREDIT_CARD ||--o{ INSTALLMENT : "承載分期款 (cardId FK)"
     SETTINGS ||--|| APP_STATE : "全域偏好與台股水位配置"
 
     BANK {
@@ -302,7 +302,8 @@ erDiagram
     INSTALLMENT {
         string id PK "分期唯一識別碼 (inst_xxx)"
         string title "商品/項目名稱"
-        string cardName "所屬信用卡名稱"
+        string cardId FK "所屬信用卡 ID (指向 CREDIT_CARD.id)"
+        string cardName "所屬信用卡名稱 (備份相容)"
         number totalAmount "分期總金額"
         number monthlyAmount "每期攤提金額"
         number totalPeriods "總期數"
@@ -360,6 +361,12 @@ $$NetWorth = TotalAssets - TotalLiabilities$$
    - 切換至 `paid` 即時自扣款銀行扣款；切換為非 `paid` 狀態自動回補銀行餘額。
 3. **大額消費 (>5,000) 聯動約束**：
    - 新增大額消費時，提供勾選框 `mBigAddTotal`。若勾選，自動將該金額累加至所屬卡片之 `statementTotal`；若取消則僅作備忘明細，不影響總額。
+4. **信用卡與分期付款的關聯模型與雙向可視設計 (Installment-Card-Bank Association)**：
+   - **外鍵連結**：分期項目透過 `cardId`（外鍵）明確綁定至 `state.cards`，表單以下拉選單取代原本的手動字串輸入，並在選項中標明該信用卡所綁定的扣款銀行。
+   - **三級連動關係 (分期 → 信用卡 → 扣款銀行)**：在分期付款清單中，系統透過 `cardId` 自動反查所屬信用卡與該卡綁定的扣款帳戶，在頂部以徽章呈現（例如 `玉山 Unicard` + `玉山薪轉`）。
+   - **雙向可視性 (信用卡卡片聚合分期資訊)**：在信用卡卡片檢視時，系統自動統計並顯示綁定於該信用卡的進行中分期筆數與每月固定攤提額度（例如 `含 2 筆分期 (NT$ 8,141/月)`），點擊可直接切換至分期管理檢視明細。
+   - **刪除保護與解綁**：當使用者欲刪除尚有分期綁定的信用卡時，系統主動跳出確認警示，刪除後分期項目自動解綁並標記為「已刪除卡片」，防止資料孤島或渲染中斷。
+   - **向後相容遷移機制**：`loadState()` 內建修復管線，若舊版資料僅含 `cardName` 字串而無 `cardId`，系統在載入時自動依據名稱進行匹配賦值，確保舊版資料平滑升級。
 
 ---
 
