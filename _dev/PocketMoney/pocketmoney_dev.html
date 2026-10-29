@@ -3251,21 +3251,316 @@
     function updateBankBalanceInline(bankId, val) {
       const bank = state.banks.find(b => b.id === bankId);
       if (bank) {
-        bank.balance = Number(val) || 0;
+        const num = Number(val) || 0;
+        bank.balance = num;
+        if (Array.isArray(bank.records) && bank.records.length > 0) {
+          bank.records[bank.records.length - 1].balance = num;
+        }
         saveState();
         renderAll();
         showToast(`已更新「${bank.name}」餘額`);
       }
     }
 
-    function updateCardTotalInline(cardId, val) {
+    function updateBankSnapshotInline(bankId, year, month, day, val) {
+      const bank = state.banks.find(b => b.id === bankId);
+      if (!bank) return;
+      const num = Number(val) || 0;
+      if (!Array.isArray(bank.records)) bank.records = [];
+      const rec = bank.records.find(r => r.year === Number(year) && r.month === Number(month) && r.day === Number(day));
+      if (rec) rec.balance = num;
+      else bank.records.push({ year: Number(year), month: Number(month), day: Number(day), balance: num });
+
+      const sorted = [...bank.records].sort((x, y) => (x.year * 10000 + x.month * 100 + x.day) - (y.year * 10000 + y.month * 100 + y.day));
+      if (sorted.length > 0) bank.balance = Number(sorted[sorted.length - 1].balance) || 0;
+      saveState();
+      renderAll();
+      showToast(`已更新「${bank.name}」(${year}/${month}/${day}) 快照餘額`);
+    }
+
+    function updateCardRecordInline(cardId, year, month, val) {
       const card = state.cards.find(c => c.id === cardId);
-      if (card) {
-        card.statementTotal = Number(val) || 0;
-        saveState();
-        renderAll();
-        showToast(`已更新「${card.name}」本期總額`);
+      if (!card) return;
+      const trimmed = String(val).trim();
+      const amountOrNull = trimmed === '' ? null : (Number(trimmed) || 0);
+      setCardRecordData(card, year, month, amountOrNull);
+      saveState();
+      renderAll();
+      showToast(`已更新「${card.name}」${year}/${month}月 帳單金額`);
+    }
+
+    function updateCardTotalInline(cardId, val) {
+      updateCardRecordInline(cardId, state.activeYear || 2025, state.activeMonth || 8, val);
+    }
+
+    function openCellRecordModal(cardId, year, month) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const rec = getCardRecord(card, year, month);
+      const isNull = !rec || rec.amount === null || rec.amount === undefined;
+      const amt = isNull ? '' : rec.amount;
+      const bigList = rec && Array.isArray(rec.bigExpenses) ? rec.bigExpenses : [];
+      const bank = state.banks.find(b => b.id === card.bankId);
+
+      const bigItemsHtml = bigList.length === 0
+        ? `<div class="text-xs text-slate-400 py-2 text-center border border-dashed border-slate-300 dark:border-slate-700 rounded-xl">本月尚無大額消費批註</div>`
+        : bigList.map(be => `
+            <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-fluid-sub">
+              <span class="font-bold text-amber-700 dark:text-amber-300 truncate">🏷️ ${be.title}</span>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="font-mono font-bold text-rose-500">${fmtMoney(be.amount)}</span>
+                <button onclick="deleteCellBigExpense('${card.id}', ${year}, ${month}, '${be.id}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash-can"></i></button>
+              </div>
+            </div>
+          `).join('');
+
+      openAppModal(`💳 ${card.name} — ${year} 年 ${month} 月帳單明細`, `
+        <div class="space-y-3.5 text-fluid-body">
+          <div class="flex items-center justify-between text-xs text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-3 py-2 rounded-xl">
+            <span>綁定扣款戶：<strong class="text-indigo-500">${bank ? bank.name : '未綁定'}</strong></span>
+            <button onclick="openCardModal('${card.id}')" class="text-indigo-500 font-bold hover:underline"><i class="fa-solid fa-gear mr-1"></i>卡片設定</button>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="font-bold">當月帳單應繳總額 (NT$)</label>
+              <label class="inline-flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer">
+                <input type="checkbox" id="mCellIsNull" ${isNull ? 'checked' : ''} onchange="document.getElementById('mCellAmount').disabled = this.checked" class="accent-indigo-600">
+                <span>本月未持卡 (灰底排除月均分母)</span>
+              </label>
+            </div>
+            <input id="mCellAmount" type="number" inputmode="numeric" value="${amt}" ${isNull ? 'disabled' : ''} placeholder="輸入 0 代表有持卡但 $0 消費"
+              class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 text-rose-500 disabled:opacity-40">
+          </div>
+
+          <div class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
+            <label class="font-bold block text-fluid-sub"><i class="fa-solid fa-tag text-amber-500 mr-1"></i>大額消費批註 (Excel 儲存格紅角標明細)</label>
+            <div class="space-y-1.5">${bigItemsHtml}</div>
+            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-2">
+              <div class="grid grid-cols-5 gap-2">
+                <input id="mCellBigTitle" type="text" placeholder="大額原因 (如：保費、機票)" class="col-span-3 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs">
+                <input id="mCellBigAmt" type="number" inputmode="numeric" placeholder="金額" class="col-span-2 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold text-xs">
+              </div>
+              <button onclick="addCellBigExpense('${card.id}', ${year}, ${month})" class="w-full py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-300 font-bold text-xs transition">
+                + 新增一筆大額批註至此月份
+              </button>
+            </div>
+          </div>
+
+          <div class="flex gap-2 pt-2">
+            <button onclick="saveCellRecordForm('${card.id}', ${year}, ${month})" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold">儲存 ${year}/${month}月 帳單</button>
+          </div>
+        </div>
+      `);
+    }
+
+    function saveCellRecordForm(cardId, year, month) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const isNull = document.getElementById('mCellIsNull').checked;
+      const rawAmt = document.getElementById('mCellAmount').value;
+      const amountOrNull = isNull ? null : (Number(rawAmt) || 0);
+
+      // 若使用者同時在下方填了大額說明但還沒按「+ 新增」，自動幫他存進去
+      const pendingTitle = (document.getElementById('mCellBigTitle')?.value || '').trim();
+      const pendingAmt = Number(document.getElementById('mCellBigAmt')?.value) || 0;
+      const rec = getCardRecord(card, year, month);
+      const bigList = rec && Array.isArray(rec.bigExpenses) ? [...rec.bigExpenses] : [];
+      if (pendingTitle && pendingAmt > 0) {
+        bigList.push({ id: 'be_' + Date.now(), title: pendingTitle, amount: pendingAmt });
       }
+
+      setCardRecordData(card, year, month, amountOrNull, bigList);
+      saveState();
+      closeAppModal();
+      renderAll();
+      showToast(`已儲存「${card.name}」${year}/${month}月 資料`);
+    }
+
+    function addCellBigExpense(cardId, year, month) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const title = (document.getElementById('mCellBigTitle')?.value || '').trim();
+      const amt = Number(document.getElementById('mCellBigAmt')?.value) || 0;
+      if (!title || amt <= 0) return showToast('請輸入大額原因與金額', 'warn');
+
+      const isNull = document.getElementById('mCellIsNull').checked;
+      const curAmt = isNull ? amt : (Number(document.getElementById('mCellAmount').value) || 0);
+      const rec = getCardRecord(card, year, month);
+      const bigList = rec && Array.isArray(rec.bigExpenses) ? [...rec.bigExpenses] : [];
+      bigList.push({ id: 'be_' + Date.now(), title, amount: amt });
+      setCardRecordData(card, year, month, curAmt, bigList);
+      saveState();
+      renderAll();
+      openCellRecordModal(cardId, year, month);
+      showToast('已加入大額批註');
+    }
+
+    function deleteCellBigExpense(cardId, year, month, beId) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const rec = getCardRecord(card, year, month);
+      if (!rec) return;
+      rec.bigExpenses = (rec.bigExpenses || []).filter(x => x.id !== beId);
+      setCardRecordData(card, year, month, rec.amount, rec.bigExpenses);
+      saveState();
+      renderAll();
+      openCellRecordModal(cardId, year, month);
+    }
+
+    // ==================== 【5~10號收單期】整月批次單手快填抽屜 ====================
+    function openBatchCardMonthModal(year = state.activeYear || 2025, month = state.activeMonth || 8) {
+      const monthOpts = Array.from({ length: 12 }, (_, i) => i + 1)
+        .map(m => `<option value="${m}" ${m === Number(month) ? 'selected' : ''}>${year} 年 ${m} 月</option>`).join('');
+
+      const rowsHtml = (state.cards || []).map((c, idx) => {
+        const rec = getCardRecord(c, year, month);
+        const isNull = !rec || rec.amount === null || rec.amount === undefined;
+        const val = isNull ? '' : rec.amount;
+        const firstBig = (rec && rec.bigExpenses && rec.bigExpenses[0]) ? `${rec.bigExpenses[0].title}:${rec.bigExpenses[0].amount}` : '';
+        return `
+          <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-fluid-sub">${idx + 1}. ${c.name}</span>
+              <input type="number" inputmode="numeric" data-batch-card-id="${c.id}" value="${val}" placeholder="未持卡留空"
+                onkeydown="if(event.key==='Enter'){event.preventDefault();const next=this.closest('.space-y-2').querySelectorAll('input[data-batch-card-id]')[${idx + 1}];if(next)next.focus();}"
+                class="w-36 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 font-mono font-extrabold text-right text-rose-500">
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-400 shrink-0">🏷️ 大額註記：</span>
+              <input type="text" data-batch-card-note="${c.id}" value="${firstBig}" placeholder="選填，如：日本機票:28500"
+                class="w-full px-2 py-1 rounded bg-white/80 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-700 text-xs">
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      openAppModal(`⚡ 5~10號收單：整月帳單批次快填`, `
+        <div class="space-y-3 text-fluid-body">
+          <div class="flex items-center justify-between gap-2 bg-indigo-500/10 px-3 py-2 rounded-xl">
+            <span class="text-xs font-bold text-indigo-600 dark:text-indigo-300">選擇收單月份（支援 Enter 跳下一張卡）</span>
+            <select id="mBatchCardMonthSelect" onchange="openBatchCardMonthModal(${year}, Number(this.value))"
+              class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-indigo-500/40 font-mono font-bold text-xs">
+              ${monthOpts}
+            </select>
+          </div>
+          <div class="space-y-2 max-h-[58vh] overflow-y-auto pr-1">
+            ${rowsHtml}
+          </div>
+          <button onclick="saveBatchCardMonthForm(${year})" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-md">
+            一次儲存全卡當月帳單
+          </button>
+        </div>
+      `);
+    }
+
+    function saveBatchCardMonthForm(year) {
+      const month = Number(document.getElementById('mBatchCardMonthSelect')?.value) || state.activeMonth || 8;
+      const inputs = document.querySelectorAll('input[data-batch-card-id]');
+      inputs.forEach(inp => {
+        const cardId = inp.getAttribute('data-batch-card-id');
+        const card = state.cards.find(c => c.id === cardId);
+        if (!card) return;
+        const raw = inp.value.trim();
+        const amtOrNull = raw === '' ? null : (Number(raw) || 0);
+
+        const noteInp = document.querySelector(`input[data-batch-card-note="${cardId}"]`);
+        const noteStr = noteInp ? noteInp.value.trim() : '';
+        const existingRec = getCardRecord(card, year, month);
+        let bigList = existingRec && Array.isArray(existingRec.bigExpenses) ? [...existingRec.bigExpenses] : [];
+        if (noteStr) {
+          const parts = noteStr.split(/[:：]/);
+          const title = parts[0].trim();
+          const bAmt = parts[1] ? (Number(parts[1]) || amtOrNull || 5000) : (amtOrNull || 5000);
+          if (bigList.length === 0) bigList = [{ id: 'be_' + Date.now() + '_' + cardId, title, amount: bAmt }];
+          else bigList[0] = { ...bigList[0], title, amount: bAmt };
+        }
+        setCardRecordData(card, year, month, amtOrNull, bigList);
+      });
+      state.activeYear = Number(year);
+      state.activeMonth = Number(month);
+      saveState();
+      closeAppModal();
+      renderAll();
+      showToast(`已完成 ${year}/${month}月 全卡批次收單！`);
+    }
+
+    // ==================== 【10~19號調度期】銀行餘額批次快照抽屜 ====================
+    function openBatchBankSnapshotModal() {
+      const today = new Date();
+      const defaultDate = `2025-08-21`;
+      const rowsHtml = (state.banks || []).map((b, idx) => `
+        <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700">
+          <div class="min-w-0">
+            <span class="font-bold text-fluid-sub block truncate">${idx + 1}. ${b.name}</span>
+            <span class="text-[11px] text-slate-400 font-mono">目前：${fmtMoney(b.balance)}</span>
+          </div>
+          <input type="number" inputmode="numeric" data-batch-bank-id="${b.id}" value="${b.balance}"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();const next=this.closest('.space-y-2').querySelectorAll('input[data-batch-bank-id]')[${idx + 1}];if(next)next.focus();}"
+            class="w-40 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 font-mono font-extrabold text-right text-emerald-600 dark:text-emerald-400">
+        </div>
+      `).join('');
+
+      openAppModal('🏦 批次新增/更新銀行餘額快照', `
+        <div class="space-y-3 text-fluid-body">
+          <div class="flex items-center justify-between gap-2 bg-emerald-500/10 px-3 py-2 rounded-xl">
+            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-300">盤點快照日期 (新增一欄至矩陣)</span>
+            <input id="mBatchBankDate" type="date" value="${defaultDate}" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-emerald-500/40 font-mono font-bold text-xs">
+          </div>
+          <div class="space-y-2 max-h-[58vh] overflow-y-auto pr-1">
+            ${rowsHtml}
+          </div>
+          <button onclick="saveBatchBankSnapshotForm()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md">
+            儲存全行快照並更新 Cash Drag 水位
+          </button>
+        </div>
+      `);
+    }
+
+    function saveBatchBankSnapshotForm() {
+      const rawDate = document.getElementById('mBatchBankDate')?.value || '2025-08-21';
+      const [yStr, mStr, dStr] = rawDate.split('-');
+      const year = Number(yStr) || 2025;
+      const month = Number(mStr) || 8;
+      const day = Number(dStr) || 21;
+
+      const inputs = document.querySelectorAll('input[data-batch-bank-id]');
+      inputs.forEach(inp => {
+        const bankId = inp.getAttribute('data-batch-bank-id');
+        const bank = state.banks.find(b => b.id === bankId);
+        if (!bank) return;
+        const bal = Number(inp.value) || 0;
+        if (!Array.isArray(bank.records)) bank.records = [];
+        const existing = bank.records.find(r => r.year === year && r.month === month && r.day === day);
+        if (existing) existing.balance = bal;
+        else bank.records.push({ year, month, day, balance: bal });
+
+        const sorted = [...bank.records].sort((a, b) => (a.year * 10000 + a.month * 100 + a.day) - (b.year * 10000 + b.month * 100 + b.day));
+        if (sorted.length > 0) bank.balance = Number(sorted[sorted.length - 1].balance) || 0;
+      });
+      selectedBankSnapshotKey = `${year}/${month}/${day}`;
+      saveState();
+      closeAppModal();
+      renderAll();
+      showToast(`已新增 ${year}/${month}/${day} 全行餘額快照！`);
+    }
+
+    function openBankSnapshotCellModal(bankId, year, month, day) {
+      const bank = state.banks.find(b => b.id === bankId);
+      if (!bank) return;
+      const rec = (bank.records || []).find(r => r.year === year && r.month === month && r.day === day);
+      const val = rec ? rec.balance : bank.balance;
+      openAppModal(`🏦 ${bank.name} (${year}/${month}/${day}) 快照`, `
+        <div class="space-y-3 text-fluid-body">
+          <div>
+            <label class="font-bold block mb-1">當日帳戶台幣餘額 (NT$)</label>
+            <input id="mSnapCellBal" type="number" inputmode="numeric" value="${val}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2">
+          </div>
+          <p class="text-xs text-slate-400">Cash Drag 水位門檻：黃燈關注 ${fmtMoney(bank.cashDragWarn || 500000)} / 紅燈嚴重閒置 ${fmtMoney(bank.cashDragAlert || 1000000)}</p>
+          <button onclick="updateBankSnapshotInline('${bank.id}', ${year}, ${month}, ${day}, document.getElementById('mSnapCellBal').value); closeAppModal();"
+            class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold">儲存快照餘額</button>
+        </div>
+      `);
     }
 
     function toggleCardPaidStatus(cardId) {
@@ -3298,7 +3593,7 @@
         }
       });
       state.bills.forEach(b => {
-        if (b.bankId === bankId && b.status === 'unpaid') {
+        if (b.bankId === bankId && b.status === 'unpaid' && b.paymentMethod !== 'card_auto') {
           deducted += Number(b.amount) || 0;
           b.status = 'paid';
         }
@@ -3321,7 +3616,7 @@
           }
         });
         state.bills.forEach(b => {
-          if (b.bankId === bank.id && b.status === 'unpaid') {
+          if (b.bankId === bank.id && b.status === 'unpaid' && b.paymentMethod !== 'card_auto') {
             const amt = Number(b.amount) || 0;
             bank.balance -= amt;
             totalDeducted += amt;
@@ -3376,10 +3671,12 @@
       const bill = state.bills.find(b => b.id === id);
       if (!bill) return;
       const bank = state.banks.find(x => x.id === bill.bankId);
-      if (bill.status !== 'paid' && newStatus === 'paid' && bank) {
-        bank.balance -= Number(bill.amount) || 0;
-      } else if (bill.status === 'paid' && newStatus !== 'paid' && bank) {
-        bank.balance += Number(bill.amount) || 0;
+      if (bill.paymentMethod !== 'card_auto') {
+        if (bill.status !== 'paid' && newStatus === 'paid' && bank) {
+          bank.balance -= Number(bill.amount) || 0;
+        } else if (bill.status === 'paid' && newStatus !== 'paid' && bank) {
+          bank.balance += Number(bill.amount) || 0;
+        }
       }
       bill.status = newStatus;
       saveState();
@@ -3486,22 +3783,35 @@
     }
 
     function openBankModal(bankId = null) {
-      const existing = state.banks.find(b => b.id === bankId) || { name: '', balance: 0, note: '' };
-      openAppModal(bankId ? '編輯台幣銀行帳戶' : '新增台幣銀行帳戶', `
+      const existing = state.banks.find(b => b.id === bankId) || { name: '', balance: 0, cashDragWarn: 500000, cashDragAlert: 1000000, note: '' };
+      openAppModal(bankId ? '編輯台幣銀行與 Cash Drag 警戒線' : '新增台幣銀行帳戶', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">銀行名稱</label>
-            <input id="mBankName" type="text" value="${existing.name}" placeholder="例如：永豐大戶、國泰世華" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <input id="mBankName" type="text" value="${existing.name}" placeholder="例如：兆豐台幣、玉山薪轉" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <div>
-            <label class="font-bold block mb-1">目前台幣餘額 (NT$)</label>
-            <input id="mBankBal" type="number" value="${existing.balance}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            <label class="font-bold block mb-1">最新台幣餘額 (NT$)</label>
+            <input id="mBankBal" type="number" inputmode="numeric" value="${existing.balance}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1 text-amber-500 text-xs">🟡 黃燈關注門檻 (Cash Drag)</label>
+              <input id="mBankWarn" type="number" inputmode="numeric" value="${existing.cashDragWarn || 500000}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-amber-500/40 font-mono text-sm">
+            </div>
+            <div>
+              <label class="font-bold block mb-1 text-rose-500 text-xs">🔴 紅燈嚴重閒置警戒線</label>
+              <input id="mBankAlert" type="number" inputmode="numeric" value="${existing.cashDragAlert || 1000000}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-rose-500/40 font-mono text-sm">
+            </div>
           </div>
           <div>
             <label class="font-bold block mb-1">用途備註</label>
             <input id="mBankNote" type="text" value="${existing.note || ''}" placeholder="例如：主力信用卡扣款戶" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
-          <button onclick="saveBankForm('${bankId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存銀行帳戶</button>
+          <div class="flex gap-2 pt-1">
+            ${bankId ? `<button onclick="deleteBank('${bankId}'); closeAppModal();" class="px-4 py-2.5 rounded-xl bg-rose-500/15 text-rose-500 font-bold">刪除</button>` : ''}
+            <button onclick="saveBankForm('${bankId || ''}')" class="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-bold">儲存銀行設定</button>
+          </div>
         </div>
       `);
     }
@@ -3509,13 +3819,26 @@
     function saveBankForm(bankId) {
       const name = document.getElementById('mBankName').value.trim();
       const balance = Number(document.getElementById('mBankBal').value) || 0;
+      const cashDragWarn = Number(document.getElementById('mBankWarn').value) || 500000;
+      const cashDragAlert = Number(document.getElementById('mBankAlert').value) || 1000000;
       const note = document.getElementById('mBankNote').value.trim();
       if (!name) return showToast('請輸入銀行名稱', 'warn');
       if (bankId) {
         const b = state.banks.find(x => x.id === bankId);
-        if (b) Object.assign(b, { name, balance, note });
+        if (b) {
+          Object.assign(b, { name, balance, cashDragWarn, cashDragAlert, note });
+          if (Array.isArray(b.records) && b.records.length > 0) {
+            b.records[b.records.length - 1].balance = balance;
+          }
+        }
       } else {
-        state.banks.push({ id: 'bank_' + Date.now(), name, balance, note });
+        const dates = getAllBankSnapshotDates();
+        const latest = dates[dates.length - 1] || { year: 2025, month: 8, day: 21 };
+        state.banks.push({
+          id: 'bank_' + Date.now(),
+          name, balance, cashDragWarn, cashDragAlert, note,
+          records: [{ year: latest.year, month: latest.month, day: latest.day, balance }]
+        });
       }
       saveState(); closeAppModal(); renderAll();
     }
@@ -3528,21 +3851,24 @@
     function openCardModal(cardId = null) {
       const existing = state.cards.find(c => c.id === cardId) || { name: '', bankId: (state.banks[0]?.id || ''), statementTotal: 0 };
       const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
-      openAppModal(cardId ? '編輯信用卡' : '新增信用卡', `
+      openAppModal(cardId ? '編輯信用卡設定' : '新增信用卡', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">信用卡名稱</label>
-            <input id="mCardName" type="text" value="${existing.name}" placeholder="例如：玉山 U Bear 卡" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <input id="mCardName" type="text" value="${existing.name}" placeholder="例如：玉山、國泰Cube" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <div>
-            <label class="font-bold block mb-1">綁定 30 號扣款銀行</label>
+            <label class="font-bold block mb-1">綁定自動扣款銀行 (每張卡僅能綁定該行帳戶)</label>
             <select id="mCardBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
           </div>
           <div>
-            <label class="font-bold block mb-1">本期帳單總額 (NT$)</label>
-            <input id="mCardTotal" type="number" value="${existing.statementTotal}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            <label class="font-bold block mb-1">當期 (${state.activeYear || 2025}/${state.activeMonth || 8}月) 帳單總額 (NT$)</label>
+            <input id="mCardTotal" type="number" inputmode="numeric" value="${existing.statementTotal}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
           </div>
-          <button onclick="saveCardForm('${cardId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存信用卡</button>
+          <div class="flex gap-2 pt-1">
+            ${cardId ? `<button onclick="deleteCard('${cardId}'); closeAppModal();" class="px-4 py-2.5 rounded-xl bg-rose-500/15 text-rose-500 font-bold">刪卡</button>` : ''}
+            <button onclick="saveCardForm('${cardId || ''}')" class="flex-1 py-2.5 rounded-xl bg-indigo-600 text-white font-bold">儲存信用卡</button>
+          </div>
         </div>
       `);
     }
@@ -3552,11 +3878,23 @@
       const bankId = document.getElementById('mCardBank').value;
       const statementTotal = Number(document.getElementById('mCardTotal').value) || 0;
       if (!name) return showToast('請輸入信用卡名稱', 'warn');
+      const yr = state.activeYear || 2025;
+      const mo = state.activeMonth || 8;
       if (cardId) {
         const c = state.cards.find(x => x.id === cardId);
-        if (c) Object.assign(c, { name, bankId, statementTotal });
+        if (c) {
+          Object.assign(c, { name, bankId, statementTotal });
+          setCardRecordData(c, yr, mo, statementTotal);
+        }
       } else {
-        state.cards.push({ id: 'card_' + Date.now(), name, bankId, statementTotal, paid: false, bigExpenses: [] });
+        const newCard = {
+          id: 'card_' + Date.now(),
+          name, bankId, statementTotal, paid: false, bigExpenses: [],
+          records: Array.from({ length: 12 }, (_, idx) => ({
+            year: yr, month: idx + 1, amount: (idx + 1) === mo ? statementTotal : 0, bigExpenses: []
+          }))
+        };
+        state.cards.push(newCard);
       }
       saveState(); closeAppModal(); renderAll();
     }
@@ -3564,7 +3902,7 @@
     function deleteCard(cardId) {
       const boundCount = state.installments.filter(x => x.cardId === cardId).length;
       if (boundCount > 0) {
-        if (!confirm(`此信用卡目前有 ${boundCount} 筆進行中的分期付款綁定！\n確定要刪除這張卡嗎？（刪除後分期項目仍會保留並標記為未指定卡片）`)) return;
+        if (!confirm(`此信用卡目前有 ${boundCount} 筆進行中的分期付款綁定！\n確定要刪除這張卡嗎？`)) return;
         state.installments.forEach(x => {
           if (x.cardId === cardId) {
             x.cardId = '';
@@ -3577,45 +3915,7 @@
     }
 
     function openBigExpenseModal(cardId) {
-      const card = state.cards.find(c => c.id === cardId);
-      if (!card) return;
-      openAppModal(`新增 >$5,000 大額刷卡 (${card.name})`, `
-        <div class="space-y-3 text-fluid-body">
-          <div>
-            <label class="font-bold block mb-1">消費項目說明</label>
-            <input id="mBigTitle" type="text" placeholder="例如：保費、機票、百貨週年慶" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-          </div>
-          <div>
-            <label class="font-bold block mb-1">單筆金額 (NT$)</label>
-            <input id="mBigAmount" type="number" value="5000" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
-          </div>
-          <label class="flex items-center gap-2 pt-1 cursor-pointer text-fluid-sub">
-            <input type="checkbox" id="mBigAddTotal" class="accent-indigo-600">
-            <span>同時將此金額加進「本期帳單總額」</span>
-          </label>
-          <button onclick="saveBigExpenseForm('${cardId}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">新增大額紀錄</button>
-        </div>
-      `);
-    }
-
-    function saveBigExpenseForm(cardId) {
-      const card = state.cards.find(c => c.id === cardId);
-      if (!card) return;
-      const title = document.getElementById('mBigTitle').value.trim();
-      const amount = Number(document.getElementById('mBigAmount').value) || 0;
-      const addTotal = document.getElementById('mBigAddTotal').checked;
-      if (!title || amount <= 0) return showToast('請填寫完整名稱與金額', 'warn');
-      card.bigExpenses = card.bigExpenses || [];
-      card.bigExpenses.push({ id: 'be_' + Date.now(), title, amount });
-      if (addTotal) card.statementTotal = (Number(card.statementTotal) || 0) + amount;
-      saveState(); closeAppModal(); renderAll();
-    }
-
-    function deleteBigExpense(cardId, beId) {
-      const card = state.cards.find(c => c.id === cardId);
-      if (!card) return;
-      card.bigExpenses = (card.bigExpenses || []).filter(x => x.id !== beId);
-      saveState(); renderAll();
+      openCellRecordModal(cardId, state.activeYear || 2025, state.activeMonth || 8);
     }
 
     function openInstallmentModal(instId = null) {
@@ -3697,31 +3997,52 @@
     }
 
     function openBillModal(billId = null) {
-      const existing = state.bills.find(b => b.id === billId) || { name: '', cycle: '每月固定', amount: 1000, bankId: (state.banks[0]?.id || ''), status: 'unpaid' };
+      const existing = state.bills.find(b => b.id === billId) || {
+        name: '', cycle: '每月固定', amount: 1000, paymentMethod: 'bank_direct', dueDay: 10,
+        bankId: (state.banks[0]?.id || ''), cardId: (state.cards[0]?.id || ''), status: 'unpaid', note: ''
+      };
       const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
-      openAppModal(billId ? '編輯週期固定費用' : '新增週期固定費用', `
+      const cardOptions = state.cards.map(c => `<option value="${c.id}" ${c.id === existing.cardId ? 'selected' : ''}>${c.name}</option>`).join('');
+      openAppModal(billId ? '編輯雙軌固定費用' : '新增雙軌固定費用', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">費用名稱</label>
-            <input id="mBillName" type="text" value="${existing.name}" placeholder="例如：房租、台電電費、網路費" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <input id="mBillName" type="text" value="${existing.name}" placeholder="例如：房租、車貸、水電瓦斯、光纖網路" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
-          <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold block mb-1">扣款軌道 (防止水電刷卡被重複扣減當月銀行餘額)</label>
+            <select id="mBillMethod" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-indigo-500/40 font-bold">
+              <option value="bank_direct" ${existing.paymentMethod !== 'card_auto' ? 'selected' : ''}>🏦 軌道 A：銀行帳戶直接扣款 (如 10號房租 / 28號車貸)</option>
+              <option value="card_auto" ${existing.paymentMethod === 'card_auto' ? 'selected' : ''}>💳 軌道 B：信用卡代繳遞延 (如 21號刷水電，延至下月卡費)</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="font-bold block mb-1">繳費週期</label>
-              <select id="mBillCycle" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <select id="mBillCycle" class="w-full px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">
                 <option value="每月固定" ${existing.cycle === '每月固定' ? 'selected' : ''}>每月固定</option>
                 <option value="雙月帳單" ${existing.cycle === '雙月帳單' ? 'selected' : ''}>雙月帳單</option>
                 <option value="季繳/年繳" ${existing.cycle === '季繳/年繳' ? 'selected' : ''}>季繳/年繳</option>
               </select>
             </div>
             <div>
-              <label class="font-bold block mb-1">當期金額 (NT$)</label>
-              <input id="mBillAmt" type="number" value="${existing.amount}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+              <label class="font-bold block mb-1">扣繳/刷卡日</label>
+              <input id="mBillDueDay" type="number" min="1" max="31" value="${existing.dueDay || 10}" class="w-full px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">當期金額</label>
+              <input id="mBillAmt" type="number" inputmode="numeric" value="${existing.amount}" class="w-full px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
             </div>
           </div>
-          <div>
-            <label class="font-bold block mb-1">指定扣款銀行</label>
-            <select id="mBillBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1 text-xs">指定扣款銀行 (軌道A)</label>
+              <select id="mBillBank" class="w-full px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">${bankOptions}</select>
+            </div>
+            <div>
+              <label class="font-bold block mb-1 text-xs">代繳信用卡 (軌道B)</label>
+              <select id="mBillCard" class="w-full px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs">${cardOptions}</select>
+            </div>
           </div>
           <button onclick="saveBillForm('${billId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存固定費用</button>
         </div>
@@ -3730,15 +4051,18 @@
 
     function saveBillForm(billId) {
       const name = document.getElementById('mBillName').value.trim();
+      const paymentMethod = document.getElementById('mBillMethod').value;
       const cycle = document.getElementById('mBillCycle').value;
+      const dueDay = Number(document.getElementById('mBillDueDay').value) || 10;
       const amount = Number(document.getElementById('mBillAmt').value) || 0;
       const bankId = document.getElementById('mBillBank').value;
+      const cardId = document.getElementById('mBillCard').value;
       if (!name) return showToast('請輸入費用名稱', 'warn');
       if (billId) {
         const b = state.bills.find(x => x.id === billId);
-        if (b) Object.assign(b, { name, cycle, amount, bankId });
+        if (b) Object.assign(b, { name, paymentMethod, cycle, dueDay, amount, bankId, cardId });
       } else {
-        state.bills.push({ id: 'bill_' + Date.now(), name, cycle, amount, bankId, status: 'unpaid' });
+        state.bills.push({ id: 'bill_' + Date.now(), name, paymentMethod, cycle, dueDay, amount, bankId, cardId, status: 'unpaid' });
       }
       saveState(); closeAppModal(); renderAll();
     }
@@ -3874,53 +4198,38 @@
     function exportToExcelCSV() {
       const m = computeFinancialMetrics();
       const rows = [
-        ['PocketMoney 個人財務與費用扣款檢核報表', `匯出時間：${new Date().toLocaleString('zh-TW')}`],
+        ['PocketMoney 個人財務與時間矩陣報表', `匯出時間：${new Date().toLocaleString('zh-TW')}`],
         ['總淨資產', m.netWorth, '總資產(銀行+股票市值)', m.totalAssets, '本月待繳總負債', m.totalUnpaidLiabilities],
         ['常態每月固定生活支出', m.billsMonthlyBaseCost, '現金部位', m.stockCashPool, '波段持倉總市值', m.stockMarketValue],
         [],
-        ['=== 一、銀行自動扣繳餘額檢查 ==='],
-        ['銀行名稱', '目前餘額', '30號待扣卡費', '30號待扣固定費', '30號待扣總計', '扣後預計結餘', '狀態']
+        ['=== 一、銀行自動扣繳餘額與 Cash Drag 檢查 ==='],
+        ['銀行名稱', '目前餘額', '本月待扣卡費', '本月直扣固定費', '本月待扣總計', '扣後預計結餘', '狀態']
       ];
       m.bankCheckups.forEach(b => {
-        rows.push([b.name, b.balance, b.cardsSum, b.billsSum, b.requiredTotal, b.afterBalance, b.isShortfall ? '餘額不足' : '餘額充足']);
+        rows.push([b.name, b.balance, b.cardsSum, b.billsSum, b.requiredTotal, b.afterBalance, b.isShortfall ? '餘額不足' : (b.cashDragStatus === 'alert' ? 'Cash Drag 嚴重閒置' : '餘額充足')]);
       });
-      rows.push([], ['=== 二、信用卡本期帳單與 >5000 大額明細 ==='], ['信用卡名稱', '扣款銀行', '本期總額', '狀態', '>5000大額明細']);
-      state.cards.forEach(c => {
-        const bankName = state.banks.find(b => b.id === c.bankId)?.name || '';
-        const bigStr = (c.bigExpenses || []).map(x => `${x.title}($${x.amount})`).join(' / ');
-        rows.push([c.name, bankName, c.statementTotal, c.paid ? '已繳清' : '未繳', bigStr || '無']);
-      });
-      rows.push([], ['=== 三、獨立分期付款追蹤 ==='], ['分期項目', '所屬信用卡', '扣款銀行', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
-      state.installments.forEach(inst => {
-        const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
-        const cardName = card ? card.name : (inst.cardName || '未指定');
-        const bank = card ? state.banks.find(b => b.id === card.bankId) : null;
-        const bankName = bank ? bank.name : '-';
-        const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
-        rows.push([inst.title, cardName, bankName, inst.monthlyAmount, inst.totalPeriods, inst.paidPeriods, left * inst.monthlyAmount]);
-      });
-      rows.push([], ['=== 四、台股波段持倉部位 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
-      state.stocks.forEach(s => {
-        const val = s.shares * s.currentPrice;
-        const cost = s.shares * s.avgCost;
-        rows.push([s.code, s.name, s.shares, s.avgCost, s.currentPrice, val, val - cost]);
-      });
-      rows.push([], ['=== 五、每月/雙月週期固定費用 ==='], ['費用名稱', '繳費週期', '扣款銀行', '當期金額', '狀態']);
-      state.bills.forEach(b => {
-        const bankName = state.banks.find(x => x.id === b.bankId)?.name || '未指定';
-        const statusMap = { unpaid: '待繳', paid: '已繳', skipped: '免繳' };
-        rows.push([b.name, b.cycle, bankName, b.amount, statusMap[b.status] || b.status]);
-      });
+      rows.push([], [`=== 二、${m.activeYear} 年信用卡時間軸矩陣 ===`]);
+      rows.push(['月份', ...state.cards.map(c => c.name), '月總計']);
+      for (let mo = 1; mo <= 12; mo++) {
+        let mSum = 0;
+        const cVals = state.cards.map(c => {
+          const r = getCardRecord(c, m.activeYear, mo);
+          if (!r || r.amount === null || r.amount === undefined) return '';
+          mSum += Number(r.amount) || 0;
+          return r.amount;
+        });
+        rows.push([`${m.activeYear}/${mo}`, ...cVals, mSum]);
+      }
 
       const csvContent = '\uFEFF' + rows.map(r => r.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `PocketMoney_財務報表_${getExportTimestamp()}.csv`;
+      a.download = `PocketMoney_財務矩陣報表_${getExportTimestamp()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('已匯出 Excel CSV 報表！');
+      showToast('已匯出 Excel CSV 財務矩陣報表！');
     }
 
     function exportDatabaseJSON() {
@@ -3942,7 +4251,7 @@
         try {
           const imported = JSON.parse(e.target.result);
           if (!imported.banks || !imported.cards) throw new Error('Invalid');
-          state = imported;
+          state = ensureV4State(imported);
           saveState(); renderAll();
           showToast('成功還原資料庫備份！');
         } catch (err) {
@@ -3973,7 +4282,7 @@
       if (!scenario) return;
       const confirmMsg = `確定要載入「${scenario.label}」示範情境資料嗎？\n\n【${scenario.label}】${scenario.badge}\n${scenario.desc}\n\n⚠️ 注意：這將會取代您目前的本機暫存資料。`;
       if (confirm(confirmMsg)) {
-        state = JSON.parse(JSON.stringify(scenario.state));
+        state = ensureV4State(JSON.parse(JSON.stringify(scenario.state)));
         saveState();
         renderAll();
         showToast(`已載入「${scenario.label}」示範資料！`, 'info');
@@ -3991,7 +4300,7 @@
       {
         tab: 'cards',
         targetId: 'firstBankCard',
-        fallbackTargetId: 'bankAccountsList',
+        fallbackTargetId: 'bankAdaptiveContainer',
         type: 'bank_input',
         title: '🏦 步驟 1 / 4：設置你的主力銀行存款',
         body: '實踐「抓大放小」第一步：填入主要扣款銀行的活存餘額。告別瑣碎記帳疲勞，每月只需 3 分鐘確認一次存款水位！',
@@ -4000,7 +4309,7 @@
       {
         tab: 'cards',
         targetId: 'firstCreditCard',
-        fallbackTargetId: 'creditCardsList',
+        fallbackTargetId: 'creditCardsAdaptiveContainer',
         type: 'card_input',
         title: '💳 步驟 2 / 4：設置你的信用卡本期費用',
         body: '打開行動銀行或查看帳單，填入本期應繳卡費總額。只需填一個總數，不需逐筆記咖啡發票！',
@@ -4229,7 +4538,7 @@
     function startSpotlightTour() {
       closeWelcomeModal();
       // 使用單一銀行與信用卡的預設模型啟動導覽
-      state = JSON.parse(JSON.stringify(PRESET_SCENARIOS.junior.state));
+      state = ensureV4State(JSON.parse(JSON.stringify(PRESET_SCENARIOS.junior.state)));
       saveState();
       renderAll();
       currentTourIndex = 0;
@@ -4502,6 +4811,17 @@
       render();
     }
 
+    let lastIsMobileViewport = window.innerWidth < 768;
+    window.addEventListener('resize', () => {
+      const nowMobile = window.innerWidth < 768;
+      if (nowMobile !== lastIsMobileViewport) {
+        lastIsMobileViewport = nowMobile;
+        cardViewMode = nowMobile ? 'slice' : 'matrix';
+        bankViewMode = nowMobile ? 'slice' : 'matrix';
+        renderAll();
+      }
+    });
+
     window.onload = function () {
       const savedTheme = localStorage.getItem('PocketMoney_theme') || localStorage.getItem('pocketflow_theme');
       if (savedTheme === 'light') document.documentElement.classList.remove('dark');
@@ -4510,12 +4830,6 @@
       document.getElementById('appVersionLabel').innerText = APP_VERSION;
       if (state.settings.pinCode) lockScreenNow();
       switchTab('dashboard');
-
-      // 首次進入時自動彈出歡迎引導
-      const completed = localStorage.getItem('PocketMoney_onboarding_completed') === 'true';
-      if (!completed) {
-        setTimeout(openWelcomeModal, 450);
-      }
     };
   </script>
 

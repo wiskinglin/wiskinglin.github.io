@@ -1,7 +1,7 @@
-# PocketMoney / Kipomo 產品核心脈絡與 v4 統一架構設計全書 (Unified Product & Architecture Design)
+# PocketMoney 產品核心脈絡與 v4 統一架構設計全書 (Unified Product & Architecture Design)
 
 > - **文件定位**：本文件整合了專案演進過程中的多份探索提案（[`PocketMoneyObjects.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/PocketMoneyObjects.md)、[`SUB_DATABASE_STOCK_FLOW_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SUB_DATABASE_STOCK_FLOW_PROPOSAL.md)、[`TIMELINE_DATA_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/TIMELINE_DATA_PROPOSAL.md)、[`analysis.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/analysis.md)）以及與產品擁有者（User）的深度訪談決策。
-> - **核心目的**：在不更動現行 v3 正式版規格書 [`SDD.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SDD.md) 的前提下，完整記錄**「真實使用情境、為何現有 PoC 仍無法取代 Excel、歷史設計決策的取捨脈絡、下一代 v4 的終極資料模型與互動架構、以及正式確立之專屬品牌『Kipomo』」**，作為後續所有 AI Agent 與開發者查閱的單一事實來源（Single Source of Truth）。
+> - **核心目的**：在不更動現行 v3 正式版規格書 [`SDD.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SDD.md) 的前提下，完整記錄**「真實使用情境、為何現有 PoC 仍無法取代 Excel、歷史設計決策的取捨脈絡、以及下一代 v4 的終極資料模型與互動架構」**，作為後續所有 AI Agent 與開發者查閱的單一事實來源（Single Source of Truth）。
 
 ---
 
@@ -408,30 +408,4 @@ sequenceDiagram
    - 嚴格區分月平均計算中的「`0` 元帳單（分母 $+1$）」與「`null` 未持卡（分母不計）」。
    - 同時守住「透支下限（防跳票）」與「閒置上限（防 Cash Drag）」。
 4. **大額消費即註解（Big Expenses as Hover Annotations）**：將 `> 5,000` 大額消費直接內嵌於各卡各月的帳單紀錄中，實現「看到異常高金額 ➔ 滑鼠 Hover 秒看原因」的無縫查帳體驗。
-
----
-
-## 第八章：品牌重塑與命名定位（Brand Identity: Kipomo）
-
-在經歷 v1 ~ v3 的原型驗證與 v4 的架構重構後，專案正式確立自創品牌名稱——**Kipomo**。這是一個整體完成度極高、辨識度出眾且兼具溫度感的命名，非常契合個人理財與資產調度 App 的產品本質。
-
-### 8.1 命名優勢與亮點深度分析
-
-#### 1. 巧妙保留了原點的 DNA
-這名字聽得出是 **Keep + Pocket + Money** 的巧妙融合：
-- **傳承初衷**：既保留了最初想傳達的「照顧口袋零用錢、打理個人現金流」的核心本質。
-- **商標優勢**：又徹底擺脫了「Pocket Money」普通名詞容易撞名、難以註冊商標的先天缺點，建立專屬且獨特的品牌資產。
-
-#### 2. 記憶點強且發音極具親和力
-- **節奏明快**：三個音節（**Ki-po-mo**），子音都是清脆的爆破音與雙唇音，讀起來順口、俏皮且沒有生澀感。
-- **日系／現代新創的角色名親和感**：發音帶有一點類似「熊本熊（Kumamon）」或日系吉祥物的圓潤親和感，非常適合塑造成一個「隨身幫你打理錢包的小精靈」或「虛擬理財管家」，大幅降低理財記帳與對帳的嚴肅與枯燥感。
-
-#### 3. 品牌塑造與 Logo 設計潛力
-- **視覺對稱與延展**：開頭的 **K** 帶有引導線條與銳利度，而後面的 **p**、**o**、**m**、**o** 充滿了圓弧，非常容易設計成圓潤、溫暖、現代扁平化（Flat design）的 App Icon 與視覺識別系統。
-- **Slogan 很好搭配**：
-  - *“Kipomo: Keep your pocket money flowing.”*
-  - *“讓 Kipomo 幫你守住每一筆小錢。”*
-
-### 8.2 產品定位結語
-如果 App 的定位是**介面簡約、操作無負擔、陪伴型且帶點溫度的記帳與理財工具**，**Kipomo** 的辨識度與親和力絕對名列前茅。
 
