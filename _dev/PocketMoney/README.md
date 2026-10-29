@@ -6,7 +6,7 @@
 
 ## 核心文件導覽
 
-- **⭐ 產品核心脈絡與 v4 統一架構設計全書 (最新整合總綱)**：[`UNIFIED_DESIGN_V4.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UNIFIED_DESIGN_V4.md)
+- **⭐ 使用者體驗與介面設計規格書 (UXD)**：[`UXD.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UXD.md)
   - 整合 [`PocketMoneyObjects.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/PocketMoneyObjects.md)、[`SUB_DATABASE_STOCK_FLOW_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SUB_DATABASE_STOCK_FLOW_PROPOSAL.md)、[`TIMELINE_DATA_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/TIMELINE_DATA_PROPOSAL.md) 與 [`analysis.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/analysis.md) 之完整設計脈絡與決策紀錄。
   - 涵蓋：每月 5~10~20~30 號真實使用流程、為何 PoC 尚未取代 Excel 的 5 大斷層、開源財務軟體 Best Practices、v4 統一資料模型（信用卡/費用年月子物件、銀行不定期盤點子物件、Cash Drag 上下界風控、固定費用雙軌分流、大額消費 Hover 註解）與二維矩陣 UI 設計。
 

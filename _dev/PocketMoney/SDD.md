@@ -1,5 +1,11 @@
 # PocketMoney 系統設計規格書 (Software Design Document, SDD)
 
+## Revision (版本修訂紀錄)
+
+| 版本 | 日期 | 修訂摘要 |
+| :--- | :--- | :--- |
+| **Rev 1.0** | 2026-10-29 | 正式版基線規格 (`PocketMoney_tw_finance_v3`)。 |
+
 ---
 
 ## 文件資訊

@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketMoney</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            nord: {
+              0: '#2E3440',
+              1: '#3B4252',
+              2: '#434C5E',
+              3: '#4C566A',
+              4: '#D8DEE9',
+              5: '#E5E9F0',
+              6: '#ECEFF4',
+              7: '#8FBCBB',
+              8: '#88C0D0',
+              9: '#81A1C1',
+              10: '#5E81AC',
+              11: '#BF616A',
+              12: '#D08770',
+              13: '#EBCB8B',
+              14: '#A3BE8C',
+              15: '#B48EAD'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Nord Theme Base & Custom Utilities */
+    body {
+      background-color: #242933;
+      color: #ECEFF4;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* 3D Perspective & Flip Styles */
+    .perspective-1000 {
+      perspective: 1200px;
+    }
+
+    .transform-style-3d {
+      transform-style: preserve-3d;
+    }
+
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+
+    /* Card Glow & Glass */
+    .card-glass {
+      background: rgba(46, 52, 64, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(216, 222, 233, 0.12);
+    }
+
+    .credit-card-shadow {
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+    }
+
+    /* Cover Flow Transitions */
+    .cover-flow-item {
+      transition: all 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+      will-change: transform, opacity;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #2E3440;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #434C5E;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4C566A;
+    }
+
+    /* Masked amount toggle */
+    .privacy-masked .masked-amount {
+      filter: blur(5px);
+      user-select: none;
+    }
+
+    /* Subtle pulse animation for active input */
+    @keyframes focusPulse {
+      0%, 100% { border-color: rgba(136, 192, 208, 0.8); box-shadow: 0 0 0 3px rgba(136, 192, 208, 0.2); }
+      50% { border-color: rgba(129, 161, 193, 0.6); box-shadow: 0 0 0 1px rgba(129, 161, 193, 0.1); }
+    }
+    .input-pulse:focus {
+      animation: focusPulse 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="bg-[#242933] text-nord-6 min-h-screen flex flex-col antialiased selection:bg-nord-8 selection:text-nord-0">
+
+  <!-- ==================== 頂部全域導覽 (Header & Tabs) ==================== -->
+  <header class="sticky top-0 z-50 bg-[#2E3440]/90 backdrop-blur-md border-b border-nord-2 px-4 lg:px-8 py-3 transition-colors">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-nord-10 to-nord-8 flex items-center justify-center shadow-lg shadow-nord-10/20 text-nord-0 font-bold">
+          <i class="fa-solid fa-wallet text-base"></i>
+        </div>
+        <span class="text-lg font-bold tracking-tight text-nord-6">PocketMoney</span>
+      </div>
+
+      <!-- 四大輸入流程乾淨導覽切換 (無任何版本標籤與黑話) -->
+      <nav class="flex items-center bg-nord-1 p-1 rounded-xl border border-nord-2/60 shadow-inner">
+        <button id="nav-tab-cards" onclick="switchMainTab('cards')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-6 bg-nord-2 shadow-sm flex items-center space-x-2">
+          <i class="fa-regular fa-credit-card text-nord-8 text-xs"></i>
+          <span>信用卡費</span>
+        </button>
+        <button id="nav-tab-banks" onclick="switchMainTab('banks')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2">
+          <i class="fa-solid fa-building-columns text-nord-9 text-xs"></i>
+          <span>銀行餘額</span>
+        </button>
+        <button id="nav-tab-bills" onclick="switchMainTab('bills')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2">
+          <i class="fa-solid fa-calendar-check text-nord-7 text-xs"></i>
+          <span>固定費用</span>
+        </button>
+        <button id="nav-tab-installments" onclick="switchMainTab('installments')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2">
+          <i class="fa-solid fa-layer-group text-nord-15 text-xs"></i>
+          <span>分期付款</span>
+        </button>
+      </nav>
+
+      <!-- 快捷輔助動作列 -->
+      <div class="flex items-center space-x-2">
+        <button onclick="togglePrivacyMode()" title="隱私遮罩"
+          class="w-9 h-9 rounded-lg bg-nord-1 border border-nord-2 text-nord-4 hover:text-nord-6 hover:bg-nord-2/60 flex items-center justify-center transition-colors">
+          <i id="privacy-icon" class="fa-regular fa-eye text-sm"></i>
+        </button>
+        <button onclick="fillPresetTestData()" title="載入示範資料以利快速測試"
+          class="px-3 py-1.5 rounded-lg bg-nord-1 border border-nord-2 text-nord-4 hover:text-nord-8 hover:border-nord-8/50 text-xs font-medium flex items-center space-x-1.5 transition-all">
+          <i class="fa-solid fa-wand-magic-sparkles text-nord-8"></i>
+          <span>填入測試資料</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== 主操作視圖容器 ==================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+
+    <!-- ========================================================================= -->
+    <!-- 流程一：信用卡費（兩階段卡片輪播 Cover Flow） -->
+    <!-- ========================================================================= -->
+    <section id="section-cards" class="main-section flex-1 flex flex-col justify-between">
+      
+      <!-- 頂部進度列與模式切換標籤 -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3">
+          <span id="card-stage-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-nord-8/15 text-nord-8 border border-nord-8/30 flex items-center space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-nord-8 animate-pulse"></span>
+            <span id="card-stage-title">第一階段：輸入帳單金額</span>
+          </span>
+          <span id="card-progress-text" class="text-xs font-mono text-nord-4">1 / 8</span>
+        </div>
+
+        <!-- 8 張卡的小進度指示球 -->
+        <div id="card-dots-bar" class="flex items-center space-x-1.5">
+          <!-- 動態生成 8 個小圓點 -->
+        </div>
+      </div>
+
+      <!-- Cover Flow 卡片 3D 展示舞台 -->
+      <div class="relative w-full h-[360px] sm:h-[400px] flex items-center justify-center perspective-1000 my-auto overflow-hidden">
+        
+        <!-- 左翻按鈕 -->
+        <button onclick="prevCard()" id="btn-prev-card"
+          class="absolute left-2 sm:left-6 z-30 w-11 h-11 rounded-full bg-nord-1/80 border border-nord-2 text-nord-4 hover:text-nord-6 hover:bg-nord-2 flex items-center justify-center backdrop-blur-md shadow-xl transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+
+        <!-- 3D 卡片輪播容器 -->
+        <div id="card-carousel-stage" class="relative w-[340px] sm:w-[420px] h-[225px] sm:h-[265px] flex items-center justify-center transform-style-3d">
+          <!-- 8 張卡片透過 JS 動態注入 -->
+        </div>
+
+        <!-- 右翻按鈕 -->
+        <button onclick="nextCard()" id="btn-next-card"
+          class="absolute right-2 sm:right-6 z-30 w-11 h-11 rounded-full bg-nord-1/80 border border-nord-2 text-nord-4 hover:text-nord-6 hover:bg-nord-2 flex items-center justify-center backdrop-blur-md shadow-xl transition-all">
+          <i class="fa-solid fa-chevron-right text-sm"></i>
+        </button>
+
+      </div>
+
+      <!-- 底部控制按鈕列 -->
+      <div id="card-action-bar" class="mt-4 flex items-center justify-center space-x-3">
+        <!-- 動態依階段切換按鈕 -->
+      </div>
+
+      <!-- 第二階段全數完成畫面 (預設隱藏) -->
+      <div id="card-complete-view" class="hidden my-auto max-w-xl mx-auto w-full bg-nord-1/90 border border-nord-2 rounded-2xl p-6 sm:p-8 text-center shadow-2xl backdrop-blur-xl">
+        <div class="w-14 h-14 rounded-full bg-nord-14/20 text-nord-14 border border-nord-14/30 flex items-center justify-center mx-auto mb-4 text-2xl">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 class="text-xl font-bold text-nord-6 mb-1">信用卡費登記完成</h3>
+        <p class="text-sm text-nord-4 mb-6">全數 8 張信用卡帳單與大額明細已全數建檔完畢</p>
+
+        <!-- 摘要統計 -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <div class="bg-nord-0/60 p-3 rounded-xl border border-nord-2/60 text-left">
+            <span class="text-xs text-nord-4 block">本月帳單總計</span>
+            <span id="summary-card-total" class="text-lg font-bold font-mono text-nord-6 masked-amount">NT$ 0</span>
+          </div>
+          <div class="bg-nord-0/60 p-3 rounded-xl border border-nord-2/60 text-left">
+            <span class="text-xs text-nord-4 block">大額消費項目</span>
+            <span id="summary-card-big-count" class="text-lg font-bold font-mono text-nord-8">0 筆</span>
+          </div>
+        </div>
+
+        <div id="summary-card-list" class="max-h-48 overflow-y-auto space-y-2 mb-6 text-left pr-1">
+          <!-- 項目摘要清單 -->
+        </div>
+
+        <div class="flex items-center justify-center space-x-3">
+          <button onclick="resetCardFlow()" class="px-5 py-2.5 rounded-xl border border-nord-2 bg-nord-0 hover:bg-nord-2 text-sm text-nord-4 hover:text-nord-6 font-medium transition-colors">
+            重新填寫
+          </button>
+          <button onclick="switchMainTab('banks')" class="px-6 py-2.5 rounded-xl bg-nord-8 hover:bg-nord-7 text-nord-0 text-sm font-bold shadow-lg shadow-nord-8/20 transition-all flex items-center space-x-2">
+            <span>前往銀行餘額</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- 流程二：銀行餘額（自動滾算 + 理論餘額一鍵確認 + 收支事件歸戶） -->
+    <!-- ========================================================================= -->
+    <section id="section-banks" class="main-section hidden flex-1 flex flex-col justify-between">
+      
+      <!-- 頂部進度列 -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center space-x-3">
+          <span id="bank-stage-badge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-nord-9/15 text-nord-9 border border-nord-9/30 flex items-center space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-nord-9 animate-pulse"></span>
+            <span id="bank-stage-title">第一階段：盤點銀行餘額</span>
+          </span>
+          <span id="bank-progress-text" class="text-xs font-mono text-nord-4">1 / 6</span>
+        </div>
+
+        <!-- 6 家銀行的進度指示球 -->
+        <div id="bank-dots-bar" class="flex items-center space-x-1.5">
+          <!-- 動態生成 6 個小圓點 -->
+        </div>
+      </div>
+
+      <!-- 銀行卡片 3D 展示舞台 -->
+      <div class="relative w-full h-[390px] sm:h-[430px] flex items-center justify-center perspective-1000 my-auto overflow-hidden">
+        
+        <!-- 左翻按鈕 -->
+        <button onclick="prevBank()" id="btn-prev-bank"
+          class="absolute left-2 sm:left-6 z-30 w-11 h-11 rounded-full bg-nord-1/80 border border-nord-2 text-nord-4 hover:text-nord-6 hover:bg-nord-2 flex items-center justify-center backdrop-blur-md shadow-xl transition-all disabled:opacity-20 disabled:cursor-not-allowed">
+          <i class="fa-solid fa-chevron-left text-sm"></i>
+        </button>
+
+        <!-- 銀行卡片舞台容器 -->
+        <div id="bank-carousel-stage" class="relative w-[340px] sm:w-[440px] h-[280px] sm:h-[310px] flex items-center justify-center transform-style-3d">
+          <!-- 6 家銀行卡片透過 JS 動態注入 -->
+        </div>
+
+        <!-- 右翻按鈕 -->
+        <button onclick="nextBank()" id="btn-next-bank"
+          class="absolute right-2 sm:right-6 z-30 w-11 h-11 rounded-full bg-nord-1/80 border border-nord-2 text-nord-4 hover:text-nord-6 hover:bg-nord-2 flex items-center justify-center backdrop-blur-md shadow-xl transition-all">
+          <i class="fa-solid fa-chevron-right text-sm"></i>
+        </button>
+
+      </div>
+
+      <!-- 底部控制按鈕列 -->
+      <div id="bank-action-bar" class="mt-4 flex items-center justify-center space-x-3">
+        <!-- 動態依階段切換按鈕 -->
+      </div>
+
+      <!-- 銀行全數盤點完成畫面 (預設隱藏) -->
+      <div id="bank-complete-view" class="hidden my-auto max-w-xl mx-auto w-full bg-nord-1/90 border border-nord-2 rounded-2xl p-6 sm:p-8 text-center shadow-2xl backdrop-blur-xl">
+        <div class="w-14 h-14 rounded-full bg-nord-14/20 text-nord-14 border border-nord-14/30 flex items-center justify-center mx-auto mb-4 text-2xl">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <h3 class="text-xl font-bold text-nord-6 mb-1">銀行餘額盤點完成</h3>
+        <p class="text-sm text-nord-4 mb-6">全數 6 間銀行帳戶結餘與收支事件已完成同步歸戶</p>
+
+        <!-- 統計數據 -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <div class="bg-nord-0/60 p-3 rounded-xl border border-nord-2/60 text-left">
+            <span class="text-xs text-nord-4 block">銀行總流動資金</span>
+            <span id="summary-bank-total" class="text-lg font-bold font-mono text-nord-14 masked-amount">NT$ 0</span>
+          </div>
+          <div class="bg-nord-0/60 p-3 rounded-xl border border-nord-2/60 text-left">
+            <span class="text-xs text-nord-4 block">歸戶收支事件</span>
+            <span id="summary-bank-event-count" class="text-lg font-bold font-mono text-nord-9">0 筆</span>
+          </div>
+        </div>
+
+        <div id="summary-bank-list" class="max-h-48 overflow-y-auto space-y-2 mb-6 text-left pr-1">
+          <!-- 銀行清單 -->
+        </div>
+
+        <div class="flex items-center justify-center space-x-3">
+          <button onclick="resetBankFlow()" class="px-5 py-2.5 rounded-xl border border-nord-2 bg-nord-0 hover:bg-nord-2 text-sm text-nord-4 hover:text-nord-6 font-medium transition-colors">
+            重新盤點
+          </button>
+          <button onclick="switchMainTab('bills')" class="px-6 py-2.5 rounded-xl bg-nord-9 hover:bg-nord-8 text-nord-0 text-sm font-bold shadow-lg shadow-nord-9/20 transition-all flex items-center space-x-2">
+            <span>前往固定費用</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- 流程三：固定費用（快速綁定卡片/銀行） -->
+    <!-- ========================================================================= -->
+    <section id="section-bills" class="main-section hidden flex-1 flex flex-col lg:flex-row gap-6">
+      
+      <!-- 左側：輸入綁定卡片 -->
+      <div class="w-full lg:w-[420px] bg-nord-1/80 border border-nord-2 rounded-2xl p-5 sm:p-6 flex flex-col justify-between shadow-xl backdrop-blur-md">
+        
+        <div>
+          <!-- 卡片標題 -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-bold text-nord-6 flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-nord-7"></span>
+              <span>新增固定支出</span>
+            </span>
+            <span class="text-xs text-nord-4">每月/雙月定期扣繳</span>
+          </div>
+
+          <!-- 快速範本標籤 -->
+          <div class="mb-4">
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="quickFillBill('房租', 22000, 10, 'monthly', 'bank', 'b1')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">房租</button>
+              <button onclick="quickFillBill('車貸', 15000, 28, 'monthly', 'bank', 'b3')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">車貸</button>
+              <button onclick="quickFillBill('光世代寬頻', 1099, 15, 'monthly', 'card', 'c8')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">寬頻網路</button>
+              <button onclick="quickFillBill('台電電費', 2400, 20, 'bimonthly', 'card', 'c2')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">電費</button>
+              <button onclick="quickFillBill('Netflix', 390, 5, 'monthly', 'card', 'c1')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">Netflix</button>
+            </div>
+          </div>
+
+          <!-- 表單輸入欄位 -->
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-medium text-nord-4 mb-1">費用名稱</label>
+              <input id="bill-input-name" type="text" placeholder="例如：社區管理費、水費"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-nord-0 border border-nord-2 text-nord-6 placeholder-nord-3 text-sm focus:outline-none focus:border-nord-7 transition-colors">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-nord-4 mb-1">金額 (NT$)</label>
+                <input id="bill-input-amount" type="number" placeholder="0"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-nord-0 border border-nord-2 text-nord-6 placeholder-nord-3 text-sm font-mono focus:outline-none focus:border-nord-7 transition-colors">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-nord-4 mb-1">每月扣款日</label>
+                <div class="relative">
+                  <input id="bill-input-day" type="number" min="1" max="31" value="10"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-nord-0 border border-nord-2 text-nord-6 text-sm font-mono focus:outline-none focus:border-nord-7 transition-colors pr-8">
+                  <span class="absolute right-3 top-2.5 text-xs text-nord-3">號</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-nord-4 mb-1">扣繳週期</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" id="btn-bill-cycle-monthly" onclick="selectBillCycle('monthly')"
+                  class="py-2 rounded-xl text-xs font-semibold bg-nord-7/20 text-nord-7 border border-nord-7/40 transition-all">
+                  每月扣款
+                </button>
+                <button type="button" id="btn-bill-cycle-bimonthly" onclick="selectBillCycle('bimonthly')"
+                  class="py-2 rounded-xl text-xs font-medium bg-nord-0 text-nord-4 border border-nord-2 hover:bg-nord-2/60 transition-all">
+                  雙月扣款
+                </button>
+              </div>
+            </div>
+
+            <!-- 扣款路徑切換與綁定選擇區 -->
+            <div>
+              <label class="block text-xs font-medium text-nord-4 mb-1.5">扣繳管道與綁定帳戶</label>
+              
+              <!-- 切換按鈕 -->
+              <div class="flex p-0.5 rounded-xl bg-nord-0 border border-nord-2/80 mb-2.5">
+                <button type="button" id="btn-bill-route-bank" onclick="selectBillRoute('bank')"
+                  class="flex-1 py-1.5 rounded-lg text-xs font-semibold bg-nord-9 text-nord-0 shadow-sm transition-all flex items-center justify-center space-x-1.5">
+                  <i class="fa-solid fa-building-columns text-[10px]"></i>
+                  <span>綁定銀行 (直扣)</span>
+                </button>
+                <button type="button" id="btn-bill-route-card" onclick="selectBillRoute('card')"
+                  class="flex-1 py-1.5 rounded-lg text-xs font-medium text-nord-4 hover:text-nord-6 transition-all flex items-center justify-center space-x-1.5">
+                  <i class="fa-regular fa-credit-card text-[10px]"></i>
+                  <span>綁定信用卡 (代扣)</span>
+                </button>
+              </div>
+
+              <!-- 膠囊標籤清單 -->
+              <div id="bill-target-pills" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-1 bg-nord-0/40 rounded-xl border border-nord-2/40">
+                <!-- 動態注入可選銀行或信用卡膠囊 -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <button onclick="addRecurringBill()"
+          class="w-full mt-6 py-2.5 rounded-xl bg-nord-7 hover:bg-nord-8 text-nord-0 text-sm font-bold shadow-lg shadow-nord-7/20 transition-all flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>儲存固定費用</span>
+        </button>
+
+      </div>
+
+      <!-- 右側：現有固定支出清單與彙整看板 -->
+      <div class="flex-1 flex flex-col">
+        
+        <!-- 彙整統計卡 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div class="bg-nord-1/60 border border-nord-2 rounded-xl p-3.5">
+            <span class="text-xs text-nord-4 block">固定支出總計</span>
+            <span id="bill-stat-total" class="text-lg font-bold font-mono text-nord-6 masked-amount">NT$ 0</span>
+          </div>
+          <div class="bg-nord-1/60 border border-nord-2 rounded-xl p-3.5">
+            <div class="flex items-center space-x-1.5 mb-0.5">
+              <span class="w-2 h-2 rounded-full bg-nord-9"></span>
+              <span class="text-xs text-nord-4">銀行直接扣除</span>
+            </div>
+            <span id="bill-stat-bank" class="text-lg font-bold font-mono text-nord-9 masked-amount">NT$ 0</span>
+          </div>
+          <div class="bg-nord-1/60 border border-nord-2 rounded-xl p-3.5">
+            <div class="flex items-center space-x-1.5 mb-0.5">
+              <span class="w-2 h-2 rounded-full bg-nord-15"></span>
+              <span class="text-xs text-nord-4">信用卡刷卡代扣</span>
+            </div>
+            <span id="bill-stat-card" class="text-lg font-bold font-mono text-nord-15 masked-amount">NT$ 0</span>
+          </div>
+        </div>
+
+        <!-- 固定支出卡片列表 -->
+        <div class="flex-1 bg-nord-1/40 border border-nord-2/60 rounded-2xl p-4 overflow-y-auto space-y-2.5 max-h-[520px]">
+          <div class="flex items-center justify-between text-xs text-nord-3 px-2 pb-1 border-b border-nord-2/40">
+            <span>費用項目 / 週期</span>
+            <span>綁定扣繳路徑</span>
+            <span>扣款日 / 金額</span>
+          </div>
+
+          <div id="bill-items-list" class="space-y-2">
+            <!-- 動態渲染固定支出項目清單 -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ========================================================================= -->
+    <!-- 流程四：分期付款（比照大額費用快速綁定卡片） -->
+    <!-- ========================================================================= -->
+    <section id="section-installments" class="main-section hidden flex-1 flex flex-col lg:flex-row gap-6">
+      
+      <!-- 左側：新增分期付款卡片 -->
+      <div class="w-full lg:w-[420px] bg-nord-1/80 border border-nord-2 rounded-2xl p-5 sm:p-6 flex flex-col justify-between shadow-xl backdrop-blur-md">
+        
+        <div>
+          <!-- 標題 -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-bold text-nord-6 flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-nord-15"></span>
+              <span>新增分期消費</span>
+            </span>
+            <span class="text-xs text-nord-4">自動推算期數與負擔</span>
+          </div>
+
+          <!-- 快速範本 -->
+          <div class="mb-4">
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="quickFillInst('iPhone 16 Pro', 42000, 12, 'c6')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">iPhone 16 Pro</button>
+              <button onclick="quickFillInst('MacBook Air', 35900, 12, 'c8')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">MacBook</button>
+              <button onclick="quickFillInst('日本機票住宿', 28000, 6, 'c7')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">機票住宿</button>
+              <button onclick="quickFillInst('相機鏡頭', 66000, 24, 'c5')" class="px-2 py-1 rounded-md text-xs bg-nord-0 text-nord-4 hover:text-nord-6 hover:bg-nord-2 border border-nord-2/60 transition-colors">相機鏡頭</button>
+            </div>
+          </div>
+
+          <!-- 表單輸入 -->
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-medium text-nord-4 mb-1">項目名稱</label>
+              <input id="inst-input-name" type="text" placeholder="例如：iPhone 16 Pro 256GB"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-nord-0 border border-nord-2 text-nord-6 placeholder-nord-3 text-sm focus:outline-none focus:border-nord-15 transition-colors">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-nord-4 mb-1">總金額 (NT$)</label>
+                <input id="inst-input-total" type="number" placeholder="0" oninput="calculateInstPreview()"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-nord-0 border border-nord-2 text-nord-6 placeholder-nord-3 text-sm font-mono focus:outline-none focus:border-nord-15 transition-colors">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-nord-4 mb-1">總期數</label>
+                <div class="relative">
+                  <input id="inst-input-periods" type="number" min="2" max="60" value="12" oninput="calculateInstPreview()"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-nord-0 border border-nord-2 text-nord-6 text-sm font-mono focus:outline-none focus:border-nord-15 transition-colors pr-8">
+                  <span class="absolute right-3 top-2.5 text-xs text-nord-3">期</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 自動推算反饋卡 -->
+            <div class="p-3 bg-nord-0/60 rounded-xl border border-nord-2/60 flex items-center justify-between text-xs">
+              <div>
+                <span class="text-nord-4 block">每期預估扣繳</span>
+                <span id="inst-preview-monthly" class="text-sm font-bold font-mono text-nord-15 masked-amount">NT$ 0</span>
+              </div>
+              <div class="text-right">
+                <span class="text-nord-4 block">首期可能調整</span>
+                <span id="inst-preview-first" class="text-xs font-mono text-nord-4 masked-amount">NT$ 0</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-nord-4 mb-1.5">綁定扣款信用卡</label>
+              <!-- 8 張信用卡膠囊標籤 -->
+              <div id="inst-card-pills" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1 bg-nord-0/40 rounded-xl border border-nord-2/40">
+                <!-- 動態注入 8 張信用卡膠囊標籤 -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <button onclick="addInstallmentItem()"
+          class="w-full mt-6 py-2.5 rounded-xl bg-nord-15 hover:bg-nord-15/80 text-nord-0 text-sm font-bold shadow-lg shadow-nord-15/20 transition-all flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-plus text-xs"></i>
+          <span>儲存分期付款</span>
+        </button>
+
+      </div>
+
+      <!-- 右側：現有分期付款清單與待還總覽 -->
+      <div class="flex-1 flex flex-col">
+        
+        <!-- 彙整統計卡 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          <div class="bg-nord-1/60 border border-nord-2 rounded-xl p-3.5">
+            <span class="text-xs text-nord-4 block">剩餘未還本金</span>
+            <span id="inst-stat-remaining" class="text-lg font-bold font-mono text-nord-11 masked-amount">NT$ 0</span>
+          </div>
+          <div class="bg-nord-1/60 border border-nord-2 rounded-xl p-3.5">
+            <span class="text-xs text-nord-4 block">本月應繳分期</span>
+            <span id="inst-stat-monthly" class="text-lg font-bold font-mono text-nord-15 masked-amount">NT$ 0</span>
+          </div>
+          <div class="bg-nord-1/60 border border-nord-2 rounded-xl p-3.5">
+            <span class="text-xs text-nord-4 block">進行中分期筆數</span>
+            <span id="inst-stat-count" class="text-lg font-bold font-mono text-nord-6">0 筆</span>
+          </div>
+        </div>
+
+        <!-- 分期項目清單 -->
+        <div class="flex-1 bg-nord-1/40 border border-nord-2/60 rounded-2xl p-4 overflow-y-auto space-y-3 max-h-[520px]">
+          <div class="flex items-center justify-between text-xs text-nord-3 px-2 pb-1 border-b border-nord-2/40">
+            <span>項目名稱 / 綁定卡片</span>
+            <span>期數進度條</span>
+            <span>每期金額 / 剩餘本金</span>
+          </div>
+
+          <div id="inst-items-list" class="space-y-2.5">
+            <!-- 動態渲染分期卡片清單 -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 核心資料與互動引擎 (Vanilla JS) -->
+  <!-- ========================================================================= -->
+  <script>
+    /* =========================================================================
+       1. 全域資料狀態庫 (Central State Store)
+       ========================================================================= */
+
+    // 8 張信用卡主檔與本月帳單紀錄
+    const creditCards = [
+      {
+        id: 'c1',
+        name: '玉山銀行 U Bear',
+        bankId: 'b1',
+        bankName: '玉山薪轉',
+        dueDay: 22,
+        closingDay: 5,
+        lastMonthAmount: 12450,
+        amount: null,
+        themeClass: 'from-[#0a382c] via-[#0f4c3a] to-[#06241b]',
+        accentColor: '#8FBCBB',
+        digits: '5882',
+        bigExpenses: []
+      },
+      {
+        id: 'c2',
+        name: '台新銀行 @GoGo 黑狗卡',
+        bankId: 'b6',
+        bankName: '台新數位',
+        dueDay: 25,
+        closingDay: 7,
+        lastMonthAmount: 8320,
+        amount: null,
+        themeClass: 'from-[#2e141c] via-[#3d1825] to-[#1c1216]',
+        accentColor: '#BF616A',
+        digits: '7719',
+        bigExpenses: []
+      },
+      {
+        id: 'c3',
+        name: '富邦數位生活卡',
+        bankId: 'b5',
+        bankName: '富邦證券',
+        dueDay: 21,
+        closingDay: 3,
+        lastMonthAmount: 4180,
+        amount: null,
+        themeClass: 'from-[#132838] via-[#1a3a52] to-[#0e1d29]',
+        accentColor: '#88C0D0',
+        digits: '3201',
+        bigExpenses: []
+      },
+      {
+        id: 'c4',
+        name: '富邦 Costco 聯名卡',
+        bankId: 'b5',
+        bankName: '富邦證券',
+        dueDay: 26,
+        closingDay: 8,
+        lastMonthAmount: 15200,
+        amount: null,
+        themeClass: 'from-[#10243e] via-[#183153] to-[#38161d]',
+        accentColor: '#D08770',
+        digits: '8940',
+        bigExpenses: []
+      },
+      {
+        id: 'c5',
+        name: '兆豐利多御璽卡',
+        bankId: 'b2',
+        bankName: '兆豐台幣',
+        dueDay: 27,
+        closingDay: 10,
+        lastMonthAmount: 6800,
+        amount: null,
+        themeClass: 'from-[#241734] via-[#321f47] to-[#170e22]',
+        accentColor: '#B48EAD',
+        digits: '6112',
+        bigExpenses: []
+      },
+      {
+        id: 'c6',
+        name: '星展 eco 永續卡',
+        bankId: 'b2',
+        bankName: '兆豐台幣',
+        dueDay: 24,
+        closingDay: 6,
+        lastMonthAmount: 49811,
+        amount: null,
+        themeClass: 'from-[#0b1c2b] via-[#162f4a] to-[#2c1421]',
+        accentColor: '#EBCB8B',
+        digits: '9345',
+        bigExpenses: []
+      },
+      {
+        id: 'c7',
+        name: '中信 LINE Pay 卡',
+        bankId: 'b3',
+        bankName: '中信台幣',
+        dueDay: 28,
+        closingDay: 9,
+        lastMonthAmount: 7650,
+        amount: null,
+        themeClass: 'from-[#0e2a24] via-[#163d34] to-[#1f2e1a]',
+        accentColor: '#A3BE8C',
+        digits: '4452',
+        bigExpenses: []
+      },
+      {
+        id: 'c8',
+        name: '國泰世華 CUBE 卡',
+        bankId: 'b4',
+        bankName: '國泰台幣',
+        dueDay: 30,
+        closingDay: 12,
+        lastMonthAmount: 23400,
+        amount: null,
+        themeClass: 'from-[#1e232a] via-[#14171d] to-[#0d0f12]',
+        accentColor: '#D8DEE9',
+        digits: '1098',
+        bigExpenses: []
+      }
+    ];
+
+    // 6 家銀行帳戶主檔與自動滾算 (Auto-Rollover) 參數
+    const bankAccounts = [
+      {
+        id: 'b1',
+        name: '玉山薪轉',
+        code: '808',
+        lastBalance: 128450,
+        salaryAmount: 85000,
+        cardDebitAmount: 12450, // 綁定本行之卡費
+        fixedDebitAmount: 22000, // 房租直扣
+        // 今日推估餘額: 128450 + 85000 - 12450 - 22000 = 179000
+        balance: null,
+        themeGrad: 'from-[#0e3b32] to-[#18262b]',
+        events: []
+      },
+      {
+        id: 'b2',
+        name: '兆豐台幣',
+        code: '017',
+        lastBalance: 215000,
+        salaryAmount: 0,
+        cardDebitAmount: 56611, // 兆豐 6800 + 星展 49811
+        fixedDebitAmount: 3200,  // 社區管理費
+        // 今日推估餘額: 215000 - 56611 - 3200 = 155189
+        balance: null,
+        themeGrad: 'from-[#2b1b3d] to-[#1a1727]',
+        events: []
+      },
+      {
+        id: 'b3',
+        name: '中信台幣',
+        code: '822',
+        lastBalance: 64200,
+        salaryAmount: 0,
+        cardDebitAmount: 7650,  // 中信卡
+        fixedDebitAmount: 15000, // 車貸
+        // 今日推估餘額: 64200 - 7650 - 15000 = 41550
+        balance: null,
+        themeGrad: 'from-[#1b3d33] to-[#16241f]',
+        events: []
+      },
+      {
+        id: 'b4',
+        name: '國泰台幣',
+        code: '013',
+        lastBalance: 98300,
+        salaryAmount: 0,
+        cardDebitAmount: 23400, // 國泰 Cube
+        fixedDebitAmount: 0,
+        // 今日推估餘額: 98300 - 23400 = 74900
+        balance: null,
+        themeGrad: 'from-[#242933] to-[#191d24]',
+        events: []
+      },
+      {
+        id: 'b5',
+        name: '富邦證券',
+        code: '012',
+        lastBalance: 350000,
+        salaryAmount: 0,
+        cardDebitAmount: 19380, // 好市多 15200 + 數位 4180
+        fixedDebitAmount: 0,
+        // 今日推估餘額: 350000 - 19380 = 330620
+        balance: null,
+        themeGrad: 'from-[#193246] to-[#131f2b]',
+        events: []
+      },
+      {
+        id: 'b6',
+        name: '台新數位',
+        code: '812',
+        lastBalance: 45600,
+        salaryAmount: 0,
+        cardDebitAmount: 8320,  // 台新卡
+        fixedDebitAmount: 0,
+        // 今日推估餘額: 45600 - 8320 = 37280
+        balance: null,
+        themeGrad: 'from-[#3a1d26] to-[#20151a]',
+        events: []
+      }
+    ];
+
+    // 固定費用清單
+    let recurringBills = [
+      { id: 'rb1', name: '房租', amount: 22000, dueDay: 10, cycle: 'monthly', route: 'bank', targetId: 'b1', active: true },
+      { id: 'rb2', name: '車貸', amount: 15000, dueDay: 28, cycle: 'monthly', route: 'bank', targetId: 'b3', active: true },
+      { id: 'rb3', name: '社區管理費', amount: 3200, dueDay: 12, cycle: 'monthly', route: 'bank', targetId: 'b2', active: true },
+      { id: 'rb4', name: '光世代寬頻網路', amount: 1099, dueDay: 15, cycle: 'monthly', route: 'card', targetId: 'c8', active: true },
+      { id: 'rb5', name: '台電電費 (雙月)', amount: 2400, dueDay: 20, cycle: 'bimonthly', route: 'card', targetId: 'c2', active: true },
+      { id: 'rb6', name: 'Netflix 訂閱', amount: 390, dueDay: 5, cycle: 'monthly', route: 'card', targetId: 'c1', active: true }
+    ];
+
+    // 分期付款清單
+    let installmentItems = [
+      { id: 'in1', name: 'iPhone 16 Pro 256GB', totalAmount: 42000, totalPeriods: 12, currentPeriod: 4, monthlyAmount: 3500, firstPeriodAmount: 3500, cardId: 'c6' },
+      { id: 'in2', name: 'Sony A7M4 相機機身', totalAmount: 66000, totalPeriods: 24, currentPeriod: 14, monthlyAmount: 2750, firstPeriodAmount: 2750, cardId: 'c7' },
+      { id: 'in3', name: '晶華酒店度假方案', totalAmount: 18000, totalPeriods: 6, currentPeriod: 5, monthlyAmount: 3000, firstPeriodAmount: 3000, cardId: 'c8' }
+    ];
+
+    // 運行狀態變數
+    let currentMainTab = 'cards'; // 'cards' | 'banks' | 'bills' | 'installments'
+    let isPrivacyMasked = false;
+
+    // 信用卡 Cover Flow 狀態
+    let cardCurrentIndex = 0;
+    let cardStage = 1; // 1: 輸入總額, 2: 逐張翻面確認大額, 3: 完成結算
+    let cardStage2Order = []; // 第二階段依金額降序排列的索引清單
+
+    // 銀行 Cover Flow 狀態
+    let bankCurrentIndex = 0;
+    let bankStage = 1; // 1: 盤點餘額, 2: 收支事件歸戶, 3: 完成結算
+
+    // 表單暫存狀態
+    let currentBillCycle = 'monthly';
+    let currentBillRoute = 'bank';
+    let currentBillTargetId = 'b1';
+    let currentInstCardId = 'c6';
+    let currentBankEventType = 'withdrawal'; // 預設提款
+
+
+    /* =========================================================================
+       2. 工具函式 (Formatters & Helpers)
+       ========================================================================= */
+
+    function formatCurrency(num) {
+      if (num === null || num === undefined) return '0';
+      return new Intl.NumberFormat('zh-TW').format(num);
+    }
+
+    function togglePrivacyMode() {
+      isPrivacyMasked = !isPrivacyMasked;
+      document.body.classList.toggle('privacy-masked', isPrivacyMasked);
+      const icon = document.getElementById('privacy-icon');
+      if (isPrivacyMasked) {
+        icon.className = 'fa-regular fa-eye-slash text-sm text-nord-8';
+      } else {
+        icon.className = 'fa-regular fa-eye text-sm text-nord-4';
+      }
+    }
+
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      
+      // 更新導覽按鈕視覺
+      const tabs = ['cards', 'banks', 'bills', 'installments'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`nav-tab-${t}`);
+        const sec = document.getElementById(`section-${t}`);
+        if (t === tab) {
+          btn.className = 'nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-6 bg-nord-2 shadow-sm flex items-center space-x-2';
+          sec.classList.remove('hidden');
+        } else {
+          btn.className = 'nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2';
+          sec.classList.add('hidden');
+        }
+      });
+
+      // 切換後聚焦輸入
+      if (tab === 'cards' && cardStage === 1) {
+        setTimeout(() => focusCurrentCardInput(), 100);
+      } else if (tab === 'banks' && bankStage === 1) {
+        setTimeout(() => focusCurrentBankInput(), 100);
+      }
+    }
+
+
+    /* =========================================================================
+       3. 流程一：信用卡費（兩階段卡片輪播 Cover Flow）實作
+       ========================================================================= */
+
+    function initCardDots() {
+      const container = document.getElementById('card-dots-bar');
+      container.innerHTML = '';
+      const total = cardStage === 2 ? cardStage2Order.length : creditCards.length;
+      for (let i = 0; i < total; i++) {
+        const dot = document.createElement('div');
+        dot.id = `card-dot-${i}`;
+        dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i === cardCurrentIndex ? 'bg-nord-8 w-5' : 'bg-nord-3'}`;
+        container.appendChild(dot);
+      }
+    }
+
+    function renderCardCarousel() {
+      const stage = document.getElementById('card-carousel-stage');
+      stage.innerHTML = '';
+
+      const isStage2 = cardStage === 2;
+      const list = isStage2 ? cardStage2Order : creditCards;
+      const total = list.length;
+
+      // 更新進度顯示
+      document.getElementById('card-progress-text').innerText = `${cardCurrentIndex + 1} / ${total}`;
+      document.getElementById('btn-prev-card').disabled = (cardCurrentIndex === 0);
+
+      // 更新進度點
+      for (let i = 0; i < total; i++) {
+        const dot = document.getElementById(`card-dot-${i}`);
+        if (dot) {
+          dot.className = `h-2 rounded-full transition-all duration-300 ${i === cardCurrentIndex ? 'bg-nord-8 w-5' : 'bg-nord-3 w-2'}`;
+        }
+      }
+
+      list.forEach((item, index) => {
+        const card = isStage2 ? creditCards[item.originalIndex] : item;
+        const offset = index - cardCurrentIndex;
+        
+        const cardEl = document.createElement('div');
+        cardEl.className = 'absolute top-0 left-0 w-full h-full cover-flow-item rounded-2xl credit-card-shadow overflow-hidden cursor-pointer';
+        cardEl.id = `card-node-${index}`;
+
+        // 3D Cover Flow 位置計算
+        let transformStr = '';
+        let opacityVal = 1;
+        let zIndexVal = 10;
+        let pointerEvents = 'auto';
+
+        if (offset === 0) {
+          // 中央焦點卡片
+          transformStr = 'translateX(0px) translateZ(0px) scale(1) rotateY(0deg)';
+          opacityVal = 1;
+          zIndexVal = 20;
+        } else if (offset === -1) {
+          // 左側微縮露出
+          transformStr = 'translateX(-70%) translateZ(-150px) scale(0.85) rotateY(18deg)';
+          opacityVal = 0.45;
+          zIndexVal = 10;
+        } else if (offset === 1) {
+          // 右側微縮露出
+          transformStr = 'translateX(70%) translateZ(-150px) scale(0.85) rotateY(-18deg)';
+          opacityVal = 0.45;
+          zIndexVal = 10;
+        } else if (offset < -1) {
+          transformStr = 'translateX(-120%) translateZ(-300px) scale(0.7) rotateY(30deg)';
+          opacityVal = 0;
+          zIndexVal = 1;
+          pointerEvents = 'none';
+        } else if (offset > 1) {
+          transformStr = 'translateX(120%) translateZ(-300px) scale(0.7) rotateY(-30deg)';
+          opacityVal = 0;
+          zIndexVal = 1;
+          pointerEvents = 'none';
+        }
+
+        cardEl.style.transform = transformStr;
+        cardEl.style.opacity = opacityVal;
+        cardEl.style.zIndex = zIndexVal;
+        cardEl.style.pointerEvents = pointerEvents;
+
+        if (offset !== 0) {
+          cardEl.onclick = () => {
+            cardCurrentIndex = index;
+            renderCardCarousel();
+          };
+        }
+
+        // 渲染卡片內容（支援 3D Flip 翻面）
+        cardEl.innerHTML = `
+          <div class="w-full h-full relative transform-style-3d transition-transform duration-700 ${isStage2 ? 'rotate-y-180' : ''}" id="card-flipper-${index}">
+            
+            <!-- 正面 (第一階段：輸入帳單金額) -->
+            <div class="absolute inset-0 w-full h-full rounded-2xl p-5 sm:p-6 bg-gradient-to-br ${card.themeClass} backface-hidden flex flex-col justify-between border border-white/10 select-none">
+              
+              <!-- 頂部銀行與卡片品名 -->
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-nord-4/90">${card.name}</span>
+                  </div>
+                  <span class="text-[11px] text-nord-4/60 block mt-0.5">${card.bankName} 扣款 (每月 ${card.dueDay} 號)</span>
+                </div>
+                <!-- 晶片圖示與感應圖標 -->
+                <div class="flex items-center space-x-2">
+                  <svg class="w-6 h-6 text-nord-4/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0"></path>
+                  </svg>
+                  <div class="w-7 h-5 rounded bg-gradient-to-r from-amber-300 via-amber-200 to-amber-400 p-0.5 shadow-sm opacity-90 border border-amber-500/40">
+                    <div class="w-full h-full border border-amber-600/30 rounded-xs flex items-center justify-center">
+                      <div class="w-2.5 h-2.5 border-r border-b border-amber-600/40"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 卡片中間：金額輸入區 -->
+              <div class="my-auto text-center" onclick="event.stopPropagation()">
+                <div class="text-[11px] text-nord-4/60 mb-1 flex items-center justify-center space-x-1.5">
+                  <span>上月參考 NT$ ${formatCurrency(card.lastMonthAmount)}</span>
+                </div>
+                <div class="relative max-w-[260px] mx-auto">
+                  <span class="absolute left-3.5 top-2.5 text-base font-bold text-nord-4 font-mono">NT$</span>
+                  <input id="card-input-${card.id}" type="number" value="${card.amount !== null ? card.amount : ''}" placeholder="0"
+                    onkeydown="handleCardInputKeyDown(event, ${index})"
+                    oninput="handleCardAmountChange('${card.id}', this.value)"
+                    class="w-full pl-13 pr-4 py-2.5 text-center text-2xl font-bold font-mono tracking-tight rounded-xl bg-nord-0/80 border border-white/20 text-nord-6 placeholder-nord-3/60 focus:outline-none input-pulse shadow-inner backdrop-blur-sm">
+                </div>
+              </div>
+
+              <!-- 卡片底部卡號遮罩與標誌 -->
+              <div class="flex items-end justify-between">
+                <span class="font-mono text-xs tracking-widest text-nord-4/70">•••• •••• •••• ${card.digits}</span>
+                <span class="text-xs font-mono font-semibold text-nord-4/80">結帳日 ${card.closingDay} 號</span>
+              </div>
+
+            </div>
+
+            <!-- 背面 (第二階段：翻面確認大額費用) -->
+            <div class="absolute inset-0 w-full h-full rounded-2xl p-4 sm:p-5 bg-gradient-to-tl ${card.themeClass} backface-hidden rotate-y-180 flex flex-col justify-between border border-white/10 select-none shadow-2xl" onclick="event.stopPropagation()">
+              
+              <!-- 頂部資訊列 -->
+              <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                <div>
+                  <span class="text-xs font-bold text-nord-6">${card.name}</span>
+                  <span class="text-[11px] text-nord-4/70 ml-2">本期總額：<b class="text-nord-8 font-mono masked-amount">NT$ ${formatCurrency(card.amount || 0)}</b></span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-nord-8/20 text-nord-8 border border-nord-8/30">大額費用確認</span>
+              </div>
+
+              <!-- 大額費用明細清單 -->
+              <div class="flex-1 my-2 overflow-y-auto pr-1 space-y-1.5 max-h-[110px]" id="big-expenses-container-${card.id}">
+                ${renderBigExpensesList(card)}
+              </div>
+
+              <!-- 大額項目新增輸入列 -->
+              <div class="flex items-center space-x-1.5 pt-2 border-t border-white/10">
+                <input id="input-big-title-${card.id}" type="text" placeholder="項目名稱 (如：機票、保費)"
+                  class="flex-1 px-2.5 py-1.5 rounded-lg bg-nord-0/80 border border-white/15 text-xs text-nord-6 placeholder-nord-3 focus:outline-none focus:border-nord-8">
+                <div class="relative w-28">
+                  <span class="absolute left-2 top-1.5 text-[11px] text-nord-4 font-mono">$</span>
+                  <input id="input-big-amount-${card.id}" type="number" placeholder="金額"
+                    class="w-full pl-5 pr-2 py-1.5 rounded-lg bg-nord-0/80 border border-white/15 text-xs font-mono text-nord-6 placeholder-nord-3 focus:outline-none focus:border-nord-8">
+                </div>
+                <button onclick="addBigExpenseToCard('${card.id}')"
+                  class="px-2.5 py-1.5 rounded-lg bg-nord-8 hover:bg-nord-7 text-nord-0 text-xs font-bold transition-all flex items-center space-x-1">
+                  <i class="fa-solid fa-plus text-[10px]"></i>
+                  <span>新增</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+        stage.appendChild(cardEl);
+      });
+
+      renderCardActionBar();
+    }
+
+    function renderBigExpensesList(card) {
+      if (!card.bigExpenses || card.bigExpenses.length === 0) {
+        return `
+          <div class="h-full flex items-center justify-center text-xs text-nord-4/50 italic py-2">
+            尚無大額消費項目
+          </div>
+        `;
+      }
+      return card.bigExpenses.map((item, idx) => `
+        <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-nord-0/60 border border-white/10 text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-nord-8"></span>
+            <span class="text-nord-6 font-medium">${item.title}</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="font-mono text-nord-8 font-semibold masked-amount">NT$ ${formatCurrency(item.amount)}</span>
+            <button onclick="removeBigExpense('${card.id}', ${idx})" class="text-nord-4 hover:text-nord-11 transition-colors">
+              <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderCardActionBar() {
+      const container = document.getElementById('card-action-bar');
+      const isStage2 = cardStage === 2;
+
+      if (!isStage2) {
+        // 第一階段：輸入總額按鈕列
+        container.innerHTML = `
+          <button onclick="prevCard()" ${cardCurrentIndex === 0 ? 'disabled' : ''}
+            class="px-4 py-2 rounded-xl bg-nord-1 border border-nord-2 text-xs font-medium text-nord-4 hover:text-nord-6 hover:bg-nord-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            上一張
+          </button>
+          <button onclick="skipCardAmount()"
+            class="px-4 py-2 rounded-xl bg-nord-1 border border-nord-2 text-xs font-medium text-nord-4 hover:text-nord-6 hover:bg-nord-2 transition-all">
+            略過此卡 (0元)
+          </button>
+          <button onclick="nextCard()"
+            class="px-6 py-2 rounded-xl bg-nord-8 hover:bg-nord-7 text-nord-0 text-xs font-bold shadow-lg shadow-nord-8/20 transition-all flex items-center space-x-1.5">
+            <span>下一張 (Enter)</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
+        `;
+      } else {
+        // 第二階段：確認大額按鈕列
+        const targetCard = creditCards[cardStage2Order[cardCurrentIndex].originalIndex];
+        const hasBig = targetCard.bigExpenses && targetCard.bigExpenses.length > 0;
+        const isLast = cardCurrentIndex === cardStage2Order.length - 1;
+
+        container.innerHTML = `
+          <button onclick="prevCard()" ${cardCurrentIndex === 0 ? 'disabled' : ''}
+            class="px-4 py-2 rounded-xl bg-nord-1 border border-nord-2 text-xs font-medium text-nord-4 hover:text-nord-6 hover:bg-nord-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            上一張
+          </button>
+          <button onclick="confirmStage2Card()"
+            class="px-6 py-2 rounded-xl ${hasBig ? 'bg-nord-14 hover:bg-nord-14/80 text-nord-0' : 'bg-nord-8 hover:bg-nord-7 text-nord-0'} text-xs font-bold shadow-lg transition-all flex items-center space-x-1.5">
+            <span>${hasBig ? (isLast ? '確認並完成結算' : '確認，下一張 (Enter)') : (isLast ? '無大額，完成結算' : '無大額，下一張 (Enter)')}</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
+        `;
+      }
+    }
+
+    function handleCardAmountChange(cardId, val) {
+      const card = creditCards.find(c => c.id === cardId);
+      if (card) {
+        card.amount = val === '' ? null : Number(val);
+      }
+    }
+
+    function handleCardInputKeyDown(event, index) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        nextCard();
+      }
+    }
+
+    function focusCurrentCardInput() {
+      if (cardStage === 1) {
+        const currentCard = creditCards[cardCurrentIndex];
+        const input = document.getElementById(`card-input-${currentCard.id}`);
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }
+    }
+
+    function prevCard() {
+      if (cardCurrentIndex > 0) {
+        cardCurrentIndex--;
+        renderCardCarousel();
+        focusCurrentCardInput();
+      }
+    }
+
+    function skipCardAmount() {
+      const card = creditCards[cardCurrentIndex];
+      card.amount = 0;
+      nextCard();
+    }
+
+    function nextCard() {
+      if (cardStage === 1) {
+        // 第一階段推進
+        const currentCard = creditCards[cardCurrentIndex];
+        const input = document.getElementById(`card-input-${currentCard.id}`);
+        if (input && input.value !== '') {
+          currentCard.amount = Number(input.value);
+        } else if (currentCard.amount === null) {
+          currentCard.amount = 0;
+        }
+
+        if (cardCurrentIndex < creditCards.length - 1) {
+          cardCurrentIndex++;
+          renderCardCarousel();
+          setTimeout(() => focusCurrentCardInput(), 50);
+        } else {
+          // 8 張卡全數輸完，自動進入第二階段（翻面確認大額費用）
+          enterCardStage2();
+        }
+      } else if (cardStage === 2) {
+        confirmStage2Card();
+      }
+    }
+
+    function enterCardStage2() {
+      cardStage = 2;
+      cardCurrentIndex = 0;
+
+      // 依輸入金額降序排列 (高額優先確認)
+      cardStage2Order = creditCards
+        .map((card, idx) => ({ originalIndex: idx, amount: card.amount || 0 }))
+        .sort((a, b) => b.amount - a.amount);
+
+      // 更新進度標籤
+      document.getElementById('card-stage-title').innerText = '第二階段：逐張確認大額費用 (由高至低)';
+      document.getElementById('card-stage-badge').className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-nord-13/15 text-nord-13 border border-nord-13/30 flex items-center space-x-1.5';
+      document.getElementById('card-stage-badge').querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-nord-13 animate-pulse';
+
+      initCardDots();
+      renderCardCarousel();
+    }
+
+    function addBigExpenseToCard(cardId) {
+      const titleInput = document.getElementById(`input-big-title-${cardId}`);
+      const amountInput = document.getElementById(`input-big-amount-${cardId}`);
+      if (!titleInput || !amountInput) return;
+
+      const title = titleInput.value.trim();
+      const amount = Number(amountInput.value);
+
+      if (!title || isNaN(amount) || amount <= 0) return;
+
+      const card = creditCards.find(c => c.id === cardId);
+      if (card) {
+        if (!card.bigExpenses) card.bigExpenses = [];
+        card.bigExpenses.push({ title, amount });
+        
+        // 更新容器
+        const container = document.getElementById(`big-expenses-container-${cardId}`);
+        if (container) container.innerHTML = renderBigExpensesList(card);
+
+        titleInput.value = '';
+        amountInput.value = '';
+        titleInput.focus();
+        renderCardActionBar();
+      }
+    }
+
+    function removeBigExpense(cardId, idx) {
+      const card = creditCards.find(c => c.id === cardId);
+      if (card && card.bigExpenses) {
+        card.bigExpenses.splice(idx, 1);
+        const container = document.getElementById(`big-expenses-container-${cardId}`);
+        if (container) container.innerHTML = renderBigExpensesList(card);
+        renderCardActionBar();
+      }
+    }
+
+    function confirmStage2Card() {
+      if (cardCurrentIndex < cardStage2Order.length - 1) {
+        cardCurrentIndex++;
+        renderCardCarousel();
+      } else {
+        // 全數確認完畢，顯示完成畫面
+        finishCardFlow();
+      }
+    }
+
+    function finishCardFlow() {
+      cardStage = 3;
+      document.getElementById('card-carousel-stage').parentElement.classList.add('hidden');
+      document.getElementById('card-action-bar').classList.add('hidden');
+      document.getElementById('card-complete-view').classList.remove('hidden');
+
+      // 統計數據
+      const totalSpend = creditCards.reduce((sum, c) => sum + (c.amount || 0), 0);
+      let totalBigCount = 0;
+      creditCards.forEach(c => {
+        if (c.bigExpenses) totalBigCount += c.bigExpenses.length;
+      });
+
+      document.getElementById('summary-card-total').innerText = `NT$ ${formatCurrency(totalSpend)}`;
+      document.getElementById('summary-card-big-count').innerText = `${totalBigCount} 筆`;
+
+      const summaryList = document.getElementById('summary-card-list');
+      summaryList.innerHTML = creditCards.map(c => `
+        <div class="p-2.5 rounded-xl bg-nord-0/50 border border-nord-2/50 flex items-center justify-between text-xs">
+          <div>
+            <span class="font-medium text-nord-6">${c.name}</span>
+            <span class="text-[11px] text-nord-4 block">${c.bankName} 扣款</span>
+          </div>
+          <div class="text-right">
+            <span class="font-mono font-bold text-nord-6 masked-amount">NT$ ${formatCurrency(c.amount || 0)}</span>
+            <span class="text-[11px] text-nord-8 block">${c.bigExpenses ? c.bigExpenses.length : 0} 筆大額</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function resetCardFlow() {
+      cardStage = 1;
+      cardCurrentIndex = 0;
+      creditCards.forEach(c => {
+        c.amount = null;
+        c.bigExpenses = [];
+      });
+      document.getElementById('card-carousel-stage').parentElement.classList.remove('hidden');
+      document.getElementById('card-action-bar').classList.remove('hidden');
+      document.getElementById('card-complete-view').classList.add('hidden');
+
+      document.getElementById('card-stage-title').innerText = '第一階段：輸入帳單金額';
+      document.getElementById('card-stage-badge').className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-nord-8/15 text-nord-8 border border-nord-8/30 flex items-center space-x-1.5';
+      document.getElementById('card-stage-badge').querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-nord-8 animate-pulse';
+
+      initCardDots();
+      renderCardCarousel();
+      focusCurrentCardInput();
+    }
+
+
+    /* =========================================================================
+       4. 流程二：銀行餘額（自動滾算 + 理論餘額確認 + 收支事件歸戶）實作
+       ========================================================================= */
+
+    function getBankEstimatedBalance(bank) {
+      return bank.lastBalance + (bank.salaryAmount || 0) - (bank.cardDebitAmount || 0) - (bank.fixedDebitAmount || 0);
+    }
+
+    function initBankDots() {
+      const container = document.getElementById('bank-dots-bar');
+      container.innerHTML = '';
+      for (let i = 0; i < bankAccounts.length; i++) {
+        const dot = document.createElement('div');
+        dot.id = `bank-dot-${i}`;
+        dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i === bankCurrentIndex ? 'bg-nord-9 w-5' : 'bg-nord-3'}`;
+        container.appendChild(dot);
+      }
+    }
+
+    function renderBankCarousel() {
+      const stage = document.getElementById('bank-carousel-stage');
+      stage.innerHTML = '';
+
+      const isStage2 = bankStage === 2;
+      const total = bankAccounts.length;
+
+      document.getElementById('bank-progress-text').innerText = `${bankCurrentIndex + 1} / ${total}`;
+      document.getElementById('btn-prev-bank').disabled = (bankCurrentIndex === 0);
+
+      // 更新圓點
+      for (let i = 0; i < total; i++) {
+        const dot = document.getElementById(`bank-dot-${i}`);
+        if (dot) {
+          dot.className = `h-2 rounded-full transition-all duration-300 ${i === bankCurrentIndex ? 'bg-nord-9 w-5' : 'bg-nord-3 w-2'}`;
+        }
+      }
+
+      bankAccounts.forEach((bank, index) => {
+        const offset = index - bankCurrentIndex;
+        const estimated = getBankEstimatedBalance(bank);
+        const currentVal = bank.balance !== null ? bank.balance : estimated;
+
+        const cardEl = document.createElement('div');
+        cardEl.className = 'absolute top-0 left-0 w-full h-full cover-flow-item rounded-2xl credit-card-shadow overflow-hidden cursor-pointer';
+        cardEl.id = `bank-node-${index}`;
+
+        let transformStr = '';
+        let opacityVal = 1;
+        let zIndexVal = 10;
+        let pointerEvents = 'auto';
+
+        if (offset === 0) {
+          transformStr = 'translateX(0px) translateZ(0px) scale(1) rotateY(0deg)';
+          opacityVal = 1;
+          zIndexVal = 20;
+        } else if (offset === -1) {
+          transformStr = 'translateX(-70%) translateZ(-150px) scale(0.85) rotateY(18deg)';
+          opacityVal = 0.45;
+          zIndexVal = 10;
+        } else if (offset === 1) {
+          transformStr = 'translateX(70%) translateZ(-150px) scale(0.85) rotateY(-18deg)';
+          opacityVal = 0.45;
+          zIndexVal = 10;
+        } else if (offset < -1) {
+          transformStr = 'translateX(-120%) translateZ(-300px) scale(0.7) rotateY(30deg)';
+          opacityVal = 0;
+          zIndexVal = 1;
+          pointerEvents = 'none';
+        } else if (offset > 1) {
+          transformStr = 'translateX(120%) translateZ(-300px) scale(0.7) rotateY(-30deg)';
+          opacityVal = 0;
+          zIndexVal = 1;
+          pointerEvents = 'none';
+        }
+
+        cardEl.style.transform = transformStr;
+        cardEl.style.opacity = opacityVal;
+        cardEl.style.zIndex = zIndexVal;
+        cardEl.style.pointerEvents = pointerEvents;
+
+        if (offset !== 0) {
+          cardEl.onclick = () => {
+            bankCurrentIndex = index;
+            renderBankCarousel();
+          };
+        }
+
+        // 銀行卡面渲染
+        cardEl.innerHTML = `
+          <div class="w-full h-full relative transform-style-3d transition-transform duration-700 ${isStage2 ? 'rotate-y-180' : ''}" id="bank-flipper-${index}">
+            
+            <!-- 正面 (第一階段：自動滾算理論餘額 + 一鍵確認) -->
+            <div class="absolute inset-0 w-full h-full rounded-2xl p-5 sm:p-6 bg-gradient-to-br ${bank.themeGrad} backface-hidden flex flex-col justify-between border border-white/10 select-none shadow-2xl">
+              
+              <!-- 頂部銀行標頭 -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-nord-0/60 border border-white/10 flex items-center justify-center text-nord-9">
+                    <i class="fa-solid fa-building-columns text-sm"></i>
+                  </div>
+                  <div>
+                    <span class="text-sm font-bold text-nord-6">${bank.name}</span>
+                    <span class="text-[11px] font-mono text-nord-4/60 ml-1.5">代碼 ${bank.code}</span>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-nord-9/20 text-nord-9 border border-nord-9/30">月度自動滾算</span>
+              </div>
+
+              <!-- 中間滾算明細展示 -->
+              <div class="my-2 bg-nord-0/40 p-2.5 rounded-xl border border-white/5 space-y-1 text-xs">
+                <div class="flex items-center justify-between text-nord-4/80">
+                  <span>上次盤點餘額</span>
+                  <span class="font-mono masked-amount">NT$ ${formatCurrency(bank.lastBalance)}</span>
+                </div>
+                ${bank.salaryAmount ? `
+                <div class="flex items-center justify-between text-nord-14">
+                  <span>+ 固定薪資入帳</span>
+                  <span class="font-mono masked-amount">+NT$ ${formatCurrency(bank.salaryAmount)}</span>
+                </div>` : ''}
+                ${bank.cardDebitAmount ? `
+                <div class="flex items-center justify-between text-nord-11">
+                  <span>- 綁定信用卡費</span>
+                  <span class="font-mono masked-amount">-NT$ ${formatCurrency(bank.cardDebitAmount)}</span>
+                </div>` : ''}
+                ${bank.fixedDebitAmount ? `
+                <div class="flex items-center justify-between text-nord-12">
+                  <span>- 房租/車貸直扣</span>
+                  <span class="font-mono masked-amount">-NT$ ${formatCurrency(bank.fixedDebitAmount)}</span>
+                </div>` : ''}
+                <div class="pt-1 border-t border-white/10 flex items-center justify-between text-nord-6 font-semibold">
+                  <span class="text-nord-9">今日推估餘額</span>
+                  <span class="font-mono text-sm text-nord-9 masked-amount">NT$ ${formatCurrency(estimated)}</span>
+                </div>
+              </div>
+
+              <!-- 實際餘額輸入框 (可微調) -->
+              <div onclick="event.stopPropagation()">
+                <div class="relative max-w-[280px] mx-auto">
+                  <span class="absolute left-3.5 top-2.5 text-sm font-bold text-nord-4 font-mono">實際 NT$</span>
+                  <input id="bank-input-${bank.id}" type="number" value="${currentVal}"
+                    onkeydown="handleBankInputKeyDown(event, ${index})"
+                    oninput="handleBankAmountChange('${bank.id}', this.value)"
+                    class="w-full pl-22 pr-4 py-2 text-center text-xl font-bold font-mono tracking-tight rounded-xl bg-nord-0/80 border border-white/20 text-nord-6 focus:outline-none input-pulse shadow-inner backdrop-blur-sm">
+                </div>
+              </div>
+
+              <!-- 底部小字提示 -->
+              <div class="flex items-center justify-between text-[11px] text-nord-4/60">
+                <span>點擊「推估無誤」即以此餘額歸檔</span>
+                <span class="font-mono">差額 NT$ ${formatCurrency((bank.balance !== null ? bank.balance : estimated) - estimated)}</span>
+              </div>
+
+            </div>
+
+            <!-- 背面 (第二階段：收支事件歸戶) -->
+            <div class="absolute inset-0 w-full h-full rounded-2xl p-4 sm:p-5 bg-gradient-to-tl ${bank.themeGrad} backface-hidden rotate-y-180 flex flex-col justify-between border border-white/10 select-none shadow-2xl" onclick="event.stopPropagation()">
+              
+              <!-- 頂部資訊 -->
+              <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                <div>
+                  <span class="text-xs font-bold text-nord-6">${bank.name}</span>
+                  <span class="text-[11px] text-nord-4/70 ml-2">盤點餘額：<b class="text-nord-9 font-mono masked-amount">NT$ ${formatCurrency(bank.balance !== null ? bank.balance : estimated)}</b></span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-nord-9/20 text-nord-9 border border-nord-9/30">收支事件歸戶</span>
+              </div>
+
+              <!-- 歸戶事件標籤清單 -->
+              <div class="flex-1 my-2 overflow-y-auto pr-1 space-y-1.5 max-h-[110px]" id="bank-events-container-${bank.id}">
+                ${renderBankEventsList(bank)}
+              </div>
+
+              <!-- 事件快速新增面板 -->
+              <div class="pt-2 border-t border-white/10 space-y-2">
+                <!-- 6 大事件類型膠囊按鈕 -->
+                <div class="flex items-center space-x-1 overflow-x-auto pb-0.5">
+                  <button type="button" onclick="setBankEventType('withdrawal')" class="bank-type-pill px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${currentBankEventType === 'withdrawal' ? 'bg-nord-11 text-nord-0 font-bold' : 'bg-nord-0/60 text-nord-4 hover:text-nord-6'}">提款</button>
+                  <button type="button" onclick="setBankEventType('dividend')" class="bank-type-pill px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${currentBankEventType === 'dividend' ? 'bg-nord-14 text-nord-0 font-bold' : 'bg-nord-0/60 text-nord-4 hover:text-nord-6'}">股利收入</button>
+                  <button type="button" onclick="setBankEventType('interest')" class="bank-type-pill px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${currentBankEventType === 'interest' ? 'bg-nord-14 text-nord-0 font-bold' : 'bg-nord-0/60 text-nord-4 hover:text-nord-6'}">利息收入</button>
+                  <button type="button" onclick="setBankEventType('transfer_out')" class="bank-type-pill px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${currentBankEventType === 'transfer_out' ? 'bg-nord-12 text-nord-0 font-bold' : 'bg-nord-0/60 text-nord-4 hover:text-nord-6'}">轉帳支出</button>
+                  <button type="button" onclick="setBankEventType('salary')" class="bank-type-pill px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${currentBankEventType === 'salary' ? 'bg-nord-14 text-nord-0 font-bold' : 'bg-nord-0/60 text-nord-4 hover:text-nord-6'}">薪資收入</button>
+                  <button type="button" onclick="setBankEventType('bonus')" class="bank-type-pill px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${currentBankEventType === 'bonus' ? 'bg-nord-14 text-nord-0 font-bold' : 'bg-nord-0/60 text-nord-4 hover:text-nord-6'}">獎金收入</button>
+                </div>
+
+                <!-- 輸入列 -->
+                <div class="flex items-center space-x-1.5">
+                  <input id="input-event-title-${bank.id}" type="text" placeholder="事件說明 (如：ATM提款、0050配息)"
+                    class="flex-1 px-2.5 py-1.5 rounded-lg bg-nord-0/80 border border-white/15 text-xs text-nord-6 placeholder-nord-3 focus:outline-none focus:border-nord-9">
+                  <div class="relative w-28">
+                    <span class="absolute left-2 top-1.5 text-[11px] text-nord-4 font-mono">$</span>
+                    <input id="input-event-amount-${bank.id}" type="number" placeholder="金額"
+                      class="w-full pl-5 pr-2 py-1.5 rounded-lg bg-nord-0/80 border border-white/15 text-xs font-mono text-nord-6 placeholder-nord-3 focus:outline-none focus:border-nord-9">
+                  </div>
+                  <button onclick="addEventToBank('${bank.id}')"
+                    class="px-2.5 py-1.5 rounded-lg bg-nord-9 hover:bg-nord-8 text-nord-0 text-xs font-bold transition-all flex items-center space-x-1">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                    <span>新增</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+
+        stage.appendChild(cardEl);
+      });
+
+      renderBankActionBar();
+    }
+
+    function renderBankEventsList(bank) {
+      if (!bank.events || bank.events.length === 0) {
+        return `
+          <div class="h-full flex items-center justify-center text-xs text-nord-4/50 italic py-2">
+            尚無收支事件歸戶
+          </div>
+        `;
+      }
+
+      const typeLabels = {
+        withdrawal: { name: '提款', color: 'text-nord-11 bg-nord-11/15' },
+        dividend: { name: '股利', color: 'text-nord-14 bg-nord-14/15' },
+        interest: { name: '利息', color: 'text-nord-14 bg-nord-14/15' },
+        transfer_out: { name: '轉帳', color: 'text-nord-12 bg-nord-12/15' },
+        salary: { name: '薪資', color: 'text-nord-14 bg-nord-14/15' },
+        bonus: { name: '獎金', color: 'text-nord-14 bg-nord-14/15' }
+      };
+
+      return bank.events.map((evt, idx) => {
+        const meta = typeLabels[evt.type] || { name: '其他', color: 'text-nord-4 bg-nord-2' };
+        return `
+          <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-nord-0/60 border border-white/10 text-xs">
+            <div class="flex items-center space-x-2">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold ${meta.color}">${meta.name}</span>
+              <span class="text-nord-6 font-medium">${evt.title}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="font-mono font-semibold ${evt.type === 'withdrawal' || evt.type === 'transfer_out' ? 'text-nord-11' : 'text-nord-14'} masked-amount">
+                ${evt.type === 'withdrawal' || evt.type === 'transfer_out' ? '-' : '+'}NT$ ${formatCurrency(evt.amount)}
+              </span>
+              <button onclick="removeBankEvent('${bank.id}', ${idx})" class="text-nord-4 hover:text-nord-11 transition-colors">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBankActionBar() {
+      const container = document.getElementById('bank-action-bar');
+      const isStage2 = bankStage === 2;
+
+      if (!isStage2) {
+        container.innerHTML = `
+          <button onclick="prevBank()" ${bankCurrentIndex === 0 ? 'disabled' : ''}
+            class="px-4 py-2 rounded-xl bg-nord-1 border border-nord-2 text-xs font-medium text-nord-4 hover:text-nord-6 hover:bg-nord-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            上一家
+          </button>
+          <button onclick="confirmEstimatedBank()"
+            class="px-6 py-2 rounded-xl bg-nord-9 hover:bg-nord-8 text-nord-0 text-xs font-bold shadow-lg shadow-nord-9/20 transition-all flex items-center space-x-1.5">
+            <i class="fa-solid fa-check text-[11px]"></i>
+            <span>推估無誤 (Enter)</span>
+          </button>
+          <button onclick="nextBank()"
+            class="px-4 py-2 rounded-xl bg-nord-1 border border-nord-2 text-xs font-medium text-nord-4 hover:text-nord-6 hover:bg-nord-2 transition-all">
+            下一家
+          </button>
+        `;
+      } else {
+        const targetBank = bankAccounts[bankCurrentIndex];
+        const hasEvents = targetBank.events && targetBank.events.length > 0;
+        const isLast = bankCurrentIndex === bankAccounts.length - 1;
+
+        container.innerHTML = `
+          <button onclick="prevBank()" ${bankCurrentIndex === 0 ? 'disabled' : ''}
+            class="px-4 py-2 rounded-xl bg-nord-1 border border-nord-2 text-xs font-medium text-nord-4 hover:text-nord-6 hover:bg-nord-2 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            上一家
+          </button>
+          <button onclick="confirmStage2Bank()"
+            class="px-6 py-2 rounded-xl ${hasEvents ? 'bg-nord-14 hover:bg-nord-14/80 text-nord-0' : 'bg-nord-9 hover:bg-nord-8 text-nord-0'} text-xs font-bold shadow-lg transition-all flex items-center space-x-1.5">
+            <span>${hasEvents ? (isLast ? '確認並完成結算' : '確認，下一家 (Enter)') : (isLast ? '無事件，完成盤點' : '無事件，下一家 (Enter)')}</span>
+            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+          </button>
+        `;
+      }
+    }
+
+    function setBankEventType(type) {
+      currentBankEventType = type;
+      // 重新渲染藥丸樣式
+      document.querySelectorAll('.bank-type-pill').forEach(btn => {
+        btn.classList.remove('bg-nord-11', 'bg-nord-14', 'bg-nord-12', 'text-nord-0', 'font-bold');
+        btn.classList.add('bg-nord-0/60', 'text-nord-4');
+      });
+      event.target.classList.remove('bg-nord-0/60', 'text-nord-4');
+      if (type === 'withdrawal') event.target.classList.add('bg-nord-11', 'text-nord-0', 'font-bold');
+      else if (type === 'transfer_out') event.target.classList.add('bg-nord-12', 'text-nord-0', 'font-bold');
+      else event.target.classList.add('bg-nord-14', 'text-nord-0', 'font-bold');
+    }
+
+    function addEventToBank(bankId) {
+      const titleInput = document.getElementById(`input-event-title-${bankId}`);
+      const amountInput = document.getElementById(`input-event-amount-${bankId}`);
+      if (!titleInput || !amountInput) return;
+
+      const title = titleInput.value.trim();
+      const amount = Number(amountInput.value);
+
+      if (!title || isNaN(amount) || amount <= 0) return;
+
+      const bank = bankAccounts.find(b => b.id === bankId);
+      if (bank) {
+        if (!bank.events) bank.events = [];
+        bank.events.push({
+          type: currentBankEventType,
+          title,
+          amount
+        });
+
+        const container = document.getElementById(`bank-events-container-${bankId}`);
+        if (container) container.innerHTML = renderBankEventsList(bank);
+
+        titleInput.value = '';
+        amountInput.value = '';
+        titleInput.focus();
+        renderBankActionBar();
+      }
+    }
+
+    function removeBankEvent(bankId, idx) {
+      const bank = bankAccounts.find(b => b.id === bankId);
+      if (bank && bank.events) {
+        bank.events.splice(idx, 1);
+        const container = document.getElementById(`bank-events-container-${bankId}`);
+        if (container) container.innerHTML = renderBankEventsList(bank);
+        renderBankActionBar();
+      }
+    }
+
+    function handleBankAmountChange(bankId, val) {
+      const bank = bankAccounts.find(b => b.id === bankId);
+      if (bank) {
+        bank.balance = val === '' ? null : Number(val);
+      }
+    }
+
+    function handleBankInputKeyDown(event, index) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        confirmEstimatedBank();
+      }
+    }
+
+    function focusCurrentBankInput() {
+      if (bankStage === 1) {
+        const currentBank = bankAccounts[bankCurrentIndex];
+        const input = document.getElementById(`bank-input-${currentBank.id}`);
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }
+    }
+
+    function prevBank() {
+      if (bankCurrentIndex > 0) {
+        bankCurrentIndex--;
+        renderBankCarousel();
+        focusCurrentBankInput();
+      }
+    }
+
+    function confirmEstimatedBank() {
+      const currentBank = bankAccounts[bankCurrentIndex];
+      const input = document.getElementById(`bank-input-${currentBank.id}`);
+      if (input && input.value !== '') {
+        currentBank.balance = Number(input.value);
+      } else if (currentBank.balance === null) {
+        currentBank.balance = getBankEstimatedBalance(currentBank);
+      }
+      nextBank();
+    }
+
+    function nextBank() {
+      if (bankStage === 1) {
+        const currentBank = bankAccounts[bankCurrentIndex];
+        if (currentBank.balance === null) {
+          currentBank.balance = getBankEstimatedBalance(currentBank);
+        }
+
+        if (bankCurrentIndex < bankAccounts.length - 1) {
+          bankCurrentIndex++;
+          renderBankCarousel();
+          setTimeout(() => focusCurrentBankInput(), 50);
+        } else {
+          // 全數銀行餘額輸入完畢，自動進入第二階段（收支事件歸戶）
+          enterBankStage2();
+        }
+      } else if (bankStage === 2) {
+        confirmStage2Bank();
+      }
+    }
+
+    function enterBankStage2() {
+      bankStage = 2;
+      bankCurrentIndex = 0;
+
+      document.getElementById('bank-stage-title').innerText = '第二階段：重大收支事件歸戶';
+      document.getElementById('bank-stage-badge').className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-nord-14/15 text-nord-14 border border-nord-14/30 flex items-center space-x-1.5';
+      document.getElementById('bank-stage-badge').querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-nord-14 animate-pulse';
+
+      initBankDots();
+      renderBankCarousel();
+    }
+
+    function confirmStage2Bank() {
+      if (bankCurrentIndex < bankAccounts.length - 1) {
+        bankCurrentIndex++;
+        renderBankCarousel();
+      } else {
+        finishBankFlow();
+      }
+    }
+
+    function finishBankFlow() {
+      bankStage = 3;
+      document.getElementById('bank-carousel-stage').parentElement.classList.add('hidden');
+      document.getElementById('bank-action-bar').classList.add('hidden');
+      document.getElementById('bank-complete-view').classList.remove('hidden');
+
+      const totalBalance = bankAccounts.reduce((sum, b) => sum + (b.balance !== null ? b.balance : getBankEstimatedBalance(b)), 0);
+      let totalEvents = 0;
+      bankAccounts.forEach(b => {
+        if (b.events) totalEvents += b.events.length;
+      });
+
+      document.getElementById('summary-bank-total').innerText = `NT$ ${formatCurrency(totalBalance)}`;
+      document.getElementById('summary-bank-event-count').innerText = `${totalEvents} 筆`;
+
+      const summaryList = document.getElementById('summary-bank-list');
+      summaryList.innerHTML = bankAccounts.map(b => `
+        <div class="p-2.5 rounded-xl bg-nord-0/50 border border-nord-2/50 flex items-center justify-between text-xs">
+          <div>
+            <span class="font-medium text-nord-6">${b.name}</span>
+            <span class="text-[11px] text-nord-4 block">代碼 ${b.code}</span>
+          </div>
+          <div class="text-right">
+            <span class="font-mono font-bold text-nord-14 masked-amount">NT$ ${formatCurrency(b.balance !== null ? b.balance : getBankEstimatedBalance(b))}</span>
+            <span class="text-[11px] text-nord-9 block">${b.events ? b.events.length : 0} 筆收支事件</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function resetBankFlow() {
+      bankStage = 1;
+      bankCurrentIndex = 0;
+      bankAccounts.forEach(b => {
+        b.balance = null;
+        b.events = [];
+      });
+      document.getElementById('bank-carousel-stage').parentElement.classList.remove('hidden');
+      document.getElementById('bank-action-bar').classList.remove('hidden');
+      document.getElementById('bank-complete-view').classList.add('hidden');
+
+      document.getElementById('bank-stage-title').innerText = '第一階段：盤點銀行餘額';
+      document.getElementById('bank-stage-badge').className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-nord-9/15 text-nord-9 border border-nord-9/30 flex items-center space-x-1.5';
+      document.getElementById('bank-stage-badge').querySelector('span').className = 'w-1.5 h-1.5 rounded-full bg-nord-9 animate-pulse';
+
+      initBankDots();
+      renderBankCarousel();
+      focusCurrentBankInput();
+    }
+
+
+    /* =========================================================================
+       5. 流程三：固定費用（快速綁定卡片/銀行）實作
+       ========================================================================= */
+
+    function selectBillCycle(cycle) {
+      currentBillCycle = cycle;
+      const btnMonthly = document.getElementById('btn-bill-cycle-monthly');
+      const btnBimonthly = document.getElementById('btn-bill-cycle-bimonthly');
+
+      if (cycle === 'monthly') {
+        btnMonthly.className = 'py-2 rounded-xl text-xs font-semibold bg-nord-7/20 text-nord-7 border border-nord-7/40 transition-all';
+        btnBimonthly.className = 'py-2 rounded-xl text-xs font-medium bg-nord-0 text-nord-4 border border-nord-2 hover:bg-nord-2/60 transition-all';
+      } else {
+        btnBimonthly.className = 'py-2 rounded-xl text-xs font-semibold bg-nord-7/20 text-nord-7 border border-nord-7/40 transition-all';
+        btnMonthly.className = 'py-2 rounded-xl text-xs font-medium bg-nord-0 text-nord-4 border border-nord-2 hover:bg-nord-2/60 transition-all';
+      }
+    }
+
+    function selectBillRoute(route) {
+      currentBillRoute = route;
+      const btnBank = document.getElementById('btn-bill-route-bank');
+      const btnCard = document.getElementById('btn-bill-route-card');
+
+      if (route === 'bank') {
+        btnBank.className = 'flex-1 py-1.5 rounded-lg text-xs font-semibold bg-nord-9 text-nord-0 shadow-sm transition-all flex items-center justify-center space-x-1.5';
+        btnCard.className = 'flex-1 py-1.5 rounded-lg text-xs font-medium text-nord-4 hover:text-nord-6 transition-all flex items-center justify-center space-x-1.5';
+        currentBillTargetId = bankAccounts[0].id;
+      } else {
+        btnCard.className = 'flex-1 py-1.5 rounded-lg text-xs font-semibold bg-nord-15 text-nord-0 shadow-sm transition-all flex items-center justify-center space-x-1.5';
+        btnBank.className = 'flex-1 py-1.5 rounded-lg text-xs font-medium text-nord-4 hover:text-nord-6 transition-all flex items-center justify-center space-x-1.5';
+        currentBillTargetId = creditCards[0].id;
+      }
+      renderBillTargetPills();
+    }
+
+    function renderBillTargetPills() {
+      const container = document.getElementById('bill-target-pills');
+      container.innerHTML = '';
+
+      if (currentBillRoute === 'bank') {
+        bankAccounts.forEach(b => {
+          const isSelected = b.id === currentBillTargetId;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => { currentBillTargetId = b.id; renderBillTargetPills(); };
+          btn.className = `px-2.5 py-1 rounded-lg text-xs transition-all flex items-center space-x-1.5 ${
+            isSelected
+              ? 'bg-nord-9 text-nord-0 font-bold shadow-sm'
+              : 'bg-nord-1 text-nord-4 hover:text-nord-6 hover:bg-nord-2'
+          }`;
+          btn.innerHTML = `<i class="fa-solid fa-building-columns text-[10px]"></i><span>${b.name}</span>`;
+          container.appendChild(btn);
+        });
+      } else {
+        creditCards.forEach(c => {
+          const isSelected = c.id === currentBillTargetId;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => { currentBillTargetId = c.id; renderBillTargetPills(); };
+          btn.className = `px-2.5 py-1 rounded-lg text-xs transition-all flex items-center space-x-1.5 ${
+            isSelected
+              ? 'bg-nord-15 text-nord-0 font-bold shadow-sm'
+              : 'bg-nord-1 text-nord-4 hover:text-nord-6 hover:bg-nord-2'
+          }`;
+          btn.innerHTML = `<i class="fa-regular fa-credit-card text-[10px]"></i><span>${c.name}</span>`;
+          container.appendChild(btn);
+        });
+      }
+    }
+
+    function quickFillBill(name, amount, day, cycle, route, targetId) {
+      document.getElementById('bill-input-name').value = name;
+      document.getElementById('bill-input-amount').value = amount;
+      document.getElementById('bill-input-day').value = day;
+      selectBillCycle(cycle);
+      selectBillRoute(route);
+      currentBillTargetId = targetId;
+      renderBillTargetPills();
+    }
+
+    function addRecurringBill() {
+      const nameInput = document.getElementById('bill-input-name');
+      const amountInput = document.getElementById('bill-input-amount');
+      const dayInput = document.getElementById('bill-input-day');
+
+      const name = nameInput.value.trim();
+      const amount = Number(amountInput.value);
+      const dueDay = Number(dayInput.value) || 10;
+
+      if (!name || isNaN(amount) || amount <= 0) return;
+
+      recurringBills.unshift({
+        id: 'rb_' + Date.now(),
+        name,
+        amount,
+        dueDay,
+        cycle: currentBillCycle,
+        route: currentBillRoute,
+        targetId: currentBillTargetId,
+        active: true
+      });
+
+      nameInput.value = '';
+      amountInput.value = '';
+      renderRecurringBillsList();
+    }
+
+    function removeRecurringBill(id) {
+      recurringBills = recurringBills.filter(b => b.id !== id);
+      renderRecurringBillsList();
+    }
+
+    function renderRecurringBillsList() {
+      const listEl = document.getElementById('bill-items-list');
+      listEl.innerHTML = '';
+
+      let totalMonthly = 0;
+      let bankTotal = 0;
+      let cardTotal = 0;
+
+      recurringBills.forEach(item => {
+        // 雙月費用折半計入月均
+        const monthlyShare = item.cycle === 'bimonthly' ? Math.round(item.amount / 2) : item.amount;
+        if (item.active) {
+          totalMonthly += monthlyShare;
+          if (item.route === 'bank') bankTotal += monthlyShare;
+          else cardTotal += monthlyShare;
+        }
+
+        let targetName = '未指定';
+        if (item.route === 'bank') {
+          const b = bankAccounts.find(x => x.id === item.targetId);
+          if (b) targetName = b.name;
+        } else {
+          const c = creditCards.find(x => x.id === item.targetId);
+          if (c) targetName = c.name;
+        }
+
+        const row = document.createElement('div');
+        row.className = 'p-3 rounded-xl bg-nord-1/70 border border-nord-2/60 flex items-center justify-between text-xs hover:border-nord-3 transition-colors';
+        row.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg ${item.route === 'bank' ? 'bg-nord-9/15 text-nord-9' : 'bg-nord-15/15 text-nord-15'} flex items-center justify-center text-sm">
+              <i class="${item.route === 'bank' ? 'fa-solid fa-building-columns' : 'fa-regular fa-credit-card'}"></i>
+            </div>
+            <div>
+              <span class="font-bold text-nord-6 block text-sm">${item.name}</span>
+              <span class="text-[11px] text-nord-4">${item.cycle === 'monthly' ? '每月' : '雙月'}扣款</span>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${item.route === 'bank' ? 'bg-nord-9/20 text-nord-9 border border-nord-9/30' : 'bg-nord-15/20 text-nord-15 border border-nord-15/30'}">
+              ${item.route === 'bank' ? '銀行直扣' : '信用卡代扣'} ➔ ${targetName}
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-3 text-right">
+            <div>
+              <span class="font-mono font-bold text-sm text-nord-6 block masked-amount">NT$ ${formatCurrency(item.amount)}</span>
+              <span class="text-[11px] text-nord-4">每月 ${item.dueDay} 號</span>
+            </div>
+            <button onclick="removeRecurringBill('${item.id}')" class="text-nord-4 hover:text-nord-11 p-1 transition-colors">
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </div>
+        `;
+        listEl.appendChild(row);
+      });
+
+      document.getElementById('bill-stat-total').innerText = `NT$ ${formatCurrency(totalMonthly)}`;
+      document.getElementById('bill-stat-bank').innerText = `NT$ ${formatCurrency(bankTotal)}`;
+      document.getElementById('bill-stat-card').innerText = `NT$ ${formatCurrency(cardTotal)}`;
+    }
+
+
+    /* =========================================================================
+       6. 流程四：分期付款（比照大額費用快速綁定卡片）實作
+       ========================================================================= */
+
+    function renderInstCardPills() {
+      const container = document.getElementById('inst-card-pills');
+      container.innerHTML = '';
+
+      creditCards.forEach(c => {
+        const isSelected = c.id === currentInstCardId;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => { currentInstCardId = c.id; renderInstCardPills(); };
+        btn.className = `px-2.5 py-1 rounded-lg text-xs transition-all flex items-center space-x-1.5 ${
+          isSelected
+            ? 'bg-nord-15 text-nord-0 font-bold shadow-sm'
+            : 'bg-nord-1 text-nord-4 hover:text-nord-6 hover:bg-nord-2'
+        }`;
+        btn.innerHTML = `<i class="fa-regular fa-credit-card text-[10px]"></i><span>${c.name}</span>`;
+        container.appendChild(btn);
+      });
+    }
+
+    function calculateInstPreview() {
+      const total = Number(document.getElementById('inst-input-total').value) || 0;
+      const periods = Number(document.getElementById('inst-input-periods').value) || 12;
+
+      if (total > 0 && periods > 0) {
+        const regular = Math.floor(total / periods);
+        const first = total - (regular * (periods - 1));
+        document.getElementById('inst-preview-monthly').innerText = `NT$ ${formatCurrency(regular)}`;
+        document.getElementById('inst-preview-first').innerText = `NT$ ${formatCurrency(first)}`;
+      } else {
+        document.getElementById('inst-preview-monthly').innerText = 'NT$ 0';
+        document.getElementById('inst-preview-first').innerText = 'NT$ 0';
+      }
+    }
+
+    function quickFillInst(name, total, periods, cardId) {
+      document.getElementById('inst-input-name').value = name;
+      document.getElementById('inst-input-total').value = total;
+      document.getElementById('inst-input-periods').value = periods;
+      currentInstCardId = cardId;
+      renderInstCardPills();
+      calculateInstPreview();
+    }
+
+    function addInstallmentItem() {
+      const nameInput = document.getElementById('inst-input-name');
+      const totalInput = document.getElementById('inst-input-total');
+      const periodsInput = document.getElementById('inst-input-periods');
+
+      const name = nameInput.value.trim();
+      const totalAmount = Number(totalInput.value);
+      const totalPeriods = Number(periodsInput.value) || 12;
+
+      if (!name || isNaN(totalAmount) || totalAmount <= 0) return;
+
+      const monthlyAmount = Math.floor(totalAmount / totalPeriods);
+      const firstPeriodAmount = totalAmount - (monthlyAmount * (totalPeriods - 1));
+
+      installmentItems.unshift({
+        id: 'in_' + Date.now(),
+        name,
+        totalAmount,
+        totalPeriods,
+        currentPeriod: 1,
+        monthlyAmount,
+        firstPeriodAmount,
+        cardId: currentInstCardId
+      });
+
+      nameInput.value = '';
+      totalInput.value = '';
+      calculateInstPreview();
+      renderInstallmentList();
+    }
+
+    function stepInstallment(id) {
+      const item = installmentItems.find(i => i.id === id);
+      if (item && item.currentPeriod < item.totalPeriods) {
+        item.currentPeriod++;
+        renderInstallmentList();
+      }
+    }
+
+    function removeInstallment(id) {
+      installmentItems = installmentItems.filter(i => i.id !== id);
+      renderInstallmentList();
+    }
+
+    function renderInstallmentList() {
+      const listEl = document.getElementById('inst-items-list');
+      listEl.innerHTML = '';
+
+      let totalRemaining = 0;
+      let monthlyDueTotal = 0;
+      let activeCount = 0;
+
+      installmentItems.forEach(item => {
+        const remainingPeriods = Math.max(0, item.totalPeriods - item.currentPeriod);
+        const remainingAmount = remainingPeriods * item.monthlyAmount;
+        const progressPct = Math.min(100, Math.round((item.currentPeriod / item.totalPeriods) * 100));
+
+        totalRemaining += remainingAmount;
+        if (remainingPeriods > 0) {
+          monthlyDueTotal += item.monthlyAmount;
+          activeCount++;
+        }
+
+        const card = creditCards.find(c => c.id === item.cardId) || { name: '未指定' };
+
+        const cardEl = document.createElement('div');
+        cardEl.className = 'p-3.5 rounded-xl bg-nord-1/70 border border-nord-2/60 flex flex-col space-y-2 hover:border-nord-3 transition-colors';
+        cardEl.innerHTML = `
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center space-x-2.5">
+              <span class="w-2 h-2 rounded-full ${remainingPeriods === 0 ? 'bg-nord-14' : 'bg-nord-15'}"></span>
+              <span class="font-bold text-sm text-nord-6">${item.name}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-nord-15/20 text-nord-15 border border-nord-15/30">
+                綁定：${card.name}
+              </span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-nord-4">第 <b class="text-nord-6 font-mono">${item.currentPeriod}</b> / ${item.totalPeriods} 期</span>
+              <button onclick="stepInstallment('${item.id}')" title="+1 期" class="px-2 py-0.5 rounded bg-nord-0 hover:bg-nord-2 text-[10px] text-nord-4 hover:text-nord-6 border border-nord-2/60 transition-colors">
+                +1期
+              </button>
+              <button onclick="removeInstallment('${item.id}')" title="刪除" class="text-nord-4 hover:text-nord-11 p-1 transition-colors">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 進度條 -->
+          <div class="w-full bg-nord-0 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-gradient-to-r from-nord-10 to-nord-15 h-full rounded-full transition-all duration-300" style="width: ${progressPct}%"></div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-0.5 text-nord-4">
+            <span>每期 <b class="font-mono text-nord-15 font-bold masked-amount">NT$ ${formatCurrency(item.monthlyAmount)}</b></span>
+            <span>剩餘未還 <b class="font-mono text-nord-11 font-bold masked-amount">NT$ ${formatCurrency(remainingAmount)}</b> (剩 ${remainingPeriods} 期)</span>
+          </div>
+        `;
+        listEl.appendChild(cardEl);
+      });
+
+      document.getElementById('inst-stat-remaining').innerText = `NT$ ${formatCurrency(totalRemaining)}`;
+      document.getElementById('inst-stat-monthly').innerText = `NT$ ${formatCurrency(monthlyDueTotal)}`;
+      document.getElementById('inst-stat-count').innerText = `${activeCount} 筆`;
+    }
+
+
+    /* =========================================================================
+       7. 輔助功能：載入測試資料 (Preset Scenario)
+       ========================================================================= */
+
+    function fillPresetTestData() {
+      // 1. 信用卡金額與示範大額消費
+      const presetCardAmounts = [12450, 8320, 4180, 15200, 6800, 49811, 7650, 23400];
+      creditCards.forEach((c, idx) => {
+        c.amount = presetCardAmounts[idx];
+      });
+
+      // 星展 49811 掛載大額
+      creditCards[5].bigExpenses = [
+        { title: '長榮航空東京來回機票', amount: 32000 },
+        { title: 'Bic Camera 購物', amount: 12500 }
+      ];
+
+      // 國泰 23400 掛載大額
+      creditCards[7].bigExpenses = [
+        { title: '富邦人壽全期年繳保費', amount: 18000 }
+      ];
+
+      // 2. 銀行餘額與示範收支事件
+      bankAccounts.forEach(b => {
+        b.balance = getBankEstimatedBalance(b);
+      });
+
+      // 玉山薪轉收支事件
+      bankAccounts[0].events = [
+        { type: 'salary', title: '科技業 10 月經常性薪資', amount: 85000 },
+        { type: 'withdrawal', title: 'ATM 提領生活現金', amount: 5000 }
+      ];
+
+      // 富邦證券收支事件
+      bankAccounts[4].events = [
+        { type: 'dividend', title: '0050 元大台灣50 半年配息', amount: 14200 }
+      ];
+
+      // 重新渲染當前畫面
+      if (currentMainTab === 'cards') {
+        renderCardCarousel();
+        focusCurrentCardInput();
+      } else if (currentMainTab === 'banks') {
+        renderBankCarousel();
+        focusCurrentBankInput();
+      }
+      renderRecurringBillsList();
+      renderInstallmentList();
+    }
+
+
+    /* =========================================================================
+       8. 頁面初始化 (DOM Ready)
+       ========================================================================= */
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 初始化信用卡流程
+      initCardDots();
+      renderCardCarousel();
+
+      // 初始化銀行流程
+      initBankDots();
+      renderBankCarousel();
+
+      // 初始化固定費用流程
+      renderBillTargetPills();
+      renderRecurringBillsList();
+
+      // 初始化分期付款流程
+      renderInstCardPills();
+      calculateInstPreview();
+      renderInstallmentList();
+
+      // 預設聚焦
+      setTimeout(() => focusCurrentCardInput(), 150);
+    });
+
+  </script>
+
+</body>
+
+</html>
