@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketMoney — PC UI Mockup (100% 原始 Nord 介面 + v4 矩陣與雙軌規劃)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons (與原始 kipomo.html 完全一致) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts (與原始 kipomo.html 完全一致) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <script>
+    /* 100% 沿用原始 tools/kipomo.html 的 Nord 配色與設定 */
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Public Sans', 'Inter', 'Noto Sans TC', 'sans-serif'],
+            mono: ['Public Sans', 'Inter', 'monospace']
+          },
+          colors: {
+            slate: {
+              50: '#ECEFF4', 100: '#E5E9F0', 200: '#D8DEE9', 300: '#B8C2D3',
+              400: '#8C97AB', 500: '#667186', 600: '#4C566A', 700: '#3B4252',
+              800: '#2E3440', 900: '#262B35', 950: '#1D2129'
+            },
+            indigo: {
+              50: '#ECEFF4', 100: '#DCE5EF', 200: '#C3D3E3', 300: '#A6BDD5',
+              400: '#93B0C9', 500: '#81A1C1', 600: '#5F83A8', 700: '#4C6A8C',
+              800: '#3B5270', 900: '#2F4259', 950: '#222F40'
+            },
+            purple: {
+              50: '#ECEFF4', 100: '#DCE5EF', 200: '#C3D3E3', 300: '#A6BDD5',
+              400: '#93B0C9', 500: '#81A1C1', 600: '#6F90B3', 700: '#4C6A8C',
+              800: '#3B5270', 900: '#2F4259', 950: '#222F40'
+            },
+            rose: { 200: '#E9C3C7', 400: '#CD7C84', 500: '#BF616A', 600: '#A84E57' },
+            emerald: { 400: '#B1CA9E', 500: '#8FAE78', 600: '#6F9159' },
+            amber: { 100: '#F6E9C9', 400: '#E3BE6F', 500: '#D4A64A', 600: '#B8892F' },
+            orange: { 600: '#C98A3E' }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 100% 沿用原始 tools/kipomo.html 的流體變數與 Nuxt UI v3 樣式 */
+    :root {
+      --pad-page: clamp(0.75rem, 3.2vw, 1.75rem);
+      --pad-card: clamp(0.875rem, 3.5vw, 1.35rem);
+      --gap-grid: clamp(0.75rem, 2.8vw, 1.25rem);
+      --fs-hero: clamp(1.45rem, 5.8vw, 2.1rem);
+      --fs-h2: clamp(1.02rem, 3.8vw, 1.25rem);
+      --fs-h3: clamp(0.92rem, 3.4vw, 1.08rem);
+      --fs-body: clamp(0.78rem, 2.9vw, 0.875rem);
+      --fs-sub: clamp(0.7rem, 2.5vw, 0.78rem);
+      --ui-primary: #81A1C1;
+      --ui-radius: 0.5rem;
+      --ui-ring: #D8DEE9;
+    }
+
+    html.dark {
+      --ui-ring: #3B4252;
+    }
+
+    body {
+      font-family: 'Public Sans', 'Inter', 'Noto Sans TC', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+
+    .fluid-page-pad {
+      padding-left: var(--pad-page);
+      padding-right: var(--pad-page);
+    }
+
+    .fluid-card {
+      padding: var(--pad-card);
+      border-radius: 0.75rem;
+      box-shadow: 0 0 0 1px var(--ui-ring), 0 1px 2px rgb(76 86 106 / 0.06);
+      border-color: transparent;
+    }
+
+    .fluid-card.shadow-lg,
+    .fluid-card.shadow-md {
+      box-shadow: 0 8px 24px -8px rgb(76 86 106 / 0.35);
+    }
+
+    .fluid-gap {
+      gap: var(--gap-grid);
+    }
+
+    .text-fluid-hero {
+      font-size: var(--fs-hero);
+      line-height: 1.15;
+    }
+
+    .text-fluid-h2 {
+      font-size: var(--fs-h2);
+      line-height: 1.3;
+    }
+
+    .text-fluid-h3 {
+      font-size: var(--fs-h3);
+      line-height: 1.35;
+    }
+
+    .text-fluid-body {
+      font-size: var(--fs-body);
+      line-height: 1.45;
+    }
+
+    .text-fluid-sub {
+      font-size: var(--fs-sub);
+      line-height: 1.35;
+    }
+
+    .num-nowrap {
+      white-space: nowrap !important;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    html body .rounded-xl {
+      border-radius: var(--ui-radius);
+    }
+
+    html body .rounded-2xl {
+      border-radius: 0.625rem;
+    }
+
+    html body .rounded-3xl {
+      border-radius: 0.75rem;
+    }
+
+    html body button,
+    html body label.cursor-pointer {
+      transition: background-color .15s ease, color .15s ease, box-shadow .15s ease, transform .1s ease;
+    }
+
+    html body button:active {
+      transform: scale(0.98);
+    }
+
+    html body input:not([type=range]):not([type=file]),
+    html body select,
+    html body textarea {
+      border: none !important;
+      box-shadow: inset 0 0 0 1px var(--ui-ring);
+      border-radius: var(--ui-radius);
+      outline: none;
+      transition: box-shadow .15s ease;
+    }
+
+    html body input:not([type=range]):not([type=file]):focus,
+    html body select:focus,
+    html body textarea:focus {
+      box-shadow: inset 0 0 0 2px var(--ui-primary);
+    }
+
+    html body header.sticky {
+      box-shadow: none;
+      border-bottom: 1px solid var(--ui-ring);
+    }
+
+    /* ================= 新增 v4 矩陣表格專用樣式 (完全契合 Nord 色票與高密度排版) ================= */
+    .nord-matrix-table th,
+    .nord-matrix-table td {
+      padding: 6px 10px;
+      font-size: 12.5px;
+      line-height: 1.25;
+      border: 1px solid var(--ui-ring);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 未持卡灰底斜線格 */
+    .cell-unheld {
+      background: repeating-linear-gradient(
+        -45deg,
+        rgba(59, 66, 82, 0.22),
+        rgba(59, 66, 82, 0.22) 5px,
+        rgba(38, 43, 53, 0.45) 5px,
+        rgba(38, 43, 53, 0.45) 10px
+      );
+      color: #667186;
+      text-align: center;
+    }
+
+    /* Excel 式右上角大額註記小三角 (使用 Nord Amber #D4A64A) */
+    .has-note {
+      position: relative;
+    }
+    .has-note::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      border-width: 0 7px 7px 0;
+      border-style: solid;
+      border-color: transparent #D4A64A transparent transparent;
+    }
+
+    /* 滑鼠 Hover 秒開大額明細浮層 */
+    .note-popover {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      right: 0;
+      z-index: 60;
+      width: 250px;
+      white-space: normal;
+      pointer-events: none;
+    }
+    .has-note:hover .note-popover {
+      display: block;
+    }
+
+    /* Cash Drag 燈號底色 (使用 Nord 低飽和紅/黃/綠) */
+    .nord-drag-red {
+      background: rgba(191, 97, 106, 0.22);
+      color: #E9C3C7;
+      font-weight: 700;
+    }
+    .nord-drag-amber {
+      background: rgba(212, 166, 74, 0.18);
+      color: #F6E9C9;
+      font-weight: 600;
+    }
+    .nord-drag-emerald {
+      background: rgba(143, 174, 120, 0.18);
+      color: #B1CA9E;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 pb-28">
+
+  <!-- 頂部薄型 Mockup 提示條 (可一鍵跳轉 Mobile 版，不干擾原始 Header) -->
+  <div class="bg-slate-900 border-b border-slate-800 px-4 py-1.5 text-xs text-slate-300">
+    <div class="max-w-6xl mx-auto fluid-page-pad flex items-center justify-between gap-2 flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold">🖥️ PC 版 UI Mockup</span>
+        <span class="text-slate-400">100% 基於原始 <code class="text-indigo-300">kipomo.html</code> Nord 設計系統，並於「銀行餘額與信用卡費」、「固定費用」融入 v4 新介面（標有 <span class="text-amber-400 font-bold">✨ NEW v4</span>）</span>
+      </div>
+      <a href="mockup_mobile.html" class="px-2.5 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 font-bold transition">
+        <i class="fa-solid fa-mobile-screen-button mr-1"></i>切換檢視 Mobile 手機版 Mockup →
+      </a>
+    </div>
+  </div>
+
+  <!-- ==================== 原始頂部純色不透明固定導覽列 ==================== -->
+  <header
+    class="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-6xl mx-auto fluid-page-pad">
+
+      <!-- 第一層：品牌標題 + 右側 5 個快速工具按鈕 (100% 原始介面) -->
+      <div class="flex items-center justify-between py-2.5 gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div
+            class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+            <i class="fa-solid fa-wallet text-xs"></i>
+          </div>
+          <div class="truncate">
+            <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">財務總覽與 30 號檢核</h1>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+          <!-- 隱私遮罩開關 -->
+          <button title="隱藏/顯示金額"
+            class="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-fluid-sub font-semibold flex items-center gap-1 num-nowrap transition">
+            <i class="fa-regular fa-eye"></i>
+            <span class="hidden sm:inline">顯示金額</span>
+          </button>
+          <!-- PIN 鎖定 -->
+          <button title="PIN 碼安全鎖"
+            class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+            <i class="fa-solid fa-lock"></i>
+          </button>
+          <!-- 深淺色切換 -->
+          <button onclick="document.documentElement.classList.toggle('dark')" title="切換深淺色"
+            class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+            <i class="fa-solid fa-sun text-amber-400"></i>
+          </button>
+          <!-- 匯出 Excel -->
+          <button title="匯出 Excel 報表"
+            class="h-8 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1 num-nowrap shadow-sm transition">
+            <i class="fa-solid fa-file-excel"></i>
+            <span class="hidden sm:inline">Excel</span>
+          </button>
+          <!-- 新手導覽 -->
+          <button title="新手使用引導"
+            class="h-8 px-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-fluid-sub font-bold flex items-center gap-1 num-nowrap transition border border-indigo-200/60 dark:border-indigo-800/60">
+            <i class="fa-solid fa-compass"></i>
+            <span class="hidden sm:inline">新手導覽</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 第二層：原始 6 大功能分頁膠囊列 -->
+      <nav
+        class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80">
+        <button onclick="switchTab('dashboard')" id="tabbtn-dashboard"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>總覽檢核</span>
+        </button>
+        <button onclick="switchTab('cards')" id="tabbtn-cards"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-indigo-600 text-white shadow-sm">
+          <i class="fa-solid fa-credit-card"></i>
+          <span>銀行餘額與信用卡費</span>
+          <span class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px]">1</span>
+        </button>
+        <button onclick="switchTab('installments')" id="tabbtn-installments"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>信用卡分期管理</span>
+        </button>
+        <button onclick="switchTab('bills')" id="tabbtn-bills"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i class="fa-solid fa-bolt"></i>
+          <span>固定費用</span>
+        </button>
+        <button onclick="switchTab('stocks')" id="tabbtn-stocks"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i class="fa-solid fa-arrow-trend-up"></i>
+          <span>投資部位</span>
+        </button>
+        <button onclick="switchTab('settings')" id="tabbtn-settings"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+          <i class="fa-solid fa-database"></i>
+          <span>設定</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- ==================== 主內容容器 ==================== -->
+  <main class="max-w-6xl mx-auto fluid-page-pad pt-4">
+
+    <!-- =========================================================================
+         TAB 1: 總覽與 30 號扣款檢核 (100% 原始介面 + 新增跨行調度建議橫幅)
+         ========================================================================= -->
+    <section id="tab-dashboard" class="tab-section hidden space-y-4">
+
+      <!-- 原始：新手微型檢查清單 (Setup Checklist) -->
+      <div class="fluid-card bg-slate-50 dark:bg-slate-900/90 border border-emerald-500/30 shadow-sm">
+        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/60 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-4 rounded-full bg-emerald-500"></span>
+            <span class="text-fluid-h3 font-extrabold flex items-center gap-1.5">
+              <span>🎯 新手初始設定任務</span>
+            </span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">3 / 4 完成 (75%)</span>
+          </div>
+          <button class="text-xs text-slate-400 hover:text-slate-200 transition">暫時收合</button>
+        </div>
+        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mb-3">
+          <div class="bg-gradient-to-r from-emerald-500 to-indigo-500 h-full" style="width: 75%;"></div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-fluid-sub">
+          <div onclick="switchTab('cards')" class="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex items-start gap-2 cursor-pointer">
+            <div class="w-4 h-4 rounded mt-0.5 bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <div class="font-bold">1. 設定主力銀行與存款</div>
+              <div class="text-[11px] text-slate-400">已建立 8 個銀行與交割戶</div>
+            </div>
+          </div>
+          <div onclick="switchTab('cards')" class="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex items-start gap-2 cursor-pointer">
+            <div class="w-4 h-4 rounded mt-0.5 bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <div class="font-bold">2. 登記本期信用卡與扣繳戶</div>
+              <div class="text-[11px] text-slate-400">已登錄 8 張信用卡帳單</div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl border border-rose-500/40 bg-rose-500/5 flex items-start gap-2 cursor-pointer">
+            <div class="w-4 h-4 rounded mt-0.5 border border-rose-400 flex items-center justify-center text-[10px] shrink-0"></div>
+            <div>
+              <div class="font-bold text-rose-400">3. 檢查扣款安全亮綠燈</div>
+              <div class="text-[11px] text-slate-400">中信台幣差 NT$ 3,040 待補足</div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex items-start gap-2 cursor-pointer">
+            <div class="w-4 h-4 rounded mt-0.5 bg-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <div class="font-bold">4.（選填）設定 PIN 碼</div>
+              <div class="text-[11px] text-slate-400">保護本機資產隱私</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 原始：三大核心指標卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
+        <!-- 指標 1：總淨資產 -->
+        <div class="fluid-card bg-gradient-to-br from-indigo-600 via-indigo-600 to-purple-700 text-white shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-fluid-sub font-bold bg-white/15 px-2.5 py-0.5 rounded-full num-nowrap">總淨資產</span>
+              <span class="text-fluid-sub text-indigo-100 font-semibold num-nowrap">距 30 號扣款剩 11 天</span>
+            </div>
+            <div class="text-fluid-hero font-extrabold font-mono num-nowrap my-1">NT$ 3,494,100</div>
+          </div>
+          <div class="pt-3 mt-3 border-t border-white/15 space-y-1.5 text-fluid-sub text-indigo-100">
+            <div class="flex items-center justify-between gap-2">
+              <span class="opacity-85">總資產 (活存+股票)</span>
+              <span class="font-bold font-mono num-nowrap">NT$ 3,604,207</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="opacity-85">卡費與銀行直扣固定費合計</span>
+              <span class="font-bold font-mono text-rose-200 num-nowrap">NT$ 110,107</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="opacity-85">分期未繳負債</span>
+              <span class="font-bold font-mono text-amber-200 num-nowrap">NT$ 293,500</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 指標 2：台股波段水位與損益 -->
+        <div onclick="switchTab('stocks')" class="fluid-card cursor-pointer bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
+                <i class="fa-solid fa-chart-line text-indigo-500 mr-1"></i>股票投資損益
+              </span>
+              <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 num-nowrap">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i>現金偏高 (57%)
+              </span>
+            </div>
+            <div class="flex items-baseline justify-between gap-2 my-1 flex-wrap">
+              <div class="text-fluid-hero font-extrabold font-mono num-nowrap">NT$ 1,073,000</div>
+              <div class="text-fluid-sub font-bold font-mono px-2 py-0.5 rounded-lg bg-rose-500/15 text-rose-500 num-nowrap">+NT$ 190,500 (+21.6%)</div>
+            </div>
+          </div>
+          <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/80">
+            <div class="flex justify-between text-fluid-sub font-semibold mb-1.5">
+              <span class="text-indigo-600 dark:text-indigo-400 num-nowrap">持股部位 <strong>43%</strong></span>
+              <span class="text-amber-600 dark:text-amber-400 num-nowrap">現金部位 <strong>57%</strong></span>
+            </div>
+            <div class="w-full h-2.5 bg-amber-500/20 rounded-full overflow-hidden flex">
+              <div class="bg-indigo-500 h-full" style="width: 43%"></div>
+            </div>
+            <p class="text-fluid-sub text-amber-500 font-semibold mt-1.5 truncate">持倉低於目標 70%，待命交割現金 NT$ 1,439,490</p>
+          </div>
+        </div>
+
+        <!-- 指標 3：本月卡費與固定支出總結 -->
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
+                <i class="fa-solid fa-file-invoice-dollar text-rose-500 mr-1"></i>本月待扣款總結
+              </span>
+              <span class="text-fluid-sub font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 num-nowrap">20~30號自動扣繳</span>
+            </div>
+            <div class="text-fluid-hero font-extrabold font-mono text-rose-600 dark:text-rose-400 num-nowrap my-1">NT$ 110,107</div>
+          </div>
+          <div class="pt-3 mt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 text-fluid-sub">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-slate-500 dark:text-slate-400 truncate">本期信用卡未繳總額 (含信用卡代繳水電)</span>
+              <span class="font-bold font-mono num-nowrap">NT$ 79,607</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-slate-500 dark:text-slate-400 truncate">本月銀行直扣固定費 (10號房租/28號車貸)</span>
+              <span class="font-bold font-mono num-nowrap">NT$ 30,500</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 text-amber-600 dark:text-amber-400 pt-0.5">
+              <span class="truncate"><i class="fa-solid fa-scissors mr-1"></i>每月被分期吃掉現金流</span>
+              <span class="font-bold font-mono num-nowrap">NT$ 14,500 /月</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 原始：戶頭扣款安全檢查 + ✨ NEW v4 跨行調度建議橫幅 -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3.5">
+          <div class="space-y-1.5">
+            <div class="flex items-center flex-wrap gap-2">
+              <span class="w-2 h-5 rounded-full bg-indigo-500 shrink-0"></span>
+              <h2 class="text-fluid-h2 font-extrabold">戶頭扣款安全檢查</h2>
+              <span class="text-fluid-sub px-2.5 py-0.5 rounded-full font-bold bg-rose-500 text-white num-nowrap">
+                <i class="fa-solid fa-bell mr-1"></i>1 銀行不足・共差 NT$ 3,040
+              </span>
+            </div>
+            <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
+              戶頭裡的錢，夠不夠扣卡費與生活開銷？自動將未繳信用卡與銀行直扣房租車貸歸戶到指定銀行，提早 15~20 天攔截餘額不足。
+            </p>
+          </div>
+          <button class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition shrink-0">
+            <i class="fa-solid fa-bolt-lightning"></i>
+            <span>信用卡全數扣款</span>
+          </button>
+        </div>
+
+        <!-- ✨ NEW v4: 10~19 號跨行轉帳防線建議橫幅 (Nord 風格) -->
+        <div class="p-3.5 rounded-2xl border border-rose-500/40 bg-rose-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+              <i class="fa-solid fa-right-left text-xs"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 font-bold">✨ NEW v4 · 10~19 號資金調度防線</span>
+                <span class="text-fluid-body font-extrabold text-rose-400">建議於 6/19 前從「兆豐台幣」轉帳 NT$ 10,000 至「中信台幣」</span>
+              </div>
+              <p class="text-fluid-sub text-slate-400 mt-0.5">
+                原因：<strong class="text-slate-200">中信台幣</strong> 現有餘額 NT$ 49,186，不足扣繳 6/28 星展卡 ($49,811) + 中信卡 ($2,415)；而 <strong class="text-rose-300">兆豐台幣</strong> 閒置高達 NT$ 1,118,806 (Cash Drag 紅燈)。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 原始：各銀行水位檢核卡片網格 (#bankCheckupGrid) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <!-- 中信台幣 (不足) -->
+          <div class="rounded-2xl p-4 border-2 border-rose-500/80 bg-rose-500/5 dark:bg-rose-950/20 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2.5">
+                <div class="min-w-0">
+                  <h4 class="font-bold text-fluid-h3 truncate">中信台幣</h4>
+                  <p class="text-fluid-sub text-slate-400 truncate">綁定：星展卡、中信卡 (每月 28 號自動扣繳)</p>
+                </div>
+                <span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-rose-500 text-white num-nowrap shrink-0">
+                  <i class="fa-solid fa-triangle-exclamation mr-1"></i>差 NT$ 3,040
+                </span>
+              </div>
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">目前帳戶餘額</span>
+                  <span class="font-bold font-mono num-nowrap text-fluid-body">NT$ 49,186</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">30 號待扣總額</span>
+                  <span class="font-bold font-mono text-rose-500 num-nowrap text-fluid-body">NT$ 52,226</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <span class="font-semibold text-slate-500 dark:text-slate-300">尚缺需補金額</span>
+                  <span class="font-extrabold font-mono num-nowrap text-fluid-body text-rose-500">-NT$ 3,040</span>
+                </div>
+              </div>
+              <div class="mt-2.5 flex flex-wrap gap-1.5">
+                <span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 font-semibold num-nowrap"><i class="fa-regular fa-credit-card"></i>星展: NT$ 49,811</span>
+                <span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 font-semibold num-nowrap"><i class="fa-regular fa-credit-card"></i>中信: NT$ 2,415</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-fluid-sub">
+              <button class="text-indigo-500 font-bold num-nowrap"><i class="fa-solid fa-pen-to-square mr-1"></i>修改餘額</button>
+              <button class="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white font-bold num-nowrap transition">執行扣款入帳</button>
+            </div>
+          </div>
+
+          <!-- 玉山薪轉 (充足) -->
+          <div class="rounded-2xl p-4 border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2.5">
+                <div class="min-w-0">
+                  <h4 class="font-bold text-fluid-h3 truncate">玉山薪轉</h4>
+                  <p class="text-fluid-sub text-slate-400 truncate">綁定：玉山卡 + 10號房租 + 28號車貸</p>
+                </div>
+                <span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 num-nowrap shrink-0">
+                  <i class="fa-solid fa-circle-check mr-1"></i>餘額充足
+                </span>
+              </div>
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">目前帳戶餘額</span>
+                  <span class="font-bold font-mono num-nowrap text-fluid-body">NT$ 178,274</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">30 號待扣總額</span>
+                  <span class="font-bold font-mono text-rose-500 num-nowrap text-fluid-body">NT$ 31,326</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <span class="font-semibold text-slate-500 dark:text-slate-300">扣後預計結餘</span>
+                  <span class="font-extrabold font-mono num-nowrap text-fluid-body text-emerald-500">+NT$ 146,948</span>
+                </div>
+              </div>
+              <div class="mt-2.5 flex flex-wrap gap-1.5">
+                <span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 font-semibold num-nowrap"><i class="fa-regular fa-credit-card"></i>玉山: NT$ 826</span>
+                <span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 font-semibold num-nowrap"><i class="fa-solid fa-bolt"></i>房租(10號): NT$ 18,000</span>
+                <span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 font-semibold num-nowrap"><i class="fa-solid fa-bolt"></i>車貸(28號): NT$ 12,500</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-fluid-sub">
+              <button class="text-indigo-500 font-bold num-nowrap"><i class="fa-solid fa-pen-to-square mr-1"></i>修改餘額</button>
+              <button class="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white font-bold num-nowrap transition">執行扣款入帳</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 原始：下方雙欄 (>5000 大額消費雷達 & 進行中分期付款負擔) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 fluid-gap">
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-fluid-h3 font-bold flex items-center gap-1.5">
+                <i class="fa-solid fa-magnifying-glass-dollar text-amber-500"></i>
+                <span>本期 > $5,000 大額消費雷達</span>
+              </h3>
+              <p class="text-fluid-sub text-slate-400">抓大放小：只記大筆開銷，不記瑣碎流水帳</p>
+            </div>
+            <button onclick="switchTab('cards')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i class="fa-solid fa-angle-right"></i></button>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-800">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="px-2 py-1 rounded-lg bg-amber-500/15 text-amber-500 text-fluid-sub font-bold num-nowrap shrink-0">>5K</span>
+                <div class="truncate">
+                  <div class="text-fluid-body font-bold truncate">儲蓄險與醫療保費年繳</div>
+                  <div class="text-fluid-sub text-slate-400 truncate">星展 (2025/6)</div>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-fluid-body font-extrabold font-mono text-rose-500 num-nowrap">NT$ 36,000</div>
+                <span class="text-fluid-sub num-nowrap text-slate-400">待扣款</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-800">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="px-2 py-1 rounded-lg bg-amber-500/15 text-amber-500 text-fluid-sub font-bold num-nowrap shrink-0">>5K</span>
+                <div class="truncate">
+                  <div class="text-fluid-body font-bold truncate">汽車 4 萬公里大保養</div>
+                  <div class="text-fluid-sub text-slate-400 truncate">星展 (2025/6)</div>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-fluid-body font-extrabold font-mono text-rose-500 num-nowrap">NT$ 9,500</div>
+                <span class="text-fluid-sub num-nowrap text-slate-400">待扣款</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-fluid-h3 font-bold flex items-center gap-1.5">
+                <i class="fa-solid fa-hourglass-half text-purple-500"></i>
+                <span>進行中分期付款負擔</span>
+              </h3>
+              <p class="text-fluid-sub text-slate-400">買東西分期很無痛？算算每個月默默被扣了多少錢</p>
+            </div>
+            <button onclick="switchTab('installments')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">查看全部 <i class="fa-solid fa-angle-right"></i></button>
+          </div>
+          <div class="space-y-2.5">
+            <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <span class="text-fluid-body font-bold text-amber-600 dark:text-amber-400 block truncate">每月分期總額支出</span>
+                <span class="text-fluid-sub text-slate-400 block truncate">共 2 筆・總尾款 NT$ 53,500</span>
+              </div>
+              <span class="text-fluid-h3 font-extrabold font-mono text-amber-600 dark:text-amber-400 num-nowrap shrink-0">NT$ 9,100/月</span>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-fluid-sub">
+              <div class="flex items-center justify-between gap-2 font-bold mb-1">
+                <span class="truncate">MacBook Pro M4 12期0利率 <span class="font-normal text-slate-400">(富邦數位)</span></span>
+                <span class="font-mono num-nowrap shrink-0">NT$ 6,100/月 (剩6期)</span>
+              </div>
+              <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div class="bg-purple-500 h-full" style="width:50%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 2: 銀行餘額與信用卡費 (預設開啟：展示「原始卡片 UI」+「✨ NEW v4 兩大時間軸矩陣」)
+         ========================================================================= -->
+    <section id="tab-cards" class="tab-section space-y-4">
+
+      <!-- 原始：銀行與卡費三大統計小計卡片 -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 fluid-gap">
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">銀行總存款餘額</span>
+          <div class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 2,531,207</div>
+          <span class="text-fluid-sub text-slate-400 mt-2">30 號待扣後剩餘 NT$ 2,421,100</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">本期待繳卡費總額 (2025/6)</span>
+          <div class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">NT$ 79,607</div>
+          <span class="text-fluid-sub text-slate-400 mt-2">有效持卡 8 張・含大額保費與保養</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-fluid-sub text-slate-400 font-bold">卡費扣款帳戶餘額檢核</span>
+            <div class="mt-1">
+              <span class="text-fluid-h3 font-extrabold num-nowrap text-rose-500">⚠️ 1 個帳戶餘額不足 (中信台幣)</span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="text-fluid-sub text-rose-400 font-semibold">尚差 NT$ 3,040，請於 19 號前從兆豐台幣轉入補足</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- =======================================================================
+           ✨ NEW v4 區塊 1：信用卡年度帳單矩陣 (100% 契合 Nord .fluid-card 設計語言)
+           ======================================================================= -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-indigo-500/40 shadow-sm space-y-3">
+        <!-- 乾淨單行標題列：無重複月份按鈕、無醜陋水平捲軸 -->
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold">✨ NEW v4 · 全景矩陣</span>
+              <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-table-cells text-indigo-500"></i>
+                <span>信用卡年度帳單矩陣 (5~10號收單 / 20~30號同名銀行扣繳)</span>
+              </h2>
+            </div>
+            <p class="text-fluid-sub text-slate-400 mt-0.5">
+              點擊任一金額可直接原地修改；滑鼠移過右上角 <span class="text-amber-400 font-bold">◣</span> 儲存格可秒看當月 <code class="text-amber-400">>$5,000</code> 大額原因；灰底 <code class="text-slate-400">—</code> 為未持卡月份（自動排除於月平均分母外）。
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- 乾淨年度切換器 -->
+            <div class="inline-flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-0.5 text-fluid-sub font-bold">
+              <button class="px-2.5 py-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400">◀</button>
+              <span class="px-3 py-1 font-mono text-indigo-400">2025 年度</span>
+              <button class="px-2.5 py-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400">▶</button>
+            </div>
+            <button class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+              <i class="fa-solid fa-plus"></i> 新增信用卡
+            </button>
+          </div>
+        </div>
+
+        <!-- 緊湊型 14 列 Excel 矩陣表 (一屏到底免捲動) -->
+        <div class="overflow-x-auto rounded-xl">
+          <table class="w-full nord-matrix-table border-collapse text-right font-mono">
+            <thead>
+              <tr class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 font-sans">
+                <th class="text-left font-bold">月 / 銀行</th>
+                <th>
+                  <div class="font-bold">玉山</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：玉山薪轉</div>
+                </th>
+                <th>
+                  <div class="font-bold">台新</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：台新數位</div>
+                </th>
+                <th>
+                  <div class="font-bold">富邦數位</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：富邦證券</div>
+                </th>
+                <th>
+                  <div class="font-bold">富邦好事多</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：富邦證券</div>
+                </th>
+                <th>
+                  <div class="font-bold">兆豐</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：兆豐台幣</div>
+                </th>
+                <th>
+                  <div class="font-bold">星展</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：中信台幣</div>
+                </th>
+                <th>
+                  <div class="font-bold">中信</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：中信台幣</div>
+                </th>
+                <th>
+                  <div class="font-bold">國泰Cube</div>
+                  <div class="text-[10px] text-slate-400 font-normal">扣：國泰台幣</div>
+                </th>
+                <th class="bg-slate-200/70 dark:bg-slate-800 text-amber-400 font-bold">當月總計</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/1</td>
+                <td contenteditable="true">NT$ 10,879</td>
+                <td contenteditable="true" class="has-note text-amber-400 font-bold">
+                  NT$ 31,422
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-amber-500/50 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-amber-400 mb-1">🏷️ 台新 · 2025/1 大額查帳</div>
+                    <div class="text-[11px] text-slate-200">• 日本東京機票與飯店訂房 $26,800</div>
+                  </div>
+                </td>
+                <td contenteditable="true">NT$ 6,160</td>
+                <td contenteditable="true">NT$ 12,188</td>
+                <td class="cell-unheld" title="未持卡 (不計入月均分母)">—</td>
+                <td contenteditable="true">NT$ 7,127</td>
+                <td contenteditable="true">NT$ 2,605</td>
+                <td contenteditable="true">NT$ 7,015</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 77,396</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/2</td>
+                <td contenteditable="true" class="has-note text-amber-400 font-bold">
+                  NT$ 25,650
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-amber-500/50 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-amber-400 mb-1">🏷️ 玉山 · 2025/2 大額查帳</div>
+                    <div class="text-[11px] text-slate-200">• 除夕圍爐餐廳與年節禮盒 $18,500</div>
+                  </div>
+                </td>
+                <td contenteditable="true">NT$ 11,039</td>
+                <td contenteditable="true">NT$ 12,262</td>
+                <td contenteditable="true">NT$ 7,264</td>
+                <td class="cell-unheld">—</td>
+                <td contenteditable="true" class="has-note text-amber-400 font-bold">
+                  NT$ 33,777
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-amber-500/50 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-amber-400 mb-1">🏷️ 星展 · 2025/2 大額查帳</div>
+                    <div class="text-[11px] text-slate-200">• 春節連假高鐵與家庭旅遊住宿 $24,000</div>
+                  </div>
+                </td>
+                <td contenteditable="true">NT$ 2,520</td>
+                <td contenteditable="true">NT$ 3,604</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 96,116</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/3</td>
+                <td contenteditable="true">NT$ 3,345</td>
+                <td contenteditable="true">NT$ 6,541</td>
+                <td contenteditable="true">NT$ 5,787</td>
+                <td contenteditable="true">NT$ 4,095</td>
+                <td class="cell-unheld">—</td>
+                <td contenteditable="true" class="has-note text-amber-400 font-bold">
+                  NT$ 35,705
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-amber-500/50 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-amber-400 mb-1">🏷️ 星展 · 2025/3 大額查帳</div>
+                    <div class="text-[11px] text-slate-200">• 房屋火險與產險年繳 $24,500</div>
+                  </div>
+                </td>
+                <td contenteditable="true">NT$ 4,210</td>
+                <td contenteditable="true">NT$ 1,738</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 61,421</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/4</td>
+                <td contenteditable="true">NT$ 4,625</td>
+                <td contenteditable="true">NT$ 10,757</td>
+                <td contenteditable="true">NT$ 6,162</td>
+                <td contenteditable="true">NT$ 12,188</td>
+                <td class="cell-unheld">—</td>
+                <td contenteditable="true">NT$ 6,200</td>
+                <td contenteditable="true">NT$ 3,380</td>
+                <td contenteditable="true">NT$ 1,526</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 44,838</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/5</td>
+                <td contenteditable="true">NT$ 2,616</td>
+                <td contenteditable="true">NT$ 8,167</td>
+                <td contenteditable="true" class="has-note text-amber-400 font-bold">
+                  NT$ 22,571
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-amber-500/50 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-amber-400 mb-1">🏷️ 富邦數位 · 2025/5 大額查帳</div>
+                    <div class="text-[11px] text-slate-200">• 綜所稅與房屋稅分期首期 $15,200</div>
+                  </div>
+                </td>
+                <td contenteditable="true">NT$ 9,422</td>
+                <td class="cell-unheld">—</td>
+                <td contenteditable="true">NT$ 13,075</td>
+                <td contenteditable="true">NT$ 3,890</td>
+                <td contenteditable="true">NT$ 1,355</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 61,096</td>
+              </tr>
+              <!-- 當期高亮列：2025/6 -->
+              <tr class="bg-indigo-500/10">
+                <td class="text-left font-extrabold text-indigo-300 bg-indigo-950/60">
+                  2025/6 <span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-500 text-white ml-1 font-sans">當期</span>
+                </td>
+                <td contenteditable="true">NT$ 826</td>
+                <td contenteditable="true">NT$ 5,747</td>
+                <td contenteditable="true">NT$ 7,942</td>
+                <td contenteditable="true" class="has-note">
+                  NT$ 12,175
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-amber-500/50 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-amber-400 mb-1">🏷️ 富邦好事多 · 2025/6</div>
+                    <div class="text-[11px] text-slate-200">• 含台電夏季電費代繳 $6,850 + 中華電信 $1,100</div>
+                  </div>
+                </td>
+                <td contenteditable="true" class="text-slate-400" title="已持卡但本月刷 $0 (計入月均分母)">NT$ 0</td>
+                <td contenteditable="true" class="has-note text-rose-400 font-extrabold bg-rose-500/15">
+                  NT$ 49,811
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-rose-500/60 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-rose-400 mb-1">🚨 星展 · 2025/6 大額查帳 (高於月均 2.5 倍)</div>
+                    <div class="text-[11px] text-slate-200 space-y-1">
+                      <div>1. 儲蓄險與醫療保費年繳 <strong class="text-amber-400">$36,000</strong></div>
+                      <div>2. 汽車 4 萬公里大保養 <strong class="text-amber-400">$9,500</strong></div>
+                    </div>
+                  </div>
+                </td>
+                <td contenteditable="true">NT$ 2,415</td>
+                <td contenteditable="true">NT$ 691</td>
+                <td class="font-extrabold text-amber-400 bg-indigo-950/60">NT$ 79,607</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/7</td>
+                <td contenteditable="true">NT$ 5,733</td>
+                <td contenteditable="true">NT$ 9,685</td>
+                <td contenteditable="true">NT$ 5,500</td>
+                <td contenteditable="true">NT$ 9,465</td>
+                <td contenteditable="true">NT$ 6,161</td>
+                <td contenteditable="true">NT$ 10,750</td>
+                <td contenteditable="true">NT$ 2,000</td>
+                <td contenteditable="true">NT$ 11,488</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 60,782</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/8</td>
+                <td contenteditable="true">NT$ 6,964</td>
+                <td contenteditable="true">NT$ 2,520</td>
+                <td contenteditable="true">NT$ 5,659</td>
+                <td contenteditable="true">NT$ 17,976</td>
+                <td contenteditable="true">NT$ 4,007</td>
+                <td contenteditable="true">NT$ 9,429</td>
+                <td contenteditable="true">NT$ 3,663</td>
+                <td contenteditable="true">NT$ 9,690</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 59,908</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/9</td>
+                <td contenteditable="true">NT$ 12,356</td>
+                <td contenteditable="true">NT$ 4,487</td>
+                <td contenteditable="true">NT$ 5,321</td>
+                <td contenteditable="true">NT$ 10,518</td>
+                <td class="cell-unheld">—</td>
+                <td contenteditable="true">NT$ 4,772</td>
+                <td contenteditable="true">NT$ 2,953</td>
+                <td contenteditable="true">NT$ 9,690</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 50,097</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/10</td>
+                <td contenteditable="true">NT$ 7,250</td>
+                <td contenteditable="true">NT$ 6,120</td>
+                <td contenteditable="true">NT$ 8,450</td>
+                <td contenteditable="true">NT$ 9,120</td>
+                <td class="cell-unheld">—</td>
+                <td contenteditable="true">NT$ 7,058</td>
+                <td contenteditable="true">NT$ 2,600</td>
+                <td contenteditable="true">NT$ 11,200</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 51,798</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/11</td>
+                <td contenteditable="true">NT$ 8,900</td>
+                <td contenteditable="true">NT$ 5,400</td>
+                <td contenteditable="true">NT$ 9,100</td>
+                <td contenteditable="true">NT$ 8,890</td>
+                <td class="cell-unheld">—</td>
+                <td contenteditable="true" class="has-note text-amber-400 font-bold">
+                  NT$ 43,190
+                  <div class="note-popover p-2.5 rounded-xl bg-slate-900 border border-amber-500/50 shadow-xl text-left font-sans">
+                    <div class="text-xs font-bold text-amber-400 mb-1">🏷️ 星展 · 2025/11 大額查帳</div>
+                    <div class="text-[11px] text-slate-200">• 雙 11 家電採購與除濕機 $29,800</div>
+                  </div>
+                </td>
+                <td contenteditable="true">NT$ 2,600</td>
+                <td contenteditable="true">NT$ 12,450</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 90,530</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold text-amber-400 bg-slate-50 dark:bg-slate-900">2025/12</td>
+                <td contenteditable="true">NT$ 8,215</td>
+                <td contenteditable="true">NT$ 6,207</td>
+                <td contenteditable="true">NT$ 8,845</td>
+                <td contenteditable="true">NT$ 9,128</td>
+                <td contenteditable="true">NT$ 4,671</td>
+                <td contenteditable="true">NT$ 15,495</td>
+                <td contenteditable="true">NT$ 2,800</td>
+                <td contenteditable="true">NT$ 10,693</td>
+                <td class="font-bold bg-slate-50/50 dark:bg-slate-900/60">NT$ 66,054</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="bg-slate-100 dark:bg-slate-800/90 font-bold">
+                <td class="text-left font-sans">年總計</td>
+                <td>NT$ 97,359</td>
+                <td>NT$ 108,092</td>
+                <td>NT$ 103,759</td>
+                <td>NT$ 122,429</td>
+                <td>NT$ 14,839</td>
+                <td class="text-amber-400">NT$ 236,389</td>
+                <td>NT$ 35,636</td>
+                <td>NT$ 81,140</td>
+                <td class="text-amber-400">NT$ 799,643</td>
+              </tr>
+              <tr class="bg-emerald-500/15 text-emerald-400 font-extrabold">
+                <td class="text-left font-sans">有效月平均</td>
+                <td>NT$ 8,113</td>
+                <td>NT$ 9,008</td>
+                <td>NT$ 8,647</td>
+                <td>NT$ 10,202</td>
+                <td title="僅除以 4 個有效持卡月份 (6月、7月、8月、12月)">NT$ 3,710 <span class="text-[10px] font-normal opacity-80">(4個月)</span></td>
+                <td>NT$ 19,699</td>
+                <td>NT$ 2,970</td>
+                <td>NT$ 6,762</td>
+                <td>NT$ 66,637</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- =======================================================================
+           ✨ NEW v4 區塊 2：台幣銀行餘額跨日快照矩陣 (含 Cash Drag 紅黃綠熱力燈號)
+           ======================================================================= -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-indigo-500/40 shadow-sm space-y-3">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold">✨ NEW v4 · 跨日快照矩陣</span>
+              <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-building-columns text-indigo-500"></i>
+                <span>銀行帳戶跨日餘額快照與 Cash Drag 警示矩陣</span>
+              </h2>
+            </div>
+            <p class="text-fluid-sub text-slate-400 mt-0.5">
+              記錄每月關鍵節點（5號發薪收單、19號調度前、24/30號扣款後）之帳戶水位。<span class="px-1.5 py-0.2 rounded nord-drag-red text-[11px]">紅底</span> 為閒置資金過高 (Cash Drag 需轉投資)，<span class="px-1.5 py-0.2 rounded nord-drag-amber text-[11px]">黃底</span> 為觀察水位，<span class="px-1.5 py-0.2 rounded nord-drag-emerald text-[11px]">綠底</span> 為健康水位。
+            </p>
+          </div>
+          <button class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+            <i class="fa-solid fa-camera"></i> + 新增今日餘額快照欄
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl">
+          <table class="w-full nord-matrix-table border-collapse text-right font-mono">
+            <thead>
+              <tr class="bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 font-sans">
+                <th class="text-left font-bold">銀行帳戶</th>
+                <th>2025/5/21</th>
+                <th>2025/6/5</th>
+                <th>2025/6/19</th>
+                <th>2025/6/24</th>
+                <th class="text-indigo-300">2025/6/30 (當期)</th>
+                <th>2025/7/19</th>
+                <th>2025/7/24</th>
+                <th>2025/8/8</th>
+                <th>2025/8/21</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">兆豐台幣</td>
+                <td class="nord-drag-red">NT$ 1,228,208</td>
+                <td class="nord-drag-red">NT$ 1,218,510</td>
+                <td class="nord-drag-red">NT$ 1,218,423</td>
+                <td class="nord-drag-red">NT$ 1,118,806</td>
+                <td class="nord-drag-red">NT$ 1,118,806</td>
+                <td class="nord-drag-red">NT$ 1,118,806</td>
+                <td class="nord-drag-emerald">NT$ 164,736</td>
+                <td class="nord-drag-emerald">NT$ 151,238</td>
+                <td class="nord-drag-emerald">NT$ 151,238</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">玉山證券</td>
+                <td class="nord-drag-emerald">NT$ 348,963</td>
+                <td class="nord-drag-emerald">NT$ 348,963</td>
+                <td class="nord-drag-emerald">NT$ 372,453</td>
+                <td class="nord-drag-emerald">NT$ 372,456</td>
+                <td class="nord-drag-emerald">NT$ 372,456</td>
+                <td class="nord-drag-emerald">NT$ 372,456</td>
+                <td class="nord-drag-emerald">NT$ 372,456</td>
+                <td class="nord-drag-emerald">NT$ 372,456</td>
+                <td class="nord-drag-emerald">NT$ 372,456</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">玉山薪轉</td>
+                <td class="nord-drag-emerald">NT$ 185,373</td>
+                <td class="nord-drag-emerald">NT$ 185,373</td>
+                <td class="nord-drag-emerald">NT$ 185,373</td>
+                <td class="nord-drag-emerald">NT$ 278,274</td>
+                <td class="nord-drag-emerald">NT$ 178,274</td>
+                <td class="nord-drag-emerald">NT$ 178,274</td>
+                <td class="nord-drag-emerald">NT$ 232,488</td>
+                <td class="nord-drag-emerald">NT$ 232,488</td>
+                <td class="nord-drag-emerald">NT$ 255,734</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">中信證券</td>
+                <td class="nord-drag-emerald">NT$ 279,682</td>
+                <td class="nord-drag-emerald">NT$ 279,682</td>
+                <td class="nord-drag-amber">NT$ 500,846</td>
+                <td class="nord-drag-amber">NT$ 500,861</td>
+                <td class="nord-drag-amber">NT$ 500,861</td>
+                <td class="nord-drag-amber">NT$ 500,987</td>
+                <td class="nord-drag-amber">NT$ 528,641</td>
+                <td class="nord-drag-amber">NT$ 535,542</td>
+                <td class="nord-drag-amber">NT$ 535,542</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">中信台幣</td>
+                <td>NT$ 50,688</td>
+                <td>NT$ 49,627</td>
+                <td>NT$ 49,627</td>
+                <td>NT$ 49,186</td>
+                <td class="text-rose-400 font-bold" title="不足扣繳 6/28 星展+中信卡費">NT$ 49,186 ⚠️</td>
+                <td>NT$ 49,186</td>
+                <td>NT$ 48,723</td>
+                <td>NT$ 48,723</td>
+                <td>NT$ 48,723</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">富邦證券</td>
+                <td class="nord-drag-emerald">NT$ 343,156</td>
+                <td class="nord-drag-emerald">NT$ 343,156</td>
+                <td class="nord-drag-amber">NT$ 564,419</td>
+                <td class="nord-drag-amber">NT$ 566,074</td>
+                <td class="nord-drag-amber">NT$ 566,074</td>
+                <td class="nord-drag-amber">NT$ 566,173</td>
+                <td class="nord-drag-amber">NT$ 566,173</td>
+                <td class="nord-drag-amber">NT$ 566,173</td>
+                <td class="nord-drag-amber">NT$ 566,173</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">台新數位</td>
+                <td class="nord-drag-emerald">NT$ 109,259</td>
+                <td class="nord-drag-emerald">NT$ 103,176</td>
+                <td>NT$ 73,843</td>
+                <td>NT$ 95,595</td>
+                <td>NT$ 95,595</td>
+                <td>NT$ 66,316</td>
+                <td>NT$ 55,649</td>
+                <td>NT$ 75,001</td>
+                <td class="nord-drag-amber">NT$ 635,668</td>
+              </tr>
+              <tr>
+                <td class="text-left font-bold font-sans bg-slate-50 dark:bg-slate-900">國泰台幣</td>
+                <td>NT$ 53,802</td>
+                <td>NT$ 42,309</td>
+                <td>NT$ 42,309</td>
+                <td>NT$ 45,443</td>
+                <td class="nord-drag-emerald">NT$ 145,443</td>
+                <td class="nord-drag-emerald">NT$ 145,443</td>
+                <td class="nord-drag-emerald">NT$ 128,586</td>
+                <td class="nord-drag-emerald">NT$ 128,586</td>
+                <td class="nord-drag-emerald">NT$ 128,586</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =======================================================================
+           100% 原始區塊 A：台幣銀行帳戶管理卡片 (#bankAccountsList 四欄卡片)
+           ======================================================================= -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-building-columns text-indigo-500"></i>
+              <span>台幣銀行帳戶餘額 (原始當期卡片檢視)</span>
+            </h2>
+            <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算扣繳餘額</p>
+          </div>
+          <button class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+            <i class="fa-solid fa-plus"></i> 新增銀行帳戶
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 fluid-gap">
+          <!-- 兆豐台幣 -->
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h4 class="font-bold text-fluid-h3 truncate">兆豐台幣</h4>
+                <p class="text-fluid-sub text-rose-400 truncate">🔴 Cash Drag 閒置過高</p>
+              </div>
+              <div class="flex gap-1 shrink-0">
+                <button class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                <button class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+            <div>
+              <span class="text-fluid-sub text-slate-400 block mb-1">目前帳戶餘額</span>
+              <input type="number" value="1118806" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 font-mono font-extrabold text-fluid-h2">
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-fluid-sub">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">30 號待扣總額</span>
+                <span class="font-mono font-bold num-nowrap">NT$ 0</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">扣後剩餘</span>
+                <span class="font-mono font-extrabold num-nowrap text-emerald-500">NT$ 1,118,806</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 中信台幣 -->
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border-2 border-rose-500/70 flex flex-col justify-between space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h4 class="font-bold text-fluid-h3 truncate">中信台幣</h4>
+                <p class="text-fluid-sub text-rose-400 truncate">扣：星展卡、中信卡</p>
+              </div>
+              <div class="flex gap-1 shrink-0">
+                <button class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                <button class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+            <div>
+              <span class="text-fluid-sub text-slate-400 block mb-1">目前帳戶餘額</span>
+              <input type="number" value="49186" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 font-mono font-extrabold text-fluid-h2">
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-fluid-sub">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">30 號待扣總額</span>
+                <span class="font-mono font-bold num-nowrap">NT$ 52,226</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">尚缺需補</span>
+                <span class="font-mono font-extrabold num-nowrap text-rose-500">不足 NT$ 3,040</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 玉山薪轉 -->
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h4 class="font-bold text-fluid-h3 truncate">玉山薪轉</h4>
+                <p class="text-fluid-sub text-slate-400 truncate">扣：玉山卡、房租、車貸</p>
+              </div>
+              <div class="flex gap-1 shrink-0">
+                <button class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                <button class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+            <div>
+              <span class="text-fluid-sub text-slate-400 block mb-1">目前帳戶餘額</span>
+              <input type="number" value="178274" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 font-mono font-extrabold text-fluid-h2">
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-fluid-sub">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">30 號待扣總額</span>
+                <span class="font-mono font-bold num-nowrap">NT$ 31,326</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">扣後剩餘</span>
+                <span class="font-mono font-extrabold num-nowrap text-emerald-500">NT$ 146,948</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 富邦證券 -->
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h4 class="font-bold text-fluid-h3 truncate">富邦證券</h4>
+                <p class="text-fluid-sub text-amber-400 truncate">🟡 交割與富邦雙卡扣繳</p>
+              </div>
+              <div class="flex gap-1 shrink-0">
+                <button class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                <button class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>
+            <div>
+              <span class="text-fluid-sub text-slate-400 block mb-1">目前帳戶餘額</span>
+              <input type="number" value="566074" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 font-mono font-extrabold text-fluid-h2">
+            </div>
+            <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-fluid-sub">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">30 號待扣總額</span>
+                <span class="font-mono font-bold num-nowrap">NT$ 20,117</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">扣後剩餘</span>
+                <span class="font-mono font-extrabold num-nowrap text-emerald-500">NT$ 545,957</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =======================================================================
+           100% 原始區塊 B：各家信用卡帳單卡片 (#creditCardsList 雙欄卡片)
+           ======================================================================= -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+              <i class="fa-solid fa-credit-card text-rose-500"></i>
+              <span>各家信用卡本期帳單 (原始當期卡片檢視 · 2025/6)</span>
+            </h2>
+            <p class="text-fluid-sub text-slate-400">只需輸入本期帳單總額，並記下超過 $5,000 元的大額刷卡項目（與上方年度矩陣雙向同步）</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold num-nowrap">
+              <i class="fa-solid fa-rotate-right mr-1"></i>新月份信用卡費已登錄
+            </button>
+            <button class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+              <i class="fa-solid fa-plus"></i> 新增信用卡
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 fluid-gap">
+          <!-- 星展 -->
+          <div class="rounded-2xl p-4 border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3.5">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2.5">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="font-bold text-fluid-h3 truncate">星展</h4>
+                    <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap bg-rose-500/15 text-rose-500">28號待扣繳</span>
+                  </div>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap text-fluid-sub">
+                    <span class="text-slate-400 truncate"><i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i>扣款戶：中信台幣</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                  <button class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 mb-3">
+                <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                  <span class="text-fluid-sub font-semibold text-slate-500">本期帳單總額 (NT$)</span>
+                  <span class="text-fluid-sub font-mono text-emerald-400">2025 月均：NT$ 19,699</span>
+                </div>
+                <input type="number" value="49811" class="w-full px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-extrabold text-fluid-h2 text-rose-500">
+                <div class="flex items-center justify-between gap-2 text-fluid-sub text-slate-400 mt-2 flex-wrap">
+                  <span class="num-nowrap">>5K 大額：NT$ 45,500</span>
+                  <span class="num-nowrap">一般瑣碎：NT$ 4,311</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <span class="text-fluid-sub font-bold text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-fire text-amber-500 mr-1"></i>單筆 > $5,000 大額項目
+                  </span>
+                  <button class="text-fluid-sub font-bold text-indigo-500 num-nowrap">+ 記一筆大額</button>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-fluid-sub">
+                    <span class="font-medium truncate">儲蓄險與醫療保費年繳</span>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="font-mono font-bold text-amber-500 num-nowrap">NT$ 36,000</span>
+                      <button class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-fluid-sub">
+                    <span class="font-medium truncate">汽車 4 萬公里大保養</span>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="font-mono font-bold text-amber-500 num-nowrap">NT$ 9,500</span>
+                      <button class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 富邦好事多 -->
+          <div class="rounded-2xl p-4 border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3.5">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2.5">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h4 class="font-bold text-fluid-h3 truncate">富邦好事多</h4>
+                    <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap bg-rose-500/15 text-rose-500">25號待扣繳</span>
+                  </div>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap text-fluid-sub">
+                    <span class="text-slate-400 truncate"><i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i>扣款戶：富邦證券</span>
+                    <span onclick="switchTab('bills')" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-400 font-semibold num-nowrap cursor-pointer">
+                      <i class="fa-solid fa-bolt"></i>含代繳台電+中華電信 ($7,950)
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                  <button class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 mb-3">
+                <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                  <span class="text-fluid-sub font-semibold text-slate-500">本期帳單總額 (NT$)</span>
+                  <span class="text-fluid-sub font-mono text-emerald-400">2025 月均：NT$ 10,202</span>
+                </div>
+                <input type="number" value="12175" class="w-full px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-extrabold text-fluid-h2 text-rose-500">
+                <div class="flex items-center justify-between gap-2 text-fluid-sub text-slate-400 mt-2 flex-wrap">
+                  <span class="num-nowrap">>5K 大額：NT$ 6,850</span>
+                  <span class="num-nowrap">一般瑣碎：NT$ 5,325</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <span class="text-fluid-sub font-bold text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-fire text-amber-500 mr-1"></i>單筆 > $5,000 大額項目
+                  </span>
+                  <button class="text-fluid-sub font-bold text-indigo-500 num-nowrap">+ 記一筆大額</button>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-fluid-sub">
+                    <span class="font-medium truncate">台電夏季雙月電費 (信用卡代繳)</span>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="font-mono font-bold text-amber-500 num-nowrap">NT$ 6,850</span>
+                      <button class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =========================================================================
+         TAB 3: 信用卡分期管理 (100% 原始介面)
+         ========================================================================= -->
+    <section id="tab-installments" class="tab-section hidden space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
+        <div class="fluid-card bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md">
+          <span class="text-fluid-sub font-bold bg-white/20 px-2.5 py-0.5 rounded-full num-nowrap">每月分期現金支出</span>
+          <div class="text-fluid-hero font-extrabold font-mono num-nowrap mt-2 mb-1">NT$ 9,100 / 月</div>
+          <p class="text-fluid-sub text-amber-100">各張信用卡分期每月應繳加總</p>
+        </div>
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-center">
+          <span class="text-fluid-sub text-slate-400 font-bold">分期未繳負債</span>
+          <div class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">NT$ 53,500</div>
+          <p class="text-fluid-sub text-slate-400 mt-1">負債監控，避免負債持續增加造成每月現金流壓力</p>
+        </div>
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-fluid-sub text-slate-400 font-bold">進行中分期筆數</span>
+            <div class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">2 筆</div>
+          </div>
+          <button class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3">
+            <i class="fa-solid fa-plus"></i> 新增分期項目
+          </button>
+        </div>
+      </div>
+
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <h2 class="text-fluid-h2 font-bold">各卡分期付款明細表</h2>
+          <button class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold num-nowrap transition">
+            <i class="fa-solid fa-forward-step mr-1"></i>全部推進一期 (+1 期)
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 fluid-gap">
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+                <span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-lg bg-indigo-500/15 text-indigo-400 num-nowrap truncate"><i class="fa-solid fa-credit-card mr-1"></i>富邦數位</span>
+                <span class="text-fluid-sub px-2 py-0.5 rounded-lg bg-slate-200/60 dark:bg-slate-700/60 text-slate-500 dark:text-slate-300 num-nowrap truncate"><i class="fa-solid fa-building-columns mr-1"></i>富邦證券</span>
+              </div>
+              <button class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-fluid-sub font-bold num-nowrap">+1 期</button>
+            </div>
+            <h4 class="font-bold text-fluid-h3">MacBook Pro M4 12期零利率</h4>
+            <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">每期吃掉現金流</span>
+                <span class="font-extrabold font-mono text-amber-500 text-fluid-body num-nowrap">NT$ 6,100 /月</span>
+              </div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-slate-400">剩餘未繳尾款</span>
+                <span class="font-extrabold font-mono text-fluid-body num-nowrap">NT$ 36,600</span>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-fluid-sub font-bold mb-1">
+                <span>進度：已繳 6 / 12 期</span>
+                <span class="text-indigo-400">還剩 6 期</span>
+              </div>
+              <div class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full" style="width: 50%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 4: 固定費用 (100% 原始介面 + ✨ NEW v4 雙軌分流：銀行直扣 vs 信用卡代繳時間軸)
+         ========================================================================= -->
+    <section id="tab-bills" class="tab-section hidden space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 fluid-gap">
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">軌道 A：銀行直扣總額 (計入銀行水位)</span>
+          <div class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">NT$ 30,500</div>
+          <span class="text-fluid-sub text-slate-400 mt-2">10 號房租 $18,000 + 28 號車貸 $12,500</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">軌道 B：信用卡代繳 (不重複扣銀行活存)</span>
+          <div class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 7,950</div>
+          <span class="text-fluid-sub text-slate-400 mt-2">已併入富邦好事多卡費，享延後 35 天扣款</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-fluid-sub text-slate-400 font-bold">雙軌防呆機制</span>
+            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span class="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-500 font-bold text-fluid-sub">✅ 自動排除重複扣現</span>
+            </div>
+          </div>
+          <button class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3 transition">
+            <i class="fa-solid fa-arrows-rotate"></i> 雙月帳單一鍵切換免繳/待繳
+          </button>
+        </div>
+      </div>
+
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold">✨ NEW v4 · 雙軌固定費卡片</span>
+              <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-emerald-500"></i>
+                <span>固定生活費用 (水電、瓦斯、網路、房租、車貸)</span>
+              </h2>
+            </div>
+            <p class="text-fluid-sub text-slate-400">區分「銀行帳戶自動扣款」與「信用卡代繳延後付款」，解決水電刷卡後在銀行活存被重複扣算的痛點</p>
+          </div>
+          <button class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+            <i class="fa-solid fa-plus"></i> 新增週期費用
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 fluid-gap">
+          <!-- 房租 (銀行直扣) -->
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3.5">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="min-w-0">
+                  <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 num-nowrap">🏦 銀行直扣 · 每月 10 號</span>
+                  <h4 class="font-bold text-fluid-h3 mt-1 truncate">房租自動轉帳</h4>
+                  <p class="text-fluid-sub text-slate-400 mt-0.5 truncate"><i class="fa-solid fa-building-columns mr-1"></i>扣款銀行：玉山薪轉</p>
+                </div>
+              </div>
+              <div class="mt-2">
+                <label class="text-fluid-sub text-slate-400 block mb-1">NT$ 當期金額</label>
+                <input type="number" value="18000" class="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 font-mono font-extrabold text-fluid-h2">
+              </div>
+            </div>
+            <div class="text-fluid-sub text-emerald-400 font-semibold">✓ 直接計入「玉山薪轉」扣款水位防線</div>
+          </div>
+
+          <!-- 車貸 (銀行直扣) -->
+          <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3.5">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="min-w-0">
+                  <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-400 num-nowrap">🏦 銀行直扣 · 每月 28 號</span>
+                  <h4 class="font-bold text-fluid-h3 mt-1 truncate">汽車貸款自動扣繳</h4>
+                  <p class="text-fluid-sub text-slate-400 mt-0.5 truncate"><i class="fa-solid fa-building-columns mr-1"></i>扣款銀行：玉山薪轉</p>
+                </div>
+              </div>
+              <div class="mt-2">
+                <label class="text-fluid-sub text-slate-400 block mb-1">NT$ 當期金額</label>
+                <input type="number" value="12500" class="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 font-mono font-extrabold text-fluid-h2">
+              </div>
+            </div>
+            <div class="text-fluid-sub text-emerald-400 font-semibold">✓ 直接計入「玉山薪轉」扣款水位防線</div>
+          </div>
+
+          <!-- 台電電費 (信用卡代繳 + 延後時間軸) -->
+          <div class="p-4 rounded-2xl border border-indigo-500/40 bg-indigo-500/5 flex flex-col justify-between space-y-3.5">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="min-w-0">
+                  <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 num-nowrap">💳 信用卡代繳 · 雙月帳單</span>
+                  <h4 class="font-bold text-fluid-h3 mt-1 truncate">台電電費 (夏季冷氣異常高)</h4>
+                  <p class="text-fluid-sub text-indigo-300 mt-0.5 truncate"><i class="fa-solid fa-credit-card mr-1"></i>代繳卡：富邦好事多 (扣：富邦證券)</p>
+                </div>
+              </div>
+              <div class="mt-2">
+                <label class="text-fluid-sub text-slate-400 block mb-1">NT$ 當期金額</label>
+                <input type="number" value="6850" class="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 font-mono font-extrabold text-fluid-h2 text-amber-400">
+              </div>
+            </div>
+            <!-- 延後付款時間軸提示 -->
+            <div class="p-2 rounded-xl bg-slate-900/80 text-[11px] font-mono text-indigo-200">
+              🕒 10/21 繳費截止刷卡 → 併入 11/5 結帳 → 延至 11/25 富邦證券扣款
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 5: 投資部位 (100% 原始介面)
+         ========================================================================= -->
+    <section id="tab-stocks" class="tab-section hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 fluid-gap">
+        <div class="lg:col-span-2 fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <div>
+              <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
+                <i class="fa-solid fa-scale-balanced text-indigo-500"></i>
+                <span>股票與資金監控</span>
+              </h2>
+              <p class="text-fluid-sub text-slate-400">台股慣例：<span class="text-rose-500 font-bold">紅漲 (獲利)</span> / <span class="text-emerald-500 font-bold">綠跌 (虧損)</span></p>
+            </div>
+            <span class="text-fluid-sub font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-500 num-nowrap">⚠️ 現金偏高 (57%)・目標持倉 70%</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block">總持股與現金</span>
+              <span class="text-fluid-h3 font-extrabold font-mono num-nowrap mt-1 block">NT$ 2,512,490</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block">持股總市值</span>
+              <span class="text-fluid-h3 font-extrabold font-mono text-indigo-500 num-nowrap mt-1 block">NT$ 1,073,000</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block">持股總成本</span>
+              <span class="text-fluid-h3 font-extrabold font-mono num-nowrap mt-1 block">NT$ 882,500</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <span class="text-fluid-sub text-slate-400 block">持股損益</span>
+              <span class="text-fluid-h3 font-extrabold font-mono text-rose-500 num-nowrap mt-1 block">+NT$ 190,500</span>
+            </div>
+          </div>
+        </div>
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-3">
+          <div>
+            <span class="text-fluid-sub font-bold text-slate-400">證券可用資金餘額 (玉山/中信/富邦證券)</span>
+            <span class="font-mono font-black text-amber-500 text-fluid-h2 block mt-1">NT$ 1,439,490</span>
+          </div>
+          <button class="w-full py-2.5 rounded-xl bg-indigo-600 text-white text-fluid-sub font-bold">+ 新增股票部位</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         TAB 6: 設定 (100% 原始介面)
+         ========================================================================= -->
+    <section id="tab-settings" class="tab-section hidden space-y-4">
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <h3 class="text-fluid-h2 font-bold mb-2">Excel 報表匯出 & 數據完整備份 (100% 原始設定分頁)</h3>
+        <p class="text-fluid-sub text-slate-400">保留原本 JSON 備份匯出入、CSV 匯出、單機離線版打包與三種預設財務情境切換。</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    function switchTab(tabId) {
+      ['dashboard', 'cards', 'installments', 'bills', 'stocks', 'settings'].forEach(id => {
+        const sec = document.getElementById('tab-' + id);
+        const btn = document.getElementById('tabbtn-' + id);
+        if (id === tabId) {
+          sec.classList.remove('hidden');
+          btn.className = 'tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-indigo-600 text-white shadow-sm';
+        } else {
+          sec.classList.add('hidden');
+          btn.className = 'tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
