@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketMoney</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            nord: {
+              0: '#2E3440',
+              1: '#3B4252',
+              2: '#434C5E',
+              3: '#4C566A',
+              4: '#D8DEE9',
+              5: '#E5E9F0',
+              6: '#ECEFF4',
+              7: '#8FBCBB',
+              8: '#88C0D0',
+              9: '#81A1C1',
+              10: '#5E81AC',
+              11: '#BF616A',
+              12: '#D08770',
+              13: '#EBCB8B',
+              14: '#A3BE8C',
+              15: '#B48EAD'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #242933;
+      color: #ECEFF4;
+      font-family: 'Inter', 'Noto Sans TC', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #2E3440;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #434C5E;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4C566A;
+    }
+
+    .privacy-masked .masked-amount {
+      filter: blur(5px);
+      user-select: none;
+    }
+  </style>
+</head>
+
+<body class="bg-[#242933] text-nord-6 min-h-screen flex flex-col antialiased selection:bg-nord-8 selection:text-nord-0">
+
+  <!-- ==================== 頂部全域導覽 (與 mockup_input.html 完全一致) ==================== -->
+  <header class="sticky top-0 z-50 bg-[#2E3440]/90 backdrop-blur-md border-b border-nord-2 px-4 lg:px-8 py-3 transition-colors">
+    <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-nord-10 to-nord-8 flex items-center justify-center shadow-lg shadow-nord-10/20 text-nord-0 font-bold">
+          <i class="fa-solid fa-wallet text-base"></i>
+        </div>
+        <span class="text-lg font-bold tracking-tight text-nord-6">PocketMoney</span>
+      </div>
+
+      <!-- 四大選單按鈕 -->
+      <nav class="flex items-center bg-nord-1 p-1 rounded-xl border border-nord-2/60 shadow-inner">
+        <button id="nav-tab-cards" onclick="switchMainTab('cards')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2">
+          <i class="fa-regular fa-credit-card text-nord-8 text-xs"></i>
+          <span>信用卡費</span>
+        </button>
+        <button id="nav-tab-banks" onclick="switchMainTab('banks')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-6 bg-nord-2 shadow-sm flex items-center space-x-2">
+          <i class="fa-solid fa-building-columns text-nord-9 text-xs"></i>
+          <span>銀行餘額</span>
+        </button>
+        <button id="nav-tab-bills" onclick="switchMainTab('bills')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2">
+          <i class="fa-solid fa-calendar-check text-nord-7 text-xs"></i>
+          <span>固定費用</span>
+        </button>
+        <button id="nav-tab-installments" onclick="switchMainTab('installments')"
+          class="nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2">
+          <i class="fa-solid fa-layer-group text-nord-15 text-xs"></i>
+          <span>分期付款</span>
+        </button>
+      </nav>
+
+      <!-- 右側：三種模擬資料庫切換 + 隱私遮罩 -->
+      <div class="flex items-center space-x-2">
+        <div class="flex items-center bg-nord-1 p-1 rounded-lg border border-nord-2 text-xs">
+          <button id="prof-junior" onclick="switchProfile('junior')" class="px-2.5 py-1 rounded-md font-medium transition-colors text-nord-4 hover:text-nord-6">初級大人</button>
+          <button id="prof-family" onclick="switchProfile('family')" class="px-2.5 py-1 rounded-md font-bold transition-colors bg-nord-8 text-nord-0">少子化勇者</button>
+          <button id="prof-senior" onclick="switchProfile('senior')" class="px-2.5 py-1 rounded-md font-medium transition-colors text-nord-4 hover:text-nord-6">高級大人</button>
+        </div>
+
+        <button onclick="togglePrivacyMode()" title="隱私遮罩"
+          class="w-9 h-9 rounded-lg bg-nord-1 border border-nord-2 text-nord-4 hover:text-nord-6 hover:bg-nord-2/60 flex items-center justify-center transition-colors">
+          <i id="privacy-icon" class="fa-regular fa-eye text-sm"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== 主瀏覽視圖容器 (KPI 金額 + 折線圖 + 明細清單) ==================== -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col space-y-6">
+
+    <!-- 1. 頂部三大 KPI 金額摘要卡 -->
+    <div id="kpi-cards-row" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- 由 JS 根據當前分頁動態渲染 -->
+    </div>
+
+    <!-- 2. 中間核心折線圖區塊 -->
+    <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-5 sm:p-6 shadow-xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div class="flex items-center space-x-2.5">
+          <span id="chart-dot" class="w-2.5 h-2.5 rounded-full bg-nord-9"></span>
+          <h2 id="chart-title" class="text-base font-bold text-nord-6">銀行餘額變化</h2>
+          <span id="chart-subtitle" class="text-xs text-nord-4 font-mono">2026-05 ~ 2026-10</span>
+        </div>
+        <!-- 篩選單一銀行/卡片的膠囊按鈕列 -->
+        <div id="chart-filter-pills" class="flex flex-wrap items-center gap-1.5">
+          <!-- 動態注入「全部加總」與個別帳戶/卡片切換按鈕 -->
+        </div>
+      </div>
+
+      <div class="relative w-full h-[290px] sm:h-[330px]">
+        <canvas id="main-line-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- 3. 下方各項目金額與事件/明細卡片清單 -->
+    <div id="detail-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- 由 JS 根據當前分頁動態渲染 -->
+    </div>
+
+  </main>
+
+  <script>
+    /* =========================================================================
+       1. 內建三組 Dummy 資料庫 (與 dummy_db_*.json 同步，亦支援 fetch 讀取)
+       ========================================================================= */
+    const FALLBACK_DB = {
+      junior: null,
+      family: null,
+      senior: null
+    };
+
+    let currentProfileKey = 'family';
+    let currentMainTab = 'banks'; // 預設展示銀行餘額折線圖
+    let selectedEntityId = 'all'; // 'all' 或特定 bankId / cardId
+    let isPrivacyMasked = false;
+    let lineChartInstance = null;
+    let dbCache = {};
+
+    function formatCurrency(num) {
+      if (num === null || num === undefined) return '0';
+      return new Intl.NumberFormat('zh-TW').format(Math.round(num));
+    }
+
+    function togglePrivacyMode() {
+      isPrivacyMasked = !isPrivacyMasked;
+      document.body.classList.toggle('privacy-masked', isPrivacyMasked);
+      const icon = document.getElementById('privacy-icon');
+      icon.className = isPrivacyMasked
+        ? 'fa-regular fa-eye-slash text-sm text-nord-8'
+        : 'fa-regular fa-eye text-sm text-nord-4';
+    }
+
+    /* =========================================================================
+       2. 載入 Dummy JSON 資料庫
+       ========================================================================= */
+    async function loadProfileData(profileKey) {
+      if (dbCache[profileKey]) return dbCache[profileKey];
+      try {
+        const res = await fetch(`./dummy_db_${profileKey}.json`);
+        if (res.ok) {
+          const data = await res.json();
+          dbCache[profileKey] = data;
+          return data;
+        }
+      } catch (e) {
+        // file:// 協定下使用內建資料
+      }
+      return EMBEDDED_DUMMY_DB[profileKey];
+    }
+
+    async function switchProfile(profileKey) {
+      currentProfileKey = profileKey;
+      selectedEntityId = 'all';
+
+      ['junior', 'family', 'senior'].forEach(k => {
+        const btn = document.getElementById(`prof-${k}`);
+        if (k === profileKey) {
+          btn.className = 'px-2.5 py-1 rounded-md font-bold transition-colors bg-nord-8 text-nord-0';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-md font-medium transition-colors text-nord-4 hover:text-nord-6';
+        }
+      });
+
+      await renderView();
+    }
+
+    async function switchMainTab(tab) {
+      currentMainTab = tab;
+      selectedEntityId = 'all';
+
+      const tabs = ['cards', 'banks', 'bills', 'installments'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`nav-tab-${t}`);
+        if (t === tab) {
+          btn.className = 'nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-6 bg-nord-2 shadow-sm flex items-center space-x-2';
+        } else {
+          btn.className = 'nav-tab px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 text-nord-4 hover:text-nord-6 hover:bg-nord-2/40 flex items-center space-x-2';
+        }
+      });
+
+      await renderView();
+    }
+
+    function selectEntityFilter(id) {
+      selectedEntityId = id;
+      renderView();
+    }
+
+    /* =========================================================================
+       3. 主渲染邏輯 (依當前分頁更新 KPI、折線圖、明細列表)
+       ========================================================================= */
+    async function renderView() {
+      const db = await loadProfileData(currentProfileKey);
+      if (!db) return;
+
+      if (currentMainTab === 'banks') {
+        renderBanksView(db);
+      } else if (currentMainTab === 'cards') {
+        renderCardsView(db);
+      } else if (currentMainTab === 'bills') {
+        renderBillsView(db);
+      } else if (currentMainTab === 'installments') {
+        renderInstallmentsView(db);
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+       分頁 A：銀行餘額 (存量折線圖 + 待扣後預估結餘 + Cash Drag / 水位檢核)
+       ------------------------------------------------------------------------- */
+    function renderBanksView(db) {
+      const dates = ['2026-05-15', '2026-06-15', '2026-07-15', '2026-08-15', '2026-09-15', '2026-10-15'];
+      const labels = ['5月', '6月', '7月', '8月', '9月', '10月'];
+
+      // 最新月份 (10月) 統計
+      const latestSnaps = db.bankSnapshots.filter(s => s.year === 2026 && s.month === 10);
+      const totalBalance = latestSnaps.reduce((sum, s) => sum + s.balance, 0);
+      const totalPending = latestSnaps.reduce((sum, s) => sum + s.pendingBills + s.pendingCards, 0);
+      const totalProjected = latestSnaps.reduce((sum, s) => sum + s.projectedBalance, 0);
+
+      // 1. 渲染 KPI
+      document.getElementById('kpi-cards-row').innerHTML = `
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">銀行總餘額 (10月存量)</span>
+            <span class="text-2xl font-bold font-mono text-nord-14 masked-amount">NT$ ${formatCurrency(totalBalance)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-14/15 text-nord-14 flex items-center justify-center">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">月底前待扣總額 (卡費+直扣)</span>
+            <span class="text-2xl font-bold font-mono text-nord-11 masked-amount">-NT$ ${formatCurrency(totalPending)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-11/15 text-nord-11 flex items-center justify-center">
+            <i class="fa-solid fa-arrow-trend-down"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">扣後預估總結餘</span>
+            <span class="text-2xl font-bold font-mono text-nord-8 masked-amount">NT$ ${formatCurrency(totalProjected)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-8/15 text-nord-8 flex items-center justify-center">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+        </div>
+      `;
+
+      // 2. 篩選膠囊
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-9';
+      document.getElementById('chart-title').innerText = '銀行餘額變化';
+      document.getElementById('chart-subtitle').innerText = '2026年 5月 ~ 10月';
+
+      const pillsHtml = [
+        `<button onclick="selectEntityFilter('all')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === 'all' ? 'bg-nord-9 text-nord-0' : 'bg-nord-0 text-nord-4 hover:text-nord-6'}">全部銀行</button>`,
+        ...db.banks.map(b => `
+          <button onclick="selectEntityFilter('${b.id}')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === b.id ? 'bg-nord-9 text-nord-0' : 'bg-nord-0 text-nord-4 hover:text-nord-6'}">${b.name}</button>
+        `)
+      ].join('');
+      document.getElementById('chart-filter-pills').innerHTML = pillsHtml;
+
+      // 3. 準備折線圖資料集
+      const palette = ['#88C0D0', '#A3BE8C', '#EBCB8B', '#B48EAD', '#D08770'];
+      let datasets = [];
+
+      if (selectedEntityId === 'all') {
+        // 總實際餘額折線 + 扣後預估總結餘虛線 + 各銀行分線
+        const totalActualSeries = dates.map(d =>
+          db.bankSnapshots.filter(s => s.date === d).reduce((sum, s) => sum + s.balance, 0)
+        );
+        const totalProjectedSeries = dates.map(d =>
+          db.bankSnapshots.filter(s => s.date === d).reduce((sum, s) => sum + s.projectedBalance, 0)
+        );
+
+        datasets.push({
+          label: '全行實際總餘額',
+          data: totalActualSeries,
+          borderColor: '#88C0D0',
+          backgroundColor: 'rgba(136, 192, 208, 0.12)',
+          borderWidth: 3,
+          pointRadius: 4,
+          fill: true,
+          tension: 0.3
+        });
+
+        datasets.push({
+          label: '扣後預估總結餘',
+          data: totalProjectedSeries,
+          borderColor: '#A3BE8C',
+          borderDash: [6, 4],
+          borderWidth: 2,
+          pointRadius: 3,
+          fill: false,
+          tension: 0.3
+        });
+
+        if (db.banks.length > 1) {
+          db.banks.forEach((b, idx) => {
+            const series = dates.map(d => {
+              const snap = db.bankSnapshots.find(s => s.date === d && s.bankId === b.id);
+              return snap ? snap.balance : 0;
+            });
+            datasets.push({
+              label: b.name,
+              data: series,
+              borderColor: palette[(idx + 2) % palette.length],
+              borderWidth: 1.5,
+              pointRadius: 2.5,
+              fill: false,
+              tension: 0.3
+            });
+          });
+        }
+      } else {
+        // 單一銀行：實際餘額 + 理論滾算餘額 + 扣後預估結餘 + 最低保留水位線
+        const bank = db.banks.find(b => b.id === selectedEntityId) || db.banks[0];
+        const actualSeries = dates.map(d => {
+          const snap = db.bankSnapshots.find(s => s.date === d && s.bankId === bank.id);
+          return snap ? snap.balance : 0;
+        });
+        const theoSeries = dates.map(d => {
+          const snap = db.bankSnapshots.find(s => s.date === d && s.bankId === bank.id);
+          return snap ? snap.theoreticalBalance : 0;
+        });
+        const projSeries = dates.map(d => {
+          const snap = db.bankSnapshots.find(s => s.date === d && s.bankId === bank.id);
+          return snap ? snap.projectedBalance : 0;
+        });
+
+        datasets = [
+          {
+            label: `${bank.name} 實際餘額`,
+            data: actualSeries,
+            borderColor: '#88C0D0',
+            backgroundColor: 'rgba(136, 192, 208, 0.14)',
+            borderWidth: 3,
+            pointRadius: 5,
+            fill: true,
+            tension: 0.3
+          },
+          {
+            label: '系統自動滾算理論餘額',
+            data: theoSeries,
+            borderColor: '#EBCB8B',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: false,
+            tension: 0.3
+          },
+          {
+            label: '扣後預估結餘',
+            data: projSeries,
+            borderColor: '#A3BE8C',
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: false,
+            tension: 0.3
+          }
+        ];
+      }
+
+      drawLineChart(labels, datasets);
+
+      // 4. 下方各銀行帳戶金額、風控門檻與收支事件卡片
+      const banksToRender = selectedEntityId === 'all'
+        ? db.banks
+        : db.banks.filter(b => b.id === selectedEntityId);
+
+      document.getElementById('detail-list-container').innerHTML = banksToRender.map(bank => {
+        const snap = db.bankSnapshots.find(s => s.year === 2026 && s.month === 10 && s.bankId === bank.id) || {
+          balance: bank.balance,
+          theoreticalBalance: bank.balance,
+          pendingBills: 0,
+          pendingCards: 0,
+          projectedBalance: bank.balance,
+          events: []
+        };
+
+        // 判定水位狀態 (minReserve / cashDragWarn / cashDragAlert)
+        let statusBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-nord-14/20 text-nord-14 border border-nord-14/30">水位正常</span>`;
+        if (snap.projectedBalance < bank.minReserve) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-nord-11/20 text-nord-11 border border-nord-11/30">低於保留金 (NT$ ${formatCurrency(bank.minReserve)})</span>`;
+        } else if (snap.projectedBalance >= bank.cashDragAlert) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-nord-12/20 text-nord-12 border border-nord-12/30">閒置過高警報 (>NT$ ${formatCurrency(bank.cashDragAlert)})</span>`;
+        } else if (snap.projectedBalance >= bank.cashDragWarn) {
+          statusBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-nord-13/20 text-nord-13 border border-nord-13/30">閒置資金提醒 (>NT$ ${formatCurrency(bank.cashDragWarn)})</span>`;
+        }
+
+        const eventsHtml = (snap.events && snap.events.length > 0)
+          ? snap.events.map(ev => `
+              <div class="flex items-center justify-between text-xs py-1 px-2.5 rounded-lg bg-nord-0/60 border border-nord-2/50">
+                <span class="text-nord-4">${ev.title}</span>
+                <span class="font-mono font-semibold ${ev.amount >= 0 ? 'text-nord-14' : 'text-nord-11'} masked-amount">
+                  ${ev.amount >= 0 ? '+' : ''}NT$ ${formatCurrency(ev.amount)}
+                </span>
+              </div>
+            `).join('')
+          : `<div class="text-xs text-nord-4/60 py-1">本月無額外收支事件（與理論推估一致）</div>`;
+
+        return `
+          <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-base font-bold text-nord-6">${bank.name}</span>
+                    <span class="text-xs font-mono text-nord-4">(${bank.code})</span>
+                  </div>
+                  <span class="text-xs text-nord-4 block mt-0.5">${bank.note}</span>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <!-- 存量與待扣流量小計 -->
+              <div class="grid grid-cols-3 gap-2 bg-nord-0/60 p-3 rounded-xl border border-nord-2/60 text-xs mb-3">
+                <div>
+                  <span class="text-nord-4 block">目前餘額</span>
+                  <span class="font-mono font-bold text-sm text-nord-6 masked-amount">NT$ ${formatCurrency(snap.balance)}</span>
+                </div>
+                <div>
+                  <span class="text-nord-4 block">本月待扣</span>
+                  <span class="font-mono font-bold text-sm text-nord-11 masked-amount">-NT$ ${formatCurrency(snap.pendingBills + snap.pendingCards)}</span>
+                </div>
+                <div>
+                  <span class="text-nord-4 block">扣後預估</span>
+                  <span class="font-mono font-bold text-sm text-nord-8 masked-amount">NT$ ${formatCurrency(snap.projectedBalance)}</span>
+                </div>
+              </div>
+
+              <!-- 設定參數列 (預設薪資 / 保留零用金 / Cash Drag) -->
+              <div class="flex flex-wrap gap-2 text-[11px] text-nord-4 mb-3">
+                ${bank.defaultSalary > 0 ? `<span class="px-2 py-0.5 rounded bg-nord-0 border border-nord-2">每月 ${bank.salaryDay} 號薪資 +$${formatCurrency(bank.defaultSalary)}</span>` : ''}
+                <span class="px-2 py-0.5 rounded bg-nord-0 border border-nord-2">保留金 $${formatCurrency(bank.minReserve)}</span>
+                <span class="px-2 py-0.5 rounded bg-nord-0 border border-nord-2">閒置提醒 $${formatCurrency(bank.cashDragWarn)} / $${formatCurrency(bank.cashDragAlert)}</span>
+              </div>
+            </div>
+
+            <!-- 當期歸戶收支事件 -->
+            <div class="space-y-1.5 pt-2 border-t border-nord-2/50">
+              <span class="text-[11px] font-semibold text-nord-4 block">10月收支事件歸戶</span>
+              ${eventsHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* -------------------------------------------------------------------------
+       分頁 B：信用卡費 (1~10月帳單折線圖 + 有效月平均 + 大額消費明細)
+       ------------------------------------------------------------------------- */
+    function renderCardsView(db) {
+      const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+      const labels = months.map(m => `${m}月`);
+
+      // 計算 10 月總額、全年累計與有效月平均
+      let currentMonthTotal = 0;
+      let annualTotal = 0;
+      let bigExpenseCount = 0;
+
+      db.cards.forEach(c => {
+        c.records.forEach(r => {
+          if (r.amount !== null) annualTotal += r.amount;
+          if (r.year === 2026 && r.month === 10) {
+            currentMonthTotal += (r.amount || 0);
+            bigExpenseCount += (r.bigExpenses ? r.bigExpenses.length : 0);
+          }
+        });
+      });
+
+      const monthlyAvg = Math.round(annualTotal / 10);
+
+      // 1. KPI
+      document.getElementById('kpi-cards-row').innerHTML = `
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">10月信用卡費總計</span>
+            <span class="text-2xl font-bold font-mono text-nord-8 masked-amount">NT$ ${formatCurrency(currentMonthTotal)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-8/15 text-nord-8 flex items-center justify-center">
+            <i class="fa-regular fa-credit-card"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">年度累計刷卡總額</span>
+            <span class="text-2xl font-bold font-mono text-nord-6 masked-amount">NT$ ${formatCurrency(annualTotal)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-9/15 text-nord-9 flex items-center justify-center">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">全卡月均消費 (10月含 ${bigExpenseCount} 筆大額)</span>
+            <span class="text-2xl font-bold font-mono text-nord-13 masked-amount">NT$ ${formatCurrency(monthlyAvg)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-13/15 text-nord-13 flex items-center justify-center">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+        </div>
+      `;
+
+      // 2. 篩選膠囊
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-8';
+      document.getElementById('chart-title').innerText = '信用卡每月帳單趨勢';
+      document.getElementById('chart-subtitle').innerText = '2026年 1月 ~ 10月';
+
+      const pillsHtml = [
+        `<button onclick="selectEntityFilter('all')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === 'all' ? 'bg-nord-8 text-nord-0' : 'bg-nord-0 text-nord-4 hover:text-nord-6'}">全部信用卡</button>`,
+        ...db.cards.map(c => `
+          <button onclick="selectEntityFilter('${c.id}')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === c.id ? 'bg-nord-8 text-nord-0' : 'bg-nord-0 text-nord-4 hover:text-nord-6'}">${c.name}</button>
+        `)
+      ].join('');
+      document.getElementById('chart-filter-pills').innerHTML = pillsHtml;
+
+      // 3. 折線圖資料
+      const palette = ['#88C0D0', '#B48EAD', '#EBCB8B', '#A3BE8C', '#D08770'];
+      let datasets = [];
+
+      if (selectedEntityId === 'all') {
+        const totalSeries = months.map(m =>
+          db.cards.reduce((sum, c) => {
+            const rec = c.records.find(r => r.month === m);
+            return sum + (rec && rec.amount !== null ? rec.amount : 0);
+          }, 0)
+        );
+        datasets.push({
+          label: '每月卡費總額',
+          data: totalSeries,
+          borderColor: '#88C0D0',
+          backgroundColor: 'rgba(136, 192, 208, 0.14)',
+          borderWidth: 3,
+          pointRadius: 4,
+          fill: true,
+          tension: 0.3
+        });
+
+        if (db.cards.length > 1) {
+          db.cards.forEach((c, idx) => {
+            const series = months.map(m => {
+              const rec = c.records.find(r => r.month === m);
+              return rec ? rec.amount : null;
+            });
+            datasets.push({
+              label: c.name,
+              data: series,
+              borderColor: palette[(idx + 1) % palette.length],
+              borderWidth: 2,
+              pointRadius: 3,
+              fill: false,
+              tension: 0.3
+            });
+          });
+        }
+      } else {
+        const card = db.cards.find(c => c.id === selectedEntityId) || db.cards[0];
+        const series = months.map(m => {
+          const rec = card.records.find(r => r.month === m);
+          return rec ? rec.amount : null;
+        });
+        datasets.push({
+          label: `${card.name} 每月帳單`,
+          data: series,
+          borderColor: '#88C0D0',
+          backgroundColor: 'rgba(136, 192, 208, 0.15)',
+          borderWidth: 3,
+          pointRadius: 5,
+          fill: true,
+          tension: 0.3
+        });
+      }
+
+      drawLineChart(labels, datasets);
+
+      // 4. 下方各信用卡金額與大額消費清單
+      const cardsToRender = selectedEntityId === 'all'
+        ? db.cards
+        : db.cards.filter(c => c.id === selectedEntityId);
+
+      document.getElementById('detail-list-container').innerHTML = cardsToRender.map(card => {
+        const bank = db.banks.find(b => b.id === card.bankId);
+        const activeRecs = card.records.filter(r => r.amount !== null);
+        const cardTotal = activeRecs.reduce((s, r) => s + r.amount, 0);
+        const cardAvg = activeRecs.length > 0 ? Math.round(cardTotal / activeRecs.length) : 0;
+        const octRec = card.records.find(r => r.month === 10) || { amount: 0, bigExpenses: [] };
+
+        const bigListHtml = (octRec.bigExpenses && octRec.bigExpenses.length > 0)
+          ? octRec.bigExpenses.map(b => `
+              <div class="flex items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-nord-0/60 border border-nord-2/50">
+                <span class="text-nord-6">${b.title}</span>
+                <span class="font-mono font-semibold text-nord-13 masked-amount">NT$ ${formatCurrency(b.amount)}</span>
+              </div>
+            `).join('')
+          : `<div class="text-xs text-nord-4/60 py-1">10月無特別標註之大額消費</div>`;
+
+        return `
+          <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+            <div>
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <span class="text-base font-bold text-nord-6">${card.name}</span>
+                  <span class="text-xs text-nord-4 block mt-0.5">扣款銀行：${bank ? bank.name : card.bankId} (每月 ${card.dueDay} 號扣款 / ${card.closingDay} 號結帳)</span>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-nord-8/15 text-nord-8 border border-nord-8/30 masked-amount">
+                  10月 NT$ ${formatCurrency(octRec.amount)}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 bg-nord-0/60 p-3 rounded-xl border border-nord-2/60 text-xs">
+                <div>
+                  <span class="text-nord-4 block">年度累計</span>
+                  <span class="font-mono font-bold text-sm text-nord-6 masked-amount">NT$ ${formatCurrency(cardTotal)}</span>
+                </div>
+                <div>
+                  <span class="text-nord-4 block">有效月平均 (${activeRecs.length}個月)</span>
+                  <span class="font-mono font-bold text-sm text-nord-8 masked-amount">NT$ ${formatCurrency(cardAvg)}</span>
+                </div>
+                <div>
+                  <span class="text-nord-4 block">高額警戒線</span>
+                  <span class="font-mono font-bold text-sm text-nord-12 masked-amount">NT$ ${formatCurrency(card.highSpendWarn)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 pt-2 border-t border-nord-2/50">
+              <span class="text-[11px] font-semibold text-nord-4 block">10月大額消費明細</span>
+              ${bigListHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* -------------------------------------------------------------------------
+       分頁 C：固定費用 (1~12月銀行直扣 vs 信用卡代扣折線圖 + 費用明細)
+       ------------------------------------------------------------------------- */
+    function renderBillsView(db) {
+      const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+      const labels = months.map(m => `${m}月`);
+
+      const bankDirectSeries = months.map(m =>
+        db.recurringBills
+          .filter(b => b.paymentMethod === 'bank_direct' && b.activeMonths.includes(m))
+          .reduce((sum, b) => sum + b.defaultAmount, 0)
+      );
+      const cardAutoSeries = months.map(m =>
+        db.recurringBills
+          .filter(b => b.paymentMethod === 'card_auto' && b.activeMonths.includes(m))
+          .reduce((sum, b) => sum + b.defaultAmount, 0)
+      );
+      const totalSeries = months.map((_, i) => bankDirectSeries[i] + cardAutoSeries[i]);
+
+      const octBankDirect = bankDirectSeries[9];
+      const octCardAuto = cardAutoSeries[9];
+      const octTotal = totalSeries[9];
+
+      // 1. KPI
+      document.getElementById('kpi-cards-row').innerHTML = `
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">10月固定費用總計</span>
+            <span class="text-2xl font-bold font-mono text-nord-6 masked-amount">NT$ ${formatCurrency(octTotal)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-7/15 text-nord-7 flex items-center justify-center">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">銀行直接扣款 (計入銀行待扣)</span>
+            <span class="text-2xl font-bold font-mono text-nord-9 masked-amount">NT$ ${formatCurrency(octBankDirect)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-9/15 text-nord-9 flex items-center justify-center">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">信用卡代繳 (併入卡費不重複扣)</span>
+            <span class="text-2xl font-bold font-mono text-nord-15 masked-amount">NT$ ${formatCurrency(octCardAuto)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-15/15 text-nord-15 flex items-center justify-center">
+            <i class="fa-regular fa-credit-card"></i>
+          </div>
+        </div>
+      `;
+
+      // 2. 折線圖標題
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-7';
+      document.getElementById('chart-title').innerText = '全年固定費用扣款分布 (含單雙月變動)';
+      document.getElementById('chart-subtitle').innerText = '2026年 1月 ~ 12月';
+      document.getElementById('chart-filter-pills').innerHTML = '';
+
+      drawLineChart(labels, [
+        {
+          label: '固定費用總額',
+          data: totalSeries,
+          borderColor: '#8FBCBB',
+          backgroundColor: 'rgba(143, 188, 187, 0.14)',
+          borderWidth: 3,
+          pointRadius: 4,
+          fill: true,
+          tension: 0.25
+        },
+        {
+          label: '銀行帳戶直扣 (bank_direct)',
+          data: bankDirectSeries,
+          borderColor: '#81A1C1',
+          borderWidth: 2,
+          pointRadius: 3,
+          fill: false,
+          tension: 0.25
+        },
+        {
+          label: '信用卡代扣 (card_auto)',
+          data: cardAutoSeries,
+          borderColor: '#B48EAD',
+          borderWidth: 2,
+          pointRadius: 3,
+          fill: false,
+          tension: 0.25
+        }
+      ]);
+
+      // 3. 固定費用明細清單
+      document.getElementById('detail-list-container').innerHTML = db.recurringBills.map(bill => {
+        const isBank = bill.paymentMethod === 'bank_direct';
+        const targetObj = isBank
+          ? db.banks.find(b => b.id === bill.targetId)
+          : db.cards.find(c => c.id === bill.targetId);
+        const targetName = targetObj ? targetObj.name : bill.targetId;
+
+        return `
+          <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl ${isBank ? 'bg-nord-9/15 text-nord-9' : 'bg-nord-15/15 text-nord-15'} flex items-center justify-center">
+                <i class="${isBank ? 'fa-solid fa-building-columns' : 'fa-regular fa-credit-card'}"></i>
+              </div>
+              <div>
+                <span class="font-bold text-nord-6 block">${bill.name}</span>
+                <span class="text-xs text-nord-4">${isBank ? '銀行直扣' : '信用卡代繳'} ➔ ${targetName} (每月 ${bill.dueDay} 號)</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-base font-bold font-mono text-nord-6 block masked-amount">NT$ ${formatCurrency(bill.defaultAmount)}</span>
+              <span class="text-[11px] text-nord-4">${bill.cycle === 'monthly' ? '每月固定' : `雙月 (${bill.activeMonths.join(',')}月)`}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* -------------------------------------------------------------------------
+       分頁 D：分期付款 (全年各月分期攤提現金流折線圖 + 剩餘期數明細)
+       ------------------------------------------------------------------------- */
+    function renderInstallmentsView(db) {
+      const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+      const labels = months.map(m => `${m}月`);
+
+      // 根據 UXD 4.2 公式 3：PeriodIndex(Y, M) = (Y - startYear)*12 + (M - startMonth) + 1
+      function getInstAmountForMonth(inst, y, m) {
+        const periodIdx = (y - inst.startYear) * 12 + (m - inst.startMonth) + 1;
+        if (periodIdx === 1) return inst.firstPeriodAmount;
+        if (periodIdx > 1 && periodIdx <= inst.totalPeriods) return inst.regularPeriodAmount;
+        return 0;
+      }
+
+      const monthlyBurnSeries = months.map(m =>
+        db.installments.reduce((sum, inst) => sum + getInstAmountForMonth(inst, 2026, m), 0)
+      );
+
+      // 計算截至 2026-10 的剩餘未繳總額與進行中筆數
+      let totalRemaining = 0;
+      let octBurn = monthlyBurnSeries[9];
+      let activeCount = 0;
+
+      db.installments.forEach(inst => {
+        const currentPeriodIdx = (2026 - inst.startYear) * 12 + (10 - inst.startMonth) + 1;
+        const leftPeriods = Math.max(0, inst.totalPeriods - currentPeriodIdx);
+        if (currentPeriodIdx >= 1 && currentPeriodIdx <= inst.totalPeriods) {
+          activeCount++;
+        }
+        totalRemaining += leftPeriods * inst.regularPeriodAmount;
+      });
+
+      // 1. KPI
+      document.getElementById('kpi-cards-row').innerHTML = `
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">10月應繳分期總額</span>
+            <span class="text-2xl font-bold font-mono text-nord-15 masked-amount">NT$ ${formatCurrency(octBurn)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-15/15 text-nord-15 flex items-center justify-center">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">未來剩餘未繳尾款</span>
+            <span class="text-2xl font-bold font-mono text-nord-11 masked-amount">NT$ ${formatCurrency(totalRemaining)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-11/15 text-nord-11 flex items-center justify-center">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+        </div>
+        <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <span class="text-xs text-nord-4 block mb-1">進行中分期筆數</span>
+            <span class="text-2xl font-bold font-mono text-nord-6">${activeCount} 筆</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-8/15 text-nord-8 flex items-center justify-center">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+        </div>
+      `;
+
+      // 2. 折線圖
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-15';
+      document.getElementById('chart-title').innerText = '全年分期付款月負擔變化';
+      document.getElementById('chart-subtitle').innerText = '2026年 1月 ~ 12月';
+      document.getElementById('chart-filter-pills').innerHTML = '';
+
+      drawLineChart(labels, [
+        {
+          label: '每月分期攤提總額',
+          data: monthlyBurnSeries,
+          borderColor: '#B48EAD',
+          backgroundColor: 'rgba(180, 142, 173, 0.16)',
+          borderWidth: 3,
+          pointRadius: 4,
+          fill: true,
+          tension: 0.25
+        }
+      ]);
+
+      // 3. 分期明細卡片
+      document.getElementById('detail-list-container').innerHTML = db.installments.map(inst => {
+        const card = db.cards.find(c => c.id === inst.cardId);
+        const currentPeriodIdx = Math.min(inst.totalPeriods, Math.max(0, (2026 - inst.startYear) * 12 + (10 - inst.startMonth) + 1));
+        const leftPeriods = Math.max(0, inst.totalPeriods - currentPeriodIdx);
+        const leftAmount = leftPeriods * inst.regularPeriodAmount;
+        const pct = Math.round((currentPeriodIdx / inst.totalPeriods) * 100);
+
+        return `
+          <div class="bg-nord-1/80 border border-nord-2 rounded-2xl p-5 space-y-3">
+            <div class="flex items-start justify-between">
+              <div>
+                <span class="text-base font-bold text-nord-6 block">${inst.title}</span>
+                <span class="text-xs text-nord-4">綁定卡片：${card ? card.name : inst.cardId} (${inst.startYear}/${inst.startMonth} 起算)</span>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-nord-15/20 text-nord-15 border border-nord-15/30">
+                第 ${currentPeriodIdx} / ${inst.totalPeriods} 期
+              </span>
+            </div>
+
+            <div class="w-full bg-nord-0 rounded-full h-2 overflow-hidden">
+              <div class="bg-gradient-to-r from-nord-10 to-nord-15 h-full rounded-full" style="width: ${pct}%"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs text-nord-4 pt-1">
+              <span>每期應繳 <b class="font-mono text-nord-6 masked-amount">NT$ ${formatCurrency(inst.regularPeriodAmount)}</b></span>
+              <span>總額 <b class="font-mono text-nord-4 masked-amount">NT$ ${formatCurrency(inst.totalAmount)}</b></span>
+              <span>剩餘尾款 <b class="font-mono text-nord-11 masked-amount">NT$ ${formatCurrency(leftAmount)}</b> (${leftPeriods}期)</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* =========================================================================
+       4. Chart.js 折線圖繪製共用函式
+       ========================================================================= */
+    function drawLineChart(labels, datasets) {
+      const ctx = document.getElementById('main-line-chart').getContext('2d');
+      if (lineChartInstance) {
+        lineChartInstance.destroy();
+      }
+
+      lineChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#D8DEE9',
+                font: { family: "'Inter', 'Noto Sans TC', sans-serif", size: 12 },
+                usePointStyle: true,
+                boxWidth: 8
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(46, 52, 64, 0.95)',
+              titleColor: '#ECEFF4',
+              bodyColor: '#D8DEE9',
+              borderColor: '#4C566A',
+              borderWidth: 1,
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  const val = context.parsed.y;
+                  if (val === null || val === undefined) return `${context.dataset.label}: 未持卡`;
+                  return `${context.dataset.label}: NT$ ${formatCurrency(val)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(76, 86, 106, 0.25)' },
+              ticks: { color: '#D8DEE9', font: { family: "'JetBrains Mono', monospace", size: 11 } }
+            },
+            y: {
+              grid: { color: 'rgba(76, 86, 106, 0.25)' },
+              ticks: {
+                color: '#D8DEE9',
+                font: { family: "'JetBrains Mono', monospace", size: 11 },
+                callback: function(value) {
+                  if (value >= 10000) return `${(value / 10000).toFixed(0)}萬`;
+                  return value;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /* =========================================================================
+       5. 離線 Fallback 內嵌資料 (確保直接雙擊開啟 HTML 時不因 CORS 失敗)
+       ========================================================================= */
+    const EMBEDDED_DUMMY_DB = {
+      junior: {
+        banks: [
+          { id: "bank_taishin", code: "812", name: "台新 Richart (主力戶)", balance: 50000, defaultSalary: 42000, salaryDay: 5, minReserve: 15000, cashDragWarn: 80000, cashDragAlert: 120000, note: "日常薪轉・信用卡扣繳・證券交割" }
+        ],
+        bankSnapshots: [
+          { bankId: "bank_taishin", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 38000, balance: 35000, pendingBills: 0, pendingCards: 11800, projectedBalance: 23200, events: [{ title: "ATM 生活零用金提款", amount: -3000 }] },
+          { bankId: "bank_taishin", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 53200, balance: 58200, pendingBills: 0, pendingCards: 13300, projectedBalance: 44900, events: [{ title: "端午節禮金入帳", amount: 8000 }, { title: "ATM 提款聚餐現金", amount: -3000 }] },
+          { bankId: "bank_taishin", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 66900, balance: 57900, pendingBills: 0, pendingCards: 11100, projectedBalance: 46800, events: [{ title: "0050 定期定額扣款", amount: -6000 }, { title: "ATM 提款", amount: -3000 }] },
+          { bankId: "bank_taishin", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 76800, balance: 69300, pendingBills: 0, pendingCards: 15200, projectedBalance: 54100, events: [{ title: "0050 半年配息入帳", amount: 1500 }, { title: "0050 定期定額扣款", amount: -6000 }, { title: "ATM 提款", amount: -3000 }] },
+          { bankId: "bank_taishin", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 84100, balance: 45500, pendingBills: 0, pendingCards: 10800, projectedBalance: 34700, events: [{ title: "中秋節獎金", amount: 5000 }, { title: "0050 定期定額與逢低單筆加碼", amount: -40600 }, { title: "ATM 提款", amount: -3000 }] },
+          { bankId: "bank_taishin", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 64700, balance: 50000, pendingBills: 0, pendingCards: 12000, projectedBalance: 38000, events: [{ title: "Richart 高利活存月息", amount: 300 }, { title: "0050 定期定額扣款", amount: -6000 }, { title: "雙十連假出遊提款", amount: -9000 }] }
+        ],
+        cards: [
+          {
+            id: "card_gogo", name: "台新 @GoGo卡", bankId: "bank_taishin", closingDay: 7, dueDay: 25, highSpendWarn: 15000,
+            records: [
+              { year: 2026, month: 1, amount: null, bigExpenses: [] },
+              { year: 2026, month: 2, amount: null, bigExpenses: [] },
+              { year: 2026, month: 3, amount: 8500, bigExpenses: [] },
+              { year: 2026, month: 4, amount: 9200, bigExpenses: [] },
+              { year: 2026, month: 5, amount: 11800, bigExpenses: [] },
+              { year: 2026, month: 6, amount: 13300, bigExpenses: [{ title: "高鐵返鄉與訂房", amount: 5100 }] },
+              { year: 2026, month: 7, amount: 11100, bigExpenses: [] },
+              { year: 2026, month: 8, amount: 15200, bigExpenses: [{ title: "年度牙科自費檢查與洗牙", amount: 6000 }] },
+              { year: 2026, month: 9, amount: 10800, bigExpenses: [] },
+              { year: 2026, month: 10, amount: 12000, bigExpenses: [{ title: "UNIQLO 換季服飾添購", amount: 5600 }] }
+            ]
+          }
+        ],
+        recurringBills: [
+          { id: "bill_1", name: "套房租金與水電費", paymentMethod: "bank_direct", targetId: "bank_taishin", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 10, defaultAmount: 12000 },
+          { id: "bill_2", name: "行動電話 5G 門號", paymentMethod: "card_auto", targetId: "card_gogo", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 18, defaultAmount: 599 }
+        ],
+        installments: [
+          { id: "inst_1", title: "iPhone 16 官網 12 期零利率", cardId: "card_gogo", totalAmount: 30000, totalPeriods: 12, firstPeriodAmount: 2500, regularPeriodAmount: 2500, startYear: 2026, startMonth: 6 }
+        ]
+      },
+      family: {
+        banks: [
+          { id: "bank_ctbc_house", code: "822", name: "中信台幣 (房貸專戶)", balance: 285000, defaultSalary: 45000, salaryDay: 5, minReserve: 50000, cashDragWarn: 200000, cashDragAlert: 260000, note: "首購房貸與社區物業管理費自動扣繳" },
+          { id: "bank_cathay_life", code: "013", name: "國泰台幣 (家庭生活)", balance: 96000, defaultSalary: 78000, salaryDay: 5, minReserve: 30000, cashDragWarn: 150000, cashDragAlert: 220000, note: "薪轉・買菜・安親才藝・雙信用卡扣款" },
+          { id: "bank_fubon_sec", code: "012", name: "富邦證券 (交割與備用)", balance: 135000, defaultSalary: 0, salaryDay: null, minReserve: 50000, cashDragWarn: 250000, cashDragAlert: 400000, note: "證券交割與家庭應急預備金" }
+        ],
+        bankSnapshots: [
+          { bankId: "bank_ctbc_house", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 258000, balance: 258000, pendingBills: 38500, pendingCards: 0, projectedBalance: 219500, events: [] },
+          { bankId: "bank_cathay_life", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 88000, balance: 82000, pendingBills: 0, pendingCards: 37200, projectedBalance: 44800, events: [{ title: "母親節長輩紅包提現", amount: -6000 }] },
+          { bankId: "bank_fubon_sec", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 110000, balance: 115500, pendingBills: 0, pendingCards: 0, projectedBalance: 115500, events: [{ title: "00878 第一季配息入帳", amount: 5500 }] },
+          { bankId: "bank_ctbc_house", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 261850, balance: 261850, pendingBills: 38500, pendingCards: 0, projectedBalance: 223350, events: [] },
+          { bankId: "bank_cathay_life", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 106300, balance: 124300, pendingBills: 0, pendingCards: 41600, projectedBalance: 82700, events: [{ title: "端午節績效獎金", amount: 24000 }, { title: "家庭傳統市場買菜零用金", amount: -6000 }] },
+          { bankId: "bank_fubon_sec", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 115500, balance: 120000, pendingBills: 0, pendingCards: 0, projectedBalance: 120000, events: [{ title: "2330 台積電季配息入帳", amount: 4500 }] },
+          { bankId: "bank_ctbc_house", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 265700, balance: 265700, pendingBills: 38500, pendingCards: 0, projectedBalance: 227200, events: [] },
+          { bankId: "bank_cathay_life", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 144200, balance: 108200, pendingBills: 0, pendingCards: 47100, projectedBalance: 61100, events: [{ title: "轉出至富邦證券交割戶加碼", amount: -30000 }, { title: "家庭買菜與零用金提款", amount: -6000 }] },
+          { bankId: "bank_fubon_sec", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 120000, balance: 150000, pendingBills: 0, pendingCards: 0, projectedBalance: 150000, events: [{ title: "國泰生活戶轉入證券備用金", amount: 30000 }] },
+          { bankId: "bank_ctbc_house", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 269550, balance: 273450, pendingBills: 38500, pendingCards: 0, projectedBalance: 234950, events: [{ title: "半年活存利息與育兒補助匯入", amount: 3900 }] },
+          { bankId: "bank_cathay_life", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 122600, balance: 112600, pendingBills: 0, pendingCards: 41400, projectedBalance: 71200, events: [{ title: "父親節紅包與日常提款", amount: -10000 }] },
+          { bankId: "bank_fubon_sec", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 150000, balance: 169000, pendingBills: 0, pendingCards: 0, projectedBalance: 169000, events: [{ title: "2317 鴻海現金股利入帳", amount: 10800 }, { title: "0050 與 00878 配息入帳", amount: 8200 }] },
+          { bankId: "bank_ctbc_house", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 277300, balance: 281150, pendingBills: 38500, pendingCards: 0, projectedBalance: 242650, events: [{ title: "政府托育補助入帳", amount: 3850 }] },
+          { bankId: "bank_cathay_life", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 132700, balance: 86900, pendingBills: 0, pendingCards: 39400, projectedBalance: 47500, events: [{ title: "中秋節禮金", amount: 6000 }, { title: "幼兒園新學期註冊教材費匯款", amount: -45800 }, { title: "家庭日常提款", amount: -6000 }] },
+          { bankId: "bank_fubon_sec", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 169000, balance: 130500, pendingBills: 0, pendingCards: 0, projectedBalance: 130500, events: [{ title: "台股交割扣款 (0050 加碼)", amount: -38500 }] },
+          { bankId: "bank_ctbc_house", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 285000, balance: 285000, pendingBills: 38500, pendingCards: 0, projectedBalance: 246500, events: [] },
+          { bankId: "bank_cathay_life", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 109000, balance: 96000, pendingBills: 0, pendingCards: 39280, projectedBalance: 56720, events: [{ title: "雙十家庭露營與買菜提款", amount: -13000 }] },
+          { bankId: "bank_fubon_sec", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 130500, balance: 135000, pendingBills: 0, pendingCards: 0, projectedBalance: 135000, events: [{ title: "2330 台積電季配息入帳", amount: 4500 }] }
+        ],
+        cards: [
+          {
+            id: "card_cube", name: "國泰 CUBE 卡", bankId: "bank_cathay_life", closingDay: 7, dueDay: 25, highSpendWarn: 30000,
+            records: [
+              { year: 2026, month: 1, amount: 22100, bigExpenses: [] },
+              { year: 2026, month: 2, amount: 34500, bigExpenses: [{ title: "除夕圍爐年菜與伴手禮", amount: 12800 }] },
+              { year: 2026, month: 3, amount: 21800, bigExpenses: [] },
+              { year: 2026, month: 4, amount: 26400, bigExpenses: [] },
+              { year: 2026, month: 5, amount: 24800, bigExpenses: [] },
+              { year: 2026, month: 6, amount: 27200, bigExpenses: [{ title: "Costco 家庭補給採買", amount: 6900 }] },
+              { year: 2026, month: 7, amount: 29500, bigExpenses: [{ title: "宜蘭親子飯店兩泊四食", amount: 11200 }] },
+              { year: 2026, month: 8, amount: 26100, bigExpenses: [] },
+              { year: 2026, month: 9, amount: 24900, bigExpenses: [] },
+              { year: 2026, month: 10, amount: 25480, bigExpenses: [{ title: "Costco 家庭日常與尿布批發", amount: 7650 }, { title: "全家週末外出與餐廳聚餐", amount: 5200 }] }
+            ]
+          },
+          {
+            id: "card_fubon_j", name: "富邦 J 卡", bankId: "bank_cathay_life", closingDay: 9, dueDay: 27, highSpendWarn: 20000,
+            records: [
+              { year: 2026, month: 1, amount: 9800, bigExpenses: [] },
+              { year: 2026, month: 2, amount: 11500, bigExpenses: [] },
+              { year: 2026, month: 3, amount: 8900, bigExpenses: [] },
+              { year: 2026, month: 4, amount: 10200, bigExpenses: [] },
+              { year: 2026, month: 5, amount: 12400, bigExpenses: [{ title: "自用小客車牌照稅", amount: 7120 }] },
+              { year: 2026, month: 6, amount: 14400, bigExpenses: [] },
+              { year: 2026, month: 7, amount: 17600, bigExpenses: [{ title: "汽車燃料使用費", amount: 4800 }] },
+              { year: 2026, month: 8, amount: 15300, bigExpenses: [] },
+              { year: 2026, month: 9, amount: 14500, bigExpenses: [] },
+              { year: 2026, month: 10, amount: 13800, bigExpenses: [{ title: "家庭房車 5 萬公里大保養", amount: 6800 }] }
+            ]
+          }
+        ],
+        recurringBills: [
+          { id: "bill_5", name: "首購房屋貸款 (本息攤還)", paymentMethod: "bank_direct", targetId: "bank_ctbc_house", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 28, defaultAmount: 38500 },
+          { id: "bill_6", name: "幼兒園托育與才藝安親費", paymentMethod: "bank_direct", targetId: "bank_cathay_life", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 10, defaultAmount: 16500 },
+          { id: "bill_7", name: "社區大樓管理費", paymentMethod: "bank_direct", targetId: "bank_ctbc_house", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 10, defaultAmount: 2650 },
+          { id: "bill_8", name: "台電電費 (家庭雙月繳)", paymentMethod: "card_auto", targetId: "card_cube", cycle: "bimonthly", activeMonths: [2,4,6,8,10,12], dueDay: 20, defaultAmount: 3420 },
+          { id: "bill_9", name: "自來水與天然氣瓦斯", paymentMethod: "card_auto", targetId: "card_cube", cycle: "bimonthly", activeMonths: [1,3,5,7,9,11], dueDay: 20, defaultAmount: 1150 },
+          { id: "bill_10", name: "家用光纖寬頻 500M", paymentMethod: "card_auto", targetId: "card_fubon_j", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 15, defaultAmount: 899 }
+        ],
+        installments: [
+          { id: "inst_2", title: "Panasonic 洗脫烘滾筒洗衣機", cardId: "card_cube", totalAmount: 54000, totalPeriods: 12, firstPeriodAmount: 4500, regularPeriodAmount: 4500, startYear: 2026, startMonth: 4 },
+          { id: "inst_3", title: "歐洲進口 ISOFIX 成長型汽座", cardId: "card_fubon_j", totalAmount: 18000, totalPeriods: 6, firstPeriodAmount: 3000, regularPeriodAmount: 3000, startYear: 2026, startMonth: 7 }
+        ]
+      },
+      senior: {
+        banks: [
+          { id: "bank_cathay_vip", code: "013", name: "國泰世華 (尊爵VIP財管)", balance: 1880000, defaultSalary: 260000, salaryDay: 5, minReserve: 300000, cashDragWarn: 1200000, cashDragAlert: 1600000, note: "高階分紅主力戶・頂級卡自動扣款" },
+          { id: "bank_megabank_usd", code: "017", name: "兆豐國際 (美金定存專戶)", balance: 1520000, defaultSalary: 0, salaryDay: null, minReserve: 500000, cashDragWarn: 1800000, cashDragAlert: 2500000, note: "等值新台幣・海外資產與美元高利定存" },
+          { id: "bank_fubon_prime", code: "012", name: "富邦證券 (台美股交易戶)", balance: 1250000, defaultSalary: 0, salaryDay: null, minReserve: 300000, cashDragWarn: 1000000, cashDragAlert: 1500000, note: "證券主力交割戶・待命現金池" },
+          { id: "bank_ctbc_estate", code: "822", name: "中信銀行 (物業與置產專戶)", balance: 680000, defaultSalary: 95000, salaryDay: 5, minReserve: 150000, cashDragWarn: 800000, cashDragAlert: 1200000, note: "不動產租金收益流入與豪宅房貸扣繳" },
+          { id: "bank_esun_priv", code: "808", name: "玉山銀行 (私人應急備用)", balance: 350000, defaultSalary: 0, salaryDay: null, minReserve: 300000, cashDragWarn: 600000, cashDragAlert: 900000, note: "家族應急流動金" }
+        ],
+        bankSnapshots: [
+          { bankId: "bank_cathay_vip", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 1620000, balance: 1410000, pendingBills: 0, pendingCards: 128000, projectedBalance: 1282000, events: [{ title: "綜合所得稅結算申報繳納", amount: -210000 }] },
+          { bankId: "bank_megabank_usd", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 1460000, balance: 1472000, pendingBills: 0, pendingCards: 0, projectedBalance: 1472000, events: [{ title: "美元高利定存月息入帳", amount: 12000 }] },
+          { bankId: "bank_fubon_prime", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 980000, balance: 980000, pendingBills: 0, pendingCards: 21800, projectedBalance: 958200, events: [] },
+          { bankId: "bank_ctbc_estate", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 698000, balance: 632000, pendingBills: 72000, pendingCards: 0, projectedBalance: 560000, events: [{ title: "豪宅與收租物業房屋稅繳納", amount: -66000 }] },
+          { bankId: "bank_esun_priv", date: "2026-05-15", year: 2026, month: 5, day: 15, theoreticalBalance: 350000, balance: 350000, pendingBills: 0, pendingCards: 0, projectedBalance: 350000, events: [] },
+          { bankId: "bank_cathay_vip", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 1485000, balance: 1835000, pendingBills: 0, pendingCards: 136000, projectedBalance: 1699000, events: [{ title: "上半年營運績效分紅獎金", amount: 380000 }, { title: "端午節禮盒與現金支出", amount: -30000 }] },
+          { bankId: "bank_megabank_usd", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 1472000, balance: 1484000, pendingBills: 0, pendingCards: 0, projectedBalance: 1484000, events: [{ title: "美元高利定存月息入帳", amount: 12000 }] },
+          { bankId: "bank_fubon_prime", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 958200, balance: 1009700, pendingBills: 0, pendingCards: 26400, projectedBalance: 983300, events: [{ title: "2330 台積電 5 張季配息", amount: 22500 }, { title: "00687B 國泰美債 30 張季配息", amount: 29000 }] },
+          { bankId: "bank_ctbc_estate", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 646200, balance: 646200, pendingBills: 80600, pendingCards: 0, projectedBalance: 565600, events: [] },
+          { bankId: "bank_esun_priv", date: "2026-06-15", year: 2026, month: 6, day: 15, theoreticalBalance: 350000, balance: 350000, pendingBills: 0, pendingCards: 0, projectedBalance: 350000, events: [] },
+          { bankId: "bank_cathay_vip", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 1902000, balance: 1602000, pendingBills: 0, pendingCards: 143000, projectedBalance: 1459000, events: [{ title: "匯入富邦證券交割戶加碼美債", amount: -300000 }] },
+          { bankId: "bank_megabank_usd", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 1484000, balance: 1496000, pendingBills: 0, pendingCards: 0, projectedBalance: 1496000, events: [{ title: "美元高利定存月息入帳", amount: 12000 }] },
+          { bankId: "bank_fubon_prime", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 983300, balance: 1239300, pendingBills: 0, pendingCards: 25100, projectedBalance: 1214200, events: [{ title: "由國泰 VIP 財管戶轉入待命金", amount: 300000 }, { title: "2454 聯發科 2 張現金股利", amount: 56000 }, { title: "00687B 美債 ETF 逢低加碼交割", amount: -100000 }] },
+          { bankId: "bank_ctbc_estate", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 651800, balance: 651800, pendingBills: 72000, pendingCards: 0, projectedBalance: 579800, events: [] },
+          { bankId: "bank_esun_priv", date: "2026-07-15", year: 2026, month: 7, day: 15, theoreticalBalance: 350000, balance: 350000, pendingBills: 0, pendingCards: 0, projectedBalance: 350000, events: [] },
+          { bankId: "bank_cathay_vip", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 1662000, balance: 1742000, pendingBills: 0, pendingCards: 135000, projectedBalance: 1607000, events: [{ title: "海外專案顧問分紅", amount: 110000 }, { title: "父親節家族宴客與紅包提現", amount: -30000 }] },
+          { bankId: "bank_megabank_usd", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 1496000, balance: 1508000, pendingBills: 0, pendingCards: 0, projectedBalance: 1508000, events: [{ title: "美元高利定存月息入帳", amount: 12000 }] },
+          { bankId: "bank_fubon_prime", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 1214200, balance: 1325200, pendingBills: 0, pendingCards: 28900, projectedBalance: 1296300, events: [{ title: "2317 鴻海 5 張現金股利", amount: 27000 }, { title: "0050 元大台灣50 15 張配息", amount: 84000 }] },
+          { bankId: "bank_ctbc_estate", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 666000, balance: 666000, pendingBills: 80600, pendingCards: 0, projectedBalance: 585400, events: [] },
+          { bankId: "bank_esun_priv", date: "2026-08-15", year: 2026, month: 8, day: 15, theoreticalBalance: 350000, balance: 350000, pendingBills: 0, pendingCards: 0, projectedBalance: 350000, events: [] },
+          { bankId: "bank_cathay_vip", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 1810000, balance: 1825000, pendingBills: 0, pendingCards: 130000, projectedBalance: 1695000, events: [{ title: "VIP 尊爵活存優利計息", amount: 15000 }] },
+          { bankId: "bank_megabank_usd", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 1508000, balance: 1508000, pendingBills: 0, pendingCards: 0, projectedBalance: 1508000, events: [] },
+          { bankId: "bank_fubon_prime", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 1296300, balance: 1225300, pendingBills: 0, pendingCards: 22200, projectedBalance: 1203100, events: [{ title: "00687B 美債第三季配息", amount: 29000 }, { title: "0050 大盤回檔加碼交割款", amount: -100000 }] },
+          { bankId: "bank_ctbc_estate", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 671600, balance: 671600, pendingBills: 72000, pendingCards: 0, projectedBalance: 599600, events: [] },
+          { bankId: "bank_esun_priv", date: "2026-09-15", year: 2026, month: 9, day: 15, theoreticalBalance: 350000, balance: 350000, pendingBills: 0, pendingCards: 0, projectedBalance: 350000, events: [] },
+          { bankId: "bank_cathay_vip", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 1898000, balance: 1880000, pendingBills: 0, pendingCards: 137600, projectedBalance: 1742400, events: [{ title: "高爾夫球敘與私人聚會提現", amount: -18000 }] },
+          { bankId: "bank_megabank_usd", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 1508000, balance: 1520000, pendingBills: 0, pendingCards: 0, projectedBalance: 1520000, events: [{ title: "美元優利定存到期配息", amount: 12000 }] },
+          { bankId: "bank_fubon_prime", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 1203100, balance: 1250000, pendingBills: 0, pendingCards: 23500, projectedBalance: 1226500, events: [{ title: "2330 台積電 5 張季配息", amount: 22500 }, { title: "大戶交割專戶專案利息結算", amount: 24400 }] },
+          { bankId: "bank_ctbc_estate", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 685800, balance: 680000, pendingBills: 80600, pendingCards: 0, projectedBalance: 599400, events: [{ title: "出租物業冷氣保養修繕匯款", amount: -5800 }] },
+          { bankId: "bank_esun_priv", date: "2026-10-15", year: 2026, month: 10, day: 15, theoreticalBalance: 350000, balance: 350000, pendingBills: 0, pendingCards: 0, projectedBalance: 350000, events: [] }
+        ],
+        cards: [
+          {
+            id: "card_ae_centurion", name: "美國運通簽帳白金", bankId: "bank_cathay_vip", closingDay: 8, dueDay: 26, highSpendWarn: 100000,
+            records: [
+              { year: 2026, month: 1, amount: 78000, bigExpenses: [] },
+              { year: 2026, month: 2, amount: 92000, bigExpenses: [] },
+              { year: 2026, month: 3, amount: 81500, bigExpenses: [] },
+              { year: 2026, month: 4, amount: 76000, bigExpenses: [] },
+              { year: 2026, month: 5, amount: 83000, bigExpenses: [] },
+              { year: 2026, month: 6, amount: 88000, bigExpenses: [] },
+              { year: 2026, month: 7, amount: 91000, bigExpenses: [] },
+              { year: 2026, month: 8, amount: 84500, bigExpenses: [] },
+              { year: 2026, month: 9, amount: 79800, bigExpenses: [] },
+              { year: 2026, month: 10, amount: 86400, bigExpenses: [{ title: "米其林三星家族餐敘招待", amount: 18500 }, { title: "高爾夫俱樂部年度會籍費", amount: 36000 }] }
+            ]
+          },
+          {
+            id: "card_cathay_world", name: "國泰世華世界卡", bankId: "bank_cathay_vip", closingDay: 10, dueDay: 28, highSpendWarn: 60000,
+            records: [
+              { year: 2026, month: 1, amount: 42000, bigExpenses: [] },
+              { year: 2026, month: 2, amount: 46500, bigExpenses: [] },
+              { year: 2026, month: 3, amount: 39800, bigExpenses: [] },
+              { year: 2026, month: 4, amount: 44200, bigExpenses: [] },
+              { year: 2026, month: 5, amount: 45000, bigExpenses: [] },
+              { year: 2026, month: 6, amount: 48000, bigExpenses: [] },
+              { year: 2026, month: 7, amount: 52000, bigExpenses: [] },
+              { year: 2026, month: 8, amount: 50500, bigExpenses: [] },
+              { year: 2026, month: 9, amount: 50200, bigExpenses: [] },
+              { year: 2026, month: 10, amount: 51200, bigExpenses: [{ title: "長榮航空全家歐洲商務艙機票", amount: 43500 }] }
+            ]
+          },
+          {
+            id: "card_fubon_imperial", name: "富邦尊御商務卡", bankId: "bank_fubon_prime", closingDay: 6, dueDay: 24, highSpendWarn: 40000,
+            records: [
+              { year: 2026, month: 1, amount: 19500, bigExpenses: [] },
+              { year: 2026, month: 2, amount: 21000, bigExpenses: [] },
+              { year: 2026, month: 3, amount: 24500, bigExpenses: [] },
+              { year: 2026, month: 4, amount: 22800, bigExpenses: [] },
+              { year: 2026, month: 5, amount: 21800, bigExpenses: [] },
+              { year: 2026, month: 6, amount: 26400, bigExpenses: [] },
+              { year: 2026, month: 7, amount: 25100, bigExpenses: [] },
+              { year: 2026, month: 8, amount: 28900, bigExpenses: [] },
+              { year: 2026, month: 9, amount: 22200, bigExpenses: [] },
+              { year: 2026, month: 10, amount: 23500, bigExpenses: [{ title: "Apple 旗艦工作站硬體採購", amount: 19800 }] }
+            ]
+          }
+        ],
+        recurringBills: [
+          { id: "bill_11", name: "豪宅置產與二胎購屋貸款", paymentMethod: "bank_direct", targetId: "bank_ctbc_estate", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 28, defaultAmount: 72000 },
+          { id: "bill_12", name: "國際雙語實驗學校教育基金", paymentMethod: "bank_direct", targetId: "bank_cathay_vip", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 10, defaultAmount: 35000 },
+          { id: "bill_13", name: "私人高額長照與重大傷病儲蓄險", paymentMethod: "card_auto", targetId: "card_cathay_world", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 15, defaultAmount: 22000 },
+          { id: "bill_14", name: "百坪社區尊榮物業管理費", paymentMethod: "bank_direct", targetId: "bank_ctbc_estate", cycle: "monthly", activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], dueDay: 10, defaultAmount: 8800 },
+          { id: "bill_15", name: "全棟地暖空調與雙月電費", paymentMethod: "bank_direct", targetId: "bank_ctbc_estate", cycle: "bimonthly", activeMonths: [2,4,6,8,10,12], dueDay: 20, defaultAmount: 8600 }
+        ],
+        installments: [
+          { id: "inst_4", title: "Porsche Macan 綠能尊榮分期", cardId: "card_ae_centurion", totalAmount: 600000, totalPeriods: 24, firstPeriodAmount: 25000, regularPeriodAmount: 25000, startYear: 2026, startMonth: 1 },
+          { id: "inst_5", title: "Devialet 旗艦家庭劇院音響", cardId: "card_fubon_imperial", totalAmount: 180000, totalPeriods: 12, firstPeriodAmount: 15000, regularPeriodAmount: 15000, startYear: 2026, startMonth: 3 }
+        ]
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderView();
+    });
+  </script>
+
+</body>
+</html>
+
