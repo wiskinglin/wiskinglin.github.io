@@ -8,11 +8,6 @@
 
 ---
 
-> - **文件定位**：整合專案演進過程中的探索提案（[`PocketMoneyObjects.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/achieved/PocketMoneyObjects.md)、[`SUB_DATABASE_STOCK_FLOW_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/achieved/SUB_DATABASE_STOCK_FLOW_PROPOSAL.md)、[`TIMELINE_DATA_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/achieved/TIMELINE_DATA_PROPOSAL.md)、[`analysis.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/achieved/analysis.md)）與產品訪談決策。
-> - **核心目的**：在不更動現行規格書 [`SDD.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SDD.md) 的前提下，透過逐一流程與 UI 深度訪談，定義新一代的**核心業務流程、UI 視圖規格與資料模型（Schema）**，作為開發與設計的單一事實來源（Single Source of Truth）。
-
----
-
 ## 第零章：文件與 UI 實作鐵律（Zero-Slop UI & Documentation Rules）
 
 為防止文件中的架構解釋或開發備註滲透至最終產品介面，所有 AI Agent 與開發者在撰寫規格、製作 Mockup 或實作 HTML 時，必須嚴格遵守以下規範：
