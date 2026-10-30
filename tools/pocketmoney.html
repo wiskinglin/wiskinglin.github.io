@@ -254,57 +254,6 @@
       background: #81A1C1;
       color: #ECEFF4;
     }
-    /* ================= 新手引導 Spotlight & Modal 樣式 ================= */
-    .spotlight-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 150;
-      pointer-events: auto;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease;
-    }
-    .spotlight-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-    .spotlight-tooltip {
-      position: fixed;
-      z-index: 160;
-      width: 380px;
-      max-width: calc(100vw - 1.5rem);
-      max-height: calc(100vh - 120px);
-      overflow-y: auto;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(10px);
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      pointer-events: auto;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
-    }
-    .spotlight-tooltip.active {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-    @media (max-width: 640px) {
-      .spotlight-tooltip {
-        width: auto;
-        left: 12px;
-        right: 12px;
-        max-width: none;
-        max-height: 48vh;
-      }
-    }
-    #confettiCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 200;
-    }
   </style>
 </head>
 
@@ -399,12 +348,6 @@
             <i class="fa-solid fa-file-excel"></i>
             <span class="hidden sm:inline">Excel</span>
           </button>
-          <!-- 新手導覽 -->
-          <button onclick="openWelcomeModal()" title="新手使用引導"
-            class="h-8 px-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 text-fluid-sub font-bold flex items-center gap-1 num-nowrap transition border border-indigo-200/60 dark:border-indigo-800/60">
-            <i class="fa-solid fa-compass"></i>
-            <span class="hidden sm:inline">新手導覽</span>
-          </button>
         </div>
       </div>
 
@@ -452,53 +395,6 @@
 
     <!-- ==================== TAB 1: 總覽與 30 號扣款檢核 ==================== -->
     <section id="tab-dashboard" class="tab-section space-y-4">
-
-      <!-- ==================== 新手微型檢查清單 (Setup Checklist) ==================== -->
-      <div id="setupChecklist" class="fluid-card bg-slate-50 dark:bg-slate-900/90 border border-emerald-500/30 shadow-sm transition-all duration-300">
-        <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/60 dark:border-slate-800">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-4 rounded-full bg-emerald-500"></span>
-            <span class="text-fluid-h3 font-extrabold flex items-center gap-1.5">
-              <span>🎯 新手初始設定任務</span>
-            </span>
-            <span id="checklistCounter" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">0 / 4 完成 (0%)</span>
-          </div>
-          <button onclick="hideChecklist()" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">暫時收合</button>
-        </div>
-        <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mb-3">
-          <div id="checklistProgress" class="bg-gradient-to-r from-emerald-500 to-indigo-500 h-full transition-all duration-500" style="width: 0%;"></div>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-fluid-sub">
-          <div id="taskItemBank" onclick="switchTab('cards')" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 flex items-start gap-2 cursor-pointer hover:border-indigo-400 transition">
-            <div id="taskCheckboxBank" class="w-4 h-4 rounded mt-0.5 border border-slate-400 flex items-center justify-center text-[10px] shrink-0"></div>
-            <div>
-              <div class="font-bold">1. 設定主力銀行與存款</div>
-              <div class="text-[11px] text-slate-400">建立第 1 道活存防線</div>
-            </div>
-          </div>
-          <div id="taskItemCard" onclick="switchTab('cards')" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 flex items-start gap-2 cursor-pointer hover:border-indigo-400 transition">
-            <div id="taskCheckboxCard" class="w-4 h-4 rounded mt-0.5 border border-slate-400 flex items-center justify-center text-[10px] shrink-0"></div>
-            <div>
-              <div class="font-bold">2. 登記本期信用卡與扣繳戶</div>
-              <div class="text-[11px] text-slate-400">輸入帳單啟動自動對齊</div>
-            </div>
-          </div>
-          <div id="taskItemDebit" onclick="scrollToElement('autoDebitAuditCard')" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 flex items-start gap-2 cursor-pointer hover:border-indigo-400 transition">
-            <div id="taskCheckboxDebit" class="w-4 h-4 rounded mt-0.5 border border-slate-400 flex items-center justify-center text-[10px] shrink-0"></div>
-            <div>
-              <div class="font-bold">3. 檢查扣款安全亮綠燈</div>
-              <div class="text-[11px] text-slate-400">確認扣款後結餘 >= 0</div>
-            </div>
-          </div>
-          <div id="taskItemPin" onclick="triggerPinLockOrSetup()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 flex items-start gap-2 cursor-pointer hover:border-indigo-400 transition">
-            <div id="taskCheckboxPin" class="w-4 h-4 rounded mt-0.5 border border-slate-400 flex items-center justify-center text-[10px] shrink-0"></div>
-            <div>
-              <div class="font-bold">4.（選填）設定 PIN 碼</div>
-              <div class="text-[11px] text-slate-400">保護本機資產隱私</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 三大核心指標卡片 (在手機為單欄垂直堆疊，平板/電腦為三欄等比例排列) -->
       <div id="overviewKpiContainer" class="grid grid-cols-1 md:grid-cols-3 fluid-gap">
@@ -557,7 +453,7 @@
                   id="kpiCashRatioText">0%</strong></span>
             </div>
             <div class="w-full h-2.5 bg-amber-500/20 rounded-full overflow-hidden flex">
-              <div id="kpiStockRatioBar" class="bg-indigo-500 h-full transition-all duration-500" style="width: 70%">
+              <div id="kpiStockRatioBar" class="bg-indigo-500 h-full transition-all duration-500" style="width: 0%">
               </div>
             </div>
             <p id="kpiStockHint" class="text-fluid-sub text-slate-400 mt-1.5 truncate">點擊調整波段持股與交割現金池</p>
@@ -899,7 +795,7 @@
             <div class="w-full h-3.5 bg-amber-500/20 rounded-full overflow-hidden flex p-0.5">
               <div id="stockTabBar"
                 class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full rounded-full transition-all duration-500"
-                style="width: 70%"></div>
+                style="width: 0%"></div>
             </div>
           </div>
         </div>
@@ -1006,100 +902,17 @@
               <i class="fa-solid fa-box-archive"></i>
               <span>下載單機版 HTML 檔案及數據備份</span>
             </button>
-            <button onclick="openPinSetupModal()"
-              class="w-full py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
-              <i class="fa-solid fa-key text-amber-500"></i>
-              <span id="pinSetupBtnText">設定 PIN 碼</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 人生財務示範情境 (三族群示範資料) -->
-        <div
-          class="col-span-1 md:col-span-2 fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2.5">
-              <div
-                class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-lg">
-                <i class="fa-solid fa-users-viewfinder"></i>
-              </div>
-              <div>
-                <h3 class="text-fluid-h2 font-bold">財務示範情境</h3>
-                <p class="text-fluid-sub text-slate-500 dark:text-slate-400">不同年齡與家庭結構的真實財務模型，點擊即可切換體驗財務模擬情境：
-                </p>
-              </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="openPinSetupModal()"
+                class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+                <i class="fa-solid fa-key text-amber-500"></i>
+                <span id="pinSetupBtnText">設定 PIN 碼</span>
+              </button>
+              <button onclick="resetToDemoData()"
+                class="py-2.5 px-3 rounded-xl bg-rose-500/10 text-rose-500 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
+                <i class="fa-solid fa-trash-can"></i> 清空重置歸零
+              </button>
             </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-            <!-- 1. 初級大人 -->
-            <button onclick="loadPresetScenario('junior')"
-              class="p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/15 text-left transition flex flex-col justify-between gap-3 group active:scale-[0.99]">
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <span
-                    class="font-bold text-fluid-h3 text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                    <i class="fa-solid fa-seedling"></i>初級大人
-                  </span>
-                  <span
-                    class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 num-nowrap">單一銀行卡 (新手預設)</span>
-                </div>
-                <p class="text-fluid-sub text-slate-500 dark:text-slate-400 leading-relaxed">
-                  單一銀行帳戶 + 單一信用卡 + 簡易數字模擬，剛開始使用最直覺清晰
-                </p>
-              </div>
-              <div
-                class="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1 pt-1 border-t border-emerald-500/10">
-                <i class="fa-solid fa-arrow-rotate-right group-hover:rotate-180 transition duration-300"></i>
-                載入新手預設模型
-              </div>
-            </button>
-
-            <!-- 2. 少子化勇者 -->
-            <button onclick="loadPresetScenario('family')"
-              class="p-4 rounded-2xl border border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/15 text-left transition flex flex-col justify-between gap-3 group active:scale-[0.99]">
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="font-bold text-fluid-h3 text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-                    <i class="fa-solid fa-shield-halved"></i>少子化勇者
-                  </span>
-                  <span
-                    class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 num-nowrap">30-40
-                    家庭</span>
-                </div>
-                <p class="text-fluid-sub text-slate-500 dark:text-slate-400 leading-relaxed">
-                  3 個銀行帳戶 + 2 張信用卡 + 房貸育兒 + 3-5 個權值股 (約 50 萬存款)
-                </p>
-              </div>
-              <div
-                class="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 flex items-center gap-1 pt-1 border-t border-indigo-500/10">
-                <i class="fa-solid fa-arrow-rotate-right group-hover:rotate-180 transition duration-300"></i>
-                載入家庭用戶模型
-              </div>
-            </button>
-
-            <!-- 3. 高級大人 -->
-            <button onclick="loadPresetScenario('senior')"
-              class="p-4 rounded-2xl border border-purple-500/30 bg-purple-500/5 hover:bg-purple-500/15 text-left transition flex flex-col justify-between gap-3 group active:scale-[0.99]">
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="font-bold text-fluid-h3 text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                    <i class="fa-solid fa-crown"></i>高級大人
-                  </span>
-                  <span
-                    class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-600 dark:text-purple-400 num-nowrap">40+
-                    高資產</span>
-                </div>
-                <p class="text-fluid-sub text-slate-500 dark:text-slate-400 leading-relaxed">
-                  5 大多幣專戶 + 頂級商務卡 + 豪宅置產貸款 + 千萬級股債配置
-                </p>
-              </div>
-              <div
-                class="text-[11px] font-mono text-purple-600 dark:text-purple-400 flex items-center gap-1 pt-1 border-t border-purple-500/10">
-                <i class="fa-solid fa-arrow-rotate-right group-hover:rotate-180 transition duration-300"></i>
-                載入高資產模型
-              </div>
-            </button>
           </div>
         </div>
 
@@ -1141,178 +954,19 @@
       'pocketflow_tw_finance_v1'
     ];
 
-    const PRESET_SCENARIOS = {
-      junior: {
-        label: '初級大人',
-        badge: '新手預設模型',
-        desc: '單一銀行帳戶 + 單一信用卡 + 簡易數字模擬，剛開始使用最直覺清晰',
-        state: {
-          settings: {
-            privacyMode: false,
-            pinCode: '',
-            stockMinHoldRatio: 70,
-            securitiesBankIds: ['bank_taishin']
-          },
-          banks: [
-            { id: 'bank_taishin', name: '台新 Richart (主力戶)', balance: 50000, note: '日常薪轉·信用卡扣繳·證券交割' }
-          ],
-          cards: [
-            {
-              id: 'card_gogo',
-              name: '台新 @GoGo卡 (台新)',
-              bankId: 'bank_taishin',
-              statementTotal: 12000,
-              paid: false,
-              bigExpenses: [
-                { id: 'exp_1', title: 'UNIQLO 換季服飾添購', amount: 5600 }
-              ]
-            }
-          ],
-          installments: [
-            { id: 'inst_1', title: 'iPhone 16 官網 12 期零利率', cardId: 'card_gogo', cardName: '台新 @GoGo卡 (台新)', totalAmount: 30000, monthlyAmount: 2500, totalPeriods: 12, paidPeriods: 4 }
-          ],
-          bills: [
-            { id: 'bill_1', name: '套房租金與水電費', cycle: '每月固定', amount: 12000, bankId: 'bank_taishin', status: 'unpaid' },
-            { id: 'bill_2', name: '行動電話 5G 門號', cycle: '每月固定', amount: 599, bankId: 'bank_taishin', status: 'unpaid' }
-          ],
-          stocks: [
-            { id: 'stk_1', code: '0050', name: '元大台灣50', shares: 1000, avgCost: 160, currentPrice: 190, note: '市值型 ETF 定期定額' }
-          ]
-        }
+    const DEFAULT_STATE = {
+      settings: {
+        privacyMode: false,
+        pinCode: '',
+        stockMinHoldRatio: 70,
+        securitiesBankIds: []
       },
-      family: {
-        label: '少子化勇者',
-        badge: '30-40 家庭用戶',
-        desc: '3 個銀行專戶 + 2 張家庭信用卡 + 房貸育兒開銷 + 權值股 (約 50 萬存款)',
-        state: {
-          settings: {
-            privacyMode: false,
-            pinCode: '',
-            stockMinHoldRatio: 70,
-            securitiesBankIds: ['bank_fubon_sec']
-          },
-          banks: [
-            { id: 'bank_ctbc_house', name: '中信台幣 (房貸專戶)', balance: 285000, note: '首購房貸與公用事業自動扣繳' },
-            { id: 'bank_cathay_life', name: '國泰台幣 (家庭生活)', balance: 96000, note: '薪轉·買菜·安親才藝·信用卡扣款' },
-            { id: 'bank_fubon_sec', name: '富邦證券 (交割與備用)', balance: 135000, note: '證券交割與家庭應急預備金' }
-          ],
-          cards: [
-            {
-              id: 'card_cube',
-              name: '國泰 CUBE 卡 (國泰)',
-              bankId: 'bank_cathay_life',
-              statementTotal: 25480,
-              paid: false,
-              bigExpenses: [
-                { id: 'exp_2', title: 'Costco 家庭日常與尿布批發', amount: 7650 },
-                { id: 'exp_3', title: '全家週末外出與餐廳聚餐', amount: 5200 }
-              ]
-            },
-            {
-              id: 'card_fubon_j',
-              name: '富邦 J 卡 (國泰)',
-              bankId: 'bank_cathay_life',
-              statementTotal: 13800,
-              paid: false,
-              bigExpenses: [
-                { id: 'exp_4', title: '家庭房車 5 萬公里大保養', amount: 6800 }
-              ]
-            }
-          ],
-          installments: [
-            { id: 'inst_2', title: 'Panasonic 洗脫烘滾筒洗衣機', cardId: 'card_cube', cardName: '國泰 CUBE 卡 (國泰)', totalAmount: 54000, monthlyAmount: 4500, totalPeriods: 12, paidPeriods: 7 },
-            { id: 'inst_3', title: '歐洲進口 ISOFIX 成長型汽座', cardId: 'card_fubon_j', cardName: '富邦 J 卡 (國泰)', totalAmount: 18000, monthlyAmount: 3000, totalPeriods: 6, paidPeriods: 4 }
-          ],
-          bills: [
-            { id: 'bill_5', name: '首購房屋貸款 (本息攤還)', cycle: '每月固定', amount: 38500, bankId: 'bank_ctbc_house', status: 'unpaid' },
-            { id: 'bill_6', name: '幼兒園托育與才藝安親費', cycle: '每月固定', amount: 16500, bankId: 'bank_cathay_life', status: 'unpaid' },
-            { id: 'bill_7', name: '社區大樓管理費', cycle: '每月固定', amount: 2650, bankId: 'bank_ctbc_house', status: 'unpaid' },
-            { id: 'bill_8', name: '台電電費 (家庭雙月繳)', cycle: '雙月帳單', amount: 3420, bankId: 'bank_ctbc_house', status: 'unpaid' },
-            { id: 'bill_9', name: '自來水與天然氣瓦斯', cycle: '雙月帳單', amount: 1150, bankId: 'bank_ctbc_house', status: 'skipped' },
-            { id: 'bill_10', name: '家用光纖寬頻 500M', cycle: '每月固定', amount: 899, bankId: 'bank_cathay_life', status: 'paid' }
-          ],
-          stocks: [
-            { id: 'stk_2', code: '2330', name: '台積電', shares: 1000, avgCost: 780, currentPrice: 1035, note: '核心護國神山底倉' },
-            { id: 'stk_3', code: '2317', name: '鴻海', shares: 2000, avgCost: 155, currentPrice: 205, note: 'AI 伺服器成長波段' },
-            { id: 'stk_4', code: '0050', name: '元大台灣50', shares: 2000, avgCost: 165, currentPrice: 192, note: '長期市值型指數化配置' },
-            { id: 'stk_5', code: '00878', name: '國泰永續高股息', shares: 10000, avgCost: 20.8, currentPrice: 22.8, note: '季配息補貼家庭水電管理費' }
-          ]
-        }
-      },
-      senior: {
-        label: '高級大人',
-        badge: '40+ 高資產族群',
-        desc: '5 大多幣專戶 + 頂級商務卡 + 豪宅置產與千萬級股債資產配置',
-        state: {
-          settings: {
-            privacyMode: false,
-            pinCode: '',
-            stockMinHoldRatio: 70,
-            securitiesBankIds: ['bank_fubon_prime', 'bank_cathay_vip']
-          },
-          banks: [
-            { id: 'bank_cathay_vip', name: '國泰世華 (尊爵VIP財管)', balance: 1880000, note: '高階分紅主力戶·頂級卡自動扣款' },
-            { id: 'bank_megabank_usd', name: '兆豐國際 (美金定存專戶)', balance: 1520000, note: '等值新台幣·海外資產與美元高利定存' },
-            { id: 'bank_fubon_prime', name: '富邦證券 (台美股交易戶)', balance: 1250000, note: '證券主力交割戶·待命現金池' },
-            { id: 'bank_ctbc_estate', name: '中信銀行 (物業與置產專戶)', balance: 680000, note: '不動產租金收益流入與房屋貸款扣繳' },
-            { id: 'bank_esun_priv', name: '玉山銀行 (私人應急備用)', balance: 350000, note: '家族應急流動金' }
-          ],
-          cards: [
-            {
-              id: 'card_ae_centurion',
-              name: '美國運通簽帳白金 (國泰VIP)',
-              bankId: 'bank_cathay_vip',
-              statementTotal: 86400,
-              paid: false,
-              bigExpenses: [
-                { id: 'exp_5', title: '米其林三星家族餐敘招待', amount: 18500 },
-                { id: 'exp_6', title: '高爾夫俱樂部年度會籍費', amount: 36000 }
-              ]
-            },
-            {
-              id: 'card_cathay_world',
-              name: '國泰世華世界卡 (國泰VIP)',
-              bankId: 'bank_cathay_vip',
-              statementTotal: 51200,
-              paid: false,
-              bigExpenses: [
-                { id: 'exp_7', title: '長榮航空全家歐洲商務艙機票', amount: 43500 }
-              ]
-            },
-            {
-              id: 'card_fubon_imperial',
-              name: '富邦尊御商務卡 (富邦證券)',
-              bankId: 'bank_fubon_prime',
-              statementTotal: 23500,
-              paid: false,
-              bigExpenses: [
-                { id: 'exp_8', title: 'Apple 旗艦工作站硬體採購', amount: 19800 }
-              ]
-            }
-          ],
-          installments: [
-            { id: 'inst_4', title: 'Porsche Macan 綠能尊榮分期', cardId: 'card_ae_centurion', cardName: '美國運通簽帳白金 (國泰VIP)', totalAmount: 600000, monthlyAmount: 25000, totalPeriods: 24, paidPeriods: 10 },
-            { id: 'inst_5', title: 'Devialet 旗艦家庭劇院音響', cardId: 'card_fubon_imperial', cardName: '富邦尊御商務卡 (富邦證券)', totalAmount: 180000, monthlyAmount: 15000, totalPeriods: 12, paidPeriods: 8 }
-          ],
-          bills: [
-            { id: 'bill_11', name: '豪宅置產與二胎購屋貸款', cycle: '每月固定', amount: 72000, bankId: 'bank_ctbc_estate', status: 'unpaid' },
-            { id: 'bill_12', name: '國際雙語實驗學校教育基金', cycle: '每月固定', amount: 35000, bankId: 'bank_cathay_vip', status: 'unpaid' },
-            { id: 'bill_13', name: '私人高額長照與重大傷病儲蓄險', cycle: '每月固定', amount: 22000, bankId: 'bank_cathay_vip', status: 'unpaid' },
-            { id: 'bill_14', name: '百坪社區尊榮物業管理費', cycle: '每月固定', amount: 8800, bankId: 'bank_ctbc_estate', status: 'unpaid' },
-            { id: 'bill_15', name: '全棟地暖空調與雙月電費', cycle: '雙月帳單', amount: 8600, bankId: 'bank_ctbc_estate', status: 'unpaid' }
-          ],
-          stocks: [
-            { id: 'stk_6', code: '2330', name: '台積電', shares: 5000, avgCost: 620, currentPrice: 1035, note: '長期持有 5 張，護國核心' },
-            { id: 'stk_7', code: '2454', name: '聯發科', shares: 2000, avgCost: 980, currentPrice: 1300, note: 'IC 設計龍頭，持有 2 張' },
-            { id: 'stk_8', code: '0050', name: '元大台灣50', shares: 15000, avgCost: 150, currentPrice: 192, note: '大盤底倉 15 張' },
-            { id: 'stk_9', code: '2317', name: '鴻海', shares: 5000, avgCost: 145, currentPrice: 205, note: '伺服器龍頭波段持有 5 張' },
-            { id: 'stk_10', code: '00687B', name: '國泰20年美債', shares: 30000, avgCost: 31.5, currentPrice: 32.2, note: '30 張防禦型債券配置，穩定收息' }
-          ]
-        }
-      }
+      banks: [],
+      cards: [],
+      installments: [],
+      bills: [],
+      stocks: []
     };
-
-    const DEFAULT_STATE = PRESET_SCENARIOS.junior.state;
 
     let state = loadState();
     let currentTab = 'dashboard';
@@ -1475,7 +1129,7 @@
         .reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
       const stockTotalPool = stockMarketValue + stockCashPool;
       const stockHoldRatio = stockTotalPool > 0 ? Math.round((stockMarketValue / stockTotalPool) * 100) : 0;
-      const stockCashRatio = 100 - stockHoldRatio;
+      const stockCashRatio = stockTotalPool > 0 ? (100 - stockHoldRatio) : 0;
 
       const unpaidCardTotal = state.cards.filter(c => !c.paid).reduce((sum, c) => sum + (Number(c.statementTotal) || 0), 0);
       const unpaidBillsTotal = state.bills.filter(b => b.status === 'unpaid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
@@ -1589,8 +1243,6 @@
         pinBtnText.innerText = state.settings.pinCode ? '修改/關閉 PIN 碼' : '設定 4 位數 PIN 碼';
       }
 
-      // 動態更新新手檢查清單進度
-      evaluateOnboardingChecklist(m);
     }
 
     function renderDashboard(m) {
@@ -1614,7 +1266,11 @@
 
       const alertBadge = document.getElementById('kpiStockAlertBadge');
       const stockHint = document.getElementById('kpiStockHint');
-      if (m.stockHoldRatio < state.settings.stockMinHoldRatio) {
+      if (m.stockTotalPool === 0) {
+        alertBadge.className = 'text-fluid-sub font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 num-nowrap';
+        alertBadge.innerHTML = '尚未建立部位';
+        stockHint.innerText = '點擊新增股票部位或綁定交割銀行';
+      } else if (m.stockHoldRatio < state.settings.stockMinHoldRatio) {
         alertBadge.className = 'text-fluid-sub font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 num-nowrap';
         alertBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1"></i>現金偏高 (${m.stockCashRatio}%)`;
         stockHint.innerHTML = `<span class="text-amber-500 font-semibold">持倉低於目標 ${state.settings.stockMinHoldRatio}%，待命現金 ${fmtMoney(m.stockCashPool)}</span>`;
@@ -1631,7 +1287,10 @@
 
       const shortfallBanks = m.bankCheckups.filter(b => b.isShortfall);
       const summaryBadge = document.getElementById('bankShortfallSummaryBadge');
-      if (shortfallBanks.length > 0) {
+      if (m.bankCheckups.length === 0) {
+        summaryBadge.className = 'text-fluid-sub px-2.5 py-0.5 rounded-full font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 num-nowrap';
+        summaryBadge.innerHTML = '尚未設定銀行帳戶';
+      } else if (shortfallBanks.length > 0) {
         const totalShortfall = shortfallBanks.reduce((s, b) => s + Math.abs(b.afterBalance), 0);
         summaryBadge.className = 'text-fluid-sub px-2.5 py-0.5 rounded-full font-bold bg-rose-500 text-white num-nowrap';
         summaryBadge.innerHTML = `<i class="fa-solid fa-bell mr-1"></i>${shortfallBanks.length} 銀行不足・共差 ${fmtMoney(totalShortfall)}`;
@@ -1641,6 +1300,9 @@
       }
 
       const bankGrid = document.getElementById('bankCheckupGrid');
+      if (m.bankCheckups.length === 0) {
+        bankGrid.innerHTML = `<div class="col-span-full text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未新增銀行帳戶，請至「<button onclick="switchTab('cards')" class="text-indigo-500 font-bold hover:underline">銀行餘額與信用卡費</button>」新增帳戶，或至「<button onclick="switchTab('settings')" class="text-indigo-500 font-bold hover:underline">設定</button>」匯入 v3 備份檔</div>`;
+      } else {
       bankGrid.innerHTML = m.bankCheckups.map(b => {
         const borderClass = b.isShortfall
           ? 'border-2 border-rose-500/80 bg-rose-500/5 dark:bg-rose-950/20'
@@ -1700,6 +1362,7 @@
           </div>
         `;
       }).join('');
+      }
 
       const allBigExpenses = [];
       state.cards.forEach(c => {
@@ -1767,7 +1430,10 @@
 
       const statusEl = document.getElementById('bankShortfallStatusKPI');
       const actionEl = document.getElementById('bankShortfallActionKPI');
-      if (m.shortfallBankCount > 0) {
+      if (m.bankCheckups.length === 0) {
+        statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-slate-400">尚未設定銀行帳戶</span>`;
+        actionEl.innerHTML = `<span class="text-fluid-sub text-slate-400">請先新增銀行帳戶與信用卡帳單</span>`;
+      } else if (m.shortfallBankCount > 0) {
         statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-rose-500">⚠️ ${m.shortfallBankCount} 個帳戶餘額不足</span>`;
         actionEl.innerHTML = `<span class="text-fluid-sub text-rose-400 font-semibold">請儘速調度轉帳補足，避免 30 號扣款失敗</span>`;
       } else {
@@ -1776,7 +1442,9 @@
       }
 
       const bankListEl = document.getElementById('bankAccountsList');
-      bankListEl.innerHTML = m.bankCheckups.map((b, idx) => `
+      bankListEl.innerHTML = m.bankCheckups.length === 0
+        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何銀行帳戶，請點擊右上角「+ 新增銀行帳戶」開始建立</div>`
+        : m.bankCheckups.map((b, idx) => `
         <div id="${idx === 0 ? 'firstBankCard' : 'bankCard_' + b.id}" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
@@ -1811,7 +1479,9 @@
       `).join('');
 
       const cardListEl = document.getElementById('creditCardsList');
-      cardListEl.innerHTML = state.cards.map((c, idx) => {
+      cardListEl.innerHTML = state.cards.length === 0
+        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何信用卡，請點擊右上角「+ 新增信用卡」開始建立</div>`
+        : state.cards.map((c, idx) => {
         const bank = state.banks.find(b => b.id === c.bankId);
         const bankName = bank ? bank.name : '未綁定銀行';
         const bigSum = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
@@ -1984,7 +1654,9 @@
       `;
 
       const container = document.getElementById('recurringBillsList');
-      container.innerHTML = state.bills.map(b => {
+      container.innerHTML = state.bills.length === 0
+        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何固定費用，請點擊右上角「+ 新增週期費用」開始建立</div>`
+        : state.bills.map(b => {
         const bank = state.banks.find(x => x.id === b.bankId);
         const bankName = bank ? bank.name : '未指定銀行';
 
@@ -2068,7 +1740,10 @@
       document.getElementById('stockMinRatioVal').innerText = `${state.settings.stockMinHoldRatio}%`;
 
       const badge = document.getElementById('stockTabAlertBadge');
-      if (m.stockHoldRatio < state.settings.stockMinHoldRatio) {
+      if (m.stockTotalPool === 0) {
+        badge.className = 'text-fluid-sub font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 num-nowrap';
+        badge.innerHTML = '尚未新增持股或綁定資金帳戶';
+      } else if (m.stockHoldRatio < state.settings.stockMinHoldRatio) {
         badge.className = 'text-fluid-sub font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-500 num-nowrap';
         badge.innerHTML = `⚠️ 現金偏高 (${m.stockCashRatio}%)・目標持倉 ${state.settings.stockMinHoldRatio}%`;
       } else {
@@ -2077,7 +1752,9 @@
       }
 
       const listEl = document.getElementById('stocksListContainer');
-      listEl.innerHTML = state.stocks.map(s => {
+      listEl.innerHTML = state.stocks.length === 0
+        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何股票部位，請點擊「+ 新增股票部位」開始建立</div>`
+        : state.stocks.map(s => {
         const marketVal = s.shares * s.currentPrice;
         const costVal = s.shares * s.avgCost;
         const pnl = marketVal - costVal;
@@ -2417,7 +2094,7 @@
 
     function openCardModal(cardId = null) {
       const existing = state.cards.find(c => c.id === cardId) || { name: '', bankId: (state.banks[0]?.id || ''), statementTotal: 0 };
-      const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
+      const bankOptions = state.banks.length === 0 ? '<option value="">請先新增銀行帳戶</option>' : state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
       openAppModal(cardId ? '編輯信用卡' : '新增信用卡', `
         <div class="space-y-3 text-fluid-body">
           <div>
@@ -2477,7 +2154,7 @@
           </div>
           <div>
             <label class="font-bold block mb-1">單筆金額 (NT$)</label>
-            <input id="mBigAmount" type="number" value="5000" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            <input id="mBigAmount" type="number" value="0" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
           </div>
           <label class="flex items-center gap-2 pt-1 cursor-pointer text-fluid-sub">
             <input type="checkbox" id="mBigAddTotal" class="accent-indigo-600">
@@ -2510,7 +2187,7 @@
 
     function openInstallmentModal(instId = null) {
       const existing = state.installments.find(x => x.id === instId) || {
-        title: '', cardId: (state.cards[0]?.id || ''), cardName: (state.cards[0]?.name || ''), totalAmount: 30000, monthlyAmount: 2500, totalPeriods: 12, paidPeriods: 1
+        title: '', cardId: (state.cards[0]?.id || ''), cardName: (state.cards[0]?.name || ''), totalAmount: 0, monthlyAmount: 0, totalPeriods: 12, paidPeriods: 0
       };
       const activeCardId = existing.cardId || state.cards.find(c => c.name === existing.cardName)?.id || state.cards[0]?.id || '';
       const cardOptions = state.cards.length === 0
@@ -2587,8 +2264,8 @@
     }
 
     function openBillModal(billId = null) {
-      const existing = state.bills.find(b => b.id === billId) || { name: '', cycle: '每月固定', amount: 1000, bankId: (state.banks[0]?.id || ''), status: 'unpaid' };
-      const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
+      const existing = state.bills.find(b => b.id === billId) || { name: '', cycle: '每月固定', amount: 0, bankId: (state.banks[0]?.id || ''), status: 'unpaid' };
+      const bankOptions = state.banks.length === 0 ? '<option value="">請先新增銀行帳戶</option>' : state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
       openAppModal(billId ? '編輯週期固定費用' : '新增週期固定費用', `
         <div class="space-y-3 text-fluid-body">
           <div>
@@ -2639,7 +2316,7 @@
     }
 
     function openStockModal(stkId = null) {
-      const existing = state.stocks.find(s => s.id === stkId) || { code: '', name: '', shares: 1000, avgCost: 100, currentPrice: 110, note: '' };
+      const existing = state.stocks.find(s => s.id === stkId) || { code: '', name: '', shares: 0, avgCost: 0, currentPrice: 0, note: '' };
       openAppModal(stkId ? '編輯台股波段持倉' : '新增台股波段部位', `
         <div class="space-y-3 text-fluid-body">
           <div class="grid grid-cols-2 gap-2">
@@ -2858,538 +2535,13 @@
       showToast('已下載單機版 HTML！');
     }
 
-    function loadPresetScenario(scenarioKey) {
-      const scenario = PRESET_SCENARIOS[scenarioKey];
-      if (!scenario) return;
-      const confirmMsg = `確定要載入「${scenario.label}」示範情境資料嗎？\n\n【${scenario.label}】${scenario.badge}\n${scenario.desc}\n\n⚠️ 注意：這將會取代您目前的本機暫存資料。`;
-      if (confirm(confirmMsg)) {
-        state = JSON.parse(JSON.stringify(scenario.state));
+    function resetToDemoData() {
+      if (confirm('確定要將所有資料清空並重置為 0 嗎？\n\n⚠️ 注意：這將會清除您目前的本機暫存資料（建議先匯出備份檔）。')) {
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         saveState();
         renderAll();
-        showToast(`已載入「${scenario.label}」示範資料！`, 'info');
+        showToast('已將所有資料清空重置為 0', 'info');
       }
-    }
-
-    function resetToDemoData() {
-      loadPresetScenario('junior');
-    }
-
-    /* ==========================================================================
-       新手引導體驗控制核心 (Onboarding Engine)
-       ========================================================================== */
-    const ONBOARDING_STEPS = [
-      {
-        tab: 'cards',
-        targetId: 'firstBankCard',
-        fallbackTargetId: 'bankAccountsList',
-        type: 'bank_input',
-        title: '🏦 步驟 1 / 4：設置你的主力銀行存款',
-        body: '實踐「抓大放小」第一步：填入主要扣款銀行的活存餘額。告別瑣碎記帳疲勞，每月只需 3 分鐘確認一次存款水位！',
-        btnText: '下一步：設置信用卡 ➔'
-      },
-      {
-        tab: 'cards',
-        targetId: 'firstCreditCard',
-        fallbackTargetId: 'creditCardsList',
-        type: 'card_input',
-        title: '💳 步驟 2 / 4：設置你的信用卡本期費用',
-        body: '打開行動銀行或查看帳單，填入本期應繳卡費總額。只需填一個總數，不需逐筆記咖啡發票！',
-        btnText: '下一步：檢查扣款防線 ➔'
-      },
-      {
-        tab: 'dashboard',
-        targetId: 'autoDebitAuditCard',
-        type: 'info',
-        title: '🛡️ 步驟 3 / 4：戶頭裡的錢，夠不夠扣卡費？',
-        body: '系統已自動將你設置的卡費與水電租金歸戶進行壓力測試：<br><br>🟢 <strong class="text-emerald-500">安全綠燈</strong>：存款充足，月底扣繳萬無一失。<br>🔴 <strong class="text-rose-500">警示紅燈</strong>：存款不足應繳時提早預警缺口，提醒你提早轉帳補錢，絕不怕被罰違約金或影響信用！',
-        btnText: '下一步：查看簡易模擬 ➔'
-      },
-      {
-        tab: 'dashboard',
-        targetId: 'overviewKpiContainer',
-        type: 'info',
-        title: '✨ 步驟 4 / 4：簡易數字模擬，算清手頭能安心花多少',
-        body: '其他功能已為你準備好<strong>簡易數字模擬</strong>（1 筆生活分期、日常租金固定開銷、0050 ETF 投資部位）。系統即刻扣除待繳，算清真正自由支配的<strong class="text-indigo-500">安全可用結餘</strong>！',
-        btnText: '完成導覽，開始體驗 🎉'
-      }
-    ];
-
-    let currentTourIndex = 0;
-
-    function handleTourBankBalanceChange(val) {
-      const num = Math.max(0, Number(val) || 0);
-      if (state.banks && state.banks[0]) {
-        state.banks[0].balance = num;
-        saveState();
-        const m = computeFinancialMetrics();
-        renderBanksAndCards(m);
-        renderDashboard(m);
-      }
-    }
-
-    function setTourBankQuick(val) {
-      const input = document.getElementById('tourBankBalanceInput');
-      if (input) input.value = val;
-      handleTourBankBalanceChange(val);
-    }
-
-    function handleTourCardTotalChange(val) {
-      const num = Math.max(0, Number(val) || 0);
-      if (state.cards && state.cards[0]) {
-        state.cards[0].statementTotal = num;
-        saveState();
-        const m = computeFinancialMetrics();
-        renderBanksAndCards(m);
-        renderDashboard(m);
-      }
-    }
-
-    function setTourCardQuick(val) {
-      const input = document.getElementById('tourCardTotalInput');
-      if (input) input.value = val;
-      handleTourCardTotalChange(val);
-    }
-
-    function openWelcomeModal() {
-      endSpotlightTour();
-      const modal = document.getElementById('welcomeModal');
-      if (!modal) return;
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      modal.firstElementChild.classList.remove('scale-95');
-      modal.firstElementChild.classList.add('scale-100');
-    }
-
-    function closeWelcomeModal() {
-      const modal = document.getElementById('welcomeModal');
-      if (!modal) return;
-      modal.classList.add('opacity-0', 'pointer-events-none');
-      modal.firstElementChild.classList.remove('scale-100');
-      modal.firstElementChild.classList.add('scale-95');
-      localStorage.setItem('PocketMoney_onboarding_completed', 'true');
-    }
-
-    function loadDemoAndClose() {
-      closeWelcomeModal();
-      loadPresetScenario('junior');
-    }
-
-    let tourTrackingRafId = null;
-
-    function getTourTargetElement(step) {
-      if (!step) return null;
-      let el = document.getElementById(step.targetId);
-      if (!el && step.fallbackTargetId) {
-        el = document.getElementById(step.fallbackTargetId);
-      }
-      return el;
-    }
-
-    function scrollTourTargetIntoView(targetEl, onComplete) {
-      const header = document.querySelector('header.sticky');
-      const headerH = header ? header.offsetHeight : 90;
-      const rect = targetEl.getBoundingClientRect();
-      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop;
-      const elementAbsoluteTop = rect.top + currentScrollY;
-
-      // 理想滾動位置：元素頂部距離 header 保持 16px 安全間隔，絕不被 header 覆蓋
-      const targetScrollY = Math.max(0, elementAbsoluteTop - headerH - 16);
-
-      window.scrollTo({
-        top: targetScrollY,
-        behavior: 'smooth'
-      });
-
-      // 滾動防抖與結束確認
-      let scrollTimer;
-      const checkScrollDone = () => {
-        clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(() => {
-          window.removeEventListener('scroll', checkScrollDone);
-          if (onComplete) onComplete();
-        }, 80);
-      };
-      window.addEventListener('scroll', checkScrollDone, { passive: true });
-      setTimeout(() => {
-        window.removeEventListener('scroll', checkScrollDone);
-        if (onComplete) onComplete();
-      }, 340);
-    }
-
-    function updateSpotlightCutout(rect) {
-      const cutout = document.getElementById('spotlightCutout');
-      if (!cutout || !rect) return;
-      const isMobile = window.innerWidth <= 640;
-      const padding = isMobile ? 8 : 12;
-
-      cutout.setAttribute('x', Math.max(0, rect.left - padding));
-      cutout.setAttribute('y', Math.max(0, rect.top - padding));
-      cutout.setAttribute('width', Math.min(window.innerWidth, rect.width + (padding * 2)));
-      cutout.setAttribute('height', rect.height + (padding * 2));
-    }
-
-    function positionTooltip(targetRect) {
-      const tooltip = document.getElementById('spotlightTooltip');
-      if (!tooltip || !targetRect) return;
-
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const header = document.querySelector('header.sticky');
-      const headerH = header ? header.offsetHeight : 90;
-      const tooltipH = tooltip.offsetHeight || 260;
-
-      // ==================== 手機端 Mobile (<= 640px) ====================
-      if (windowWidth <= 640) {
-        tooltip.style.left = '12px';
-        tooltip.style.right = '12px';
-        tooltip.style.width = 'auto';
-        tooltip.style.maxWidth = 'none';
-
-        // 依據目標在當前可視視窗中的垂直中心位置進行智慧上下避讓，絕不重疊遮擋
-        const targetCenterY = targetRect.top + (targetRect.height / 2);
-        if (targetCenterY > windowHeight * 0.48) {
-          // 目標偏螢幕下半部：氣泡置頂（緊接在 sticky header 下方 8px）
-          tooltip.style.top = `${headerH + 8}px`;
-          tooltip.style.bottom = 'auto';
-        } else {
-          // 目標偏螢幕上半部：氣泡置底（距螢幕底端 12px）
-          tooltip.style.top = 'auto';
-          tooltip.style.bottom = '12px';
-        }
-        return;
-      }
-
-      // ==================== 電腦端 PC (> 640px) ====================
-      const tooltipWidth = 380;
-      tooltip.style.right = 'auto';
-      tooltip.style.bottom = 'auto';
-      tooltip.style.width = `${tooltipWidth}px`;
-
-      // 水平方向：置中對齊目標中心，並限制在視窗可見安全邊界內
-      let left = targetRect.left + (targetRect.width / 2) - (tooltipWidth / 2);
-      if (left < 16) left = 16;
-      if (left + tooltipWidth > windowWidth - 16) left = windowWidth - tooltipWidth - 16;
-
-      // 垂直方向：計算避開頂部 header 與底部安全距離
-      const minTop = headerH + 12;
-      const maxTop = windowHeight - tooltipH - 16;
-
-      let top = 0;
-      // 1. 優先放置在目標下方
-      if (targetRect.bottom + 12 + tooltipH <= windowHeight - 16) {
-        top = targetRect.bottom + 12;
-      }
-      // 2. 下方空間不足，則放置在目標上方
-      else if (targetRect.top - 12 - tooltipH >= minTop) {
-        top = targetRect.top - 12 - tooltipH;
-      }
-      // 3. 上下都緊繃（目標高度較大）
-      else {
-        // 若右側放得下，靠右浮動
-        if (targetRect.right + 16 + tooltipWidth <= windowWidth - 16) {
-          left = targetRect.right + 16;
-          top = Math.max(minTop, Math.min(targetRect.top, maxTop));
-        } else {
-          // 否則吸附在視窗右下角安全區域
-          left = windowWidth - tooltipWidth - 20;
-          top = maxTop;
-        }
-      }
-
-      // 確保頂部與底部不超出螢幕
-      top = Math.max(minTop, Math.min(top, maxTop));
-      tooltip.style.left = `${left}px`;
-      tooltip.style.top = `${top}px`;
-    }
-
-    function syncTourSpotlight() {
-      if (!document.getElementById('spotlightOverlay').classList.contains('active')) return;
-      const step = ONBOARDING_STEPS[currentTourIndex];
-      const targetEl = getTourTargetElement(step);
-      if (!targetEl) return;
-      const rect = targetEl.getBoundingClientRect();
-      updateSpotlightCutout(rect);
-      positionTooltip(rect);
-    }
-
-    function onTourScrollOrResize() {
-      if (tourTrackingRafId) cancelAnimationFrame(tourTrackingRafId);
-      tourTrackingRafId = requestAnimationFrame(syncTourSpotlight);
-    }
-
-    function startSpotlightTour() {
-      closeWelcomeModal();
-      // 使用單一銀行與信用卡的預設模型啟動導覽
-      state = JSON.parse(JSON.stringify(PRESET_SCENARIOS.junior.state));
-      saveState();
-      renderAll();
-      currentTourIndex = 0;
-      document.getElementById('spotlightOverlay').classList.add('active');
-      document.getElementById('spotlightTooltip').classList.add('active');
-
-      window.addEventListener('scroll', onTourScrollOrResize, { passive: true });
-      window.addEventListener('resize', onTourScrollOrResize);
-
-      renderTourStep(currentTourIndex);
-    }
-
-    function endSpotlightTour() {
-      document.getElementById('spotlightOverlay').classList.remove('active');
-      document.getElementById('spotlightTooltip').classList.remove('active');
-      window.removeEventListener('scroll', onTourScrollOrResize);
-      window.removeEventListener('resize', onTourScrollOrResize);
-      localStorage.setItem('PocketMoney_onboarding_completed', 'true');
-      switchTab('dashboard');
-      renderAll();
-    }
-
-    function renderTourStep(index) {
-      const step = ONBOARDING_STEPS[index];
-      if (!step) return;
-
-      if (step.tab && currentTab !== step.tab) {
-        switchTab(step.tab);
-      }
-
-      // 給予分頁切換足夠的重繪緩衝後執行目標對齊與滾動
-      setTimeout(() => {
-        const targetEl = getTourTargetElement(step);
-        if (!targetEl) return;
-
-        // 注入 Tooltip 內容
-        document.getElementById('tourStepBadge').innerText = `Step ${index + 1} / ${ONBOARDING_STEPS.length}`;
-        document.getElementById('tourTitle').innerHTML = step.title;
-
-        let bodyHtml = `<p class="text-xs text-slate-500 dark:text-slate-400 mb-2 leading-relaxed">${step.body}</p>`;
-        if (step.type === 'bank_input') {
-          const currentBank = (state.banks && state.banks[0]) ? state.banks[0] : { balance: 50000 };
-          bodyHtml += `
-            <div class="mt-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">主力銀行目前存款 (NT$)</span>
-                <span class="text-[10px] font-mono text-indigo-500 font-semibold">可直接在此修改</span>
-              </div>
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-mono font-bold text-slate-400 text-sm">$</span>
-                <input id="tourBankBalanceInput" type="number" 
-                  value="${currentBank.balance}" 
-                  oninput="handleTourBankBalanceChange(this.value)"
-                  class="w-full pl-7 pr-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                  placeholder="50000">
-              </div>
-              <div class="flex flex-wrap gap-1.5 mt-2">
-                <button type="button" onclick="setTourBankQuick(30000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">3萬</button>
-                <button type="button" onclick="setTourBankQuick(50000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">5萬 (預設)</button>
-                <button type="button" onclick="setTourBankQuick(80000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">8萬</button>
-                <button type="button" onclick="setTourBankQuick(100000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">10萬</button>
-              </div>
-            </div>
-          `;
-        } else if (step.type === 'card_input') {
-          const currentCard = (state.cards && state.cards[0]) ? state.cards[0] : { statementTotal: 12000 };
-          bodyHtml += `
-            <div class="mt-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80">
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="text-[11px] font-bold text-slate-500 dark:text-slate-400">本期信用卡帳單總額 (NT$)</span>
-                <span class="text-[10px] font-mono text-rose-500 font-semibold">可直接在此修改</span>
-              </div>
-              <div class="relative">
-                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-mono font-bold text-slate-400 text-sm">$</span>
-                <input id="tourCardTotalInput" type="number" 
-                  value="${currentCard.statementTotal}" 
-                  oninput="handleTourCardTotalChange(this.value)"
-                  class="w-full pl-7 pr-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 text-rose-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
-                  placeholder="12000">
-              </div>
-              <div class="flex flex-wrap gap-1.5 mt-2">
-                <button type="button" onclick="setTourCardQuick(8000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">8千</button>
-                <button type="button" onclick="setTourCardQuick(12000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">1.2萬 (預設)</button>
-                <button type="button" onclick="setTourCardQuick(20000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">2萬</button>
-                <button type="button" onclick="setTourCardQuick(35000)" class="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition">3.5萬</button>
-              </div>
-            </div>
-          `;
-        }
-
-        document.getElementById('tourBody').innerHTML = bodyHtml;
-        document.getElementById('tourNextBtn').innerText = step.btnText;
-
-        const prevBtn = document.getElementById('tourPrevBtn');
-        prevBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
-
-        // 啟動精準滾動，避開頂部 header 並對齊聚光燈與氣泡
-        scrollTourTargetIntoView(targetEl, () => {
-          const rect = targetEl.getBoundingClientRect();
-          updateSpotlightCutout(rect);
-          positionTooltip(rect);
-        });
-      }, 70);
-    }
-
-    function nextTourStep() {
-      const bankInput = document.getElementById('tourBankBalanceInput');
-      if (bankInput && state.banks && state.banks[0]) {
-        state.banks[0].balance = Math.max(0, Number(bankInput.value) || 0);
-      }
-      const cardInput = document.getElementById('tourCardTotalInput');
-      if (cardInput && state.cards && state.cards[0]) {
-        state.cards[0].statementTotal = Math.max(0, Number(cardInput.value) || 0);
-      }
-      saveState();
-
-      if (currentTourIndex < ONBOARDING_STEPS.length - 1) {
-        currentTourIndex++;
-        renderTourStep(currentTourIndex);
-      } else {
-        endSpotlightTour();
-        triggerConfetti();
-        showToast('🎉 新手導覽圓滿完成！安全扣款防線建立完成。');
-      }
-    }
-
-    function prevTourStep() {
-      if (currentTourIndex > 0) {
-        currentTourIndex--;
-        renderTourStep(currentTourIndex);
-      }
-    }
-
-
-    /* ==========================================================================
-       微型檢查清單動態感應判定 (State-Driven Checklist)
-       ========================================================================== */
-    function evaluateOnboardingChecklist(m) {
-      const checklistEl = document.getElementById('setupChecklist');
-      if (!checklistEl) return;
-
-      const dismissed = localStorage.getItem('PocketMoney_checklist_dismissed') === 'true';
-      if (dismissed) {
-        checklistEl.style.display = 'none';
-        return;
-      }
-
-      // 條件 1：至少 1 個主力銀行帳戶且餘額 > 0
-      const hasBank = state.banks.length >= 1 && state.banks.some(b => Number(b.balance) > 0);
-      // 條件 2：登記 1 張本期卡費並綁定扣款戶
-      const hasCard = state.cards.length >= 1 && state.cards.some(c => c.bankId && Number(c.statementTotal) > 0);
-      // 條件 3：扣款帳戶安全無缺口 (isShortfall === 0)
-      const isDebitSafe = m && m.bankCheckups && m.bankCheckups.length > 0 && m.bankCheckups.every(b => !b.isShortfall);
-      // 條件 4：設定 PIN 碼 (選填)
-      const hasPin = Boolean(state.settings.pinCode && state.settings.pinCode.length >= 4);
-
-      const tasks = [hasBank, hasCard, isDebitSafe, hasPin];
-      const completedCount = tasks.filter(Boolean).length;
-      const percent = Math.round((completedCount / tasks.length) * 100);
-
-      const counterEl = document.getElementById('checklistCounter');
-      const progressEl = document.getElementById('checklistProgress');
-      if (counterEl) counterEl.innerText = `${completedCount} / 4 完成 (${percent}%)`;
-      if (progressEl) progressEl.style.width = `${percent}%`;
-
-      updateTaskBox('taskCheckboxBank', 'taskItemBank', hasBank);
-      updateTaskBox('taskCheckboxCard', 'taskItemCard', hasCard);
-      updateTaskBox('taskCheckboxDebit', 'taskItemDebit', isDebitSafe);
-      updateTaskBox('taskCheckboxPin', 'taskItemPin', hasPin);
-
-      // 前三項必要任務全滿且之前未慶祝過
-      if (hasBank && hasCard && isDebitSafe && !sessionStorage.getItem('PocketMoney_celebrated')) {
-        sessionStorage.setItem('PocketMoney_celebrated', 'true');
-        triggerConfetti();
-        showToast('🎉 新手設定已全數達標，安全扣款防線建立完成！');
-      }
-    }
-
-    function updateTaskBox(boxId, itemId, isDone) {
-      const box = document.getElementById(boxId);
-      const item = document.getElementById(itemId);
-      if (!box || !item) return;
-
-      if (isDone) {
-        box.innerText = '✓';
-        box.className = 'w-4 h-4 rounded mt-0.5 bg-emerald-500 border border-emerald-500 text-white flex items-center justify-center text-[10px] shrink-0 font-bold';
-        item.classList.add('border-emerald-500/40', 'bg-emerald-50/40', 'dark:bg-emerald-950/20');
-      } else {
-        box.innerText = '';
-        box.className = 'w-4 h-4 rounded mt-0.5 border border-slate-300 dark:border-slate-600 flex items-center justify-center text-[10px] shrink-0';
-        item.classList.remove('border-emerald-500/40', 'bg-emerald-50/40', 'dark:bg-emerald-950/20');
-      }
-    }
-
-    function hideChecklist() {
-      const el = document.getElementById('setupChecklist');
-      if (!el) return;
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(-10px)';
-      setTimeout(() => {
-        el.style.display = 'none';
-        localStorage.setItem('PocketMoney_checklist_dismissed', 'true');
-        showToast('檢查清單已收合，可在設定隨時重新顯示。');
-      }, 300);
-    }
-
-    function scrollToElement(id) {
-      const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    /* ==========================================================================
-       原生輕量彩帶慶祝特效 (Canvas Confetti)
-       ========================================================================== */
-    function triggerConfetti() {
-      const canvas = document.getElementById('confettiCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const particles = [];
-      const colors = ['#81A1C1', '#88C0D0', '#8FAE78', '#D4A64A', '#B48EAD', '#BF616A'];
-
-      for (let i = 0; i < 90; i++) {
-        particles.push({
-          x: canvas.width / 2,
-          y: canvas.height / 2 + 80,
-          w: Math.random() * 8 + 4,
-          h: Math.random() * 6 + 4,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          vx: (Math.random() - 0.5) * 16,
-          vy: (Math.random() - 1) * 18 - 4,
-          rotation: Math.random() * 360,
-          rotationSpeed: (Math.random() - 0.5) * 12,
-          opacity: 1
-        });
-      }
-
-      let animId;
-      function render() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        let active = false;
-
-        particles.forEach(p => {
-          p.x += p.vx;
-          p.y += p.vy;
-          p.vy += 0.45;
-          p.rotation += p.rotationSpeed;
-          p.opacity -= 0.009;
-
-          if (p.opacity > 0) {
-            active = true;
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            ctx.rotate((p.rotation * Math.PI) / 180);
-            ctx.fillStyle = p.color;
-            ctx.globalAlpha = Math.max(0, p.opacity);
-            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-            ctx.restore();
-          }
-        });
-
-        if (active) animId = requestAnimationFrame(render);
-        else {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          cancelAnimationFrame(animId);
-        }
-      }
-      render();
     }
 
     window.onload = function () {
@@ -3400,109 +2552,8 @@
       document.getElementById('appVersionLabel').innerText = APP_VERSION;
       if (state.settings.pinCode) lockScreenNow();
       switchTab('dashboard');
-
-      // 首次進入時自動彈出歡迎引導
-      const completed = localStorage.getItem('PocketMoney_onboarding_completed') === 'true';
-      if (!completed) {
-        setTimeout(openWelcomeModal, 450);
-      }
     };
   </script>
-
-  <!-- ==================== 【第 1 階段】首次造訪歡迎彈窗 Welcome Modal ==================== -->
-  <div id="welcomeModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none">
-    <div class="w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl transform transition-all duration-300 scale-95 max-h-[92vh] overflow-y-auto">
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 text-xs font-bold border border-indigo-200/60 dark:border-indigo-800/60 mb-3">
-        <i class="fa-solid fa-sparkles"></i>
-        <span>歡迎使用 PocketMoney</span>
-      </div>
-      <h3 class="text-fluid-h2 font-extrabold text-slate-800 dark:text-slate-100 mb-2 leading-tight">
-        💡 不記瑣碎流水帳，<br>
-        <span class="text-indigo-600 dark:text-indigo-400">算清手頭還能安心花多少錢！</span>
-      </h3>
-      <p class="text-fluid-sub text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
-        你是否厭倦了每天逐日記便當、咖啡的流水帳地獄？<br>
-        PocketMoney 帶你實踐「抓大放小」的水位哲學：每月只需花 3 分鐘更新「銀行存款」與「信用卡帳單總額」，系統即刻自動算出安心可用結餘，杜絕透支風險！
-      </p>
-
-      <div class="space-y-2.5 mb-6">
-        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-          <div class="w-7 h-7 rounded-xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center text-xs shrink-0 mt-0.5">
-            <i class="fa-solid fa-chart-pie"></i>
-          </div>
-          <div>
-            <h4 class="text-fluid-sub font-bold">1. 不記流水帳，只看手頭能花多少</h4>
-            <p class="text-xs text-slate-400 mt-0.5">告別瑣碎單據消耗意志！每月更新兩筆數字，算清真正自由支配金額與總身家。</p>
-          </div>
-        </div>
-
-        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-          <div class="w-7 h-7 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center text-xs shrink-0 mt-0.5">
-            <i class="fa-solid fa-shield-halved"></i>
-          </div>
-          <div>
-            <h4 class="text-fluid-sub font-bold">2. 戶頭裡的錢，夠不夠扣卡費與生活開銷？</h4>
-            <p class="text-xs text-slate-400 mt-0.5">卡費水電自動歸戶。🟢 綠燈扣款無虞，🔴 紅燈提早預警缺口，不怕被罰違約金或扣信用！</p>
-          </div>
-        </div>
-
-        <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-          <div class="w-7 h-7 rounded-xl bg-purple-500/15 text-purple-500 flex items-center justify-center text-xs shrink-0 mt-0.5">
-            <i class="fa-solid fa-hourglass-half"></i>
-          </div>
-          <div>
-            <h4 class="text-fluid-sub font-bold">3. 買東西分期很無痛？算算每個月默默被扣了多少錢</h4>
-            <p class="text-xs text-slate-400 mt-0.5">撕開零利率糖衣！清楚掌握每月固定攤提總額與剩餘總負債，奪回現金流主控權。</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <button onclick="startSpotlightTour()" class="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-fluid-sub shadow-md shadow-indigo-500/20 transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>✨ 帶我導覽 3 分鐘 (親自設置存款與卡費)</span>
-        </button>
-        <div class="grid grid-cols-2 gap-2">
-          <button onclick="loadDemoAndClose()" class="py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-fluid-sub text-slate-700 dark:text-slate-300 transition">
-            🚀 載入示範資料
-          </button>
-          <button onclick="closeWelcomeModal()" class="py-2.5 rounded-xl bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-fluid-sub text-slate-400 transition">
-            直接開始 ➔
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== 【第 2 階段】原生 SVG 聚光燈遮罩 (Spotlight Overlay) ==================== -->
-  <div id="spotlightOverlay" class="spotlight-overlay">
-    <svg class="w-full h-full block" id="spotlightSvg">
-      <defs>
-        <mask id="spotlightMask">
-          <rect x="0" y="0" width="100%" height="100%" fill="white" />
-          <rect id="spotlightCutout" x="0" y="0" width="0" height="0" rx="16" fill="black" />
-        </mask>
-      </defs>
-      <rect x="0" y="0" width="100%" height="100%" fill="rgba(15, 20, 30, 0.78)" mask="url(#spotlightMask)" />
-    </svg>
-  </div>
-
-  <!-- 聚光燈浮動 Tooltip 氣泡 -->
-  <div id="spotlightTooltip" class="spotlight-tooltip bg-white dark:bg-slate-900 border border-indigo-500 rounded-2xl p-5 shadow-2xl text-slate-800 dark:text-slate-100">
-    <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-      <span id="tourStepBadge" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/80 px-2 py-0.5 rounded-full">Step 1 / 3</span>
-      <button onclick="endSpotlightTour()" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">跳過導覽 ✕</button>
-    </div>
-    <h3 id="tourTitle" class="text-fluid-h3 font-extrabold mb-1.5 leading-snug">標題</h3>
-    <div id="tourBody" class="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">內容</div>
-    <div class="flex items-center justify-between gap-2">
-      <button id="tourPrevBtn" onclick="prevTourStep()" class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold hover:bg-slate-200 transition">上一步</button>
-      <button id="tourNextBtn" onclick="nextTourStep()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-sm transition">下一步 ➔</button>
-    </div>
-  </div>
-
-  <!-- Canvas 彩帶慶祝動效 -->
-  <canvas id="confettiCanvas"></canvas>
 </body>
 
 </html>
