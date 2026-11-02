@@ -1,8 +1,8 @@
-# PocketMoney 子資料庫與「存量 × 流量」架構設計提案
+﻿# PocketMoney 子資料庫與「存量 × 流量」架構設計提案
 
 > - **文件狀態**：架構提案 (Proposal)
-> - **基準規格**：[`_dev/PocketMoney/SDD.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SDD.md)
-> - **實作目標**：[`tools/pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/tools/pocketmoney.html)
+> - **基準規格**：[`_dev/PocketMoney/baseline-v3/SDD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/baseline-v3/SDD.md)
+> - **實作目標**：[`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html)
 > - **核心命題**：由「主實體」向下延展專屬「子資料庫（Sub-Database）」——信用卡以**「年／月」**展開流量帳單子庫，銀行以**「日期變動」**展開存量與異動子庫，建立完整的**存量（Stock）與流量（Flow）雙向觀測模型**。
 
 ---
@@ -71,7 +71,7 @@ flowchart LR
 
 ## 3. 子資料庫結構設計 (Schema v4 Specification)
 
-為了維持現行 [`SDD.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SDD.md) 的「抓大放小」與「30 號扣繳檢核」100% 向下相容，**主表（`Bank`、`Card`）原本的頂層欄位完全保留作為「當前最新狀態（HEAD）」**，並在每個實體內部掛載專屬的 `subDb` 子資料庫。
+為了維持現行 [`SDD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/baseline-v3/SDD.md) 的「抓大放小」與「30 號扣繳檢核」100% 向下相容，**主表（`Bank`、`Card`）原本的頂層欄位完全保留作為「當前最新狀態（HEAD）」**，並在每個實體內部掛載專屬的 `subDb` 子資料庫。
 
 ### 3.1 實體關係圖 (ER Diagram - 主庫與子資料庫階層)
 
@@ -426,7 +426,7 @@ sequenceDiagram
 
 ## 5. UI 視覺化設計：存量與流量同框對照視圖 (Stock-Flow Dual Chart)
 
-遵循 [`SDD.md` 第 3 節](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/SDD.md#L164-L256) 的 **Nord 主題調色盤** 與 **Nuxt UI 極細邊框卡片 (`UCard`)** 規範，我們可以在兩個層級呈現子資料庫：
+遵循 [`SDD.md` 第 3 節](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/baseline-v3/SDD.md#L164-L256) 的 **Nord 主題調色盤** 與 **Nuxt UI 極細邊框卡片 (`UCard`)** 規範，我們可以在兩個層級呈現子資料庫：
 
 ### 5.1 單一實體下鑽抽屜 (Entity Sub-DB Drawer / Modal)
 

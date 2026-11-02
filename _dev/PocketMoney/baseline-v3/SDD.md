@@ -1,4 +1,4 @@
-# PocketMoney 系統設計規格書 (Software Design Document, SDD)
+﻿# PocketMoney 系統設計規格書 (Software Design Document, SDD)
 
 ## Revision (版本修訂紀錄)
 
@@ -11,7 +11,7 @@
 ## 文件資訊
 - **軟體名稱**：PocketMoney (個人財務總覽與 30 號扣繳檢核系統)
 - **軟體版本**：`0.0.1` (儲存 Schema: `PocketMoney_tw_finance_v3`)
-- **檔案路徑**：[`tools/pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/tools/pocketmoney.html)
+- **檔案路徑**：[`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html)
 - **文件狀態**：正式版本 (Active)
 - **適用對象**：前端工程師、系統架構師、UI/UX 設計師、測試工程師
 

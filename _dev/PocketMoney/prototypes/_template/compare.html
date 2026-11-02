@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PocketMoney A/B 審查板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif; background: #1D2129; color: #ECEFF4; }
+    .frame-wrap { transition: width 0.25s ease; }
+  </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+  <!-- ==================== 頂部資訊與控制列 ==================== -->
+  <header class="bg-[#262B35] border-b border-[#3B4252] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+    <div class="flex items-center gap-3">
+      <span id="featureIdBadge" class="px-2.5 py-1 rounded-lg bg-[#5F83A8] text-white font-mono font-bold text-xs">F00</span>
+      <div>
+        <h1 id="featureTitle" class="font-bold text-sm sm:text-base leading-tight">功能實驗名稱</h1>
+        <p id="scenarioQuestion" class="text-xs text-[#8C97AB]">對應情境 S00：「使用者心中的問題」</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap text-xs">
+      <!-- 人物切換 (透過 postMessage 或 URL query 傳給 A/B iframe) -->
+      <div class="flex items-center bg-[#1D2129] p-1 rounded-lg border border-[#3B4252]">
+        <span class="px-2 text-[#8C97AB] font-semibold">人物：</span>
+        <button onclick="setPersona('junior')" data-persona="junior" class="persona-btn px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white">初級大人</button>
+        <button onclick="setPersona('family')" data-persona="family" class="persona-btn px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white">少子化勇者</button>
+        <button onclick="setPersona('senior')" data-persona="senior" class="persona-btn px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white">高級大人</button>
+      </div>
+
+      <!-- 視窗尺寸切換 -->
+      <div class="flex items-center bg-[#1D2129] p-1 rounded-lg border border-[#3B4252]">
+        <button onclick="setViewport('desktop')" id="vpDesktop" class="px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white">
+          <i class="fa-solid fa-desktop mr-1"></i>PC 並排
+        </button>
+        <button onclick="setViewport('mobile')" id="vpMobile" class="px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white">
+          <i class="fa-solid fa-mobile-screen mr-1"></i>手機 (390px)
+        </button>
+      </div>
+
+      <!-- 重新整理雙框 -->
+      <button onclick="reloadFrames()" class="px-2.5 py-1.5 rounded-lg bg-[#2E3440] hover:bg-[#3B4252] border border-[#4C566A] font-semibold">
+        <i class="fa-solid fa-rotate-right mr-1"></i>重載
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== 中央 A / B 並排視窗 ==================== -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-2 p-2 bg-[#1D2129] overflow-hidden">
+    <!-- 方案 A -->
+    <section class="flex flex-col bg-[#262B35] rounded-xl border border-[#3B4252] overflow-hidden">
+      <div class="px-3 py-1.5 bg-[#2E3440] border-b border-[#3B4252] flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-400/30">方案 A</span>
+          <span id="labelPlanA" class="font-bold text-[#ECEFF4]">方案 A 設計簡述</span>
+        </div>
+        <a href="A.html" target="_blank" class="text-[#8C97AB] hover:text-white"><i class="fa-solid fa-up-right-from-square"></i> 單獨開啟</a>
+      </div>
+      <div class="flex-1 flex justify-center bg-[#1D2129] overflow-auto">
+        <iframe id="frameA" src="A.html?persona=family" class="frame-wrap w-full h-full border-0 bg-white"></iframe>
+      </div>
+    </section>
+
+    <!-- 方案 B -->
+    <section class="flex flex-col bg-[#262B35] rounded-xl border border-[#3B4252] overflow-hidden">
+      <div class="px-3 py-1.5 bg-[#2E3440] border-b border-[#3B4252] flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-400/30">方案 B</span>
+          <span id="labelPlanB" class="font-bold text-[#ECEFF4]">方案 B 設計簡述</span>
+        </div>
+        <a href="B.html" target="_blank" class="text-[#8C97AB] hover:text-white"><i class="fa-solid fa-up-right-from-square"></i> 單獨開啟</a>
+      </div>
+      <div class="flex-1 flex justify-center bg-[#1D2129] overflow-auto">
+        <iframe id="frameB" src="B.html?persona=family" class="frame-wrap w-full h-full border-0 bg-white"></iframe>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== 底部：3 個觀察重點與主 Agent 建議 ==================== -->
+  <footer class="bg-[#262B35] border-t border-[#3B4252] px-4 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs shrink-0">
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+      <span class="font-bold text-[#E3BE6F]"><i class="fa-solid fa-eye mr-1"></i>請看這 3 點：</span>
+      <span id="focusPoint1" class="text-[#D8DEE9]">① 觀察點一</span>
+      <span id="focusPoint2" class="text-[#D8DEE9]">② 觀察點二</span>
+      <span id="focusPoint3" class="text-[#D8DEE9]">③ 觀察點三</span>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <span id="agentRecommendation" class="px-2.5 py-1 rounded-lg bg-[#2E3440] border border-[#4C566A] text-[#A6BDD5] font-semibold">
+        🤖 主 Agent 建議：A（原因簡述）
+      </span>
+      <span class="text-[#8C97AB] hidden md:inline">回覆範例：<code class="text-white bg-[#1D2129] px-1.5 py-0.5 rounded">F00 A</code></span>
+    </div>
+  </footer>
+
+  <script>
+    /* ===== 實驗審查板設定區（由 Flash 產出實驗時填入） ===== */
+    const COMPARE_CONFIG = {
+      featureId: 'F00',
+      featureTitle: '功能實驗名稱',
+      scenarioQuestion: '對應情境 S00：「使用者心中的問題」',
+      labelPlanA: '方案 A：內嵌直覺操作',
+      labelPlanB: '方案 B：獨立彈窗引導',
+      focusPoints: [
+        '① 首屏能否一眼看出結果',
+        '② 完成動作所需點擊次數',
+        '③ 手機 390px 下是否好按且不擠壓'
+      ],
+      recommendation: '🤖 主 Agent 建議：A（點擊數較少、不跳離當前脈絡）'
+    };
+
+    let currentPersona = 'family';
+
+    function applyConfig() {
+      document.title = `${COMPARE_CONFIG.featureId} A/B 審查板 — ${COMPARE_CONFIG.featureTitle}`;
+      document.getElementById('featureIdBadge').innerText = COMPARE_CONFIG.featureId;
+      document.getElementById('featureTitle').innerText = COMPARE_CONFIG.featureTitle;
+      document.getElementById('scenarioQuestion').innerText = COMPARE_CONFIG.scenarioQuestion;
+      document.getElementById('labelPlanA').innerText = COMPARE_CONFIG.labelPlanA;
+      document.getElementById('labelPlanB').innerText = COMPARE_CONFIG.labelPlanB;
+      document.getElementById('focusPoint1').innerText = COMPARE_CONFIG.focusPoints[0] || '';
+      document.getElementById('focusPoint2').innerText = COMPARE_CONFIG.focusPoints[1] || '';
+      document.getElementById('focusPoint3').innerText = COMPARE_CONFIG.focusPoints[2] || '';
+      document.getElementById('agentRecommendation').innerText = COMPARE_CONFIG.recommendation;
+    }
+
+    function setPersona(p) {
+      currentPersona = p;
+      document.querySelectorAll('.persona-btn').forEach(btn => {
+        const active = btn.dataset.persona === p;
+        btn.className = active
+          ? 'persona-btn px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white'
+          : 'persona-btn px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white';
+      });
+      document.getElementById('frameA').src = `A.html?persona=${p}`;
+      document.getElementById('frameB').src = `B.html?persona=${p}`;
+    }
+
+    function setViewport(mode) {
+      const fA = document.getElementById('frameA');
+      const fB = document.getElementById('frameB');
+      const btnD = document.getElementById('vpDesktop');
+      const btnM = document.getElementById('vpMobile');
+      if (mode === 'mobile') {
+        fA.style.width = '390px';
+        fB.style.width = '390px';
+        btnM.className = 'px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white';
+        btnD.className = 'px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white';
+      } else {
+        fA.style.width = '100%';
+        fB.style.width = '100%';
+        btnD.className = 'px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white';
+        btnM.className = 'px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white';
+      }
+    }
+
+    function reloadFrames() {
+      document.getElementById('frameA').contentWindow.location.reload();
+      document.getElementById('frameB').contentWindow.location.reload();
+    }
+
+    applyConfig();
+  </script>
+</body>
+</html>
+

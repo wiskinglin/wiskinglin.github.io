@@ -1,7 +1,7 @@
-# PocketMoney 時間軸資料結構提案
+﻿# PocketMoney 時間軸資料結構提案
 
 > 狀態：**提案（尚未實作）**
-> 現況對應檔案：[`tools/pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/tools/pocketmoney.html)（儲存 key：`PocketMoney_tw_finance_v3`）
+> 現況對應檔案：[`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html)（儲存 key：`PocketMoney_tw_finance_v3`）
 > 目標 Schema：`PocketMoney_tw_finance_v4`
 
 ---
@@ -500,7 +500,7 @@ position.z    = laneIndex(entity) × LANE_GAP
 
 **互動**：左右拖曳或方向鍵＝推移 `cursorMonth`；點擊任一柱子＝彈出該實體該月明細（沿用現有 Modal）。
 
-> **離線約束**：現行 SDD 要求單檔、無 CDN 仍可運作（TC-06）。3D 引擎需內嵌，或先以 CSS 3D transform / Canvas 偽 3D 做第一版，再評估是否內嵌 Three.js（專案已有 [`_dev/threejs`](file:///c:/Playground26/wiskinglin.github.io/_dev/threejs) 可參考）。
+> **離線約束**：現行 SDD 要求單檔、無 CDN 仍可運作（TC-06）。3D 引擎需內嵌，或先以 CSS 3D transform / Canvas 偽 3D 做第一版，再評估是否內嵌 Three.js（專案已有 [`_dev/threejs`](file:///c:/Dev/wiskinglin.github.io/_dev/threejs) 可參考）。
 
 ---
 

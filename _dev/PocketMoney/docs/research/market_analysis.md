@@ -1,4 +1,4 @@
-**PocketMoney**
+﻿**PocketMoney**
 
 **市場分析、產品定位與現有版本開發優化規格**
 
@@ -459,7 +459,7 @@ TransferEvent 表示，並考慮轉帳處理時間與到帳日期。
 追查。功能可能隨版本變動，實作前應重新確認當前頁面與商店版本。
 
 **PocketMoney
-現行公開頁面（直接觀察）：**https://wiskinglin.github.io/tools/pocketmoney.html
+現行公開頁面（直接觀察）：**https://wiskinglin.github.io/tools/kipomo.html
 
 > 目前頁面列出總覽、銀行、信用卡、分期、固定費用、投資、備份、離線 HTML
 > 與示範情境。

@@ -1,0 +1,23 @@
+# PocketMoney 變更紀錄 (CHANGELOG.md)
+
+> 本文件記錄已通過 Manager 驗收並合併至主力雛型 [`pocketmoney_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney_view.html) 或正式版 [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html) 的版本歷史。
+
+---
+
+## [v3.5-dev] — 2026-11-02（`pocketmoney_view.html` 基準線建立）
+### 新增與整合
+- **12 個月趨勢圖與未來推估區間**：於首頁整合 Chart.js 折線圖，支援 `[當年度]`（含未來未發生月份淡色區隔＋自動滾算虛線 `futureZoneTrendPlugin`）與 `[近 12 個月]` 雙模式切換，並支援單一銀行膠囊篩選。
+- **薪資戶設定與一鍵薪資入帳**：銀行編輯彈窗新增「設為薪資入帳戶（每月入帳日、預估月薪）」，並提供「登記薪資入帳」快捷彈窗直接增加銀行餘額。
+- **股票股利入帳與賣出平倉結算**：投資部位新增「股利入帳」與「賣出平倉結算（即時預覽賣出交割款、原始買進成本、資本利得/損失）」，確認後自動扣減股數並將款項注入指定證券交割銀行。
+- **Agentic 四層文件體系**：建立 `AGENTS.md`、`PRODUCT.md`、`SCENARIOS.md`、`schema/SCHEMA.md`、`DECISIONS.md`、`BACKLOG.md` 與 `prototypes/_template/compare.html`。
+
+---
+
+## [v3.0] — 2026-10-29（`tools/kipomo.html` 正式版基線）
+### 核心功能
+- 三階段新手導覽（Welcome Modal + 原生 0 依賴 SVG Spotlight + 首頁 4 項動態任務檢查清單）。
+- 總淨資產、股票投資損益、本月待扣款總結三大頂部 KPI 卡。
+- 每月 30 號各銀行自動扣繳安全檢查（紅綠燈預警、單一銀行扣款、全數一鍵扣款、新月份重置）。
+- 信用卡 `>$5,000` 大額消費雷達、進行中分期付款追蹤、固定費用三大 KPI 與雙月平準化。
+- 4 位數本地 PIN 碼鎖定、金額隱私遮罩、UTF-8 BOM Excel CSV 匯出、JSON 備份還原與單機自封裝 HTML 下載。
+

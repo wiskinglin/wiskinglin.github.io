@@ -1,11 +1,11 @@
-# PocketMoney 使用者體驗與介面設計規格書 (User Experience & UI Design, UXD)
+﻿# PocketMoney 使用者體驗與介面設計規格書 (User Experience & UI Design, UXD)
 
 ## Revision (版本修訂紀錄)
 
 | 版本 | 日期 | 修訂摘要 |
 | :--- | :--- | :--- |
 | **Rev 0.1** | 2026-10-29 | 初版建立：整合早期探索提案，制定「零 AI Slop」介面鐵律，定案「信用卡帳單輪播輸入」、「大額費用二階段翻面綁定」與「銀行餘額理論推算＋收支事件歸戶」流程。 |
-| **Rev 0.2** | 2026-11-02 | 完成瀏覽視圖規格 ([`mockup_view.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html)) 與三組模擬資料庫 ([`database/dummy_db_*.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/))：定案四大分頁「頂部 3 KPI ＋ 12 個月雙模式折線圖 ＋ 底部明細卡片」架構，並制定「近 12 個月 vs. 當年度（未發生月份防誤解視覺區隔）」設計規範。 |
+| **Rev 0.2** | 2026-11-02 | 完成瀏覽視圖規格 ([`mockup_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html)) 與三組模擬資料庫 ([`database/dummy_db_*.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/))：定案四大分頁「頂部 3 KPI ＋ 12 個月雙模式折線圖 ＋ 底部明細卡片」架構，並制定「近 12 個月 vs. 當年度（未發生月份防誤解視覺區隔）」設計規範。 |
 | **Rev 0.3** | 2026-11-02 | 增補市售手機螢幕解析度規格（邏輯視窗 CSS Pixels vs. 物理像素）、主流裝置對照矩陣，制定行動端安全最小寬度（360px ~ 375px）、RWD 排版斷點與單手拇指操作熱區（Thumb Zone）設計規範。 |
 
 ---
@@ -88,7 +88,7 @@
 
 | 項目 | v3 現況 | v4 規格調整 |
 | :--- | :--- | :--- |
-| **輸入與瀏覽分離** | 瀏覽資訊與輸入框混在同一個畫面，視覺與操作互相干擾。 | 將「輸入流程（[`mockup_input.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup_input.html) 卡片輪播輸入）」與「瀏覽分析視圖（[`mockup_view.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html) 12 個月折線圖＋明細卡）」徹底切開。 |
+| **輸入與瀏覽分離** | 瀏覽資訊與輸入框混在同一個畫面，視覺與操作互相干擾。 | 將「輸入流程（[`mockup_input.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/mockup_input.html) 卡片輪播輸入）」與「瀏覽分析視圖（[`mockup_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html) 12 個月折線圖＋明細卡）」徹底切開。 |
 | **銀行餘額智慧推算與收支事件** | 每次盤點需手動重填所有銀行餘額，且無法記錄餘額增減原因。 | 內建「月度自動滾算（＋薪資－卡費－固定貸款）」，盤點時可一鍵確認推估餘額；並支援將「提款、股利、利息、轉帳、薪資、獎金」等收支事件歸戶至對應銀行。 |
 | **時間維度與雙模式 12 個月圖表** | 僅儲存單一當期數值 (`statementTotal` / `balance`)，換月重置會覆蓋舊資料。 | 儲存跨年連續時序紀錄；圖表支援 **`[近 12 個月]`（預設，連續 12 個已發生月）** 與 **`[當年度]`（1～12 月，未發生月份以背景區隔＋虛線空心點防誤解呈現）** 雙模式切換。 |
 | **繳費狀態管理** | 需手動點擊「標記已繳 (`paid=true`)」與「新月份重置 (`paid=false`)」。 | 移除手動繳費狀態切換。帳單與固定費用依日期（10 號房租、20~30 號卡費、28 號車貸）自動判定當月待扣金額。 |
@@ -106,13 +106,13 @@
 3. **Firefly III / Maybe（主檔與時序分離）**：銀行與信用卡主檔僅存名稱、綁定關係與風控門檻；金額數據存放於以數值時間 `(year, month, day)` 索引的子陣列與扁平快照表中。
 
 ### 2.2 內部探索提案取捨總結
-1. **[`PocketMoneyObjects.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/achieved/PocketMoneyObjects.md)**：
+1. **[`PocketMoneyObjects.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/archive/PocketMoneyObjects.md)**：
    - **保留**：信用卡 `closingDay`（結帳日）與 `dueDay`（扣款日）；分期付款首期含餘數 (`firstPeriodAmount`) 與續期金額 (`regularPeriodAmount`)；銀行水位門檻。
    - **捨棄**：逐日 `CashflowEvent` 事件流引擎（改以月度帳單與不定期銀行快照取代）。
-2. **[`SUB_DATABASE_STOCK_FLOW_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/achieved/SUB_DATABASE_STOCK_FLOW_PROPOSAL.md)**：
+2. **[`SUB_DATABASE_STOCK_FLOW_PROPOSAL.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/archive/SUB_DATABASE_STOCK_FLOW_PROPOSAL.md)**：
    - **保留**：銀行餘額為存量（Stock，`YYYY-MM-DD`）、信用卡帳單為流量（Flow，`YYYY-MM`）的粒度分離架構。
    - **捨棄**：歷史紀錄中的 `paid: boolean` 與雙向交易外鍵 `bankLedgerEntryId`。
-3. **[`TIMELINE_DATA_PROPOSAL.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/achieved/TIMELINE_DATA_PROPOSAL.md)**：
+3. **[`TIMELINE_DATA_PROPOSAL.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/archive/TIMELINE_DATA_PROPOSAL.md)**：
    - **保留**：分期付款記錄 `startYear / startMonth` 以自動推算各月期數與未來月份負擔。
    - **修正**：時間索引改為結構化數值 (`year: number, month: number, day?: number`)，並於頂層提供 `bankSnapshots` 扁平陣列以供前端折線圖直接按月聚合。
 
@@ -120,7 +120,7 @@
 
 ## 第三章：UI 視圖標準規格 (UI View Specifications)
 
-> **說明**：本章節完整定義「輸入視圖 ([`mockup_input.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup_input.html))」與「瀏覽視圖 ([`mockup_view.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html))」之介面設計與互動規範。
+> **說明**：本章節完整定義「輸入視圖 ([`mockup_input.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/mockup_input.html))」與「瀏覽視圖 ([`mockup_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html))」之介面設計與互動規範。
 
 ---
 
@@ -389,11 +389,11 @@ erDiagram
 
 ### 4.3 模擬資料庫檔案清單 (`_dev/PocketMoney/database/`)
 
-為供前端開發與測試驗證，[`_dev/PocketMoney/database/`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/) 目錄下內建三組涵蓋完整 12 個月（`2025-11` ～ `2026-10`）歷史時序之標準 JSON 資料庫：
+為供前端開發與測試驗證，[`_dev/PocketMoney/database/`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/) 目錄下內建三組涵蓋完整 12 個月（`2025-11` ～ `2026-10`）歷史時序之標準 JSON 資料庫：
 
-1. **[`database/dummy_db_junior.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_junior.json)**：**初級大人**（`<30` 歲小資族，1 銀行＋1 信用卡＋套房房租與 iPhone 分期＋0050 定期定額）。
-2. **[`database/dummy_db_family.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_family.json)**：**少子化勇者**（`30-40` 歲家庭用戶，3 銀行專戶＋2 家庭卡＋房貸托育雙月水電＋權值股與高股息配置）。
-3. **[`database/dummy_db_senior.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_senior.json)**：**高級大人**（`40+` 歲高資產族群，5 大多幣專戶＋3 頂級卡＋豪宅置產與千萬級股債配置）。
+1. **[`database/dummy_db_junior.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_junior.json)**：**初級大人**（`<30` 歲小資族，1 銀行＋1 信用卡＋套房房租與 iPhone 分期＋0050 定期定額）。
+2. **[`database/dummy_db_family.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_family.json)**：**少子化勇者**（`30-40` 歲家庭用戶，3 銀行專戶＋2 家庭卡＋房貸托育雙月水電＋權值股與高股息配置）。
+3. **[`database/dummy_db_senior.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_senior.json)**：**高級大人**（`40+` 歲高資產族群，5 大多幣專戶＋3 頂級卡＋豪宅置產與千萬級股債配置）。
 
 ---
 

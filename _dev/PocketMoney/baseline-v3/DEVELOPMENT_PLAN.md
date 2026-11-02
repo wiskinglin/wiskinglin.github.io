@@ -1,11 +1,11 @@
-# PocketMoney 後續功能開發計畫與架構設計書 (Development Plan)
+﻿# PocketMoney 後續功能開發計畫與架構設計書 (Development Plan)
 
 ---
 
 ## 一、文件概述
 - **文件版本**：v1.2.0
 - **更新日期**：2026-10-27
-- **相關文件**：[`SDD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/SDD.md)、[`README.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/README.md)（主程式：[`tools/pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/tools/pocketmoney.html)）
+- **相關文件**：[`SDD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/baseline-v3/SDD.md)、[`README.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/README.md)（主程式：[`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html)）
 - **最新狀態**：Stage 5 新手引導體驗規劃中 (In Planning)
 - **結構導覽**：
   - **[二、最新待開發功能架構規劃（新規劃置頂）](#二最新待開發功能架構規劃current-planning)**：項目 1 新手首次進入導覽與引導體驗設計
@@ -328,7 +328,7 @@ flowchart TD
 ## 四、實作階段推進歷程與狀態 (Roadmap & Status)
 
 - **Stage 5 [Planning]**：初次使用導覽體驗實作（Welcome Modal 歡迎彈窗、原生零依賴 SVG Spotlight 聚光燈引導、頂部動態感應收合式微型檢查清單 Setup Checklist）。
-- **Stage 4 [Complete]**：更新 `tools/pocketmoney.html`、`_dev/PocketMoney/SDD.md`、`_dev/PocketMoney/README.md`，同步發布日誌與 Git 部署。
+- **Stage 4 [Complete]**：更新 `tools/kipomo.html`、`_dev/PocketMoney/baseline-v3/SDD.md`、`_dev/PocketMoney/README.md`，同步發布日誌與 Git 部署。
 - **Stage 3 [Complete]**：於固定費用頁籤建構三大 KPI 彙整卡片（當期 30 號待繳總計、常態每月平均平準化支出、費用狀態筆數與雙月帳單一鍵切換免繳/待繳）。
 - **Stage 2 [Complete]**：重構股票資金池資料模型，新增 `securitiesBankIds` 關聯機制，提供 UI 勾選銀行戶，讓待命現金與銀行證券戶餘額動態自動加總，即時同步持倉比例。
 - **Stage 1 [Complete]**：實作共用時間戳記函式 `getExportTimestamp()`，升級 CSV、JSON 與 HTML 打包匯出檔名包含 `YYYYMMDD_HHmmss`，並在 CSV 總表中補齊固定費用明細。

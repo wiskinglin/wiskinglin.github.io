@@ -1,7 +1,7 @@
-# PocketMoney 現行 UI 詞彙清冊與 v4 規範對齊表 (UI Vocabulary & Copy Specification)
+﻿# PocketMoney 現行 UI 詞彙清冊與 v4 規範對齊表 (UI Vocabulary & Copy Specification)
 
-> - **文件定位**：本文件完整盤點現行前端版本 [`tools/kipomo.html`](file:///c:/Playground26/wiskinglin.github.io/tools/kipomo.html) 介面中出現的**所有**靜態與動態 UI 詞彙（包括按鈕、標題、標籤、輸入提示、狀態徽章、通知 Toast、確認對話框等）。
-> - **規範依據**：嚴格遵循 [`UNIFIED_DESIGN_V4.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UNIFIED_DESIGN_V4.md) **「第零章：文件與 UI 實作鐵律（Zero-Slop UI & Documentation Rules）」**。
+> - **文件定位**：本文件完整盤點現行前端版本 [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html) 介面中出現的**所有**靜態與動態 UI 詞彙（包括按鈕、標題、標籤、輸入提示、狀態徽章、通知 Toast、確認對話框等）。
+> - **規範依據**：嚴格遵循 [`UNIFIED_DESIGN_V4.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md) **「第零章：文件與 UI 實作鐵律（Zero-Slop UI & Documentation Rules）」**。
 > - **核心目的**：
 >   1. 落實 **0.1 強制區分 `【設計邏輯】` 與 `【UI 實際文字】`**，作為 v4 UI 與代碼重構的單一事實來源（Single Source of Truth）。
 >   2. 依據 **0.2 三條「零 AI Slop」鐵律**，全面審查現行 UI 中的「開發版本標籤」、「架構內部術語標題」與「整排教學式副標題」，提供精確的重構對齊建議。
@@ -10,7 +10,7 @@
 
 ## 零、詞彙規範審查準則 (Zero-Slop Copywriting Guidelines)
 
-依據 [`UNIFIED_DESIGN_V4.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UNIFIED_DESIGN_V4.md) 第零章規定，所有收錄之詞彙均標註符合狀態：
+依據 [`UNIFIED_DESIGN_V4.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md) 第零章規定，所有收錄之詞彙均標註符合狀態：
 
 | 規範項目 | 規範標準 | 現行 kipomo.html 檢核重點 |
 | :--- | :--- | :--- |
@@ -485,7 +485,7 @@
 
 ## 十一、v4 規範「零 AI Slop」優化對照表 (v4 Zero-Slop Alignment & Refactoring Matrix)
 
-依據 [`UNIFIED_DESIGN_V4.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UNIFIED_DESIGN_V4.md) 第零章之要求，全面檢討現行 `tools/kipomo.html` 介面中不符合規範之詞彙，並制定重構修正方案：
+依據 [`UNIFIED_DESIGN_V4.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md) 第零章之要求，全面檢討現行 `tools/kipomo.html` 介面中不符合規範之詞彙，並制定重構修正方案：
 
 | 違規類別 | kipomo.html 現行文字 (Current Copy) | 違規原因分析 | v4 規範推薦文字 (Zero-Slop Exact Copy) | 重構處置措施 |
 | :--- | :--- | :--- | :--- | :--- |
