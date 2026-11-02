@@ -6,6 +6,7 @@
 | :--- | :--- | :--- |
 | **Rev 0.1** | 2026-10-29 | 初版建立：整合早期探索提案，制定「零 AI Slop」介面鐵律，定案「信用卡帳單輪播輸入」、「大額費用二階段翻面綁定」與「銀行餘額理論推算＋收支事件歸戶」流程。 |
 | **Rev 0.2** | 2026-11-02 | 完成瀏覽視圖規格 ([`mockup_view.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html)) 與三組模擬資料庫 ([`database/dummy_db_*.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/))：定案四大分頁「頂部 3 KPI ＋ 12 個月雙模式折線圖 ＋ 底部明細卡片」架構，並制定「近 12 個月 vs. 當年度（未發生月份防誤解視覺區隔）」設計規範。 |
+| **Rev 0.3** | 2026-11-02 | 增補市售手機螢幕解析度規格（邏輯視窗 CSS Pixels vs. 物理像素）、主流裝置對照矩陣，制定行動端安全最小寬度（360px ~ 375px）、RWD 排版斷點與單手拇指操作熱區（Thumb Zone）設計規範。 |
 
 ---
 
@@ -393,3 +394,53 @@ erDiagram
 1. **[`database/dummy_db_junior.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_junior.json)**：**初級大人**（`<30` 歲小資族，1 銀行＋1 信用卡＋套房房租與 iPhone 分期＋0050 定期定額）。
 2. **[`database/dummy_db_family.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_family.json)**：**少子化勇者**（`30-40` 歲家庭用戶，3 銀行專戶＋2 家庭卡＋房貸托育雙月水電＋權值股與高股息配置）。
 3. **[`database/dummy_db_senior.json`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_senior.json)**：**高級大人**（`40+` 歲高資產族群，5 大多幣專戶＋3 頂級卡＋豪宅置產與千萬級股債配置）。
+
+---
+
+## 第五章：行動端（Mobile）螢幕解析度與 RWD 響應式設計標準 (Mobile Viewport & Responsive Standards)
+
+為確保 PocketMoney 於各品牌行動裝置上均具備高度易讀性與流暢的單手操作體驗，前端開發與 Mockup 實作必須嚴格遵守本章之視窗解析度與響應式切版標準。
+
+### 5.1 關鍵觀念：物理硬體解析度 vs. 前端邏輯視窗（CSS Viewport）
+
+在行動端切版與 UI/UX 設計中，必須嚴格區分兩種解析度觀念：
+- **物理硬體像素（Physical Pixels）**：手機硬體規格表所標示的物理發光點總數（如 1080×2400、1179×2556），主要影響螢幕顯示細緻度（PPI）。**前端 CSS 切版與排版佈局切勿直接使用物理像素**。
+- **邏輯視窗像素（Logical CSS Viewport Pixels）**：瀏覽器用於 CSS 排版與 Media Query 判斷的基準單位。由物理像素除以設備像素比（Device Pixel Ratio, DPR, 如 @2x, @3x）換算而來。**所有斷點、容器寬度、字級與間距均以邏輯像素為唯一依據**。
+
+---
+
+### 5.2 市售主流手機螢幕解析度與邏輯視窗對照矩陣
+
+依據當前全球與台灣市場主流銷售機種，整理前端切版必須涵蓋的解析度分佈：
+
+| 裝置級別 | 代表機種 | 螢幕尺寸 | 物理解析度 (Physical) | 設備像素比 (DPR) | **前端 CSS 邏輯寬高 (Viewport)** | 切版定位與設計指導原則 |
+| :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| **小屏緊湊型** | iPhone SE (2/3代), iPhone 8 | 4.7 吋 | 750 × 1334 | @2x | **`375 × 667`** | **嚴苛極限底線**：字級縮放邊界，極易發生 Tab 擠壓，必須確保無橫向破版。 |
+| **Android 小屏入門** | 三星 A 系列、舊款 Android | 5.5 ~ 6.1 吋 | 720 × 1600 (HD+) | @2.0x | **`360 × 800`** | **Android 最小安全寬度**：全站 CSS 佈局不得在寬度 $\le 360\text{px}$ 時產生非預期橫向滾動條。 |
+| **主流標準旗艦<br>(市場最大宗)** | **iPhone 13 / 14 / 15 / 16**<br>Galaxy S23 / S24 | 6.1 ~ 6.2 吋 | 1170 × 2532<br>1179 × 2556<br>1080 × 2340 | @3x | **`390 × 844`<br>`393 × 852`** | **核心設計稿基準（Design Baseline）**：Figma 畫布與首要測試標準，涵蓋逾 60% 訪客。 |
+| **主流 Android 旗艦** | Google Pixel 7 / 8 / 9<br>小米 14 / 15、OPPO Reno | 6.3 ~ 6.7 吋 | 1080 × 2400 (FHD+)<br>1220 × 2712 (1.5K) | @2.6x ~ @3x | **`412 × 915`** | **Android 現代標準視窗**：多數現代 Android 手機的標準排版寬度。 |
+| **大屏旗艦 (Pro Max / Plus)** | iPhone 15 / 16 Pro Max<br>Galaxy S24 Ultra | 6.7 ~ 6.9 吋 | 1290 × 2796<br>1440 × 3120 (QHD+) | @3x ~ @3.5x | **`430 × 932`<br>`440 × 956`** | **大屏視野**：需注意文字行寬（Line-length），避免在大螢幕上單行過長導致閱讀疲勞。 |
+
+---
+
+### 5.3 PocketMoney 行動端切版三大規範
+
+#### 1. 視窗安全邊界（Safety Width Boundaries）
+- **絕對最小寬度（Hard Minimum Width）**：以 **`360px`** 為基準。在寬度 360px 視窗下，頁面內容必須保證自適應且不可出現水平破版或橫向滾動軸。
+- **標準測試視窗（Standard Testing Viewport）**：開發與驗證時優先使用 **`375px`**（iPhone SE/Mini 邊界）與 **`390px / 393px`**（主流 iPhone 基準）。
+
+#### 2. 單手操作拇指熱區（Thumb Zone & Bottom Navigation）
+- **底部導覽（Bottom Bar）優先**：
+  - 由於 6 吋以上手機普及，螢幕頂部為「單手難以觸及區（Hard-to-reach zone）」。
+  - 核心頻繁動作（四大主分頁切換：信用卡費、銀行餘額、固定費用、分期付款）在行動端應移至螢幕下方常駐底部導覽列（高度 56px~64px，固定於 `bottom: 0`）。
+  - 若保留頂部 Tab，則必須採用 **橫向滑動列（Scrollable Tabs）**，設定 `overflow-x: auto; flex-wrap: nowrap;`，嚴禁在小於 430px 時強制等寬換行壓扁文字。
+- **觸控目標尺寸（Touch Target Size）**：
+  - 所有具備點擊功能的按鈕、Tab、切換膠囊，點擊感應面積不得小於 **`44 × 44 px`**（符合 WCAG 2.1 AAA 規範），按鈕間保留至少 **`8px`** 安全間距，防止手指誤觸相鄰項目。
+
+#### 3. 虛擬鍵盤適配與輸入體驗（Keyboard Optimization）
+- **數值鍵盤直接喚起**：
+  - 金額輸入框（信用卡帳單金額、銀行餘額、大額費用）嚴格標註 `type="text" inputmode="decimal"` 或 `type="tel"`，確保行動端直接彈出純數字九宮格鍵盤。
+  - 隱藏 `<input type="number">` 原生上下調節箭頭（Stepper Spinners），避免佔用螢幕寬度。
+- **浮動按鈕邊界隔離**：
+  - 卡片切換輔助箭頭嚴禁懸浮覆蓋在卡片內部輸入框上；卡片應優先支援左右手勢滑動（Swipe Gesture）。
+
