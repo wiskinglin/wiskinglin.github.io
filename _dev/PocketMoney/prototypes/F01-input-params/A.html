@@ -1021,27 +1021,40 @@
   <script>
     // 應用程式版本：與 STORAGE_KEY 分開管理，升版時不需要更動儲存 key
     const APP_VERSION = '0.0.1';
-    const STORAGE_KEY = 'PocketMoney_tw_finance_v3';
-    const LEGACY_STORAGE_KEYS = [
-      'PocketMoney_tw_finance_v2',
-      'PocketMoney_tw_finance_v1',
-      'pocketflow_tw_finance_v3',
-      'pocketflow_tw_finance_v2',
-      'pocketflow_tw_finance_v1'
-    ];
+    const STORAGE_KEY = 'PocketMoney_exp_F01_A';
 
     const DEFAULT_STATE = {
       settings: {
         privacyMode: false,
         pinCode: '',
         stockMinHoldRatio: 70,
-        securitiesBankIds: []
+        securitiesBankIds: ['bank_sinopac']
       },
-      banks: [],
-      cards: [],
-      installments: [],
-      bills: [],
-      stocks: []
+      banks: [
+        { id: 'bank_taishin', name: '台新 Richart (薪轉戶)', balance: 48000, note: '25號撥薪與日常轉帳', isSalaryAccount: true, salaryDay: 25, salaryAmount: 58000 },
+        { id: 'bank_ctbc', name: '中國信託 (房租與卡費戶)', balance: 26000, note: '扣房租與主力卡費', isSalaryAccount: false, salaryDay: 5, salaryAmount: 0 },
+        { id: 'bank_sinopac', name: '永豐大戶 (證券交割戶)', balance: 85000, note: '台股波段交割池', isSalaryAccount: false, salaryDay: 5, salaryAmount: 0 }
+      ],
+      inflows: [
+        { id: 'inf_1', name: '本業每月薪資', type: 'salary', cycle: '每月固定', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], payDay: 25, amount: 58000, bankId: 'bank_taishin', receivedThisMonth: false },
+        { id: 'inf_2', name: '專案顧問兼職收入', type: 'side', cycle: '每月固定', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], payDay: 10, amount: 12000, bankId: 'bank_taishin', receivedThisMonth: true },
+        { id: 'inf_3', name: '年終與績效獎金', type: 'bonus', cycle: '特定月份', activeMonths: [1, 7], payDay: 25, amount: 120000, bankId: 'bank_taishin', receivedThisMonth: false }
+      ],
+      cards: [
+        { id: 'card_cube', name: '國泰 CUBE 卡', bankId: 'bank_ctbc', closingDay: 3, dueDay: 18, statementTotal: 22500, paid: false, bigExpenses: [{ id: 'be_1', title: '日本機票預訂', amount: 11500 }] },
+        { id: 'card_gogo', name: '台新 @GoGo 卡', bankId: 'bank_taishin', closingDay: 12, dueDay: 27, statementTotal: 14800, paid: false, bigExpenses: [] }
+      ],
+      installments: [
+        { id: 'inst_1', title: 'MacBook Air M3 (12期)', cardId: 'card_cube', cardName: '國泰 CUBE 卡', totalAmount: 36000, totalPeriods: 12, monthlyAmount: 3000, paidPeriods: 9 }
+      ],
+      bills: [
+        { id: 'bill_rent', name: '房屋租金', cycle: '每月固定', dueDay: 10, paymentMethod: 'bank_direct', bankId: 'bank_ctbc', cardId: '', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], amount: 16000, status: 'unpaid' },
+        { id: 'bill_elec', name: '台電雙月電費', cycle: '雙月帳單', dueDay: 15, paymentMethod: 'card_auto', bankId: '', cardId: 'card_cube', activeMonths: [2,4,6,8,10,12], amount: 2400, status: 'unpaid' },
+        { id: 'bill_net', name: '光世代網路費', cycle: '每月固定', dueDay: 20, paymentMethod: 'card_auto', bankId: '', cardId: 'card_gogo', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], amount: 999, status: 'unpaid' }
+      ],
+      stocks: [
+        { id: 'stk_1', code: '0050', name: '元大台灣50', shares: 2000, avgCost: 155, currentPrice: 185, note: '長期核心持股' }
+      ]
     };
 
     let state = loadState();
@@ -1049,17 +1062,7 @@
     let enteredPin = '';
 
     function readStoredRaw() {
-      const current = localStorage.getItem(STORAGE_KEY);
-      if (current) return current;
-      for (const key of LEGACY_STORAGE_KEYS) {
-        const legacy = localStorage.getItem(key);
-        if (legacy) {
-          localStorage.setItem(STORAGE_KEY, legacy);
-          console.info(`[PocketMoney] 已從 ${key} 搬移本地資料至 ${STORAGE_KEY}`);
-          return legacy;
-        }
-      }
-      return null;
+      return localStorage.getItem(STORAGE_KEY);
     }
 
     function loadState() {
@@ -1074,6 +1077,9 @@
             const parsed = JSON.parse(raw);
             loaded = { ...DEFAULT_STATE, ...parsed, settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) } };
           }
+        }
+        if (!Array.isArray(loaded.inflows)) {
+          loaded.inflows = JSON.parse(JSON.stringify(DEFAULT_STATE.inflows));
         }
         // 向後相容遷移：若分期項目缺少 cardId，依據 cardName 自動連結至對應信用卡
         if (loaded.installments && loaded.cards) {
@@ -1090,6 +1096,20 @@
           loaded.settings.securitiesBankIds = loaded.banks
             .filter(b => b.name.includes('證券') || b.id.includes('sec'))
             .map(b => b.id);
+        }
+        if (loaded.cards) {
+          loaded.cards.forEach(c => {
+            if (c.closingDay === undefined) c.closingDay = 5;
+            if (c.dueDay === undefined) c.dueDay = 20;
+          });
+        }
+        if (loaded.bills) {
+          loaded.bills.forEach(b => {
+            if (b.dueDay === undefined) b.dueDay = 10;
+            if (!b.paymentMethod) b.paymentMethod = 'bank_direct';
+            if (!b.cardId) b.cardId = '';
+            if (!Array.isArray(b.activeMonths)) b.activeMonths = [1,2,3,4,5,6,7,8,9,10,11,12];
+          });
         }
         return loaded;
       } catch (e) {
@@ -1208,7 +1228,10 @@
       const stockCashRatio = stockTotalPool > 0 ? (100 - stockHoldRatio) : 0;
 
       const unpaidCardTotal = state.cards.filter(c => !c.paid).reduce((sum, c) => sum + (Number(c.statementTotal) || 0), 0);
-      const unpaidBillsTotal = state.bills.filter(b => b.status === 'unpaid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
+
+      // 固定費用：防重複計算（信用卡代繳項目已併入卡費，此處未繳總額只統計銀行直扣項目）
+      const directBills = state.bills.filter(b => b.paymentMethod !== 'card_auto');
+      const unpaidBillsTotal = directBills.filter(b => b.status === 'unpaid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
       const paidBillsTotal = state.bills.filter(b => b.status === 'paid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
       const unpaidBillsCount = state.bills.filter(b => b.status === 'unpaid').length;
       const paidBillsCount = state.bills.filter(b => b.status === 'paid').length;
@@ -1238,7 +1261,8 @@
 
       const bankCheckups = state.banks.map(bank => {
         const boundUnpaidCards = state.cards.filter(c => c.bankId === bank.id && !c.paid);
-        const boundUnpaidBills = state.bills.filter(b => b.bankId === bank.id && b.status === 'unpaid');
+        // 關鍵防重複計算：只納入 paymentMethod !== 'card_auto' 的銀行直扣項目
+        const boundUnpaidBills = state.bills.filter(b => b.paymentMethod !== 'card_auto' && b.bankId === bank.id && b.status === 'unpaid');
         const cardsSum = boundUnpaidCards.reduce((s, c) => s + (Number(c.statementTotal) || 0), 0);
         const billsSum = boundUnpaidBills.reduce((s, b) => s + (Number(b.amount) || 0), 0);
         const requiredTotal = cardsSum + billsSum;
@@ -1255,7 +1279,7 @@
         };
       });
 
-      // 修正：總資產 = 全部銀行餘額 + 股票持股現值 (避免證券交割戶餘額被重複計算)
+      // 總資產 = 全部銀行餘額 + 股票持股現值
       const totalAssets = totalBankBalance + stockMarketValue;
       const netWorth = totalAssets - totalUnpaidLiabilities;
 
@@ -1287,19 +1311,14 @@
         pText.innerText = '顯示金額';
       }
 
-      const today = new Date();
-      const day = today.getDate();
       const countdownEl = document.getElementById('countdown30th');
-      if (day <= 10) {
-        countdownEl.innerText = `本月 ${day} 號 (10號前收單期)`;
-      } else if (day < 30) {
-        countdownEl.innerText = `距 30 號扣款剩 ${30 - day} 天`;
-      } else {
-        countdownEl.innerText = `今日為月底扣繳日`;
+      if (countdownEl) {
+        countdownEl.innerText = '依實際結帳/扣款日檢核';
       }
 
       const m = computeFinancialMetrics();
       renderDashboard(m);
+      renderInflows();
       renderBanksAndCards(m);
       renderInstallments(m);
       renderBills(m);
@@ -1319,7 +1338,6 @@
       if (pinBtnText) {
         pinBtnText.innerText = state.settings.pinCode ? '修改/關閉 PIN 碼' : '設定 4 位數 PIN 碼';
       }
-
     }
 
     function renderDashboard(m) {
@@ -1412,7 +1430,7 @@
                   <span class="font-bold font-mono num-nowrap text-fluid-body">${fmtMoney(b.balance)}</span>
                 </div>
                 <div class="flex items-center justify-between gap-2">
-                  <span class="text-slate-400">30 號待扣總額</span>
+                  <span class="text-slate-400">本期待扣總額</span>
                   <span class="font-bold font-mono text-rose-500 num-nowrap text-fluid-body">${fmtMoney(b.requiredTotal)}</span>
                 </div>
                 <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
@@ -1499,9 +1517,250 @@
       `;
     }
 
+
+    function renderInflows() {
+      const container = document.getElementById('inflowsListContainer');
+      if (!container) return;
+
+      const inflows = state.inflows || [];
+      if (inflows.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+            尚無設定任何收入來源，請點擊右上角「+ 新增收入來源」
+          </div>
+        `;
+        return;
+      }
+
+      const typeMap = {
+        salary: { text: '本業月薪', cls: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+        side: { text: '兼職副業', cls: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
+        bonus: { text: '特定月獎金', cls: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+        other: { text: '其他收入', cls: 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300' }
+      };
+
+      container.innerHTML = inflows.map(inf => {
+        const bank = state.banks.find(b => b.id === inf.bankId);
+        const bankName = bank ? bank.name : '未指定銀行';
+        const typeInfo = typeMap[inf.type] || typeMap.other;
+        const monthsDesc = inf.cycle === '特定月份' && Array.isArray(inf.activeMonths)
+          ? `生效月：${inf.activeMonths.join(', ')}月`
+          : '每月固定撥薪';
+
+        return `
+          <div class="p-4 rounded-2xl border ${inf.receivedThisMonth ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-start justify-between gap-2 mb-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-full ${typeInfo.cls} num-nowrap">${typeInfo.text}</span>
+                    <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-full bg-slate-200/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 num-nowrap">
+                      <i class="fa-regular fa-calendar-check mr-1"></i>${inf.payDay || 25} 號入帳
+                    </span>
+                  </div>
+                  <h4 class="font-bold text-fluid-h3 mt-1.5 truncate">${inf.name}</h4>
+                  <p class="text-fluid-sub text-slate-400 truncate mt-0.5">
+                    <i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i>${bankName}
+                  </p>
+                </div>
+                <div class="flex gap-1 shrink-0">
+                  <button onclick="openInflowModal('${inf.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteInflow('${inf.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </div>
+
+              <div class="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1 my-2">
+                <div class="flex items-center justify-between text-fluid-sub text-slate-400">
+                  <span>${monthsDesc}</span>
+                  <span class="text-xs">預估金額</span>
+                </div>
+                <div class="font-mono font-extrabold text-fluid-h2 text-emerald-600 dark:text-emerald-400 num-nowrap">
+                  ${fmtMoney(inf.amount)}
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+              <button onclick="toggleInflowReceived('${inf.id}')"
+                class="w-full py-2 rounded-xl text-fluid-sub font-bold flex items-center justify-center gap-1.5 transition ${
+                  inf.receivedThisMonth
+                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                }">
+                <i class="fa-solid ${inf.receivedThisMonth ? 'fa-circle-check' : 'fa-check'}"></i>
+                <span>${inf.receivedThisMonth ? '本月已入帳（點擊可撤銷）' : '✓ 登記本月已入帳'}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openInflowModal(inflowId = null) {
+      const existing = (state.inflows || []).find(x => x.id === inflowId) || {
+        name: '',
+        type: 'salary',
+        cycle: '每月固定',
+        activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12],
+        payDay: 25,
+        amount: 0,
+        bankId: (state.banks[0]?.id || ''),
+        receivedThisMonth: false
+      };
+
+      const bankOptions = (state.banks || []).map(b => `
+        <option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>
+          ${b.name} (${fmtMoney(b.balance)})
+        </option>
+      `).join('');
+
+      const months = [1,2,3,4,5,6,7,8,9,10,11,12];
+      const activeMonths = Array.isArray(existing.activeMonths) ? existing.activeMonths : months;
+
+      openAppModal(inflowId ? '編輯收入來源' : '新增收入來源', `
+        <div class="space-y-3 text-fluid-body">
+          <div>
+            <label class="font-bold block mb-1">收入項目名稱</label>
+            <input id="mInflowName" type="text" value="${existing.name}" placeholder="例如：本業薪資、兼職顧問、季獎金" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1">收入類型</label>
+              <select id="mInflowType" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                <option value="salary" ${existing.type === 'salary' ? 'selected' : ''}>本業月薪</option>
+                <option value="side" ${existing.type === 'side' ? 'selected' : ''}>兼職副業</option>
+                <option value="bonus" ${existing.type === 'bonus' ? 'selected' : ''}>特定月獎金/分紅</option>
+                <option value="other" ${existing.type === 'other' ? 'selected' : ''}>其他收入</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-bold block mb-1">每月入帳日 (1~31 號)</label>
+              <input id="mInflowPayDay" type="number" min="1" max="31" value="${existing.payDay || 25}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1">預估入帳金額 (NT$)</label>
+              <input id="mInflowAmount" type="number" value="${existing.amount || 0}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">入帳指定銀行</label>
+              <select id="mInflowBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                ${bankOptions}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="font-bold block mb-1">撥款週期</label>
+            <select id="mInflowCycle" onchange="toggleInflowMonthsConfig(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <option value="每月固定" ${existing.cycle === '每月固定' ? 'selected' : ''}>每月固定</option>
+              <option value="特定月份" ${existing.cycle === '特定月份' ? 'selected' : ''}>特定月份入帳 (勾選月份)</option>
+            </select>
+          </div>
+          <div id="inflowMonthsContainer" class="${existing.cycle === '特定月份' ? '' : 'hidden'} p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+            <span class="text-fluid-sub font-semibold text-slate-500 block">請勾選入帳月份：</span>
+            <div class="grid grid-cols-6 gap-1.5 text-center text-fluid-sub">
+              ${months.map(m => `
+                <label class="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center gap-1">
+                  <input type="checkbox" name="inflowMonthCheck" value="${m}" ${activeMonths.includes(m) ? 'checked' : ''} class="rounded text-emerald-600 accent-emerald-600">
+                  <span class="font-bold text-xs">${m}月</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+          <button onclick="saveInflowForm('${inflowId || ''}')" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold mt-2 shadow-sm">
+            儲存收入來源
+          </button>
+        </div>
+      `);
+    }
+
+    function toggleInflowMonthsConfig(cycle) {
+      const container = document.getElementById('inflowMonthsContainer');
+      if (container) {
+        container.classList.toggle('hidden', cycle !== '特定月份');
+      }
+    }
+
+    function saveInflowForm(inflowId) {
+      const name = document.getElementById('mInflowName').value.trim();
+      const type = document.getElementById('mInflowType').value;
+      const payDay = Math.min(31, Math.max(1, Number(document.getElementById('mInflowPayDay').value) || 25));
+      const amount = Number(document.getElementById('mInflowAmount').value) || 0;
+      const bankId = document.getElementById('mInflowBank').value;
+      const cycle = document.getElementById('mInflowCycle').value;
+
+      let activeMonths = [1,2,3,4,5,6,7,8,9,10,11,12];
+      if (cycle === '特定月份') {
+        const checks = document.querySelectorAll('input[name="inflowMonthCheck"]:checked');
+        activeMonths = Array.from(checks).map(c => Number(c.value)).sort((a,b) => a-b);
+        if (activeMonths.length === 0) activeMonths = [1,2,3,4,5,6,7,8,9,10,11,12];
+      }
+
+      if (!name) return showToast('請填寫收入名稱', 'warn');
+      if (amount <= 0) return showToast('請填寫預估金額', 'warn');
+
+      if (!state.inflows) state.inflows = [];
+
+      if (inflowId) {
+        const item = state.inflows.find(x => x.id === inflowId);
+        if (item) {
+          Object.assign(item, { name, type, payDay, amount, bankId, cycle, activeMonths });
+        }
+      } else {
+        state.inflows.push({
+          id: 'inf_' + Date.now(),
+          name,
+          type,
+          cycle,
+          activeMonths,
+          payDay,
+          amount,
+          bankId,
+          receivedThisMonth: false
+        });
+      }
+
+      saveState();
+      closeAppModal();
+      renderAll();
+      showToast(inflowId ? '已更新收入來源！' : '已新增收入來源！');
+    }
+
+    function deleteInflow(id) {
+      if (!confirm('確定要刪除這筆收入來源嗎？')) return;
+      state.inflows = (state.inflows || []).filter(x => x.id !== id);
+      saveState();
+      renderAll();
+      showToast('已刪除收入項目', 'info');
+    }
+
+    function toggleInflowReceived(id) {
+      const inf = (state.inflows || []).find(x => x.id === id);
+      if (!inf) return;
+      const bank = state.banks.find(b => b.id === inf.bankId);
+
+      if (!inf.receivedThisMonth) {
+        inf.receivedThisMonth = true;
+        if (bank) {
+          bank.balance = (Number(bank.balance) || 0) + (Number(inf.amount) || 0);
+        }
+        saveState();
+        renderAll();
+        showToast(`「${inf.name}」NT$ ${fmtMoney(inf.amount)} 已入帳至「${bank ? bank.name : '指定銀行'}」！`);
+      } else {
+        inf.receivedThisMonth = false;
+        if (bank) {
+          bank.balance = Math.max(0, (Number(bank.balance) || 0) - (Number(inf.amount) || 0));
+        }
+        saveState();
+        renderAll();
+        showToast(`已取消「${inf.name}」本月入帳狀態，並自帳戶扣回金額`, 'info');
+      }
+    }
     function renderBanksAndCards(m) {
       document.getElementById('bankTotalBalanceKPI').innerText = fmtMoney(m.totalBankBalance);
-      document.getElementById('bankAfterTotalBalanceKPI').innerText = `30 號待扣後剩餘 ${fmtMoney(m.totalAfterBankBalance)}`;
+      document.getElementById('bankAfterTotalBalanceKPI').innerText = `扣款後預估總結餘 ${fmtMoney(m.totalAfterBankBalance)}`;
       document.getElementById('cardsUnpaidTotalKPI').innerText = fmtMoney(m.unpaidCardTotal);
       document.getElementById('cardsStatusSummaryKPI').innerText = `待繳 ${m.unpaidCardsCount} 張卡・已繳清 ${m.paidCardsCount} 張卡`;
 
@@ -1512,7 +1771,7 @@
         actionEl.innerHTML = `<span class="text-fluid-sub text-slate-400">請先新增銀行帳戶與信用卡帳單</span>`;
       } else if (m.shortfallBankCount > 0) {
         statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-rose-500">⚠️ ${m.shortfallBankCount} 個帳戶餘額不足</span>`;
-        actionEl.innerHTML = `<span class="text-fluid-sub text-rose-400 font-semibold">請儘速調度轉帳補足，避免 30 號扣款失敗</span>`;
+        actionEl.innerHTML = `<span class="text-fluid-sub text-rose-400 font-semibold">請儘速調度轉帳補足，避免扣款失敗</span>`;
       } else {
         statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">✅ 全數帳戶餘額充足</span>`;
         actionEl.innerHTML = `<span class="text-fluid-sub text-slate-400">所有扣繳戶頭皆足以支應本月扣款</span>`;
@@ -1545,7 +1804,7 @@
 
           <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-fluid-sub">
             <div class="flex items-center justify-between gap-2">
-              <span class="text-slate-400">30 號待扣總額</span>
+              <span class="text-slate-400">本期待扣總額</span>
               <span class="font-mono font-bold num-nowrap">${fmtMoney(b.requiredTotal)}</span>
             </div>
             <div class="flex items-center justify-between gap-2">
@@ -1573,7 +1832,6 @@
         const bank = state.banks.find(b => b.id === c.bankId);
         const bankName = bank ? bank.name : '未綁定銀行';
         const bigSum = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
-        const otherSmallSum = Math.max(0, (Number(c.statementTotal) || 0) - bigSum);
 
         // 取得綁定此信用卡的進行中分期
         const boundInsts = state.installments.filter(inst => {
@@ -1582,6 +1840,7 @@
           return matchCard && left > 0;
         });
         const boundInstMonthly = boundInsts.reduce((sum, inst) => sum + (Number(inst.monthlyAmount) || 0), 0);
+        const generalSpend = Math.max(0, (Number(c.statementTotal) || 0) - boundInstMonthly - bigSum);
 
         return `
           <div id="${idx === 0 ? 'firstCreditCard' : 'cardItem_' + c.id}" class="rounded-2xl p-4 border ${c.paid ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} flex flex-col justify-between space-y-3.5">
@@ -1590,8 +1849,13 @@
                 <div class="min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
                     <h4 class="font-bold text-fluid-h3 truncate">${c.name}</h4>
+                    <button onclick="openCardModal('${c.id}')" title="點擊修改結帳與扣款日"
+                      class="px-2.5 py-0.5 rounded-full text-fluid-sub font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 transition num-nowrap flex items-center gap-1">
+                      <i class="fa-regular fa-calendar-days text-xs"></i>
+                      <span>結帳 ${c.closingDay || 5} 號 / 扣款 ${c.dueDay || 20} 號</span>
+                    </button>
                     <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-full num-nowrap ${c.paid ? 'bg-emerald-500 text-white' : 'bg-rose-500/15 text-rose-500'}">
-                      ${c.paid ? '已繳清' : '30號待扣繳'}
+                      ${c.paid ? '已繳清' : `${c.dueDay || 20}號待扣繳`}
                     </span>
                   </div>
                   <div class="flex items-center gap-2 mt-1 flex-wrap text-fluid-sub">
@@ -1622,9 +1886,20 @@
                 <input type="number" value="${c.statementTotal}" onchange="updateCardTotalInline('${c.id}', this.value)"
                   class="w-full px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-extrabold text-fluid-h2 text-rose-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 
-                <div class="flex items-center justify-between gap-2 text-fluid-sub text-slate-400 mt-2 flex-wrap">
-                  <span class="num-nowrap">>5K 大額：${fmtMoney(bigSum)}</span>
-                  <span class="num-nowrap">一般瑣碎：${fmtMoney(otherSmallSum)}</span>
+                <!-- 帳單三段拆解 -->
+                <div class="grid grid-cols-3 gap-1 pt-2 border-t border-slate-100 dark:border-slate-800 text-fluid-sub text-slate-500 dark:text-slate-400 mt-2 text-center">
+                  <div class="bg-slate-50 dark:bg-slate-800/60 p-1.5 rounded-lg">
+                    <div class="text-[11px] text-slate-400">分期攤提</div>
+                    <div class="font-mono font-bold text-amber-500 num-nowrap text-xs">${fmtMoney(boundInstMonthly)}</div>
+                  </div>
+                  <div class="bg-slate-50 dark:bg-slate-800/60 p-1.5 rounded-lg">
+                    <div class="text-[11px] text-slate-400">>5K 大額</div>
+                    <div class="font-mono font-bold text-indigo-500 num-nowrap text-xs">${fmtMoney(bigSum)}</div>
+                  </div>
+                  <div class="bg-slate-50 dark:bg-slate-800/60 p-1.5 rounded-lg">
+                    <div class="text-[11px] text-slate-400">一般日常</div>
+                    <div class="font-mono font-bold text-slate-600 dark:text-slate-300 num-nowrap text-xs">${fmtMoney(generalSpend)}</div>
+                  </div>
                 </div>
               </div>
 
@@ -1745,17 +2020,43 @@
       container.innerHTML = state.bills.length === 0
         ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何固定費用，請點擊右上角「+ 新增週期費用」開始建立</div>`
         : state.bills.map(b => {
-        const bank = state.banks.find(x => x.id === b.bankId);
+        const isCard = b.paymentMethod === 'card_auto';
+        const card = isCard ? state.cards.find(c => c.id === b.cardId) : null;
+        const cardName = card ? card.name : (b.cardId ? '指定信用卡' : '未指定卡片');
+        const bank = !isCard ? state.banks.find(x => x.id === b.bankId) : null;
         const bankName = bank ? bank.name : '未指定銀行';
+
+        let methodTag = '';
+        if (isCard) {
+          methodTag = `
+            <div class="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 text-fluid-sub font-semibold">
+              <i class="fa-solid fa-credit-card mr-1 text-purple-500"></i>
+              由「${cardName}」代繳（每期 ${b.dueDay || 10} 號，已併入卡費不重複扣銀行）
+            </div>
+          `;
+        } else {
+          methodTag = `
+            <div class="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-fluid-sub font-semibold">
+              <i class="fa-solid fa-building-columns mr-1 text-indigo-500"></i>
+              由「${bankName}」直接扣款（每期 ${b.dueDay || 10} 號）
+            </div>
+          `;
+        }
+
+        const monthsDesc = Array.isArray(b.activeMonths) && b.activeMonths.length < 12
+          ? `生效月：${b.activeMonths.join(', ')}月`
+          : '每月生效';
 
         return `
           <div class="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between space-y-3.5">
             <div>
               <div class="flex items-start justify-between gap-2 mb-2">
                 <div class="min-w-0">
-                  <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-400 num-nowrap">${b.cycle}</span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-fluid-sub font-bold px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-400 num-nowrap">${b.cycle}</span>
+                    <span class="text-fluid-sub text-slate-400 font-mono">${monthsDesc}</span>
+                  </div>
                   <h4 class="font-bold text-fluid-h3 mt-1 truncate">${b.name}</h4>
-                  <p class="text-fluid-sub text-slate-400 mt-0.5 truncate"><i class="fa-solid fa-building-columns mr-1"></i>${bankName}</p>
                 </div>
                 <div class="flex gap-1 shrink-0">
                   <button onclick="openBillModal('${b.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
@@ -1763,8 +2064,10 @@
                 </div>
               </div>
 
-              <div class="mt-2">
-                <label class="text-fluid-sub text-slate-400 block mb-1">NT$當期金額</label>
+              ${methodTag}
+
+              <div class="mt-2.5">
+                <label class="text-fluid-sub text-slate-400 block mb-1">NT$ 當期金額</label>
                 <input type="number" value="${b.amount}" onchange="updateBillAmountInline('${b.id}', this.value)"
                   class="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
@@ -1962,7 +2265,7 @@
         }
       });
       state.bills.forEach(b => {
-        if (b.bankId === bankId && b.status === 'unpaid') {
+        if (b.paymentMethod !== 'card_auto' && b.bankId === bankId && b.status === 'unpaid') {
           deducted += Number(b.amount) || 0;
           b.status = 'paid';
         }
@@ -1985,7 +2288,7 @@
           }
         });
         state.bills.forEach(b => {
-          if (b.bankId === bank.id && b.status === 'unpaid') {
+          if (b.paymentMethod !== 'card_auto' && b.bankId === bank.id && b.status === 'unpaid') {
             const amt = Number(b.amount) || 0;
             bank.balance -= amt;
             totalDeducted += amt;
@@ -1996,7 +2299,7 @@
       if (totalDeducted === 0) return showToast('目前所有帳單皆已結清', 'info');
       saveState();
       renderAll();
-      showToast(`已完成 30 號全數自動扣繳，共扣除 ${fmtMoney(totalDeducted)}！`);
+      showToast(`已完成全數自動扣繳，共扣除 ${fmtMoney(totalDeducted)}！`);
     }
 
     function resetAllCardsNewMonth() {
@@ -2039,11 +2342,14 @@
     function setBillStatus(id, newStatus) {
       const bill = state.bills.find(b => b.id === id);
       if (!bill) return;
+      const isDirect = bill.paymentMethod !== 'card_auto';
       const bank = state.banks.find(x => x.id === bill.bankId);
-      if (bill.status !== 'paid' && newStatus === 'paid' && bank) {
-        bank.balance -= Number(bill.amount) || 0;
-      } else if (bill.status === 'paid' && newStatus !== 'paid' && bank) {
-        bank.balance += Number(bill.amount) || 0;
+      if (isDirect && bank) {
+        if (bill.status !== 'paid' && newStatus === 'paid') {
+          bank.balance -= Number(bill.amount) || 0;
+        } else if (bill.status === 'paid' && newStatus !== 'paid') {
+          bank.balance += Number(bill.amount) || 0;
+        }
       }
       bill.status = newStatus;
       saveState();
@@ -2445,7 +2751,13 @@
     }
 
     function openCardModal(cardId = null) {
-      const existing = state.cards.find(c => c.id === cardId) || { name: '', bankId: (state.banks[0]?.id || ''), statementTotal: 0 };
+      const existing = state.cards.find(c => c.id === cardId) || {
+        name: '',
+        bankId: (state.banks[0]?.id || ''),
+        closingDay: 5,
+        dueDay: 20,
+        statementTotal: 0
+      };
       const bankOptions = state.banks.length === 0 ? '<option value="">請先新增銀行帳戶</option>' : state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
       openAppModal(cardId ? '編輯信用卡' : '新增信用卡', `
         <div class="space-y-3 text-fluid-body">
@@ -2454,8 +2766,18 @@
             <input id="mCardName" type="text" value="${existing.name}" placeholder="例如：玉山 U Bear 卡" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <div>
-            <label class="font-bold block mb-1">綁定 30 號扣款銀行</label>
+            <label class="font-bold block mb-1">綁定扣款銀行</label>
             <select id="mCardBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-bold block mb-1">每月結帳日 (1~31)</label>
+              <input id="mCardClosingDay" type="number" min="1" max="31" value="${existing.closingDay || 5}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            </div>
+            <div>
+              <label class="font-bold block mb-1">每月扣款日 (1~31)</label>
+              <input id="mCardDueDay" type="number" min="1" max="31" value="${existing.dueDay || 20}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-rose-500">
+            </div>
           </div>
           <div>
             <label class="font-bold block mb-1">本期帳單總額 (NT$)</label>
@@ -2469,13 +2791,15 @@
     function saveCardForm(cardId) {
       const name = document.getElementById('mCardName').value.trim();
       const bankId = document.getElementById('mCardBank').value;
+      const closingDay = Math.min(31, Math.max(1, Number(document.getElementById('mCardClosingDay').value) || 5));
+      const dueDay = Math.min(31, Math.max(1, Number(document.getElementById('mCardDueDay').value) || 20));
       const statementTotal = Number(document.getElementById('mCardTotal').value) || 0;
       if (!name) return showToast('請輸入信用卡名稱', 'warn');
       if (cardId) {
         const c = state.cards.find(x => x.id === cardId);
-        if (c) Object.assign(c, { name, bankId, statementTotal });
+        if (c) Object.assign(c, { name, bankId, closingDay, dueDay, statementTotal });
       } else {
-        state.cards.push({ id: 'card_' + Date.now(), name, bankId, statementTotal, paid: false, bigExpenses: [] });
+        state.cards.push({ id: 'card_' + Date.now(), name, bankId, closingDay, dueDay, statementTotal, paid: false, bigExpenses: [] });
       }
       saveState(); closeAppModal(); renderAll();
     }
@@ -2616,50 +2940,169 @@
     }
 
     function openBillModal(billId = null) {
-      const existing = state.bills.find(b => b.id === billId) || { name: '', cycle: '每月固定', amount: 0, bankId: (state.banks[0]?.id || ''), status: 'unpaid' };
-      const bankOptions = state.banks.length === 0 ? '<option value="">請先新增銀行帳戶</option>' : state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
+      const existing = state.bills.find(b => b.id === billId) || {
+        name: '',
+        cycle: '每月固定',
+        amount: 0,
+        dueDay: 10,
+        paymentMethod: 'bank_direct',
+        bankId: (state.banks[0]?.id || ''),
+        cardId: (state.cards[0]?.id || ''),
+        activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12],
+        status: 'unpaid'
+      };
+
+      const bankOptions = state.banks.length === 0
+        ? '<option value="">請先新增銀行帳戶</option>'
+        : state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
+
+      const cardOptions = state.cards.length === 0
+        ? '<option value="">尚無信用卡，請先新增</option>'
+        : state.cards.map(c => `<option value="${c.id}" ${c.id === existing.cardId ? 'selected' : ''}>${c.name}</option>`).join('');
+
+      const isCard = existing.paymentMethod === 'card_auto';
+      const monthsStr = Array.isArray(existing.activeMonths) ? existing.activeMonths.join(',') : '1,2,3,4,5,6,7,8,9,10,11,12';
+
       openAppModal(billId ? '編輯週期固定費用' : '新增週期固定費用', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">費用名稱</label>
-            <input id="mBillName" type="text" value="${existing.name}" placeholder="例如：房租、台電電費、網路費" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <input id="mBillName" type="text" value="${existing.name}" placeholder="例如：房屋租金、台電雙月電費、光世代網路費" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
+
           <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="font-bold block mb-1">繳費週期</label>
-              <select id="mBillCycle" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                <option value="每月固定" ${existing.cycle === '每月固定' ? 'selected' : ''}>每月固定</option>
-                <option value="雙月帳單" ${existing.cycle === '雙月帳單' ? 'selected' : ''}>雙月帳單</option>
-                <option value="季繳/年繳" ${existing.cycle === '季繳/年繳' ? 'selected' : ''}>季繳/年繳</option>
-              </select>
-            </div>
             <div>
               <label class="font-bold block mb-1">當期金額 (NT$)</label>
               <input id="mBillAmt" type="number" value="${existing.amount}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
             </div>
+            <div>
+              <label class="font-bold block mb-1">每月扣款日 (1~31 號)</label>
+              <input id="mBillDueDay" type="number" min="1" max="31" value="${existing.dueDay || 10}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+            </div>
           </div>
+
+          <!-- 扣款管道切換 -->
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+            <label class="font-bold block text-fluid-sub">扣款管道 (防重複扣款)</label>
+            <div class="grid grid-cols-2 gap-2 text-fluid-sub">
+              <label class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer ${!isCard ? 'border-indigo-500 bg-indigo-500/10 font-bold' : 'border-slate-200 dark:border-slate-700'}">
+                <input type="radio" name="mBillPayMethod" value="bank_direct" ${!isCard ? 'checked' : ''} onchange="toggleBillPayMethod('bank_direct')" class="accent-indigo-600">
+                <span>🏦 銀行直扣</span>
+              </label>
+              <label class="flex items-center gap-2 p-2 rounded-xl border cursor-pointer ${isCard ? 'border-indigo-500 bg-indigo-500/10 font-bold' : 'border-slate-200 dark:border-slate-700'}">
+                <input type="radio" name="mBillPayMethod" value="card_auto" ${isCard ? 'checked' : ''} onchange="toggleBillPayMethod('card_auto')" class="accent-indigo-600">
+                <span>💳 信用卡代繳</span>
+              </label>
+            </div>
+
+            <div id="billBankBox" class="${!isCard ? '' : 'hidden'} pt-1">
+              <label class="text-fluid-sub font-semibold text-slate-500 block mb-1">指定扣款銀行</label>
+              <select id="mBillBank" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
+            </div>
+
+            <div id="billCardBox" class="${isCard ? '' : 'hidden'} pt-1">
+              <label class="text-fluid-sub font-semibold text-slate-500 block mb-1">指定代繳信用卡 (已併入卡費不重複扣銀行)</label>
+              <select id="mBillCard" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">${cardOptions}</select>
+            </div>
+          </div>
+
+          <!-- 繳費週期與生效月份 -->
           <div>
-            <label class="font-bold block mb-1">指定扣款銀行</label>
-            <select id="mBillBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
+            <label class="font-bold block mb-1">繳費週期</label>
+            <select id="mBillCycle" onchange="onBillCycleChange(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+              <option value="每月固定" ${existing.cycle === '每月固定' ? 'selected' : ''}>每月固定</option>
+              <option value="雙月帳單" ${existing.cycle === '雙月帳單' ? 'selected' : ''}>雙月帳單</option>
+              <option value="季繳/年繳" ${existing.cycle === '季繳/年繳' ? 'selected' : ''}>季繳/年繳</option>
+            </select>
           </div>
+
+          <!-- 雙月帳單生效選項 -->
+          <div id="billBimonthlyBox" class="${existing.cycle === '雙月帳單' ? '' : 'hidden'} p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-fluid-sub space-y-1.5">
+            <label class="font-semibold block text-slate-500">生效月份選擇</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="flex items-center gap-1.5 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer">
+                <input type="radio" name="mBillBiMonths" value="even" ${JSON.stringify(existing.activeMonths) === JSON.stringify([2,4,6,8,10,12]) ? 'checked' : ''} class="accent-indigo-600">
+                <span>雙數月 (2,4,6,8,10,12)</span>
+              </label>
+              <label class="flex items-center gap-1.5 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 cursor-pointer">
+                <input type="radio" name="mBillBiMonths" value="odd" ${JSON.stringify(existing.activeMonths) === JSON.stringify([1,3,5,7,9,11]) ? 'checked' : ''} class="accent-indigo-600">
+                <span>單數月 (1,3,5,7,9,11)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 季繳/年繳自訂月份 -->
+          <div id="billCustomMonthsBox" class="${existing.cycle === '季繳/年繳' ? '' : 'hidden'} p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-fluid-sub space-y-1.5">
+            <label class="font-semibold block text-slate-500">生效扣款月份（以逗號分隔，例如：1,4,7,10 或 5）</label>
+            <input id="mBillCustomMonths" type="text" value="${monthsStr}" placeholder="1,4,7,10" class="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono">
+          </div>
+
           <button onclick="saveBillForm('${billId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存固定費用</button>
         </div>
       `);
+    }
+
+    function toggleBillPayMethod(method) {
+      const bankBox = document.getElementById('billBankBox');
+      const cardBox = document.getElementById('billCardBox');
+      if (bankBox && cardBox) {
+        bankBox.classList.toggle('hidden', method !== 'bank_direct');
+        cardBox.classList.toggle('hidden', method !== 'card_auto');
+      }
+    }
+
+    function onBillCycleChange(cycle) {
+      const biBox = document.getElementById('billBimonthlyBox');
+      const customBox = document.getElementById('billCustomMonthsBox');
+      if (biBox && customBox) {
+        biBox.classList.toggle('hidden', cycle !== '雙月帳單');
+        customBox.classList.toggle('hidden', cycle !== '季繳/年繳');
+      }
     }
 
     function saveBillForm(billId) {
       const name = document.getElementById('mBillName').value.trim();
       const cycle = document.getElementById('mBillCycle').value;
       const amount = Number(document.getElementById('mBillAmt').value) || 0;
-      const bankId = document.getElementById('mBillBank').value;
+      const dueDay = Math.min(31, Math.max(1, Number(document.getElementById('mBillDueDay').value) || 10));
+      const payMethodInput = document.querySelector('input[name="mBillPayMethod"]:checked');
+      const paymentMethod = payMethodInput ? payMethodInput.value : 'bank_direct';
+      const bankId = document.getElementById('mBillBank') ? document.getElementById('mBillBank').value : '';
+      const cardId = document.getElementById('mBillCard') ? document.getElementById('mBillCard').value : '';
+
+      let activeMonths = [1,2,3,4,5,6,7,8,9,10,11,12];
+      if (cycle === '雙月帳單') {
+        const biChoice = document.querySelector('input[name="mBillBiMonths"]:checked');
+        activeMonths = (biChoice && biChoice.value === 'odd') ? [1,3,5,7,9,11] : [2,4,6,8,10,12];
+      } else if (cycle === '季繳/年繳') {
+        const rawMonths = document.getElementById('mBillCustomMonths').value;
+        const parsed = rawMonths.split(/[,，\s]+/).map(n => Number(n)).filter(n => n >= 1 && n <= 12);
+        activeMonths = parsed.length > 0 ? Array.from(new Set(parsed)).sort((a,b) => a-b) : [1,4,7,10];
+      }
+
       if (!name) return showToast('請輸入費用名稱', 'warn');
+
       if (billId) {
         const b = state.bills.find(x => x.id === billId);
-        if (b) Object.assign(b, { name, cycle, amount, bankId });
+        if (b) Object.assign(b, { name, cycle, amount, dueDay, paymentMethod, bankId, cardId, activeMonths });
       } else {
-        state.bills.push({ id: 'bill_' + Date.now(), name, cycle, amount, bankId, status: 'unpaid' });
+        state.bills.push({
+          id: 'bill_' + Date.now(),
+          name,
+          cycle,
+          amount,
+          dueDay,
+          paymentMethod,
+          bankId,
+          cardId,
+          activeMonths,
+          status: 'unpaid'
+        });
       }
-      saveState(); closeAppModal(); renderAll();
+      saveState();
+      closeAppModal();
+      renderAll();
+      showToast(billId ? '已更新固定費用！' : '已新增固定費用！');
     }
 
     function deleteBill(id) {
@@ -2798,18 +3241,24 @@
         ['常態每月固定生活支出', m.billsMonthlyBaseCost, '現金部位', m.stockCashPool, '波段持倉總市值', m.stockMarketValue],
         [],
         ['=== 一、銀行自動扣繳餘額檢查 ==='],
-        ['銀行名稱', '目前餘額', '30號待扣卡費', '30號待扣固定費', '30號待扣總計', '扣後預計結餘', '狀態']
+        ['銀行名稱', '目前餘額', '待扣卡費', '待扣直扣費用', '待扣總計', '扣後預計結餘', '狀態']
       ];
       m.bankCheckups.forEach(b => {
         rows.push([b.name, b.balance, b.cardsSum, b.billsSum, b.requiredTotal, b.afterBalance, b.isShortfall ? '餘額不足' : '餘額充足']);
       });
-      rows.push([], ['=== 二、信用卡本期帳單與 >5000 大額明細 ==='], ['信用卡名稱', '扣款銀行', '本期總額', '狀態', '>5000大額明細']);
+      rows.push([], ['=== 二、每月固定薪資與其他收入來源 ==='], ['收入名稱', '類型', '入帳銀行', '每月入帳日', '預估金額', '本月入帳狀態']);
+      (state.inflows || []).forEach(inf => {
+        const bankName = state.banks.find(b => b.id === inf.bankId)?.name || '未指定';
+        const typeMap = { salary: '本業月薪', side: '兼職副業', bonus: '特定月獎金', other: '其他' };
+        rows.push([inf.name, typeMap[inf.type] || inf.type, bankName, `${inf.payDay}號`, inf.amount, inf.receivedThisMonth ? '已入帳' : '未入帳']);
+      });
+      rows.push([], ['=== 三、信用卡本期帳單與 >5000 大額明細 ==='], ['信用卡名稱', '扣款銀行', '結帳日', '扣款日', '本期總額', '狀態', '>5000大額明細']);
       state.cards.forEach(c => {
         const bankName = state.banks.find(b => b.id === c.bankId)?.name || '';
         const bigStr = (c.bigExpenses || []).map(x => `${x.title}($${x.amount})`).join(' / ');
-        rows.push([c.name, bankName, c.statementTotal, c.paid ? '已繳清' : '未繳', bigStr || '無']);
+        rows.push([c.name, bankName, `${c.closingDay || 5}號`, `${c.dueDay || 20}號`, c.statementTotal, c.paid ? '已繳清' : '未繳', bigStr || '無']);
       });
-      rows.push([], ['=== 三、獨立分期付款追蹤 ==='], ['分期項目', '所屬信用卡', '扣款銀行', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
+      rows.push([], ['=== 四、獨立分期付款追蹤 ==='], ['分期項目', '所屬信用卡', '扣款銀行', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
       state.installments.forEach(inst => {
         const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
         const cardName = card ? card.name : (inst.cardName || '未指定');
@@ -2818,17 +3267,20 @@
         const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
         rows.push([inst.title, cardName, bankName, inst.monthlyAmount, inst.totalPeriods, inst.paidPeriods, left * inst.monthlyAmount]);
       });
-      rows.push([], ['=== 四、台股波段持倉部位 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
+      rows.push([], ['=== 五、台股波段持倉部位 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
       state.stocks.forEach(s => {
         const val = s.shares * s.currentPrice;
         const cost = s.shares * s.avgCost;
         rows.push([s.code, s.name, s.shares, s.avgCost, s.currentPrice, val, val - cost]);
       });
-      rows.push([], ['=== 五、每月/雙月週期固定費用 ==='], ['費用名稱', '繳費週期', '扣款銀行', '當期金額', '狀態']);
+      rows.push([], ['=== 六、每月/雙月週期固定費用 ==='], ['費用名稱', '繳費週期', '扣款日', '扣款管道', '扣款銀行/信用卡', '當期金額', '狀態']);
       state.bills.forEach(b => {
-        const bankName = state.banks.find(x => x.id === b.bankId)?.name || '未指定';
+        const isCard = b.paymentMethod === 'card_auto';
+        const card = isCard ? state.cards.find(c => c.id === b.cardId) : null;
+        const bank = !isCard ? state.banks.find(x => x.id === b.bankId) : null;
+        const targetName = isCard ? (card ? card.name : '指定卡片') : (bank ? bank.name : '指定銀行');
         const statusMap = { unpaid: '待繳', paid: '已繳', skipped: '免繳' };
-        rows.push([b.name, b.cycle, bankName, b.amount, statusMap[b.status] || b.status]);
+        rows.push([b.name, b.cycle, `${b.dueDay || 10}號`, isCard ? '信用卡代繳' : '銀行直扣', targetName, b.amount, statusMap[b.status] || b.status]);
       });
 
       const csvContent = '\uFEFF' + rows.map(r => r.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
@@ -2975,22 +3427,52 @@
     function calcFutureMonthBankBalance(bank, targetMonth, currentMonth, currentYear) {
       let bal = Number(bank.balance) || 0;
       for (let m = currentMonth + 1; m <= targetMonth; m++) {
-        const salary = bank.salaryAmount || (bank.isSalaryAccount ? 60000 : 0);
-        // 該月固定直接扣款
+        const k = m - currentMonth; // 未來第 k 個月 (1, 2, 3...)
+
+        // 1. 收入面：綁定該銀行且 activeMonths 包含 m 的 inflows 總和 (若無 inflows 則相容 bank.salaryAmount)
+        let monthInflow = 0;
+        const bankInflows = (state.inflows || []).filter(inf => inf.bankId === bank.id);
+        if (bankInflows.length > 0) {
+          monthInflow = bankInflows
+            .filter(inf => Array.isArray(inf.activeMonths) && inf.activeMonths.includes(m))
+            .reduce((sum, inf) => sum + (Number(inf.amount) || 0), 0);
+        } else {
+          monthInflow = bank.salaryAmount || (bank.isSalaryAccount ? 60000 : 0);
+        }
+
+        // 2. 固定費用面：只扣除綁定該銀行且 paymentMethod !== 'card_auto' 且 activeMonths 包含 m 的費用
         const directBills = (state.bills || [])
-          .filter(b => b.bankId === bank.id)
+          .filter(b => b.paymentMethod !== 'card_auto' && b.bankId === bank.id)
           .reduce((sum, b) => {
             const amt = Number(b.amount) || 0;
-            if (b.cycle === '雙月帳單' && m % 2 !== 0) return sum;
-            return sum + amt;
+            const active = Array.isArray(b.activeMonths) ? b.activeMonths.includes(m) : (b.cycle === '雙月帳單' ? m % 2 === 0 : true);
+            return active ? sum + amt : sum;
           }, 0);
 
-        // 綁定此銀行的信用卡月平均花費
-        const boundCardsAvg = (state.cards || [])
-          .filter(c => c.bankId === bank.id)
-          .reduce((sum, c) => sum + getEstimatedCardMonthlyAvg(c), 0);
+        // 3. 信用卡與分期退坡面
+        const boundCards = (state.cards || []).filter(c => c.bankId === bank.id);
+        let cardsSpend = 0;
+        boundCards.forEach(c => {
+          const cardInsts = (state.installments || []).filter(inst => {
+            const matchCard = inst.cardId ? (inst.cardId === c.id) : (inst.cardName === c.name);
+            const left = Math.max(0, (Number(inst.totalPeriods) || 0) - (Number(inst.paidPeriods) || 0));
+            return matchCard && left > 0;
+          });
+          const currentCardInstSum = cardInsts.reduce((sum, inst) => sum + (Number(inst.monthlyAmount) || 0), 0);
+          const baseSpend = Math.max(0, (Number(c.statementTotal) || 0) - currentCardInstSum);
 
-        bal = bal + salary - directBills - boundCardsAvg;
+          let futureInstSum = 0;
+          cardInsts.forEach(inst => {
+            const leftPeriods = Math.max(0, (Number(inst.totalPeriods) || 0) - (Number(inst.paidPeriods) || 0));
+            if (k <= leftPeriods) {
+              futureInstSum += Number(inst.monthlyAmount) || 0;
+            }
+          });
+
+          cardsSpend += (baseSpend + futureInstSum);
+        });
+
+        bal = bal + monthInflow - directBills - cardsSpend;
       }
       return Math.round(bal);
     }

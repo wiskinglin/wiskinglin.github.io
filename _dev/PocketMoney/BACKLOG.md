@@ -7,7 +7,10 @@
 
 ## 📊 STATUS 儀表板（最後更新：2026-11-02）
 
-### ✅ 已完成（Done）
+### 👀 待你審查 / 選擇（Ready for Review）
+- **`F01` — Input 參數與收入設定閉環（拔除寫死日期假設）**
+  - **並排審查板**：[`prototypes/F01-input-params/compare.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/compare.html)（亦可單獨開 [`A.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/A.html) 或 [`B.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/B.html)）
+  - **觀察重點**：① 收入來源放在銀行頁頂部(A) vs 獨立規則分頁(B) ② 彈窗改日期(A) vs 表格行內直改(B) ③ 首頁 1～31 號收支時序軸(B) 是否保留。
 - **Git 同步**：Flash 子 Agent 已將四層文件架構 commit (`751da4e`) 並 push 至 `origin/dev`。
 - **移除無意義的 3 個假 Profile**：已從產品定位、情境庫與審查板母版全面移除「初級/少子化/高級大人」預設假設，回歸真實個人使用者的 **Input × View** 雙閉環規劃。
 
