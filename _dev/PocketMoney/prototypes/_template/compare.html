@@ -16,22 +16,14 @@
   <!-- ==================== 頂部資訊與控制列 ==================== -->
   <header class="bg-[#262B35] border-b border-[#3B4252] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
     <div class="flex items-center gap-3">
-      <span id="featureIdBadge" class="px-2.5 py-1 rounded-lg bg-[#5F83A8] text-white font-mono font-bold text-xs">F00</span>
+      <span id="featureIdBadge" class="px-2.5 py-1 rounded-lg bg-[#5F83A8] text-white font-mono font-bold text-xs">F01</span>
       <div>
         <h1 id="featureTitle" class="font-bold text-sm sm:text-base leading-tight">功能實驗名稱</h1>
-        <p id="scenarioQuestion" class="text-xs text-[#8C97AB]">對應情境 S00：「使用者心中的問題」</p>
+        <p id="scenarioQuestion" class="text-xs text-[#8C97AB]">解決問題：「從哪裡輸入參數 / 如何在 View 模擬現金流」</p>
       </div>
     </div>
 
     <div class="flex items-center gap-2 flex-wrap text-xs">
-      <!-- 人物切換 (透過 postMessage 或 URL query 傳給 A/B iframe) -->
-      <div class="flex items-center bg-[#1D2129] p-1 rounded-lg border border-[#3B4252]">
-        <span class="px-2 text-[#8C97AB] font-semibold">人物：</span>
-        <button onclick="setPersona('junior')" data-persona="junior" class="persona-btn px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white">初級大人</button>
-        <button onclick="setPersona('family')" data-persona="family" class="persona-btn px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white">少子化勇者</button>
-        <button onclick="setPersona('senior')" data-persona="senior" class="persona-btn px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white">高級大人</button>
-      </div>
-
       <!-- 視窗尺寸切換 -->
       <div class="flex items-center bg-[#1D2129] p-1 rounded-lg border border-[#3B4252]">
         <button onclick="setViewport('desktop')" id="vpDesktop" class="px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white">
@@ -61,7 +53,7 @@
         <a href="A.html" target="_blank" class="text-[#8C97AB] hover:text-white"><i class="fa-solid fa-up-right-from-square"></i> 單獨開啟</a>
       </div>
       <div class="flex-1 flex justify-center bg-[#1D2129] overflow-auto">
-        <iframe id="frameA" src="A.html?persona=family" class="frame-wrap w-full h-full border-0 bg-white"></iframe>
+        <iframe id="frameA" src="A.html" class="frame-wrap w-full h-full border-0 bg-white"></iframe>
       </div>
     </section>
 
@@ -75,7 +67,7 @@
         <a href="B.html" target="_blank" class="text-[#8C97AB] hover:text-white"><i class="fa-solid fa-up-right-from-square"></i> 單獨開啟</a>
       </div>
       <div class="flex-1 flex justify-center bg-[#1D2129] overflow-auto">
-        <iframe id="frameB" src="B.html?persona=family" class="frame-wrap w-full h-full border-0 bg-white"></iframe>
+        <iframe id="frameB" src="B.html" class="frame-wrap w-full h-full border-0 bg-white"></iframe>
       </div>
     </section>
   </main>
@@ -92,27 +84,25 @@
       <span id="agentRecommendation" class="px-2.5 py-1 rounded-lg bg-[#2E3440] border border-[#4C566A] text-[#A6BDD5] font-semibold">
         🤖 主 Agent 建議：A（原因簡述）
       </span>
-      <span class="text-[#8C97AB] hidden md:inline">回覆範例：<code class="text-white bg-[#1D2129] px-1.5 py-0.5 rounded">F00 A</code></span>
+      <span class="text-[#8C97AB] hidden md:inline">回覆範例：<code class="text-white bg-[#1D2129] px-1.5 py-0.5 rounded">F01 A</code></span>
     </div>
   </footer>
 
   <script>
     /* ===== 實驗審查板設定區（由 Flash 產出實驗時填入） ===== */
     const COMPARE_CONFIG = {
-      featureId: 'F00',
+      featureId: 'F01',
       featureTitle: '功能實驗名稱',
-      scenarioQuestion: '對應情境 S00：「使用者心中的問題」',
-      labelPlanA: '方案 A：內嵌直覺操作',
-      labelPlanB: '方案 B：獨立彈窗引導',
+      scenarioQuestion: '解決問題：「從哪裡輸入參數 / 如何在 View 模擬現金流」',
+      labelPlanA: '方案 A：分頁內嵌直覺設定',
+      labelPlanB: '方案 B：集中式規則管理面板',
       focusPoints: [
-        '① 首屏能否一眼看出結果',
-        '② 完成動作所需點擊次數',
-        '③ 手機 390px 下是否好按且不擠壓'
+        '① 參數設定入口是否好找直覺',
+        '② 完成設定與更新所需點擊次數',
+        '③ 設定完後在 View 上是否立即反映真實日期與現金流'
       ],
-      recommendation: '🤖 主 Agent 建議：A（點擊數較少、不跳離當前脈絡）'
+      recommendation: '🤖 主 Agent 建議：A'
     };
-
-    let currentPersona = 'family';
 
     function applyConfig() {
       document.title = `${COMPARE_CONFIG.featureId} A/B 審查板 — ${COMPARE_CONFIG.featureTitle}`;
@@ -125,18 +115,6 @@
       document.getElementById('focusPoint2').innerText = COMPARE_CONFIG.focusPoints[1] || '';
       document.getElementById('focusPoint3').innerText = COMPARE_CONFIG.focusPoints[2] || '';
       document.getElementById('agentRecommendation').innerText = COMPARE_CONFIG.recommendation;
-    }
-
-    function setPersona(p) {
-      currentPersona = p;
-      document.querySelectorAll('.persona-btn').forEach(btn => {
-        const active = btn.dataset.persona === p;
-        btn.className = active
-          ? 'persona-btn px-2.5 py-1 rounded-md font-bold bg-[#5F83A8] text-white'
-          : 'persona-btn px-2.5 py-1 rounded-md font-bold text-[#8C97AB] hover:text-white';
-      });
-      document.getElementById('frameA').src = `A.html?persona=${p}`;
-      document.getElementById('frameB').src = `B.html?persona=${p}`;
     }
 
     function setViewport(mode) {
@@ -166,4 +144,3 @@
   </script>
 </body>
 </html>
-
