@@ -7,26 +7,18 @@
 
 ## 📊 STATUS 儀表板（最後更新：2026-11-03）
 
-### 👀 待你審查 / 選擇（Ready for Review）
-- **`F01` — Input 參數與收入設定閉環（拔除寫死日期假設）**
-  - **並排審查板**：[`prototypes/F01-input-params/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F01-input-params/compare.html)（亦可單獨開 [`A.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F01-input-params/A.html) 或 [`B.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F01-input-params/B.html)）
-  - **驗證報告**：[`prototypes/F01-input-params/report.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F01-input-params/report.md)
-  - **觀察重點**：① 收入來源放在銀行頁頂部(A) vs 獨立規則分頁(B) ② 彈窗/膠囊改日期(A) vs 表格行內直改(B) ③ 首頁 1～31 號收支時序軸(B) 是否保留。
-
-### 🔄 進行中 / 待合併
-- **`F01` 已定案選 B（ADR-009）**：待同步規格文件，並由 Flash 合併回 `pocketmoney_view.html`。
-- **`F02` — 已有 `brief.md`，Flash 實作因子 Agent 額度用盡（429）中斷，尚未產出 A/B**：[`brief.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F02-view-cashflow/brief.md)
-- **`F03` — 已有 `brief.md`，Flash 實作因子 Agent 額度用盡（429）中斷，尚未產出 A/B**：[`brief.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F03-action-transfer/brief.md)
-
----
+### 🟢 已完成並合併（Completed & Merged）
+- **`F01` — Input 參數與收支規則中心（拔除寫死日期假設）**
+  - **定案紀錄**：已拍板採用方案 B（ADR-009），成功合併至主力雛型 [`pocketmoney_view.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney_view.html)。
+  - **交付歷史**：已登錄至 [`CHANGELOG.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/CHANGELOG.md) [v3.6-dev]。
 
 ### 🎯 第一階段核心改造路線（將 Main 改為可持續使用的系統）
 
 | 階段 | 代號 | 核心命題 | 解決的具體斷層 | 狀態 |
 | :---: | :--- | :--- | :--- | :---: |
-| **Step 1** | **`F01`** | **Input 端：補齊所有「真實日期與收入規則」輸入入口，拔除寫死的假設** | 1. **每月薪資與其他收入設定**：可設定實際撥薪日（如 20～25 號）、月薪金額，以及新增其他固定/特定月份收入（獎金、副業、配息、補貼）。<br>2. **信用卡結帳日與扣款日**：在新增/編輯信用卡與卡片列表上，支援設定每張卡各自的 `結帳日` 與 `扣款日`（拔掉寫死的「30號扣款 / 10號收單」）。<br>3. **固定費用扣款日與扣款管道**：支援設定 `每月幾號扣款`、`雙月/季繳生效月份`，以及區分 `銀行帳戶直扣` vs `信用卡代繳`（不再重複扣減銀行餘額）。 | ✅ **Manager 已選 B，待合併回 Main** |
-| **Step 2** | **`F02`** | **View 端：依使用者設定的真實日期，模擬「當月時序水位」與「跨月持續累積」** | 1. **當月時序現金流模擬（抓出發薪前跳票）**：依真實日期排序（如 10 號扣房租 ➔ 18 號扣卡費 ➔ 25 號發薪），算清每一筆扣款當下戶頭夠不夠錢。<br>2. **月底結算封存與跨月推進**：結算完當月後，將真實期末餘額與帳單封存進歷史月份 `records`，推進至下個月，讓 12 個月趨勢圖左邊呈現真實歷史、右邊呈現根據你自身規則算出的未來現金流。 | ⏸️ **Brief 已備，Flash 額度用盡暫停** |
-| **Step 3** | **`F03`** | **Action 端：扣款缺口一鍵跨行調撥與單期金額覆寫** | 1. 當 View 模擬出某銀行在某號會出現缺口時，一鍵從富餘銀行調度轉帳。<br>2. 夏季電費或單月突發調整時，可覆寫當期金額而不破壞全年常態基準。 | ⏸️ **Brief 已備，Flash 額度用盡暫停** |
+| **Step 1** | **`F01`** | **Input 端：補齊所有「真實日期與收入規則」輸入入口，拔除寫死的假設** | 1. **每月薪資與其他收入設定**：可設定實際撥薪日（如 20～25 號）、月薪金額，以及新增其他固定/特定月份收入（獎金、副業、配息、補貼）。<br>2. **信用卡結帳日與扣款日**：在新增/編輯信用卡與卡片列表上，支援設定每張卡各自的 `結帳日` 與 `扣款日`（拔掉寫死的「30號扣款 / 10號收單」）。<br>3. **固定費用扣款日與扣款管道**：支援設定 `每月幾號扣款`、`雙月/季繳生效月份`，以及區分 `銀行帳戶直扣` vs `信用卡代繳`（不再重複扣減銀行餘額）。 | 🟢 **已合併至 Main [v3.6-dev]** |
+| **Step 2** | **`F02`** | **View 端：依使用者設定的真實日期，模擬「當月時序水位」與「跨月持續累積」** | 1. **當月時序現金流模擬（抓出發薪前跳票）**：依真實日期排序（如 10 號扣房租 ➔ 18 號扣卡費 ➔ 25 號發薪），算清每一筆扣款當下戶頭夠不夠錢。<br>2. **月底結算封存與跨月推進**：結算完當月後，將真實期末餘額與帳單封存進歷史月份 `records`，推進至下個月，讓 12 個月趨勢圖左邊呈現真實歷史、右邊呈現根據你自身規則算出的未來現金流。 | ⏳ **規格已備，待啟動探索** |
+| **Step 3** | **`F03`** | **Action 端：扣款缺口一鍵跨行調撥與單期金額覆寫** | 1. 當 View 模擬出某銀行在某號會出現缺口時，一鍵從富餘銀行調度轉帳。<br>2. 夏季電費或單月突發調整時，可覆寫當期金額而不破壞全年常態基準。 | ⏳ **規格已備，待啟動探索** |
 
 ---
 
