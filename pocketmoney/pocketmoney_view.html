@@ -1350,22 +1350,34 @@
         }
       });
 
-      // 各銀行自動扣款水位檢核：只有 bank_direct 會直接扣銀行！card_auto 由卡片結帳處理
+      // 各銀行自動扣款水位檢核：
+      // 1. 綁定流入 (Inflows)：讀取全域 state.inflows 歸戶到該銀行的收入
+      // 2. 綁定流出：只有 bank_direct 直扣與未繳卡費
+      const currentMonthNum = (new Date()).getMonth() + 1;
       const bankCheckups = state.banks.map(bank => {
+        const boundInflows = (state.inflows || []).filter(inf => {
+          const isActive = !inf.activeMonths || inf.activeMonths.includes(currentMonthNum);
+          return inf.bankId === bank.id && isActive;
+        });
         const boundUnpaidCards = state.cards.filter(c => c.bankId === bank.id && !c.paid);
         const boundUnpaidBills = state.bills.filter(b => (b.paymentMethod === 'bank_direct' || !b.paymentMethod) && b.bankId === bank.id && b.status === 'unpaid');
+        const inflowSum = boundInflows.reduce((s, inf) => s + (Number(inf.amount) || 0), 0);
         const cardsSum = boundUnpaidCards.reduce((s, c) => s + (Number(c.statementTotal) || 0), 0);
         const billsSum = boundUnpaidBills.reduce((s, b) => s + (Number(b.amount) || 0), 0);
         const requiredTotal = cardsSum + billsSum;
         const afterBalance = (Number(bank.balance) || 0) - requiredTotal;
+        const projectedAfterBalance = (Number(bank.balance) || 0) + inflowSum - requiredTotal;
         return {
           ...bank,
+          boundInflows,
+          inflowSum,
           boundUnpaidCards,
           boundUnpaidBills,
           cardsSum,
           billsSum,
           requiredTotal,
           afterBalance,
+          projectedAfterBalance,
           isShortfall: afterBalance < 0
         };
       });
@@ -1662,7 +1674,11 @@
             <div class="min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <h4 class="font-bold text-fluid-h3 truncate">${b.name}</h4>
-                ${b.isSalaryAccount ? `<span class="px-2 py-0.5 rounded-full text-fluid-sub font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 num-nowrap"><i class="fa-solid fa-briefcase mr-1"></i>薪資戶 (${b.salaryDay || 5}號)</span>` : ''}
+                ${(b.boundInflows && b.boundInflows.length > 0) ? b.boundInflows.map(inf => `
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 num-nowrap">
+                    <i class="fa-solid fa-briefcase mr-1"></i>${inf.name} (${inf.payDay}號 +${fmtMoney(inf.amount)})
+                  </span>
+                `).join('') : (b.isSalaryAccount ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 num-nowrap"><i class="fa-solid fa-briefcase mr-1"></i>薪資戶 (${b.salaryDay || 5}號)</span>` : '')}
               </div>
               <p class="text-fluid-sub text-slate-400 truncate">${b.note || '台幣帳戶'}</p>
             </div>
@@ -1678,10 +1694,16 @@
               class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-extrabold text-fluid-h2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
 
-          <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1 text-fluid-sub">
+          <div class="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1.5 text-fluid-sub">
+            ${b.inflowSum > 0 ? `
+              <div class="flex items-center justify-between gap-2 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span>預估本月流入</span>
+                <span class="font-mono font-bold num-nowrap">+${fmtMoney(b.inflowSum)}</span>
+              </div>
+            ` : ''}
             <div class="flex items-center justify-between gap-2">
               <span class="text-slate-400">本期待扣總額</span>
-              <span class="font-mono font-bold num-nowrap">${fmtMoney(b.requiredTotal)}</span>
+              <span class="font-mono font-bold num-nowrap text-rose-500">-${fmtMoney(b.requiredTotal)}</span>
             </div>
             <div class="flex items-center justify-between gap-2">
               <span class="text-slate-400">${b.isShortfall ? '尚缺需補' : '扣後剩餘'}</span>
@@ -2888,27 +2910,28 @@
             <input id="mBankNote" type="text" value="${existing.note || ''}" placeholder="例如：主力信用卡扣款戶" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
 
-          <!-- 薪資戶設定 -->
-          <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-2">
+          <!-- 薪資與收入來源連動 (與收支規則中心完全同步) -->
+          <div class="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/70 dark:border-emerald-800/60 space-y-2">
             <div class="flex items-center justify-between">
-              <label class="font-bold flex items-center gap-1.5 cursor-pointer">
-                <input id="mBankIsSalary" type="checkbox" ${existing.isSalaryAccount ? 'checked' : ''} onchange="document.getElementById('salaryConfigBox').classList.toggle('hidden', !this.checked)" class="rounded text-indigo-600 w-4 h-4">
-                <span>設為薪資入帳戶</span>
+              <label class="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>設為薪資/收入入帳戶</span>
               </label>
-              <span class="text-fluid-sub text-slate-400">每月固定現金流入</span>
+              <span class="text-fluid-sub text-emerald-600 dark:text-emerald-400 font-semibold">連動收支規則總表</span>
             </div>
-            <div id="salaryConfigBox" class="${existing.isSalaryAccount ? '' : 'hidden'} space-y-2 pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-fluid-sub font-semibold text-slate-500 block mb-1">每月入帳日</label>
-                  <input id="mBankSalaryDay" type="number" min="1" max="31" value="${existing.salaryDay || 5}" placeholder="5" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono">
-                </div>
-                <div>
-                  <label class="text-fluid-sub font-semibold text-slate-500 block mb-1">預估每月薪資 (NT$)</label>
-                  <input id="mBankSalaryAmt" type="number" value="${existing.salaryAmount || 0}" placeholder="60000" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold">
-                </div>
+            <div class="grid grid-cols-2 gap-2 pt-1">
+              <div>
+                <label class="text-fluid-sub font-semibold text-slate-500 dark:text-slate-400 block mb-1">每月撥薪日 (1~31號)</label>
+                <select id="mBankSalaryDay" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold">
+                  ${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${(existing.salaryDay || 20) === i+1 ? 'selected' : ''}>${i+1} 號</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="text-fluid-sub font-semibold text-slate-500 dark:text-slate-400 block mb-1">預估每月薪資 (NT$)</label>
+                <input id="mBankSalaryAmt" type="number" value="${existing.salaryAmount || 0}" placeholder="例如 92271" class="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold text-emerald-600 dark:text-emerald-400">
               </div>
             </div>
+            <p class="text-[11px] text-slate-400">儲存後將自動同步更新「收支規則中心」中本銀行的薪資流入規則。</p>
           </div>
 
           <button onclick="saveBankForm('${bankId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存銀行帳戶</button>
@@ -2920,28 +2943,54 @@
       const name = document.getElementById('mBankName').value.trim();
       const balance = Number(document.getElementById('mBankBal').value) || 0;
       const note = document.getElementById('mBankNote').value.trim();
-      const isSalaryAccount = document.getElementById('mBankIsSalary').checked;
-      const salaryDay = Number(document.getElementById('mBankSalaryDay').value) || 5;
+      const salaryDay = Number(document.getElementById('mBankSalaryDay').value) || 20;
       const salaryAmount = Number(document.getElementById('mBankSalaryAmt').value) || 0;
+      const isSalaryAccount = salaryAmount > 0;
 
       if (!name) return showToast('請輸入銀行名稱', 'warn');
+      let targetBankId = bankId;
       if (bankId) {
         const b = state.banks.find(x => x.id === bankId);
         if (b) Object.assign(b, { name, balance, note, isSalaryAccount, salaryDay, salaryAmount });
       } else {
-        state.banks.push({ id: 'bank_' + Date.now(), name, balance, note, isSalaryAccount, salaryDay, salaryAmount });
+        targetBankId = 'bank_' + Date.now();
+        state.banks.push({ id: targetBankId, name, balance, note, isSalaryAccount, salaryDay, salaryAmount });
       }
+
+      // 雙向連動：同步更新 state.inflows 中的薪資項目
+      state.inflows = state.inflows || [];
+      if (isSalaryAccount) {
+        let inf = state.inflows.find(i => i.bankId === targetBankId && i.type === 'salary');
+        if (inf) {
+          inf.amount = salaryAmount;
+          inf.payDay = salaryDay;
+        } else {
+          state.inflows.unshift({
+            id: 'inf_' + Date.now(),
+            name: `${name} 薪資`,
+            type: 'salary',
+            cycle: '每月固定',
+            payDay: salaryDay,
+            amount: salaryAmount,
+            bankId: targetBankId,
+            activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12],
+            receivedThisMonth: false
+          });
+        }
+      }
+
       saveState(); closeAppModal(); renderAll();
+      showToast('已儲存銀行帳戶並同步收支規則！');
     }
 
     function openSalaryInflowModal(targetBankId = null) {
       if (!state.banks || state.banks.length === 0) {
         return showToast('請先新增銀行帳戶', 'warn');
       }
-      const salaryBanks = state.banks.filter(b => b.isSalaryAccount);
-      const defaultBankId = targetBankId || (salaryBanks[0]?.id) || (state.banks[0]?.id);
+      const defaultBankId = targetBankId || (state.banks[0]?.id);
       const targetBank = state.banks.find(b => b.id === defaultBankId) || state.banks[0];
-      const defaultAmt = targetBank.salaryAmount || 0;
+      const boundInflow = (state.inflows || []).find(inf => inf.bankId === defaultBankId);
+      const defaultAmt = boundInflow ? boundInflow.amount : (targetBank.salaryAmount || 0);
 
       const bankOptions = state.banks.map(b => `
         <option value="${b.id}" ${b.id === defaultBankId ? 'selected' : ''}>
@@ -2970,11 +3019,11 @@
     }
 
     function onSalaryBankChange(bankId) {
+      const boundInflow = (state.inflows || []).find(inf => inf.bankId === bankId);
       const b = state.banks.find(x => x.id === bankId);
-      if (b && b.salaryAmount > 0) {
-        const amtInput = document.getElementById('mSalaryInflowAmt');
-        if (amtInput) amtInput.value = b.salaryAmount;
-      }
+      const amt = boundInflow ? boundInflow.amount : (b ? b.salaryAmount : 0);
+      const amtInput = document.getElementById('mSalaryInflowAmt');
+      if (amtInput && amt > 0) amtInput.value = amt;
     }
 
     function confirmSalaryInflow() {
