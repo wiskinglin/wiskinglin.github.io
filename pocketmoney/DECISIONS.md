@@ -17,6 +17,7 @@
 | **ADR-006** | 銀行收支事件類型列舉（`BANK_EVENT.type`） | 🟢 已定案 | 統一為 7 類（補齊 `transfer_in` 以支援跨行調撥配對） | `SCHEMA` §3 |
 | **ADR-007** | 多幣別帳戶支援時機 | ⏸️ 延後（P2） | 現階段聚焦台幣現金流防禦；外幣折算列為 P2 | `BACKLOG` |
 | **ADR-008** | 功能探索與驗收工作流（A/B 雙 HTML + `compare.html`） | 🟢 Manager 已拍板 | 每個新功能建立 `prototypes/Fxx-*/`，產出 `A.html`、`B.html`、`compare.html` 並排比較，勝出後合併回 `pocketmoney_view.html` | `AGENTS.md` |
+| **ADR-009** | F01 Input 參數與收入設定：A 內嵌式 vs B 集中式收支規則中心 | 🟢 Manager 選 B（2026-11-03） | 採方案 B：獨立「收支規則設定」分頁（`tab-rules`）＋ 規則總表行內直改 ＋ 首頁 1～31 號收支時序條 | `SCHEMA`、`UXD`、`UI_VOCABULARY`、`pocketmoney_view.html` |
 
 ---
 
@@ -56,6 +57,14 @@
 ### ADR-005：信用卡月份定義
 - **背景與衝突（C5）**：信用卡有消費日、結帳日（`closingDay`）、扣款日（`dueDay`），跨月時容易混淆。
 - **決定**：🟢 **`CARD_MONTHLY_RECORD` 的 `(year, month)` 一律代表「實際從銀行扣款的年月」**，確保月底進行銀行帳戶扣款安全檢核時，月份 100% 對齊。
+
+---
+
+### ADR-009：F01 選擇方案 B（集中式收支規則中心）
+- **決定**：🟢 Manager 於 2026-11-03 回覆「F01 請使用 B」。
+- **採用內容**：收入（薪資＋其他收入 `state.inflows`）、信用卡結帳日/扣款日、固定費用扣款日與 `銀行直扣 / card_auto 信用卡代繳`，集中於「收支規則設定」分頁，表格行內直改；首頁保留 1～31 號收支時序條。
+- **待辦**：①同步更新 `SCHEMA.md`、`UXD.md`、`UI_VOCABULARY.md`；②由 Flash 將 B 乾淨合併回 `pocketmoney_view.html`（恢復正式 `STORAGE_KEY`）；③合併後更新 `CHANGELOG.md`。
+- **備註**：觀察重點②（行內直改）、③（時序條）隨 B 一併採用，Manager 若有「B，但…」之調整請再告知。
 
 ---
 
