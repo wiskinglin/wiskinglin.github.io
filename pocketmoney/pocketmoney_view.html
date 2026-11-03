@@ -377,7 +377,7 @@
           <span>投資部位</span>
         </button>
         <!-- 4. 信用卡費 -->
-        <button onclick="switchTab('banks')" data-tab="cards"
+        <button onclick="switchTab('cards')" data-tab="cards"
           class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-regular fa-credit-card text-rose-400"></i>
           <span>信用卡費</span>
@@ -729,51 +729,45 @@
 
     </section>
 
-    <!-- ==================== TAB 2: 銀行與信用卡帳單 ==================== -->
-    <section id="tab-cards" class="tab-section hidden space-y-4">
+    <!-- ==================== TAB 2: 銀行帳戶餘額 ==================== -->
+    <section id="tab-banks" class="tab-section hidden space-y-4">
 
-      <!-- 銀行與卡費三大統計小計卡片 -->
+      <!-- 銀行專屬三大 KPI 卡片 -->
       <div class="grid grid-cols-1 sm:grid-cols-3 fluid-gap">
-        <div
-          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
           <span class="text-fluid-sub text-slate-400 font-bold">銀行總存款餘額</span>
-          <div id="bankTotalBalanceKPI"
-            class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 0</div>
-          <span id="bankAfterTotalBalanceKPI" class="text-fluid-sub text-slate-400 mt-2">待扣款後預計結餘 NT$ 0</span>
+          <div id="bankTotalBalanceKPI" class="text-fluid-hero font-extrabold font-mono text-indigo-500 num-nowrap mt-1">NT$ 0</div>
+          <span class="text-fluid-sub text-slate-400 mt-2">全數銀行帳戶現有資金存量</span>
         </div>
 
-        <div
-          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
-          <span class="text-fluid-sub text-slate-400 font-bold">本期待繳卡費總額</span>
-          <div id="cardsUnpaidTotalKPI" class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">
-            NT$ 0</div>
-          <span id="cardsStatusSummaryKPI" class="text-fluid-sub text-slate-400 mt-2">待繳 0 張卡・已繳清 0 張卡</span>
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">本月預估流入 (Inflow)</span>
+          <div id="bankInflowsTotalKPI" class="text-fluid-hero font-extrabold font-mono text-emerald-500 num-nowrap mt-1">+NT$ 0</div>
+          <span id="bankInflowsSummaryKPI" class="text-fluid-sub text-slate-400 mt-2">包含本月薪資、獎金與投資配息</span>
         </div>
 
-        <div
-          class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
           <div>
-            <span class="text-fluid-sub text-slate-400 font-bold">卡費扣款帳戶餘額檢核</span>
+            <span class="text-fluid-sub text-slate-400 font-bold">扣款安全與預估結餘</span>
             <div id="bankShortfallStatusKPI" class="mt-1">
               <span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">✅ 全數帳戶餘額充足</span>
             </div>
           </div>
-          <div id="bankShortfallActionKPI" class="mt-2">
-            <span class="text-fluid-sub text-slate-400">所有扣繳戶頭皆足以支應本月扣款</span>
+          <div id="bankAfterTotalBalanceKPI" class="text-fluid-sub text-slate-400 mt-2">
+            待扣款後預計結餘 NT$ 0
           </div>
         </div>
       </div>
 
-      <!-- 區塊 A：台幣銀行帳戶管理 -->
-      <div
-        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+      <!-- 台幣銀行帳戶管理清單 -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
               <i class="fa-solid fa-building-columns text-indigo-500"></i>
-              <span>台幣銀行帳戶餘額</span>
+              <span>各銀行帳戶清單與水位監控</span>
             </h2>
-            <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算扣繳餘額</p>
+            <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算扣繳水位</p>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="openSalaryInflowModal()"
@@ -790,9 +784,40 @@
         <div id="bankAccountsList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 fluid-gap"></div>
       </div>
 
-      <!-- 區塊 B：各家信用卡帳單 -->
-      <div
-        class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+    </section>
+
+    <!-- ==================== TAB 4: 信用卡費管理 ==================== -->
+    <section id="tab-cards" class="tab-section hidden space-y-4">
+
+      <!-- 信用卡專屬三大 KPI 卡片 -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 fluid-gap">
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">本期待繳信用卡費總額</span>
+          <div id="cardsUnpaidTotalKPI" class="text-fluid-hero font-extrabold font-mono text-rose-500 num-nowrap mt-1">NT$ 0</div>
+          <span id="cardsStatusSummaryKPI" class="text-fluid-sub text-slate-400 mt-2">待繳 0 張卡・已繳清 0 張卡</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <span class="text-fluid-sub text-slate-400 font-bold">本期大額刷卡總額 (> $5,000)</span>
+          <div id="cardsBigExpenseTotalKPI" class="text-fluid-hero font-extrabold font-mono text-amber-500 num-nowrap mt-1">NT$ 0</div>
+          <span id="cardsBigExpenseCountKPI" class="text-fluid-sub text-slate-400 mt-2">共 0 筆大額消費明細</span>
+        </div>
+
+        <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
+          <div>
+            <span class="text-fluid-sub text-slate-400 font-bold">本月扣繳安全防禦</span>
+            <div id="cardsDeductSafetyKPI" class="mt-1">
+              <span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">扣款銀行準備就緒</span>
+            </div>
+          </div>
+          <div class="mt-2 text-fluid-sub text-slate-400">
+            依各卡扣款日排程扣減指定帳戶
+          </div>
+        </div>
+      </div>
+
+      <!-- 各家信用卡帳單清單 -->
+      <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
