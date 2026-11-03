@@ -1,0 +1,2783 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>PocketMoney v2 - 全方位理財管理</title>
+  
+  <script>
+    (function () {
+      const savedTheme = localStorage.getItem('PocketMoney_theme');
+      if (savedTheme === 'light') document.documentElement.classList.remove('dark');
+      else document.documentElement.classList.add('dark');
+    })();
+  </script>
+
+  <!-- Web Manifest & Icons -->
+  <link rel="manifest" href="pocketmoney.webmanifest">
+  <link rel="apple-touch-icon" href="icons/pocketmoney.png">
+  <link rel="icon" type="image/png" href="icons/pocketmoney.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts: Inter & Noto Sans TC & Public Sans -->
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- 資料庫相依支援 (同時嘗試多個相對路徑) -->
+  <script src="./database/dummy_db_embedded.js"></script>
+  <script src="../database/dummy_db_embedded.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Public Sans', 'Inter', 'Noto Sans TC', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Public Sans', 'monospace']
+          },
+          colors: {
+            nord: {
+              0: '#2E3440',
+              1: '#3B4252',
+              2: '#434C5E',
+              3: '#4C566A',
+              4: '#D8DEE9',
+              5: '#E5E9F0',
+              6: '#ECEFF4',
+              7: '#8FBCBB',
+              8: '#88C0D0',
+              9: '#81A1C1',
+              10: '#5E81AC',
+              11: '#BF616A',
+              12: '#D08770',
+              13: '#EBCB8B',
+              14: '#A3BE8C',
+              15: '#B48EAD'
+            },
+            slate: {
+              50: '#ECEFF4', 100: '#E5E9F0', 200: '#D8DEE9', 300: '#B8C2D3',
+              400: '#8C97AB', 500: '#667186', 600: '#4C566A', 700: '#3B4252',
+              800: '#2E3440', 900: '#242933', 950: '#1D2129'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --ui-primary: #88C0D0;
+      --ui-radius: 0.625rem;
+      --pad-page: clamp(0.75rem, 3.2vw, 1.75rem);
+      --pad-card: clamp(0.875rem, 3.5vw, 1.35rem);
+      --gap-grid: clamp(0.75rem, 2.8vw, 1.25rem);
+      --fs-hero: clamp(1.45rem, 5.8vw, 2.1rem);
+      --fs-h2: clamp(1.02rem, 3.8vw, 1.25rem);
+      --fs-h3: clamp(0.92rem, 3.4vw, 1.08rem);
+      --fs-body: clamp(0.78rem, 2.9vw, 0.875rem);
+      --fs-sub: clamp(0.7rem, 2.5vw, 0.78rem);
+    }
+
+    body {
+      font-family: 'Public Sans', 'Inter', 'Noto Sans TC', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* 隱藏數字輸入框預設上下箭頭 */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* 隱私遮罩：金額模糊 */
+    .privacy-masked .masked-amount {
+      filter: blur(5px);
+      user-select: none;
+    }
+
+    /* 捲軸自訂 */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(46, 52, 64, 0.4);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #4C566A;
+      border-radius: 9999px;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .num-nowrap {
+      white-space: nowrap !important;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+
+    /* 模式轉場動效 */
+    .mode-fade {
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(136, 192, 208, 0.45); }
+      50% { box-shadow: 0 0 0 6px rgba(136, 192, 208, 0); }
+    }
+    .pulse-glow {
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+
+    /* UCard / FluidCard 風格 */
+    .fluid-card {
+      padding: var(--pad-card);
+      border-radius: clamp(0.75rem, 3vw, 1rem);
+    }
+
+    .tab-pill-btn.active {
+      background-color: #88C0D0;
+      color: #2E3440;
+      font-weight: 700;
+      box-shadow: 0 2px 8px -2px rgba(136, 192, 208, 0.4);
+    }
+    .dark .tab-pill-btn.active {
+      background-color: #88C0D0;
+      color: #242933;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 dark:bg-[#242933] text-slate-800 dark:text-nord-6 min-h-screen transition-colors duration-200 pb-20 selection:bg-nord-8 selection:text-nord-0">
+
+  <!-- ==================== 本地 PIN 碼鎖定遮罩 ==================== -->
+  <div id="pinLockModal" class="fixed inset-0 z-50 bg-[#242933]/95 backdrop-blur-md flex flex-col items-center justify-center p-5 hidden">
+    <div class="w-full max-w-xs bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-3xl p-6 shadow-2xl text-center">
+      <div class="w-12 h-12 rounded-2xl bg-nord-8/15 text-nord-8 flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h2 class="text-base font-bold mb-1 text-slate-800 dark:text-nord-6">安全鎖定中</h2>
+      <p class="text-xs text-slate-500 dark:text-nord-4 mb-5">請輸入 4 位數本地 PIN 碼解鎖</p>
+
+      <div class="flex justify-center gap-3.5 mb-4" id="pinDots">
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-nord-8 transition-all"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-nord-8 transition-all"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-nord-8 transition-all"></div>
+        <div class="w-3.5 h-3.5 rounded-full border-2 border-nord-8 transition-all"></div>
+      </div>
+      <p id="pinErrorMsg" class="text-xs text-rose-500 h-4 mb-3 font-semibold"></p>
+
+      <div class="grid grid-cols-3 gap-2.5">
+        <button onclick="enterPinDigit('1')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">1</button>
+        <button onclick="enterPinDigit('2')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">2</button>
+        <button onclick="enterPinDigit('3')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">3</button>
+        <button onclick="enterPinDigit('4')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">4</button>
+        <button onclick="enterPinDigit('5')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">5</button>
+        <button onclick="enterPinDigit('6')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">6</button>
+        <button onclick="enterPinDigit('7')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">7</button>
+        <button onclick="enterPinDigit('8')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">8</button>
+        <button onclick="enterPinDigit('9')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">9</button>
+        <button onclick="clearPinDigits()" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 text-xs font-semibold text-slate-500 dark:text-nord-4">清除</button>
+        <button onclick="enterPinDigit('0')" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 active:bg-nord-8 active:text-nord-0 font-bold text-base text-slate-800 dark:text-nord-6">0</button>
+        <button onclick="backspacePinDigit()" class="h-11 rounded-xl bg-slate-100 dark:bg-nord-0 text-slate-500 dark:text-nord-4"><i class="fa-solid fa-delete-left"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 頂部全域導覽 (Header) ==================== -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-[#2E3440]/95 backdrop-blur-md border-b border-slate-200 dark:border-nord-2 px-3 sm:px-6 py-2.5 transition-colors">
+    <div class="max-w-6xl mx-auto flex flex-col gap-2">
+      
+      <!-- 第一層：Brand Logo + Persona 切換 + 雙模式切換 + 實用工具 -->
+      <div class="flex items-center justify-between gap-2">
+        
+        <!-- 左側：品牌 Logo 與當前模式標籤 -->
+        <div class="flex items-center space-x-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-nord-10 to-nord-8 flex items-center justify-center text-nord-0 font-bold shrink-0 shadow-sm">
+            <i class="fa-solid fa-wallet text-sm"></i>
+          </div>
+          <div class="flex items-center space-x-1.5 truncate">
+            <span class="text-base font-bold tracking-tight text-slate-800 dark:text-nord-6">PocketMoney</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded font-bold bg-nord-8/20 text-nord-8">v2</span>
+            <!-- 模式徽章：瀏覽 / 輸入中 -->
+            <span id="header-mode-badge" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-nord-2 text-slate-600 dark:text-nord-4 border border-slate-200 dark:border-nord-3/40">
+              瀏覽
+            </span>
+          </div>
+        </div>
+
+        <!-- 右側動作區：Persona (初級/勇者/高級) + 隱私遮罩 + PIN 鎖 + 主題 + 核心模式切換鈕 -->
+        <div class="flex items-center space-x-1.5 shrink-0">
+          
+          <!-- Persona 切換器 (PC 端顯示按鈕群，手機端顯示 Select) -->
+          <div class="hidden md:flex items-center bg-slate-100 dark:bg-nord-1 p-0.5 rounded-lg border border-slate-200 dark:border-nord-2 text-xs">
+            <button id="prof-btn-junior" onclick="switchProfile('junior')" class="px-2.5 py-1 rounded-md font-medium text-slate-600 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6 transition">初級大人</button>
+            <button id="prof-btn-family" onclick="switchProfile('family')" class="px-2.5 py-1 rounded-md font-bold bg-nord-8 text-nord-0 transition">少子化勇者</button>
+            <button id="prof-btn-senior" onclick="switchProfile('senior')" class="px-2.5 py-1 rounded-md font-medium text-slate-600 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6 transition">高級大人</button>
+          </div>
+
+          <!-- 手機版 Persona 下拉選單 -->
+          <div class="md:hidden">
+            <select id="persona-select-mobile" onchange="switchProfile(this.value)" class="bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-8 font-semibold text-xs py-1.5 px-2 rounded-lg border border-slate-200 dark:border-nord-2 focus:outline-none">
+              <option value="junior">初級大人</option>
+              <option value="family" selected>少子化勇者</option>
+              <option value="senior">高級大人</option>
+            </select>
+          </div>
+
+          <!-- 隱私遮罩開關 -->
+          <button onclick="togglePrivacyMode()" title="切換金額隱私遮罩"
+            class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-nord-1 border border-slate-200 dark:border-nord-2 text-slate-600 dark:text-nord-4 hover:text-nord-8 flex items-center justify-center transition-colors">
+            <i id="privacy-icon" class="fa-regular fa-eye text-xs"></i>
+          </button>
+
+          <!-- PIN 碼手動鎖定按鈕 -->
+          <button onclick="triggerPinLockOrSetup()" title="PIN 碼安全鎖定"
+            class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-nord-1 border border-slate-200 dark:border-nord-2 text-slate-600 dark:text-nord-4 hover:text-nord-8 flex items-center justify-center transition-colors">
+            <i class="fa-solid fa-lock text-xs"></i>
+          </button>
+
+          <!-- 深淺色切換 -->
+          <button onclick="toggleTheme()" title="切換深淺色外觀"
+            class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-nord-1 border border-slate-200 dark:border-nord-2 text-slate-600 dark:text-nord-4 hover:text-nord-8 flex items-center justify-center transition-colors">
+            <i id="theme-icon" class="fa-solid fa-moon text-xs"></i>
+          </button>
+
+          <!-- 核心「+ 輸入 / ✕ 瀏覽」切換鈕 -->
+          <button id="btn-mode-toggle" onclick="toggleViewInputMode()"
+            class="h-8 px-3 rounded-lg bg-nord-8 hover:bg-nord-7 text-nord-0 font-bold text-xs flex items-center space-x-1 shadow-md shadow-nord-8/20 transition-all pulse-glow">
+            <i id="mode-toggle-icon" class="fa-solid fa-plus text-xs"></i>
+            <span id="mode-toggle-text">輸入</span>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- 第二層：7 大分類功能頁籤導覽列 (總覽 + 信用卡費 + 銀行餘額 + 固定費用 + 分期付款 + 投資部位與設定) -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 border-t border-slate-100 dark:border-nord-2/60">
+        <button id="nav-dashboard" onclick="switchCategoryTab('dashboard')"
+          class="tab-pill-btn active num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>總覽</span>
+        </button>
+
+        <button id="nav-cards" onclick="switchCategoryTab('cards')"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4">
+          <i class="fa-regular fa-credit-card text-nord-8"></i>
+          <span>信用卡費</span>
+        </button>
+
+        <button id="nav-banks" onclick="switchCategoryTab('banks')"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4">
+          <i class="fa-solid fa-building-columns text-nord-9"></i>
+          <span>銀行餘額</span>
+        </button>
+
+        <button id="nav-bills" onclick="switchCategoryTab('bills')"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4">
+          <i class="fa-solid fa-calendar-check text-nord-7"></i>
+          <span>固定費用</span>
+        </button>
+
+        <button id="nav-installments" onclick="switchCategoryTab('installments')"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4">
+          <i class="fa-solid fa-layer-group text-nord-15"></i>
+          <span>分期付款</span>
+        </button>
+
+        <button id="nav-stocks" onclick="switchCategoryTab('stocks')"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4">
+          <i class="fa-solid fa-arrow-trend-up text-nord-14"></i>
+          <span>投資部位</span>
+        </button>
+
+        <button id="nav-settings" onclick="switchCategoryTab('settings')"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4">
+          <i class="fa-solid fa-gear"></i>
+          <span>設定</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- ==================== 主內容視圖容器 ==================== -->
+  <main class="max-w-6xl mx-auto px-3 sm:px-6 pt-4 space-y-6">
+
+    <!-- ==================== [模式一]：瀏覽模式 (View Mode) ==================== -->
+    <div id="view-mode-container" class="space-y-6 mode-fade">
+
+      <!-- 1. 總覽分頁 (Dashboard) -->
+      <section id="section-dashboard" class="space-y-5">
+        <!-- 頂部三大核心 KPI -->
+        <div id="dashboard-kpi-row" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+        <!-- 30 號自動扣繳各銀行水位檢核 -->
+        <div id="dashboard-debit-card" class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-4"></div>
+
+        <!-- 總覽快速清單 (本月即將扣繳款項與分期排程) -->
+        <div id="dashboard-details-row" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- 2. 圖表模組容器 (用於 信用卡費 / 銀行餘額 / 固定費用 / 分期付款) -->
+      <section id="section-chart-module" class="hidden space-y-6">
+        
+        <!-- 動態 KPI 三聯卡 -->
+        <div id="module-kpi-row" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+
+        <!-- 12 個月趨勢折線圖 -->
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 sm:p-6 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <!-- 模式切換 (近 12 個月 / 當年度) 與標題 -->
+            <div class="flex flex-wrap items-center gap-3">
+              <div class="flex items-center bg-slate-100 dark:bg-nord-0 p-1 rounded-xl border border-slate-200 dark:border-nord-2">
+                <button id="btn-chart-rolling12" onclick="switchChartRangeMode('rolling12')"
+                  class="px-3 py-1 rounded-lg text-xs font-bold transition-all bg-nord-8 text-nord-0 shadow-sm">
+                  近 12 個月
+                </button>
+                <button id="btn-chart-ytd" onclick="switchChartRangeMode('ytd')"
+                  class="px-3 py-1 rounded-lg text-xs font-medium transition-all text-slate-500 dark:text-nord-4 hover:text-slate-800 dark:hover:text-nord-6">
+                  當年度
+                </button>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <span id="chart-dot" class="w-2.5 h-2.5 rounded-full bg-nord-8"></span>
+                <h2 id="chart-title" class="text-sm sm:text-base font-bold text-slate-800 dark:text-nord-6">趨勢走勢</h2>
+                <span id="chart-subtitle" class="text-xs text-slate-400 dark:text-nord-4 font-mono">2025/11 ~ 2026/10</span>
+              </div>
+            </div>
+
+            <!-- 右上篩選膠囊按鈕 -->
+            <div id="chart-filter-pills" class="flex flex-wrap items-center gap-1.5"></div>
+          </div>
+
+          <!-- Canvas 容器 -->
+          <div class="relative w-full h-[280px] sm:h-[340px]">
+            <canvas id="main-line-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- 明細清單標題與快速登錄按鈕 -->
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-nord-8 text-sm"></i>
+            <span id="detail-section-title" class="text-sm font-bold text-slate-600 dark:text-nord-4">當期項目明細</span>
+          </div>
+          <button onclick="toggleViewInputMode()" class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-nord-1 hover:bg-slate-200 dark:hover:bg-nord-2 border border-slate-200 dark:border-nord-2 text-xs font-semibold text-nord-8 hover:text-nord-7 flex items-center space-x-1.5 transition-colors">
+            <i class="fa-solid fa-pen-to-square text-xs"></i>
+            <span>登錄 / 調整本期資料</span>
+          </button>
+        </div>
+
+        <!-- 明細清單網格 -->
+        <div id="module-detail-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </section>
+
+      <!-- 3. 投資部位分頁 (Stocks) -->
+      <section id="section-stocks" class="hidden space-y-5">
+        <div id="stocks-summary-card" class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-4"></div>
+        <div id="stocks-list-card" class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-4"></div>
+      </section>
+
+      <!-- 4. 設定分頁 (Settings) -->
+      <section id="section-settings" class="hidden space-y-5">
+        <div id="settings-content" class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-6"></div>
+      </section>
+
+    </div>
+
+
+    <!-- ==================== [模式二]：輸入模式 (Input Mode) ==================== -->
+    <div id="input-mode-container" class="hidden space-y-6 mode-fade">
+
+      <!-- 輸入模式頂部導引 Banner -->
+      <div class="flex items-center justify-between p-4 rounded-2xl bg-nord-8/10 border border-nord-8/30 shadow-sm text-sm">
+        <div class="flex items-center space-x-3 text-nord-8">
+          <div class="w-10 h-10 rounded-xl bg-nord-8/20 flex items-center justify-center text-nord-8 border border-nord-8/40 shrink-0">
+            <i id="input-banner-icon" class="fa-solid fa-pen-to-square text-lg"></i>
+          </div>
+          <div>
+            <span class="font-bold block text-slate-800 dark:text-nord-6" id="input-banner-title">登錄本期信用卡帳單</span>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block" id="input-banner-subtitle">依序輪播輸入金額或填寫大額明細，完成後自動更新並返回</span>
+          </div>
+        </div>
+
+        <button onclick="toggleViewInputMode()" class="px-3.5 py-1.5 rounded-xl bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 text-xs text-slate-600 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6 flex items-center space-x-1.5 transition-all shrink-0">
+          <i class="fa-solid fa-arrow-left text-xs"></i>
+          <span>返回瀏覽</span>
+        </button>
+      </div>
+
+      <!-- 輸入面板容器 (依據 currentCategory 動態注入) -->
+      <div id="input-panels-wrapper"></div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== 通用彈出視窗 (Modal) ==================== -->
+  <div id="appModal" class="fixed inset-0 z-50 bg-[#242933]/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="w-full max-w-md bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200 dark:border-nord-2">
+        <h3 id="appModalTitle" class="text-base font-bold text-slate-800 dark:text-nord-6">編輯資料</h3>
+        <button onclick="closeAppModal()" class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-nord-6 flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+      <div id="appModalContent"></div>
+    </div>
+  </div>
+
+  <!-- ==================== 全域 Toast 訊息 ==================== -->
+  <div id="appToast" class="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-nord-0/95 border border-nord-14/60 text-nord-14 text-xs font-semibold shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-center space-x-2">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="appToastText">已更新</span>
+  </div>
+
+  <!-- ==================== 核心 JavaScript ==================== -->
+  <script>
+    /* -------------------------------------------------------------------------
+       1. 預設 Fallback 資料庫 (確保離線或無外連時三 Persona 百分之百可用)
+       ------------------------------------------------------------------------- */
+    const DEFAULT_EMBEDDED_PROFILES = {
+      junior: {
+        schemaVersion: "PocketMoney_tw_finance_v4",
+        profile: { id: "junior", label: "初級大人", badge: "<30 歲小資族", desc: "1 個銀行帳戶 + 1 張信用卡 + 套房租金與 iPhone 分期 + 0050 定期定額" },
+        settings: { privacyMode: false, pinCode: "", stockMinHoldRatio: 70, securitiesBankIds: ["bank_taishin"], currentYear: 2026, currentMonth: 10 },
+        banks: [
+          { id: "bank_taishin", code: "812", name: "台新 Richart (主力戶)", balance: 52000, defaultSalary: 42000, salaryDay: 5, minReserve: 15000, note: "日常薪轉・信用卡扣繳・證券交割" }
+        ],
+        cards: [
+          {
+            id: "card_gogo", name: "台新 @GoGo 黑狗卡", bankId: "bank_taishin", dueDay: 10, closingDay: 25, highSpendWarn: 20000, paid: false,
+            records: [
+              { year: 2025, month: 11, amount: 8200 }, { year: 2025, month: 12, amount: 9500 },
+              { year: 2026, month: 1,  amount: 11200 }, { year: 2026, month: 2,  amount: 8800 },
+              { year: 2026, month: 3,  amount: 9400 }, { year: 2026, month: 4,  amount: 10500 },
+              { year: 2026, month: 5,  amount: 12800 }, { year: 2026, month: 6,  amount: 8900 },
+              { year: 2026, month: 7,  amount: 9200 }, { year: 2026, month: 8,  amount: 10100 },
+              { year: 2026, month: 9,  amount: 8600 }, { year: 2026, month: 10, amount: 9800, bigExpenses: [{ id: "be_1", title: "UNIQLO 換季採購", amount: 3200 }] }
+            ]
+          }
+        ],
+        bills: [
+          { id: "bill_rent", name: "套房租金", amount: 13500, dueDay: 10, cycle: "每月帳單", paymentMethod: "bank_direct", bankId: "bank_taishin", status: "unpaid" },
+          { id: "bill_net", name: "中華電信手機吃到飽", amount: 599, dueDay: 15, cycle: "每月帳單", paymentMethod: "card_auto", bankId: "bank_taishin", status: "unpaid" }
+        ],
+        installments: [
+          { id: "inst_iphone", name: "iPhone 16 Pro 分期", totalPeriods: 12, paidPeriods: 4, monthlyAmount: 3100, totalAmount: 37200, bankId: "bank_taishin" }
+        ],
+        stocks: [
+          { id: "stk_0050", code: "0050", name: "元大台灣50", shares: 1000, avgCost: 160, currentPrice: 195, note: "定期定額核心 ETF" }
+        ]
+      },
+
+      family: {
+        schemaVersion: "PocketMoney_tw_finance_v4",
+        profile: { id: "family", label: "少子化勇者", badge: "30-40 歲家庭主力", desc: "3 銀行帳戶 + 2 家庭信用卡 + 房貸水電瓦斯 + 雙寶分期 + 台積電鴻海波段" },
+        settings: { privacyMode: false, pinCode: "", stockMinHoldRatio: 75, securitiesBankIds: ["bank_fubon"], currentYear: 2026, currentMonth: 10 },
+        banks: [
+          { id: "bank_ctbc", code: "822", name: "中信薪轉 (主帳戶)", balance: 145000, defaultSalary: 95000, salaryDay: 5, minReserve: 40000, note: "主要薪資入帳・房貸主要扣款" },
+          { id: "bank_esun", code: "808", name: "玉山家庭公費庫", balance: 68000, defaultSalary: 0, salaryDay: 1, minReserve: 25000, note: "保險水電瓦斯日常公帳" },
+          { id: "bank_fubon", code: "012", name: "富邦證券交割戶", balance: 52000, defaultSalary: 0, salaryDay: 1, minReserve: 20000, note: "台股波段與現金池" }
+        ],
+        cards: [
+          {
+            id: "card_ctbc_line", name: "中信 LINE Pay 卡", bankId: "bank_ctbc", dueDay: 10, closingDay: 26, highSpendWarn: 35000, paid: false,
+            records: [
+              { year: 2025, month: 11, amount: 26500 }, { year: 2025, month: 12, amount: 31200 },
+              { year: 2026, month: 1,  amount: 28400 }, { year: 2026, month: 2,  amount: 34500 },
+              { year: 2026, month: 3,  amount: 27900 }, { year: 2026, month: 4,  amount: 29800 },
+              { year: 2026, month: 5,  amount: 38200 }, { year: 2026, month: 6,  amount: 26400 },
+              { year: 2026, month: 7,  amount: 29500 }, { year: 2026, month: 8,  amount: 32000 },
+              { year: 2026, month: 9,  amount: 28100 }, { year: 2026, month: 10, amount: 33200, bigExpenses: [{ id: "be_fam_1", title: "沖繩機票訂金", amount: 12000 }] }
+            ]
+          },
+          {
+            id: "card_esun_ubear", name: "玉山 U Bear 網購卡", bankId: "bank_esun", dueDay: 18, closingDay: 5, highSpendWarn: 25000, paid: false,
+            records: [
+              { year: 2025, month: 11, amount: 14200 }, { year: 2025, month: 12, amount: 18900 },
+              { year: 2026, month: 1,  amount: 16500 }, { year: 2026, month: 2,  amount: 15200 },
+              { year: 2026, month: 3,  amount: 17800 }, { year: 2026, month: 4,  amount: 14900 },
+              { year: 2026, month: 5,  amount: 22100 }, { year: 2026, month: 6,  amount: 15800 },
+              { year: 2026, month: 7,  amount: 16700 }, { year: 2026, month: 8,  amount: 18200 },
+              { year: 2026, month: 9,  amount: 15400 }, { year: 2026, month: 10, amount: 17600, bigExpenses: [{ id: "be_fam_2", title: "全聯大採購與尿布", amount: 5600 }] }
+            ]
+          }
+        ],
+        bills: [
+          { id: "bill_mortgage", name: "家庭房貸月供", amount: 38500, dueDay: 15, cycle: "每月帳單", paymentMethod: "bank_direct", bankId: "bank_ctbc", status: "unpaid" },
+          { id: "bill_elec", name: "台電家庭電費", amount: 3650, dueDay: 20, cycle: "雙月帳單", paymentMethod: "card_auto", bankId: "bank_esun", status: "unpaid" },
+          { id: "bill_mgmt", name: "社區大樓管理費", amount: 2800, dueDay: 10, cycle: "每月帳單", paymentMethod: "bank_direct", bankId: "bank_esun", status: "paid" },
+          { id: "bill_water", name: "自來水與天然氣", amount: 1250, dueDay: 22, cycle: "雙月帳單", paymentMethod: "bank_direct", bankId: "bank_esun", status: "unpaid" }
+        ],
+        installments: [
+          { id: "inst_washer", name: "LG 洗脫烘滾筒洗衣機", totalPeriods: 12, paidPeriods: 8, monthlyAmount: 3200, totalAmount: 38400, bankId: "bank_ctbc" },
+          { id: "inst_tutor", name: "幼兒美語課程分期", totalPeriods: 24, paidPeriods: 10, monthlyAmount: 4500, totalAmount: 108000, bankId: "bank_esun" }
+        ],
+        stocks: [
+          { id: "stk_2330", code: "2330", name: "台積電", shares: 1000, avgCost: 780, currentPrice: 1035, note: "護國神山核心波段" },
+          { id: "stk_2317", code: "2317", name: "鴻海", shares: 2000, avgCost: 155, currentPrice: 205, note: "AI 伺服器成長股" },
+          { id: "stk_00878", code: "00878", name: "國泰永續高股息", shares: 5000, avgCost: 21.5, currentPrice: 23.2, note: "領息現金流補貼水電" }
+        ]
+      },
+
+      senior: {
+        schemaVersion: "PocketMoney_tw_finance_v4",
+        profile: { id: "senior", label: "高級大人", badge: "高資產穩健配置", desc: "4 專戶 + 3 尊榮黑卡/商務卡 + 退休現金流規劃 + 多元配置" },
+        settings: { privacyMode: false, pinCode: "", stockMinHoldRatio: 80, securitiesBankIds: ["bank_cathay_sec"], currentYear: 2026, currentMonth: 10 },
+        banks: [
+          { id: "bank_cathay", code: "013", name: "國泰世華 VIP 總戶", balance: 580000, defaultSalary: 180000, salaryDay: 5, minReserve: 100000, note: "資產調度・私銀專戶" },
+          { id: "bank_cathay_sec", code: "013S", name: "國泰證券交割戶", balance: 220000, defaultSalary: 0, salaryDay: 1, minReserve: 50000, note: "高資產投資交易" },
+          { id: "bank_hsbc", code: "081", name: "滙豐卓越理財戶", balance: 350000, defaultSalary: 0, salaryDay: 1, minReserve: 80000, note: "外幣配置與海外消費扣繳" }
+        ],
+        cards: [
+          {
+            id: "card_cathay_cube", name: "國泰世華 CUBE 頂級卡", bankId: "bank_cathay", dueDay: 12, closingDay: 28, highSpendWarn: 60000, paid: false,
+            records: [
+              { year: 2025, month: 11, amount: 48000 }, { year: 2025, month: 12, amount: 62000 },
+              { year: 2026, month: 1,  amount: 55000 }, { year: 2026, month: 2,  amount: 51000 },
+              { year: 2026, month: 3,  amount: 49000 }, { year: 2026, month: 4,  amount: 58000 },
+              { year: 2026, month: 5,  amount: 72000 }, { year: 2026, month: 6,  amount: 46000 },
+              { year: 2026, month: 7,  amount: 53000 }, { year: 2026, month: 8,  amount: 61000 },
+              { year: 2026, month: 9,  amount: 49000 }, { year: 2026, month: 10, amount: 56000, bigExpenses: [{ id: "be_sen_1", title: "歐洲商務艙機票", amount: 28000 }] }
+            ]
+          }
+        ],
+        bills: [
+          { id: "bill_villa", name: "豪宅物業管理與車位", amount: 8800, dueDay: 10, cycle: "每月帳單", paymentMethod: "bank_direct", bankId: "bank_cathay", status: "paid" },
+          { id: "bill_insur", name: "全家美元終身壽險月攤", amount: 18500, dueDay: 25, cycle: "每月帳單", paymentMethod: "bank_direct", bankId: "bank_cathay", status: "unpaid" }
+        ],
+        installments: [
+          { id: "inst_porsche", name: "汽車保養與精品設備", totalPeriods: 12, paidPeriods: 6, monthlyAmount: 8500, totalAmount: 102000, bankId: "bank_cathay" }
+        ],
+        stocks: [
+          { id: "stk_2330_s", code: "2330", name: "台積電", shares: 5000, avgCost: 620, currentPrice: 1035, note: "波段核心持股 5 張" },
+          { id: "stk_2454", code: "2454", name: "聯發科", shares: 2000, avgCost: 980, currentPrice: 1300, note: "IC 設計龍頭 2 張" },
+          { id: "stk_0050_s", code: "0050", name: "元大台灣50", shares: 10000, avgCost: 145, currentPrice: 195, note: "大盤指數資產護城河" }
+        ]
+      }
+    };
+
+    /* -------------------------------------------------------------------------
+       2. 全域狀態管理 (Global State)
+       ------------------------------------------------------------------------- */
+    let currentMode = 'view'; // 'view' (瀏覽) | 'input' (輸入)
+    let currentCategory = 'dashboard'; // 'dashboard' | 'cards' | 'banks' | 'bills' | 'installments' | 'stocks' | 'settings'
+    let currentProfileKey = localStorage.getItem('PocketMoney_v2_active_profile') || 'family';
+    let chartRangeMode = 'rolling12'; // 'rolling12' | 'ytd'
+    let selectedEntityId = 'all';
+    let isPrivacyMasked = localStorage.getItem('PocketMoney_v2_privacy') === 'true';
+    let lineChartInstance = null;
+    let db = null; // 當前啟用的 Persona 資料庫實例
+
+    // 信用卡輸入階段與輪播索引
+    let cardCoverIndex = 0;
+    let cardInputStage = 1; // 1: 應繳總額, 2: 大額消費明細
+
+    // PIN 碼安全
+    let enteredPin = '';
+    let isLocked = false;
+
+    // 系統基準年月
+    const CURRENT_YEAR = 2026;
+    const CURRENT_MONTH = 10;
+
+    // 連續 12 個月座標 (2025/11 ~ 2026/10)
+    const ROLLING_12_SLOTS = [
+      { year: 2025, month: 11, label: '25/11', isFuture: false },
+      { year: 2025, month: 12, label: '25/12', isFuture: false },
+      { year: 2026, month: 1,  label: '26/01', isFuture: false },
+      { year: 2026, month: 2,  label: '26/02', isFuture: false },
+      { year: 2026, month: 3,  label: '26/03', isFuture: false },
+      { year: 2026, month: 4,  label: '26/04', isFuture: false },
+      { year: 2026, month: 5,  label: '26/05', isFuture: false },
+      { year: 2026, month: 6,  label: '26/06', isFuture: false },
+      { year: 2026, month: 7,  label: '26/07', isFuture: false },
+      { year: 2026, month: 8,  label: '26/08', isFuture: false },
+      { year: 2026, month: 9,  label: '26/09', isFuture: false },
+      { year: 2026, month: 10, label: '26/10', isFuture: false }
+    ];
+
+    // 當年度 12 個月座標 (2026/01 ~ 2026/12，11/12月為預估)
+    const YTD_12_SLOTS = [
+      { year: 2026, month: 1,  label: '1月',  isFuture: false },
+      { year: 2026, month: 2,  label: '2月',  isFuture: false },
+      { year: 2026, month: 3,  label: '3月',  isFuture: false },
+      { year: 2026, month: 4,  label: '4月',  isFuture: false },
+      { year: 2026, month: 5,  label: '5月',  isFuture: false },
+      { year: 2026, month: 6,  label: '6月',  isFuture: false },
+      { year: 2026, month: 7,  label: '7月',  isFuture: false },
+      { year: 2026, month: 8,  label: '8月',  isFuture: false },
+      { year: 2026, month: 9,  label: '9月',  isFuture: false },
+      { year: 2026, month: 10, label: '10月', isFuture: false },
+      { year: 2026, month: 11, label: '11月 (推估)', isFuture: true },
+      { year: 2026, month: 12, label: '12月 (推估)', isFuture: true }
+    ];
+
+    function getActiveSlots() {
+      return chartRangeMode === 'rolling12' ? ROLLING_12_SLOTS : YTD_12_SLOTS;
+    }
+
+    function formatCurrency(num) {
+      if (num === null || num === undefined) return '0';
+      return new Intl.NumberFormat('zh-TW').format(Math.round(num));
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('appToast');
+      const text = document.getElementById('appToastText');
+      text.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    /* -------------------------------------------------------------------------
+       3. 資料載入與本地保存 (LocalStorage & Embedded fallback)
+       ------------------------------------------------------------------------- */
+    function loadActiveProfileData(profileKey) {
+      const localKey = 'PocketMoney_v2_profile_' + profileKey;
+      const saved = localStorage.getItem(localKey);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.warn('解析 local profile 失敗，使用預設值', e);
+        }
+      }
+
+      // 檢查外部 window.EMBEDDED_DUMMY_DB
+      if (window.EMBEDDED_DUMMY_DB && window.EMBEDDED_DUMMY_DB[profileKey]) {
+        const raw = window.EMBEDDED_DUMMY_DB[profileKey];
+        const cloned = JSON.parse(JSON.stringify(raw));
+        // 確保格式相容
+        normalizeProfileDb(cloned);
+        return cloned;
+      }
+
+      // 內部 fallback
+      return JSON.parse(JSON.stringify(DEFAULT_EMBEDDED_PROFILES[profileKey] || DEFAULT_EMBEDDED_PROFILES.family));
+    }
+
+    function normalizeProfileDb(target) {
+      if (!target.banks) target.banks = [];
+      if (!target.cards) target.cards = [];
+      if (!target.bills) target.bills = target.recurringBills || [];
+      if (!target.installments) target.installments = [];
+      if (!target.stocks) target.stocks = [];
+      if (!target.settings) target.settings = { privacyMode: false, pinCode: "" };
+    }
+
+    function saveActiveProfileData() {
+      if (!db) return;
+      const localKey = 'PocketMoney_v2_profile_' + currentProfileKey;
+      localStorage.setItem(localKey, JSON.stringify(db));
+    }
+
+    /* -------------------------------------------------------------------------
+       4. 隱私遮罩、PIN 碼與外觀切換
+       ------------------------------------------------------------------------- */
+    function togglePrivacyMode() {
+      isPrivacyMasked = !isPrivacyMasked;
+      localStorage.setItem('PocketMoney_v2_privacy', isPrivacyMasked ? 'true' : 'false');
+      applyPrivacyUI();
+    }
+
+    function applyPrivacyUI() {
+      document.body.classList.toggle('privacy-masked', isPrivacyMasked);
+      const icon = document.getElementById('privacy-icon');
+      if (icon) {
+        icon.className = isPrivacyMasked
+          ? 'fa-regular fa-eye-slash text-xs text-nord-8'
+          : 'fa-regular fa-eye text-xs text-slate-600 dark:text-nord-4';
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('PocketMoney_theme', isDark ? 'dark' : 'light');
+      updateThemeIcon(isDark);
+      // 重繪圖表以配合深淺色格線
+      if (lineChartInstance) {
+        renderCurrentView();
+      }
+    }
+
+    function updateThemeIcon(isDark) {
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.className = isDark ? 'fa-solid fa-moon text-xs' : 'fa-solid fa-sun text-xs text-amber-500';
+      }
+    }
+
+    /* PIN 碼安全鎖定邏輯 */
+    function triggerPinLockOrSetup() {
+      if (db && db.settings && db.settings.pinCode) {
+        lockScreenNow();
+      } else {
+        openPinSetupModal();
+      }
+    }
+
+    function lockScreenNow() {
+      isLocked = true;
+      enteredPin = '';
+      updatePinDotsUI();
+      document.getElementById('pinErrorMsg').innerText = '';
+      document.getElementById('pinLockModal').classList.remove('hidden');
+    }
+
+    function enterPinDigit(d) {
+      if (enteredPin.length < 4) {
+        enteredPin += d;
+        updatePinDotsUI();
+        if (enteredPin.length === 4) {
+          validateEnteredPin();
+        }
+      }
+    }
+
+    function backspacePinDigit() {
+      enteredPin = enteredPin.slice(0, -1);
+      updatePinDotsUI();
+    }
+
+    function clearPinDigits() {
+      enteredPin = '';
+      updatePinDotsUI();
+    }
+
+    function updatePinDotsUI() {
+      const dots = document.getElementById('pinDots').children;
+      for (let i = 0; i < 4; i++) {
+        if (i < enteredPin.length) {
+          dots[i].className = 'w-3.5 h-3.5 rounded-full bg-nord-8 border-2 border-nord-8 transition-all scale-110';
+        } else {
+          dots[i].className = 'w-3.5 h-3.5 rounded-full border-2 border-nord-8 transition-all';
+        }
+      }
+    }
+
+    function validateEnteredPin() {
+      const correctPin = db?.settings?.pinCode;
+      if (!correctPin || enteredPin === correctPin) {
+        isLocked = false;
+        document.getElementById('pinLockModal').classList.add('hidden');
+        showToast('解鎖成功！');
+      } else {
+        document.getElementById('pinErrorMsg').innerText = '密碼錯誤，請重新輸入';
+        setTimeout(() => {
+          clearPinDigits();
+          document.getElementById('pinErrorMsg').innerText = '';
+        }, 800);
+      }
+    }
+
+    function openPinSetupModal() {
+      const currentPin = db?.settings?.pinCode || '';
+      openAppModal('PIN 碼安全鎖定設定', `
+        <div class="space-y-4">
+          <p class="text-xs text-slate-500 dark:text-nord-4">設定 4 位數數字密碼以保護資產隱私，留空則停用安全鎖定。</p>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-nord-4 mb-1">4 位數 PIN 碼</label>
+            <input id="modal-pin-input" type="password" maxlength="4" placeholder="例如：1234 (留空停用)" value="${currentPin}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-nord-0 border border-slate-300 dark:border-nord-2 text-center text-xl font-bold font-mono tracking-widest outline-none">
+          </div>
+          <div class="flex justify-end gap-2 pt-2">
+            <button onclick="closeAppModal()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-nord-2 text-xs font-semibold">取消</button>
+            <button onclick="savePinSetup()" class="px-4 py-2 rounded-xl bg-nord-8 text-nord-0 text-xs font-bold">儲存設定</button>
+          </div>
+        </div>
+      `);
+    }
+
+    function savePinSetup() {
+      const inp = document.getElementById('modal-pin-input');
+      if (inp) {
+        if (!db.settings) db.settings = {};
+        db.settings.pinCode = inp.value.trim();
+        saveActiveProfileData();
+        closeAppModal();
+        showToast(db.settings.pinCode ? 'PIN 碼已設定完成' : 'PIN 碼已停用');
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+       5. 導覽、分類切換與雙模式 (View / Input) 控制
+       ------------------------------------------------------------------------- */
+    function switchCategoryTab(cat) {
+      currentCategory = cat;
+      selectedEntityId = 'all';
+
+      // 總覽與設定永遠保持 view 模式；其他四模組若在輸入模式則維持輸入模式
+      if (currentCategory === 'dashboard' || currentCategory === 'settings') {
+        currentMode = 'view';
+      }
+
+      updateNavTabsUI();
+      syncModeUI();
+    }
+
+    function updateNavTabsUI() {
+      const tabs = ['dashboard', 'cards', 'banks', 'bills', 'installments', 'stocks', 'settings'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('nav-' + t);
+        if (btn) {
+          if (t === currentCategory) {
+            btn.className = 'tab-pill-btn active num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0';
+          } else {
+            btn.className = 'tab-pill-btn num-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shrink-0 bg-slate-100 dark:bg-nord-1 text-slate-700 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6';
+          }
+        }
+      });
+    }
+
+    function switchProfile(profileKey) {
+      currentProfileKey = profileKey;
+      localStorage.setItem('PocketMoney_v2_active_profile', profileKey);
+      cardCoverIndex = 0;
+      selectedEntityId = 'all';
+
+      // 更新頂部按鈕狀態
+      ['junior', 'family', 'senior'].forEach(k => {
+        const btn = document.getElementById('prof-btn-' + k);
+        if (btn) {
+          if (k === profileKey) {
+            btn.className = 'px-2.5 py-1 rounded-md font-bold bg-nord-8 text-nord-0 transition';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-md font-medium text-slate-600 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6 transition';
+          }
+        }
+      });
+
+      const selMobile = document.getElementById('persona-select-mobile');
+      if (selMobile) selMobile.value = profileKey;
+
+      db = loadActiveProfileData(profileKey);
+      showToast('已切換為：' + (db.profile?.label || profileKey));
+      renderCurrentView();
+    }
+
+    function toggleViewInputMode() {
+      // 總覽或設定點擊輸入鈕時，自動引導至信用卡費輸入
+      if (currentCategory === 'dashboard' || currentCategory === 'settings') {
+        currentCategory = 'cards';
+        updateNavTabsUI();
+      }
+
+      currentMode = (currentMode === 'view') ? 'input' : 'view';
+      syncModeUI();
+    }
+
+    function syncModeUI() {
+      const viewCont = document.getElementById('view-mode-container');
+      const inputCont = document.getElementById('input-mode-container');
+      const badge = document.getElementById('header-mode-badge');
+      const btn = document.getElementById('btn-mode-toggle');
+      const icon = document.getElementById('mode-toggle-icon');
+      const text = document.getElementById('mode-toggle-text');
+
+      if (currentMode === 'view') {
+        viewCont.classList.remove('hidden');
+        inputCont.classList.add('hidden');
+        badge.textContent = '瀏覽';
+        badge.className = 'px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-nord-2 text-slate-600 dark:text-nord-4 border border-slate-200 dark:border-nord-3/40';
+
+        btn.className = 'h-8 px-3 rounded-lg bg-nord-8 hover:bg-nord-7 text-nord-0 font-bold text-xs flex items-center space-x-1 shadow-md shadow-nord-8/20 transition-all pulse-glow';
+        icon.className = 'fa-solid fa-plus text-xs';
+        text.textContent = '輸入';
+
+        renderCurrentView();
+      } else {
+        viewCont.classList.add('hidden');
+        inputCont.classList.remove('hidden');
+        badge.textContent = '輸入中';
+        badge.className = 'px-2 py-0.5 rounded text-[11px] font-semibold bg-nord-14/20 text-nord-14 border border-nord-14/40';
+
+        btn.className = 'h-8 px-3 rounded-lg bg-slate-200 dark:bg-nord-1 hover:bg-slate-300 dark:hover:bg-nord-2 border border-slate-300 dark:border-nord-2 text-slate-700 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6 font-bold text-xs flex items-center space-x-1 transition-all';
+        icon.className = 'fa-solid fa-xmark text-xs';
+        text.textContent = '瀏覽';
+
+        renderCurrentInput();
+      }
+    }
+
+    function switchChartRangeMode(mode) {
+      chartRangeMode = mode;
+      const bRolling = document.getElementById('btn-chart-rolling12');
+      const bYtd = document.getElementById('btn-chart-ytd');
+
+      if (mode === 'rolling12') {
+        bRolling.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-nord-8 text-nord-0 shadow-sm';
+        bYtd.className = 'px-3 py-1 rounded-lg text-xs font-medium transition-all text-slate-500 dark:text-nord-4 hover:text-slate-800 dark:hover:text-nord-6';
+      } else {
+        bYtd.className = 'px-3 py-1 rounded-lg text-xs font-bold transition-all bg-nord-8 text-nord-0 shadow-sm';
+        bRolling.className = 'px-3 py-1 rounded-lg text-xs font-medium transition-all text-slate-500 dark:text-nord-4 hover:text-slate-800 dark:hover:text-nord-6';
+      }
+
+      renderCurrentView();
+    }
+
+    function selectEntityFilter(id) {
+      selectedEntityId = id;
+      renderCurrentView();
+    }
+
+    /* -------------------------------------------------------------------------
+       6. 核心財務指標計算 (Financial Metrics Engine)
+       ------------------------------------------------------------------------- */
+    function computeFinancialMetrics() {
+      if (!db) return {};
+
+      const totalBankBalance = (db.banks || []).reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
+
+      let stockMarketValue = 0;
+      let stockCostValue = 0;
+      (db.stocks || []).forEach(s => {
+        const shares = Number(s.shares) || 0;
+        stockMarketValue += shares * (Number(s.currentPrice) || 0);
+        stockCostValue += shares * (Number(s.avgCost) || 0);
+      });
+      const stockPnL = stockMarketValue - stockCostValue;
+      const stockPnLPercent = stockCostValue > 0 ? (stockPnL / stockCostValue) * 100 : 0;
+
+      // 證券交割現金池
+      const secBankIds = Array.isArray(db.settings?.securitiesBankIds)
+        ? db.settings.securitiesBankIds
+        : (db.banks || []).filter(b => b.name.includes('證券') || b.id.includes('sec')).map(b => b.id);
+      
+      const stockCashPool = (db.banks || [])
+        .filter(b => secBankIds.includes(b.id))
+        .reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
+      
+      const stockTotalPool = stockMarketValue + stockCashPool;
+      const stockHoldRatio = stockTotalPool > 0 ? Math.round((stockMarketValue / stockTotalPool) * 100) : 0;
+      const stockCashRatio = stockTotalPool > 0 ? (100 - stockHoldRatio) : 0;
+
+      // 信用卡未繳總額 (本期 10 月未付金額)
+      let unpaidCardTotal = 0;
+      (db.cards || []).forEach(c => {
+        const rec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+        const amt = (rec && rec.amount !== undefined) ? Number(rec.amount) : 0;
+        if (!c.paid) unpaidCardTotal += amt;
+      });
+
+      // 固定費用未繳總額
+      const unpaidBillsTotal = (db.bills || [])
+        .filter(b => b.status === 'unpaid' || b.status === 'pending')
+        .reduce((sum, b) => sum + (Number(b.amount) || Number(b.defaultAmount) || 0), 0);
+
+      // 分期付款負債
+      let installmentMonthlyTotal = 0;
+      let installmentRemainingTotal = 0;
+      (db.installments || []).forEach(i => {
+        const totalPeriods = i.totalPeriods || i.totalTerms || 12;
+        let curTerm = i.currentTerm !== undefined ? i.currentTerm : (i.paidPeriods || 1);
+        const monthly = Number(i.monthlyAmount) || Number(i.regularPeriodAmount) || Math.round((i.totalAmount || 36000) / totalPeriods);
+        const remainingTerms = Math.max(0, totalPeriods - curTerm);
+        installmentMonthlyTotal += monthly;
+        installmentRemainingTotal += remainingTerms * monthly;
+      });
+
+      // 30 號自動扣繳檢核 (比對各銀行餘額 vs 該銀行綁定應扣信用卡 + 固定支出)
+      const bankCheckups = (db.banks || []).map(bank => {
+        const boundCards = (db.cards || []).filter(c => c.bankId === bank.id && !c.paid);
+        const boundBills = (db.bills || []).filter(b => b.bankId === bank.id && (b.status === 'unpaid' || b.status === 'pending'));
+
+        const cardsSum = boundCards.reduce((sum, c) => {
+          const rec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+          return sum + ((rec && rec.amount !== undefined) ? Number(rec.amount) : 0);
+        }, 0);
+
+        const billsSum = boundBills.reduce((sum, b) => sum + (Number(b.amount) || Number(b.defaultAmount) || 0), 0);
+        const requiredTotal = cardsSum + billsSum;
+        const afterBalance = Number(bank.balance || 0) - requiredTotal;
+        const isShortfall = afterBalance < 0;
+
+        return {
+          bank,
+          cardsSum,
+          billsSum,
+          requiredTotal,
+          afterBalance,
+          isShortfall
+        };
+      });
+
+      const totalAssets = totalBankBalance + stockMarketValue;
+      const totalUnpaidMonth = unpaidCardTotal + unpaidBillsTotal;
+      const netWorth = totalAssets - totalUnpaidMonth;
+
+      return {
+        totalBankBalance, stockMarketValue, stockCostValue, stockPnL, stockPnLPercent,
+        stockCashPool, stockTotalPool, stockHoldRatio, stockCashRatio, secBankIds,
+        unpaidCardTotal, unpaidBillsTotal, totalUnpaidMonth,
+        installmentMonthlyTotal, installmentRemainingTotal,
+        bankCheckups, totalAssets, netWorth
+      };
+    }
+
+    /* -------------------------------------------------------------------------
+       7. 總覽 View 模式渲染 (Dashboard)
+       ------------------------------------------------------------------------- */
+    function renderDashboardView() {
+      const m = computeFinancialMetrics();
+      const p = db.profile || {};
+
+      // 1. 三大 KPI 卡
+      document.getElementById('dashboard-kpi-row').innerHTML = `
+        <!-- KPI 1: 總淨資產 -->
+        <div class="fluid-card bg-gradient-to-br from-nord-9 via-nord-10 to-nord-3 text-white shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-xs font-bold bg-white/15 px-2.5 py-0.5 rounded-full num-nowrap">總淨資產</span>
+              <span class="text-xs text-nord-4 font-semibold num-nowrap"><i class="fa-solid fa-clock-rotate-left mr-1"></i>30號結算</span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-extrabold font-mono num-nowrap my-1 masked-amount">NT$ ${formatCurrency(m.netWorth)}</div>
+          </div>
+          <div class="pt-3 mt-3 border-t border-white/15 space-y-1.5 text-xs text-nord-5">
+            <div class="flex items-center justify-between">
+              <span class="opacity-80">銀行存款與股票總資產</span>
+              <span class="font-bold font-mono num-nowrap masked-amount">NT$ ${formatCurrency(m.totalAssets)}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="opacity-80">本月待扣卡費與固定支出</span>
+              <span class="font-bold font-mono text-nord-11 num-nowrap masked-amount">-NT$ ${formatCurrency(m.totalUnpaidMonth)}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="opacity-80">分期未來未繳總負債</span>
+              <span class="font-bold font-mono text-nord-13 num-nowrap masked-amount">NT$ ${formatCurrency(m.installmentRemainingTotal)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 2: 股票部位與損益 -->
+        <div onclick="switchCategoryTab('stocks')" class="fluid-card cursor-pointer bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 shadow-sm flex flex-col justify-between hover:border-nord-8/40 transition">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-xs font-bold text-slate-500 dark:text-nord-4 num-nowrap">
+                <i class="fa-solid fa-chart-line text-nord-8 mr-1"></i>股票投資市值與損益
+              </span>
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full ${m.stockPnL >= 0 ? 'bg-nord-14/20 text-nord-14' : 'bg-nord-11/20 text-nord-11'} num-nowrap">
+                ${m.stockPnL >= 0 ? '+' : ''}${m.stockPnLPercent.toFixed(1)}%
+              </span>
+            </div>
+            <div class="flex items-baseline justify-between gap-2 my-1 flex-wrap">
+              <div class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-800 dark:text-nord-6 num-nowrap masked-amount">
+                NT$ ${formatCurrency(m.stockMarketValue)}
+              </div>
+              <div class="text-xs font-bold font-mono px-2 py-0.5 rounded-lg ${m.stockPnL >= 0 ? 'bg-nord-14/15 text-nord-14' : 'bg-nord-11/15 text-nord-11'} num-nowrap masked-amount">
+                ${m.stockPnL >= 0 ? '+' : ''}NT$ ${formatCurrency(m.stockPnL)}
+              </div>
+            </div>
+          </div>
+          <div class="pt-3 mt-2 border-t border-slate-100 dark:border-nord-2/60">
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-nord-9">持股部位 ${m.stockHoldRatio}%</span>
+              <span class="text-nord-13">交割現金 ${m.stockCashRatio}%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-200 dark:bg-nord-0 rounded-full overflow-hidden flex">
+              <div class="bg-nord-9 h-full transition-all duration-500" style="width: ${m.stockHoldRatio}%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 3: 本月待扣款總結 -->
+        <div onclick="switchCategoryTab('cards')" class="fluid-card cursor-pointer bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 shadow-sm flex flex-col justify-between hover:border-nord-11/40 transition">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-xs font-bold text-slate-500 dark:text-nord-4 num-nowrap">
+                <i class="fa-solid fa-file-invoice-dollar text-nord-11 mr-1"></i>本月待扣款總結
+              </span>
+              <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-nord-2 text-slate-600 dark:text-nord-4 num-nowrap">
+                30 號自動扣繳
+              </span>
+            </div>
+            <div class="text-2xl sm:text-3xl font-extrabold font-mono text-nord-11 num-nowrap my-1 masked-amount">
+              NT$ ${formatCurrency(m.totalUnpaidMonth)}
+            </div>
+          </div>
+          <div class="pt-3 mt-2 border-t border-slate-100 dark:border-nord-2/60 space-y-1 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-nord-4">信用卡待繳款</span>
+              <span class="font-bold font-mono text-slate-700 dark:text-nord-6 num-nowrap masked-amount">NT$ ${formatCurrency(m.unpaidCardTotal)}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 dark:text-nord-4">固定支出 (房租水電)</span>
+              <span class="font-bold font-mono text-slate-700 dark:text-nord-6 num-nowrap masked-amount">NT$ ${formatCurrency(m.unpaidBillsTotal)}</span>
+            </div>
+            <div class="flex items-center justify-between text-nord-15">
+              <span>每月分期吃掉現金流</span>
+              <span class="font-bold font-mono num-nowrap masked-amount">NT$ ${formatCurrency(m.installmentMonthlyTotal)} /月</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // 2. 30 號各銀行自動扣繳水位檢核
+      document.getElementById('dashboard-debit-card').innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-nord-2/60">
+          <div>
+            <span class="text-sm font-bold text-slate-800 dark:text-nord-6 flex items-center gap-1.5">
+              <i class="fa-solid fa-shield-halved text-nord-8"></i>
+              <span>每月 30 號各銀行自動扣繳水位檢核</span>
+            </span>
+            <span class="text-xs text-slate-400 dark:text-nord-4">即時驗證各銀行是否有足夠存款供自動扣款，避免違約或罰息</span>
+          </div>
+          <button onclick="toggleViewInputMode()" class="px-3 py-1 rounded-lg bg-nord-8/15 text-nord-8 text-xs font-semibold hover:bg-nord-8/25 transition">
+            快速校準銀行存款
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-${Math.min(m.bankCheckups.length, 3)} gap-3 pt-1">
+          ${m.bankCheckups.map(bc => {
+            const ratio = bc.requiredTotal > 0 ? Math.min(100, Math.round((bc.requiredTotal / (bc.bank.balance || 1)) * 100)) : 0;
+            return `
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border ${bc.isShortfall ? 'border-nord-11/60 bg-nord-11/5' : 'border-slate-200 dark:border-nord-2'} space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs text-slate-800 dark:text-nord-6 flex items-center gap-1.5 truncate">
+                    <i class="fa-solid fa-building-columns text-nord-9"></i>
+                    <span>${bc.bank.name}</span>
+                  </span>
+                  ${bc.isShortfall 
+                    ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-nord-11/20 text-nord-11">存款不足</span>' 
+                    : '<span class="text-[10px] font-medium text-nord-14">水位充足</span>'}
+                </div>
+
+                <div class="flex items-baseline justify-between text-xs">
+                  <span class="text-slate-500 dark:text-nord-4">帳戶存款</span>
+                  <span class="font-mono font-bold text-slate-800 dark:text-nord-6 masked-amount">NT$ ${formatCurrency(bc.bank.balance)}</span>
+                </div>
+
+                <div class="flex items-baseline justify-between text-xs">
+                  <span class="text-slate-500 dark:text-nord-4">當期應扣總額</span>
+                  <span class="font-mono font-bold text-nord-11 masked-amount">-NT$ ${formatCurrency(bc.requiredTotal)}</span>
+                </div>
+
+                <div class="w-full bg-slate-200 dark:bg-nord-2 rounded-full h-1.5 overflow-hidden">
+                  <div class="${bc.isShortfall ? 'bg-nord-11' : 'bg-nord-8'} h-1.5 rounded-full" style="width: ${ratio}%"></div>
+                </div>
+
+                <div class="flex items-baseline justify-between text-xs pt-1 border-t border-slate-200 dark:border-nord-2/60">
+                  <span class="text-slate-400 dark:text-nord-4">扣後預估結餘</span>
+                  <span class="font-mono font-bold ${bc.afterBalance < 0 ? 'text-nord-11 font-extrabold' : 'text-slate-700 dark:text-nord-6'} masked-amount">
+                    NT$ ${formatCurrency(bc.afterBalance)}
+                  </span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      // 3. 總覽快速清單 (即將扣款之信用卡與固定帳單)
+      document.getElementById('dashboard-details-row').innerHTML = `
+        <!-- 本期待繳卡片 -->
+        <div class="p-4 rounded-2xl bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 shadow-sm space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-nord-2/60">
+            <span class="text-xs font-bold text-slate-800 dark:text-nord-6 flex items-center gap-1.5">
+              <i class="fa-regular fa-credit-card text-nord-8"></i>
+              <span>本期信用卡扣款</span>
+            </span>
+            <button onclick="switchCategoryTab('cards')" class="text-xs text-nord-8 hover:underline">查看全部 ➔</button>
+          </div>
+          <div class="space-y-2">
+            ${(db.cards || []).map(c => {
+              const rec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+              const amt = rec ? rec.amount : 0;
+              return `
+                <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-100 dark:border-nord-2/60 text-xs">
+                  <div>
+                    <span class="font-bold text-slate-800 dark:text-nord-6 block">${c.name}</span>
+                    <span class="text-[11px] text-slate-400 dark:text-nord-4">每月 ${c.dueDay || 10} 號扣款</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="font-mono font-bold text-slate-800 dark:text-nord-6 block masked-amount">NT$ ${formatCurrency(amt)}</span>
+                    <span class="${c.paid ? 'text-nord-14' : 'text-nord-13'} text-[10px] font-semibold">${c.paid ? '已扣繳' : '待扣繳'}</span>
+                  </div>
+                </div>
+              `;
+            }).join('') || '<div class="text-xs text-slate-400 py-2">無信用卡資料</div>'}
+          </div>
+        </div>
+
+        <!-- 本期固定支出與分期清單 -->
+        <div class="p-4 rounded-2xl bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 shadow-sm space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-nord-2/60">
+            <span class="text-xs font-bold text-slate-800 dark:text-nord-6 flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group text-nord-15"></i>
+              <span>固定費用與分期款項</span>
+            </span>
+            <button onclick="switchCategoryTab('bills')" class="text-xs text-nord-8 hover:underline">查看全部 ➔</button>
+          </div>
+          <div class="space-y-2">
+            ${(db.bills || []).slice(0, 3).map(b => `
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-100 dark:border-nord-2/60 text-xs">
+                <div>
+                  <span class="font-bold text-slate-800 dark:text-nord-6 block">${b.name}</span>
+                  <span class="text-[11px] text-slate-400 dark:text-nord-4">${b.paymentMethod === 'bank_direct' ? '銀行直扣' : '信用卡代繳'}</span>
+                </div>
+                <div class="text-right">
+                  <span class="font-mono font-bold text-slate-800 dark:text-nord-6 block masked-amount">NT$ ${formatCurrency(b.amount || b.defaultAmount)}</span>
+                  <span class="${b.status === 'paid' ? 'text-nord-14' : 'text-nord-13'} text-[10px] font-semibold">${b.status === 'paid' ? '已扣繳' : '待扣繳'}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    /* -------------------------------------------------------------------------
+       8. 圖表模組 View 渲染 (信用卡費、銀行餘額、固定費用、分期付款)
+       ------------------------------------------------------------------------- */
+    function renderChartModuleView(cat) {
+      const slots = getActiveSlots();
+      const labels = slots.map(s => s.label);
+
+      if (cat === 'cards') {
+        renderCardsViewModule(slots, labels);
+      } else if (cat === 'banks') {
+        renderBanksViewModule(slots, labels);
+      } else if (cat === 'bills') {
+        renderBillsViewModule(slots, labels);
+      } else if (cat === 'installments') {
+        renderInstallmentsViewModule(slots, labels);
+      }
+    }
+
+    /* 8.1 信用卡費模組 */
+    function renderCardsViewModule(slots, labels) {
+      const cards = db.cards || [];
+      document.getElementById('detail-section-title').textContent = '本期信用卡帳單清單';
+
+      let currentMonthTotal = 0;
+      let periodTotal = 0;
+      let bigExpenseCount = 0;
+
+      cards.forEach(c => {
+        slots.forEach(slot => {
+          if (!slot.isFuture) {
+            const rec = (c.records || []).find(r => r.year === slot.year && r.month === slot.month);
+            if (rec && rec.amount !== null) periodTotal += rec.amount;
+          }
+        });
+        const octRec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+        if (octRec && octRec.amount !== null) {
+          currentMonthTotal += octRec.amount;
+          bigExpenseCount += (octRec.bigExpenses ? octRec.bigExpenses.length : 0);
+        }
+      });
+
+      const activeSlotCount = slots.filter(s => !s.isFuture).length;
+      const monthlyAvg = activeSlotCount > 0 ? Math.round(periodTotal / activeSlotCount) : 0;
+
+      // 頂部三大 KPI 卡
+      document.getElementById('module-kpi-row').innerHTML = `
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">本月信用卡費總計</span>
+            <span class="text-2xl font-bold font-mono text-nord-8 masked-amount">NT$ ${formatCurrency(currentMonthTotal)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-8/15 text-nord-8 flex items-center justify-center">
+            <i class="fa-regular fa-credit-card"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">${chartRangeMode === 'rolling12' ? '近 12 個月累計總額' : '當年度累計總額'}</span>
+            <span class="text-2xl font-bold font-mono text-slate-800 dark:text-nord-6 masked-amount">NT$ ${formatCurrency(periodTotal)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-9/15 text-nord-9 flex items-center justify-center">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">有效月平均 (含 ${bigExpenseCount} 筆大額)</span>
+            <span class="text-2xl font-bold font-mono text-nord-13 masked-amount">NT$ ${formatCurrency(monthlyAvg)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-13/15 text-nord-13 flex items-center justify-center">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-8';
+      document.getElementById('chart-title').innerText = '信用卡費走勢';
+      document.getElementById('chart-subtitle').innerText = chartRangeMode === 'rolling12'
+        ? '2025/11 ~ 2026/10 (連續 12 個月)'
+        : '2026/01 ~ 2026/12 (11~12月以月均虛線推估)';
+
+      // 篩選膠囊按鈕
+      const pillsHtml = [
+        `<button onclick="selectEntityFilter('all')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === 'all' ? 'bg-nord-8 text-nord-0 font-bold' : 'bg-slate-100 dark:bg-nord-0 text-slate-600 dark:text-nord-4 border border-slate-200 dark:border-nord-2'}">全部信用卡</button>`,
+        ...cards.map(c => `
+          <button onclick="selectEntityFilter('${c.id}')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === c.id ? 'bg-nord-8 text-nord-0 font-bold' : 'bg-slate-100 dark:bg-nord-0 text-slate-600 dark:text-nord-4 border border-slate-200 dark:border-nord-2'}">${c.name}</button>
+        `)
+      ].join('');
+      document.getElementById('chart-filter-pills').innerHTML = pillsHtml;
+
+      // 繪製圖表 Datasets
+      let datasets = [];
+      const palette = ['#88C0D0', '#B48EAD', '#EBCB8B', '#A3BE8C', '#D08770', '#81A1C1'];
+
+      if (selectedEntityId === 'all') {
+        const actualSeries = slots.map(slot => {
+          if (slot.isFuture) return null;
+          return cards.reduce((sum, c) => {
+            const rec = (c.records || []).find(r => r.year === slot.year && r.month === slot.month);
+            return sum + (rec && rec.amount !== null ? rec.amount : 0);
+          }, 0);
+        });
+
+        datasets.push({
+          label: '已出帳卡費總額',
+          data: actualSeries,
+          borderColor: '#88C0D0',
+          backgroundColor: 'rgba(136, 192, 208, 0.14)',
+          borderWidth: 3,
+          pointRadius: 4,
+          pointBackgroundColor: '#88C0D0',
+          fill: true,
+          tension: 0.3
+        });
+
+        if (chartRangeMode === 'ytd') {
+          const avgAll = activeSlotCount > 0 ? Math.round(periodTotal / activeSlotCount) : 0;
+          const forecastSeries = slots.map((slot, idx) => {
+            if (idx < 9) return null;
+            if (idx === 9) return actualSeries[9];
+            return avgAll;
+          });
+          datasets.push({
+            label: '未出帳月份推估 (月均)',
+            data: forecastSeries,
+            borderColor: '#88C0D0',
+            borderDash: [6, 4],
+            borderWidth: 2,
+            pointRadius: 4,
+            fill: false,
+            tension: 0.3
+          });
+        }
+      } else {
+        const card = cards.find(c => c.id === selectedEntityId) || cards[0];
+        const activeRecs = (card.records || []).filter(r => r.amount !== null);
+        const cardAvg = activeRecs.length > 0 ? Math.round(activeRecs.reduce((s, r) => s + r.amount, 0) / activeRecs.length) : 0;
+        const series = slots.map(slot => {
+          if (slot.isFuture) return cardAvg;
+          const rec = (card.records || []).find(r => r.year === slot.year && r.month === slot.month);
+          return rec ? rec.amount : null;
+        });
+        datasets.push({
+          label: `${card.name} 帳單`,
+          data: series,
+          borderColor: '#88C0D0',
+          backgroundColor: 'rgba(136, 192, 208, 0.14)',
+          borderWidth: 3,
+          pointRadius: 4,
+          fill: true,
+          tension: 0.3
+        });
+      }
+
+      drawLineChart(labels, datasets);
+
+      // 下方明細清單
+      const cardsToRender = selectedEntityId === 'all' ? cards : cards.filter(c => c.id === selectedEntityId);
+      document.getElementById('module-detail-list').innerHTML = cardsToRender.map(card => {
+        const bank = (db.banks || []).find(b => b.id === card.bankId);
+        const octRec = (card.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH) || { amount: 0, bigExpenses: [] };
+        const isAlert = card.highSpendWarn && octRec.amount > card.highSpendWarn;
+
+        const bigListHtml = (octRec.bigExpenses && octRec.bigExpenses.length > 0)
+          ? octRec.bigExpenses.map(b => `
+              <div class="flex items-center justify-between text-xs py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2/50">
+                <span class="text-slate-700 dark:text-nord-6">${b.title}</span>
+                <span class="font-mono font-semibold text-nord-13 masked-amount">NT$ ${formatCurrency(b.amount)}</span>
+              </div>
+            `).join('')
+          : `<div class="text-[11px] text-slate-400 py-1">本月無額外大額消費項目</div>`;
+
+        return `
+          <div class="bg-white dark:bg-nord-1 border ${isAlert ? 'border-nord-11/40' : 'border-slate-200 dark:border-nord-2'} rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-nord-8/30 transition-all">
+            <div>
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-nord-0 flex items-center justify-center text-nord-8 border border-slate-200 dark:border-nord-2">
+                    <i class="fa-solid fa-credit-card text-base"></i>
+                  </div>
+                  <div>
+                    <span class="text-base font-bold text-slate-800 dark:text-nord-6 block">${card.name}</span>
+                    <span class="text-xs text-slate-400 dark:text-nord-4 block mt-0.5">扣款銀行：${bank ? bank.name : '綁定扣繳'} (每月 ${card.dueDay || 10} 號)</span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-lg font-bold font-mono ${isAlert ? 'text-nord-11' : 'text-nord-8'} masked-amount block">
+                    NT$ ${formatCurrency(octRec.amount)}
+                  </span>
+                  ${isAlert ? '<span class="text-[10px] px-2 py-0.5 rounded bg-nord-11/20 text-nord-11 font-semibold">超出警戒</span>' : '<span class="text-[10px] text-nord-14 font-medium">消費正常</span>'}
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-1.5 pt-2 border-t border-slate-100 dark:border-nord-2/50">
+              <span class="text-[11px] font-semibold text-slate-400 dark:text-nord-4 block">本月大額消費明細</span>
+              ${bigListHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* 8.2 銀行餘額模組 */
+    function renderBanksViewModule(slots, labels) {
+      const banks = db.banks || [];
+      document.getElementById('detail-section-title').textContent = '各銀行專戶存款清單';
+
+      const totalBalance = banks.reduce((sum, b) => sum + (Number(b.balance) || 0), 0);
+      const m = computeFinancialMetrics();
+
+      document.getElementById('module-kpi-row').innerHTML = `
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">銀行總餘額</span>
+            <span class="text-2xl font-bold font-mono text-nord-14 masked-amount">NT$ ${formatCurrency(totalBalance)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-14/15 text-nord-14 flex items-center justify-center">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">本月待扣總額</span>
+            <span class="text-2xl font-bold font-mono text-nord-11 masked-amount">-NT$ ${formatCurrency(m.totalUnpaidMonth)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-11/15 text-nord-11 flex items-center justify-center">
+            <i class="fa-solid fa-arrow-trend-down"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">扣後預估結餘</span>
+            <span class="text-2xl font-bold font-mono text-nord-8 masked-amount">NT$ ${formatCurrency(totalBalance - m.totalUnpaidMonth)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-8/15 text-nord-8 flex items-center justify-center">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-9';
+      document.getElementById('chart-title').innerText = '銀行資產水位走勢';
+      document.getElementById('chart-subtitle').innerText = '各專戶安全水位走勢';
+
+      // 篩選膠囊按鈕
+      const pillsHtml = [
+        `<button onclick="selectEntityFilter('all')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === 'all' ? 'bg-nord-8 text-nord-0 font-bold' : 'bg-slate-100 dark:bg-nord-0 text-slate-600 dark:text-nord-4 border border-slate-200 dark:border-nord-2'}">全部銀行</button>`,
+        ...banks.map(b => `
+          <button onclick="selectEntityFilter('${b.id}')" class="px-3 py-1 rounded-lg text-xs font-semibold transition-all ${selectedEntityId === b.id ? 'bg-nord-8 text-nord-0 font-bold' : 'bg-slate-100 dark:bg-nord-0 text-slate-600 dark:text-nord-4 border border-slate-200 dark:border-nord-2'}">${b.name}</button>
+        `)
+      ].join('');
+      document.getElementById('chart-filter-pills').innerHTML = pillsHtml;
+
+      const series = slots.map((s, idx) => {
+        return banks.reduce((sum, b) => {
+          if (selectedEntityId !== 'all' && b.id !== selectedEntityId) return sum;
+          return sum + (b.balance || 0);
+        }, 0);
+      });
+
+      drawLineChart(labels, [{
+        label: '存款總水位',
+        data: series,
+        borderColor: '#81A1C1',
+        backgroundColor: 'rgba(129, 161, 193, 0.15)',
+        borderWidth: 3,
+        pointRadius: 4,
+        fill: true,
+        tension: 0.25
+      }]);
+
+      document.getElementById('module-detail-list').innerHTML = banks.map(b => `
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-nord-0 flex items-center justify-center text-nord-9 border border-slate-200 dark:border-nord-2">
+                <i class="fa-solid fa-building-columns"></i>
+              </div>
+              <div>
+                <span class="text-base font-bold text-slate-800 dark:text-nord-6 block">${b.name}</span>
+                <span class="text-xs text-slate-400 dark:text-nord-4 block mt-0.5">${b.note || '日常薪轉・日常扣繳'}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-lg font-bold font-mono text-nord-14 masked-amount block">NT$ ${formatCurrency(b.balance)}</span>
+              <span class="text-[10px] text-slate-400">保留底線: NT$ ${formatCurrency(b.minReserve || 20000)}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* 8.3 固定費用模組 */
+    function renderBillsViewModule(slots, labels) {
+      const rawBills = db.bills || [];
+      document.getElementById('detail-section-title').textContent = '固定開銷與生活費扣繳清單';
+
+      const bankDirectSeries = slots.map(slot =>
+        rawBills.filter(b => b.paymentMethod === 'bank_direct').reduce((sum, b) => sum + (b.amount || b.defaultAmount || 0), 0)
+      );
+      const cardAutoSeries = slots.map(slot =>
+        rawBills.filter(b => b.paymentMethod === 'card_auto').reduce((sum, b) => sum + (b.amount || b.defaultAmount || 0), 0)
+      );
+      const totalSeries = slots.map((_, i) => bankDirectSeries[i] + cardAutoSeries[i]);
+
+      const octTotal = totalSeries[0] || 0;
+      const octBankDirect = bankDirectSeries[0] || 0;
+      const octCardAuto = cardAutoSeries[0] || 0;
+
+      document.getElementById('module-kpi-row').innerHTML = `
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">本月固定費用總計</span>
+            <span class="text-2xl font-bold font-mono text-nord-7 masked-amount">NT$ ${formatCurrency(octTotal)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-7/15 text-nord-7 flex items-center justify-center">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">銀行直接扣除</span>
+            <span class="text-2xl font-bold font-mono text-nord-9 masked-amount">NT$ ${formatCurrency(octBankDirect)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-9/15 text-nord-9 flex items-center justify-center">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">信用卡刷卡代扣</span>
+            <span class="text-2xl font-bold font-mono text-nord-15 masked-amount">NT$ ${formatCurrency(octCardAuto)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-15/15 text-nord-15 flex items-center justify-center">
+            <i class="fa-regular fa-credit-card"></i>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-7';
+      document.getElementById('chart-title').innerText = '固定支出扣繳走勢';
+      document.getElementById('chart-subtitle').innerText = '契約預定扣繳走勢';
+      document.getElementById('chart-filter-pills').innerHTML = '';
+
+      drawLineChart(labels, [
+        { label: '固定費用總額', data: totalSeries, borderColor: '#8FBCBB', backgroundColor: 'rgba(143, 188, 187, 0.15)', borderWidth: 3, pointRadius: 4, fill: true, tension: 0.2 },
+        { label: '銀行直扣', data: bankDirectSeries, borderColor: '#81A1C1', borderWidth: 2, pointRadius: 3, fill: false, tension: 0.2 },
+        { label: '信用卡代扣', data: cardAutoSeries, borderColor: '#B48EAD', borderWidth: 2, pointRadius: 3, fill: false, tension: 0.2 }
+      ]);
+
+      document.getElementById('module-detail-list').innerHTML = rawBills.map(bill => {
+        const isBank = (bill.paymentMethod === 'bank_direct');
+        const amt = bill.amount || bill.defaultAmount || 0;
+        const status = bill.status || 'unpaid';
+
+        return `
+          <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between hover:border-nord-7/30 transition-all">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl ${isBank ? 'bg-nord-9/15 text-nord-9' : 'bg-nord-15/15 text-nord-15'} flex items-center justify-center">
+                <i class="${isBank ? 'fa-solid fa-building-columns' : 'fa-regular fa-credit-card'}"></i>
+              </div>
+              <div>
+                <span class="font-bold text-slate-800 dark:text-nord-6 block">${bill.name}</span>
+                <span class="text-xs text-slate-400 dark:text-nord-4">${isBank ? '銀行直扣' : '信用卡代繳'} • 每月 ${bill.dueDay || 10} 號</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="text-base font-bold font-mono text-slate-800 dark:text-nord-6 block masked-amount">NT$ ${formatCurrency(amt)}</span>
+              <span class="${status === 'paid' ? 'text-nord-14' : 'text-nord-13'} text-[10px] font-semibold">${status === 'paid' ? '已扣繳' : '待扣繳'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* 8.4 分期付款模組 */
+    function renderInstallmentsViewModule(slots, labels) {
+      const rawInst = db.installments || [];
+      document.getElementById('detail-section-title').textContent = '進行中分期消費明細';
+
+      const installments = rawInst.map(i => {
+        const totalPeriods = i.totalPeriods || i.totalTerms || 12;
+        let curTerm = i.currentTerm !== undefined ? i.currentTerm : (i.paidPeriods || 1);
+        const monthly = Number(i.monthlyAmount) || Number(i.regularPeriodAmount) || Math.round((i.totalAmount || 36000) / totalPeriods);
+        return {
+          id: i.id,
+          name: i.title || i.name || '分期消費',
+          monthlyAmount: monthly,
+          totalTerms: totalPeriods,
+          currentTerm: curTerm,
+          totalAmount: i.totalAmount || (totalPeriods * monthly)
+        };
+      });
+
+      const monthlyBurden = installments.reduce((s, i) => s + i.monthlyAmount, 0);
+      const remainingTotal = installments.reduce((s, i) => s + (i.monthlyAmount * Math.max(0, i.totalTerms - i.currentTerm)), 0);
+
+      document.getElementById('module-kpi-row').innerHTML = `
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">本月分期吃掉現金流</span>
+            <span class="text-2xl font-bold font-mono text-nord-15 masked-amount">NT$ ${formatCurrency(monthlyBurden)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-15/15 text-nord-15 flex items-center justify-center">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">分期未還總尾款</span>
+            <span class="text-2xl font-bold font-mono text-nord-11 masked-amount">NT$ ${formatCurrency(remainingTotal)}</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-11/15 text-nord-11 flex items-center justify-center">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <div>
+            <span class="text-xs text-slate-500 dark:text-nord-4 block mb-1">進行中分期筆數</span>
+            <span class="text-2xl font-bold font-mono text-slate-800 dark:text-nord-6">${installments.length} 筆</span>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-nord-8/15 text-nord-8 flex items-center justify-center">
+            <i class="fa-solid fa-list-check"></i>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('chart-dot').className = 'w-2.5 h-2.5 rounded-full bg-nord-15';
+      document.getElementById('chart-title').innerText = '分期累積現金流壓迫線';
+      document.getElementById('chart-subtitle').innerText = '未來月份每月分期攤提金額';
+      document.getElementById('chart-filter-pills').innerHTML = '';
+
+      const monthlyBurnSeries = slots.map((slot, sIdx) =>
+        installments.reduce((sum, i) => {
+          const term = i.currentTerm + sIdx;
+          return term <= i.totalTerms ? sum + i.monthlyAmount : sum;
+        }, 0)
+      );
+
+      drawLineChart(labels, [{
+        label: '每月分期攤提金額',
+        data: monthlyBurnSeries,
+        borderColor: '#B48EAD',
+        backgroundColor: 'rgba(180, 142, 173, 0.16)',
+        borderWidth: 3,
+        pointRadius: 4,
+        fill: true,
+        tension: 0.3
+      }]);
+
+      document.getElementById('module-detail-list').innerHTML = installments.map(i => {
+        const remainingTerms = Math.max(0, i.totalTerms - i.currentTerm);
+        const percent = Math.min(100, Math.round((i.currentTerm / i.totalTerms) * 100));
+
+        return `
+          <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-nord-15/15 text-nord-15 flex items-center justify-center">
+                  <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                  <span class="font-bold text-slate-800 dark:text-nord-6 block">${i.name}</span>
+                  <span class="text-xs text-slate-400 dark:text-nord-4">第 ${i.currentTerm} / ${i.totalTerms} 期 (剩 ${remainingTerms} 期)</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-base font-bold font-mono text-nord-15 block masked-amount">NT$ ${formatCurrency(i.monthlyAmount)} /月</span>
+                <span class="text-xs text-slate-400 font-mono masked-amount">尾款 NT$ ${formatCurrency(i.monthlyAmount * remainingTerms)}</span>
+              </div>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-nord-0 rounded-full h-2 overflow-hidden">
+              <div class="bg-gradient-to-r from-nord-9 to-nord-15 h-2 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* -------------------------------------------------------------------------
+       9. 投資部位 View 模式渲染 (Stocks)
+       ------------------------------------------------------------------------- */
+    function renderStocksView() {
+      const m = computeFinancialMetrics();
+      const minRatio = db.settings?.stockMinHoldRatio || 70;
+      const isWarn = m.stockHoldRatio < minRatio;
+
+      document.getElementById('stocks-summary-card').innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-nord-2/60">
+          <div>
+            <span class="text-base font-bold text-slate-800 dark:text-nord-6 flex items-center gap-2">
+              <i class="fa-solid fa-arrow-trend-up text-nord-14"></i>
+              <span>台股波段與現金池管理</span>
+            </span>
+            <span class="text-xs text-slate-400 dark:text-nord-4">即時追蹤持股市值、交割戶現金與損益防呆機制</span>
+          </div>
+          <button onclick="openStockModal()" class="px-3.5 py-1.5 rounded-xl bg-nord-8 text-nord-0 font-bold text-xs hover:bg-nord-7 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>新增持股</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2">
+            <span class="text-xs text-slate-400 dark:text-nord-4 block">股票現值總市值</span>
+            <span class="text-xl font-bold font-mono text-slate-800 dark:text-nord-6 masked-amount">NT$ ${formatCurrency(m.stockMarketValue)}</span>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2">
+            <span class="text-xs text-slate-400 dark:text-nord-4 block">交割現金池餘額</span>
+            <span class="text-xl font-bold font-mono text-nord-13 masked-amount">NT$ ${formatCurrency(m.stockCashPool)}</span>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2">
+            <span class="text-xs text-slate-400 dark:text-nord-4 block">投資未實現損益</span>
+            <span class="text-xl font-bold font-mono ${m.stockPnL >= 0 ? 'text-nord-14' : 'text-nord-11'} masked-amount">
+              ${m.stockPnL >= 0 ? '+' : ''}NT$ ${formatCurrency(m.stockPnL)}
+            </span>
+          </div>
+          <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2">
+            <span class="text-xs text-slate-400 dark:text-nord-4 block">持股部位比重</span>
+            <span class="text-xl font-bold font-mono text-nord-9">${m.stockHoldRatio}%</span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl ${isWarn ? 'bg-nord-11/10 border border-nord-11/30 text-nord-11' : 'bg-nord-14/10 border border-nord-14/30 text-nord-14'} text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid ${isWarn ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>
+            <span>${isWarn ? `持股部位 (${m.stockHoldRatio}%) 低於設定目標底線 (${minRatio}%)，資金閒置水位偏高` : '股票部位與現金池配置穩健健康'}</span>
+          </div>
+          <span class="font-mono text-[11px]">目標底線: ${minRatio}%</span>
+        </div>
+      `;
+
+      document.getElementById('stocks-list-card').innerHTML = `
+        <div class="text-sm font-bold text-slate-800 dark:text-nord-6 pb-2 border-b border-slate-100 dark:border-nord-2/60">
+          個別持股明細
+        </div>
+        <div class="space-y-3">
+          ${(db.stocks || []).map(s => {
+            const shares = Number(s.shares) || 0;
+            const cost = shares * (Number(s.avgCost) || 0);
+            const mkt = shares * (Number(s.currentPrice) || 0);
+            const pnl = mkt - cost;
+            const pnlPct = cost > 0 ? (pnl / cost) * 100 : 0;
+
+            return `
+              <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 rounded-xl bg-nord-14/15 text-nord-14 flex items-center justify-center font-mono font-bold text-sm">
+                    ${s.code}
+                  </div>
+                  <div>
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-slate-800 dark:text-nord-6">${s.name}</span>
+                      <span class="text-xs text-slate-400 font-mono">${shares} 股</span>
+                    </div>
+                    <span class="text-xs text-slate-400 dark:text-nord-4">均價 NT$ ${s.avgCost} • 現價 NT$ ${s.currentPrice}</span>
+                  </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                  <div class="text-right">
+                    <span class="text-base font-bold font-mono text-slate-800 dark:text-nord-6 block masked-amount">NT$ ${formatCurrency(mkt)}</span>
+                    <span class="text-xs font-mono font-bold ${pnl >= 0 ? 'text-nord-14' : 'text-nord-11'} masked-amount">
+                      ${pnl >= 0 ? '+' : ''}${formatCurrency(pnl)} (${pnlPct.toFixed(1)}%)
+                    </span>
+                  </div>
+                  <button onclick="openStockModal('${s.id}')" class="w-8 h-8 rounded-lg bg-slate-200 dark:bg-nord-2 hover:bg-slate-300 dark:hover:bg-nord-3 flex items-center justify-center text-xs text-slate-600 dark:text-nord-4">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    /* -------------------------------------------------------------------------
+       10. 設定 View 模式渲染 (Settings)
+       ------------------------------------------------------------------------- */
+    function renderSettingsView() {
+      const p = db.profile || {};
+      document.getElementById('settings-content').innerHTML = `
+        <div>
+          <h3 class="text-base font-bold text-slate-800 dark:text-nord-6 mb-1">理財人物設定 (Persona)</h3>
+          <p class="text-xs text-slate-400 mb-4">切換展示人物體驗不同理財情境與資料模型：</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <button onclick="switchProfile('junior')" class="p-4 rounded-xl text-left border ${currentProfileKey === 'junior' ? 'border-nord-8 bg-nord-8/10' : 'border-slate-200 dark:border-nord-2 bg-slate-50 dark:bg-nord-0/60'} transition">
+              <span class="font-bold text-sm text-slate-800 dark:text-nord-6 block mb-0.5">初級大人</span>
+              <span class="text-[11px] text-nord-8 font-semibold block mb-1">&lt;30 歲小資族</span>
+              <span class="text-xs text-slate-400">1 帳戶 + 1 信用卡 + 套房租金 + iPhone 分期</span>
+            </button>
+            <button onclick="switchProfile('family')" class="p-4 rounded-xl text-left border ${currentProfileKey === 'family' ? 'border-nord-8 bg-nord-8/10' : 'border-slate-200 dark:border-nord-2 bg-slate-50 dark:bg-nord-0/60'} transition">
+              <span class="font-bold text-sm text-slate-800 dark:text-nord-6 block mb-0.5">少子化勇者</span>
+              <span class="text-[11px] text-nord-8 font-semibold block mb-1">30-40 歲家庭主力</span>
+              <span class="text-xs text-slate-400">3 帳戶 + 2 信用卡 + 房貸水電 + 雙寶分期 + 台積電</span>
+            </button>
+            <button onclick="switchProfile('senior')" class="p-4 rounded-xl text-left border ${currentProfileKey === 'senior' ? 'border-nord-8 bg-nord-8/10' : 'border-slate-200 dark:border-nord-2 bg-slate-50 dark:bg-nord-0/60'} transition">
+              <span class="font-bold text-sm text-slate-800 dark:text-nord-6 block mb-0.5">高級大人</span>
+              <span class="text-[11px] text-nord-8 font-semibold block mb-1">高資產穩健配置</span>
+              <span class="text-xs text-slate-400">4 專戶 + 頂級黑卡 + 退休現金流 + 多元配置</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-nord-2/60 space-y-3">
+          <h3 class="text-base font-bold text-slate-800 dark:text-nord-6 mb-1">安全與隱私</h3>
+          <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2">
+            <div>
+              <span class="text-sm font-semibold text-slate-800 dark:text-nord-6 block">PIN 碼螢幕鎖定</span>
+              <span class="text-xs text-slate-400">啟用後需輸入 4 位數密碼方能檢視與操作</span>
+            </div>
+            <button onclick="openPinSetupModal()" class="px-3.5 py-1.5 rounded-lg bg-nord-8 text-nord-0 font-bold text-xs">
+              ${db?.settings?.pinCode ? '變更 PIN 碼' : '設定 PIN 碼'}
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-nord-2/60 space-y-3">
+          <h3 class="text-base font-bold text-slate-800 dark:text-nord-6 mb-1">資料備份與匯出</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <button onclick="exportToExcelCSV()" class="p-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+              <i class="fa-solid fa-file-excel"></i>
+              <span>匯出 Excel (CSV)</span>
+            </button>
+            <button onclick="exportDatabaseJSON()" class="p-3 rounded-xl bg-nord-9 hover:bg-nord-8 text-nord-0 font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition">
+              <i class="fa-solid fa-file-code"></i>
+              <span>備份資料庫 (JSON)</span>
+            </button>
+            <label class="p-3 rounded-xl bg-slate-200 dark:bg-nord-2 hover:bg-slate-300 dark:hover:bg-nord-3 text-slate-800 dark:text-nord-6 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition">
+              <i class="fa-solid fa-file-import"></i>
+              <span>還原資料庫 (JSON)</span>
+              <input type="file" accept=".json" onchange="importDatabaseJSON(event)" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-nord-2/60">
+          <button onclick="resetProfileToDefault()" class="px-4 py-2 rounded-xl bg-nord-11/15 text-nord-11 hover:bg-nord-11/25 font-bold text-xs transition">
+            重設當前 Persona 為原始預設值
+          </button>
+        </div>
+      `;
+    }
+
+    /* -------------------------------------------------------------------------
+       11. 輸入模式 (Input Mode) 渲染 (Cover Flow / 快速輸入工作流)
+       ------------------------------------------------------------------------- */
+    function renderCurrentInput() {
+      const wrapper = document.getElementById('input-panels-wrapper');
+      const bIcon = document.getElementById('input-banner-icon');
+      const bTitle = document.getElementById('input-banner-title');
+      const bSub = document.getElementById('input-banner-subtitle');
+
+      if (currentCategory === 'cards') {
+        bIcon.className = 'fa-solid fa-credit-card text-lg';
+        bTitle.innerText = '登錄本期信用卡帳單';
+        bSub.innerText = '依序切換卡片輸入應繳金額，並登記大額非日常消費';
+        renderCardInputPanel(wrapper);
+      } else if (currentCategory === 'banks') {
+        bIcon.className = 'fa-solid fa-building-columns text-lg';
+        bTitle.innerText = '校準銀行專戶餘額';
+        bSub.innerText = '手動填寫或一鍵帶入理論值，系統即時驗證扣款防線';
+        renderBankInputPanel(wrapper);
+      } else if (currentCategory === 'bills') {
+        bIcon.className = 'fa-solid fa-calendar-check text-lg';
+        bTitle.innerText = '管理與新增固定開銷';
+        bSub.innerText = '套用常見生活範本，或快速標記已扣繳狀態';
+        renderBillInputPanel(wrapper);
+      } else if (currentCategory === 'installments') {
+        bIcon.className = 'fa-solid fa-layer-group text-lg';
+        bTitle.innerText = '管理分期付款進度';
+        bSub.innerText = '一鍵推進所有分期期數，或快速新增大額分期帳單';
+        renderInstallmentInputPanel(wrapper);
+      } else {
+        wrapper.innerHTML = `<div class="p-8 text-center text-slate-400">此模組無需專屬輸入模式</div>`;
+      }
+    }
+
+    /* 11.1 信用卡輸入 (3D Cover Flow / 兩階段) */
+    function renderCardInputPanel(wrapper) {
+      const cards = db.cards || [];
+      if (cards.length === 0) {
+        wrapper.innerHTML = `<div class="p-8 text-center text-slate-400">無可用信用卡資料</div>`;
+        return;
+      }
+
+      if (cardCoverIndex >= cards.length) cardCoverIndex = 0;
+      const card = cards[cardCoverIndex];
+      const curRec = (card.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH) || { amount: 25000, bigExpenses: [] };
+      const curAmt = curRec.amount !== undefined ? curRec.amount : '';
+
+      wrapper.innerHTML = `
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 sm:p-8 shadow-sm flex flex-col items-center">
+          
+          <!-- 頂部進度導引 -->
+          <div class="w-full max-w-[480px] flex items-center justify-between mb-4 pb-2 border-b border-slate-100 dark:border-nord-2/60">
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-nord-8/15 text-nord-8 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-nord-8 animate-pulse"></span>
+              <span>${cardInputStage === 1 ? '階段一：應繳總金額' : '階段二：大額消費明細 (> $5,000)'}</span>
+            </span>
+            <div class="flex items-center space-x-1.5">
+              ${cards.map((c, idx) => `
+                <button onclick="setCardCoverIdx(${idx})" class="w-2.5 h-2.5 rounded-full transition-all ${idx === cardCoverIndex ? 'bg-nord-8 w-6' : 'bg-slate-300 dark:bg-nord-3'}"></button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- 卡面擬真展示區塊 (寬度 460px) -->
+          <div class="w-full max-w-[460px] bg-gradient-to-tr from-nord-0 via-nord-1 to-nord-2 text-white rounded-2xl p-5 sm:p-6 border border-nord-4/20 shadow-2xl relative overflow-hidden my-2">
+            <div class="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-nord-8/10 blur-2xl pointer-events-none"></div>
+
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 rounded-lg bg-nord-8/20 text-nord-8 flex items-center justify-center border border-nord-8/30">
+                  <i class="fa-solid fa-credit-card text-sm"></i>
+                </div>
+                <span class="text-base font-bold text-nord-6">${card.name}</span>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded-md bg-nord-0/80 text-nord-4 border border-nord-2 font-mono">
+                每月 ${card.closingDay || 25} 號結帳
+              </span>
+            </div>
+
+            ${cardInputStage === 1 ? `
+              <!-- 階段一：帳單總額 -->
+              <div class="mb-4">
+                <label class="block text-xs text-nord-4 mb-1.5 font-medium">本期應繳總金額 (NT$)</label>
+                <div class="relative">
+                  <input id="v2-card-amt-input" type="number" value="${curAmt}" placeholder="請輸入金額"
+                    class="w-full px-4 py-3 rounded-xl bg-nord-0 border-2 border-nord-8/50 focus:border-nord-8 text-nord-6 text-2xl font-bold font-mono outline-none shadow-inner">
+                  <span class="absolute right-4 top-3.5 text-sm text-nord-4 font-mono">TWD</span>
+                </div>
+              </div>
+
+              <!-- 快捷金額小按鈕 -->
+              <div class="flex items-center space-x-2 mb-2">
+                <button onclick="quickAddCardAmt(1000)" class="flex-1 py-1.5 rounded-lg bg-nord-2/60 hover:bg-nord-2 text-nord-4 text-xs font-mono transition">+1,000</button>
+                <button onclick="quickAddCardAmt(5000)" class="flex-1 py-1.5 rounded-lg bg-nord-2/60 hover:bg-nord-2 text-nord-4 text-xs font-mono transition">+5,000</button>
+                <button onclick="quickAddCardAmt(10000)" class="flex-1 py-1.5 rounded-lg bg-nord-2/60 hover:bg-nord-2 text-nord-4 text-xs font-mono transition">+10,000</button>
+                <button onclick="clearCardAmt()" class="py-1.5 px-3 rounded-lg bg-nord-2/40 hover:bg-nord-2 text-nord-11 text-xs transition">歸零</button>
+              </div>
+            ` : `
+              <!-- 階段二：大額明細登記 -->
+              <div class="space-y-3 mb-2">
+                <label class="block text-xs text-nord-4 font-medium">大額明細列表 (單筆 > $5,000)</label>
+                <div class="flex space-x-2">
+                  <input id="v2-big-name" type="text" placeholder="項目 (例：家庭機票)" class="flex-1 px-3 py-1.5 rounded-lg bg-nord-0 border border-nord-2 text-xs text-nord-6 outline-none">
+                  <input id="v2-big-amt" type="number" placeholder="金額 NT$" class="w-28 px-3 py-1.5 rounded-lg bg-nord-0 border border-nord-2 text-xs text-nord-6 font-mono outline-none">
+                  <button onclick="addBigExpenseItem()" class="px-3 py-1.5 rounded-lg bg-nord-8 text-nord-0 font-bold text-xs hover:bg-nord-7 transition">新增</button>
+                </div>
+                <div class="max-h-28 overflow-y-auto space-y-1.5 pr-1">
+                  ${(curRec.bigExpenses || []).map((b, bIdx) => `
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-nord-0/60 border border-nord-2/60 text-xs">
+                      <span class="text-nord-6">${b.title}</span>
+                      <div class="flex items-center space-x-2">
+                        <span class="font-mono text-nord-13 font-bold">NT$ ${formatCurrency(b.amount)}</span>
+                        <button onclick="removeBigExpenseItem(${bIdx})" class="text-nord-11 text-xs">✕</button>
+                      </div>
+                    </div>
+                  `).join('') || '<div class="text-xs text-nord-4/60 py-2 text-center">本月尚未登錄大額明細</div>'}
+                </div>
+              </div>
+            `}
+
+            <div class="pt-2 flex justify-end">
+              <button onclick="toggleCardStageMode()" class="text-xs text-nord-8 hover:text-nord-7 underline flex items-center gap-1">
+                <span>${cardInputStage === 1 ? '登記大額消費明細 ➔' : '➔ 回到總金額輸入'}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 切換卡片控制器 -->
+          <div class="w-full max-w-[460px] flex items-center justify-between mt-2 mb-5">
+            <button onclick="stepCardCover(-1)" ${cardCoverIndex === 0 ? 'disabled' : ''}
+              class="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs text-slate-600 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6 disabled:opacity-30">
+              <i class="fa-solid fa-chevron-left mr-1"></i>上一張
+            </button>
+            <span class="text-xs text-slate-500 dark:text-nord-4 font-mono font-bold">${card.name} (${cardCoverIndex + 1}/${cards.length})</span>
+            <button onclick="stepCardCover(1)" ${cardCoverIndex === cards.length - 1 ? 'disabled' : ''}
+              class="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs text-slate-600 dark:text-nord-4 hover:text-slate-900 dark:hover:text-nord-6 disabled:opacity-30">
+              下一張<i class="fa-solid fa-chevron-right ml-1"></i>
+            </button>
+          </div>
+
+          <!-- 底部完成按鈕 -->
+          <div class="w-full max-w-[460px]">
+            <button onclick="saveAndFinishCardInput()"
+              class="w-full py-3 rounded-xl bg-nord-8 hover:bg-nord-7 text-nord-0 font-bold text-sm shadow-lg shadow-nord-8/20 transition flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-check"></i>
+              <span>儲存並完成 (返回瀏覽視圖)</span>
+            </button>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function quickAddCardAmt(delta) {
+      const inp = document.getElementById('v2-card-amt-input');
+      if (inp) inp.value = (Number(inp.value) || 0) + delta;
+    }
+    function clearCardAmt() {
+      const inp = document.getElementById('v2-card-amt-input');
+      if (inp) inp.value = 0;
+    }
+    function stepCardCover(dir) {
+      saveCardCurrentAmtTemp();
+      cardCoverIndex += dir;
+      renderCurrentInput();
+    }
+    function setCardCoverIdx(idx) {
+      saveCardCurrentAmtTemp();
+      cardCoverIndex = idx;
+      renderCurrentInput();
+    }
+    function toggleCardStageMode() {
+      saveCardCurrentAmtTemp();
+      cardInputStage = (cardInputStage === 1) ? 2 : 1;
+      renderCurrentInput();
+    }
+    function saveCardCurrentAmtTemp() {
+      const inp = document.getElementById('v2-card-amt-input');
+      if (!inp || !db.cards || !db.cards[cardCoverIndex]) return;
+      const c = db.cards[cardCoverIndex];
+      let rec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+      if (rec) {
+        rec.amount = Number(inp.value) || 0;
+      } else {
+        c.records.push({ year: CURRENT_YEAR, month: CURRENT_MONTH, amount: Number(inp.value) || 0 });
+      }
+      saveActiveProfileData();
+    }
+    function addBigExpenseItem() {
+      const nameInp = document.getElementById('v2-big-name');
+      const amtInp = document.getElementById('v2-big-amt');
+      if (!nameInp || !nameInp.value || !db.cards[cardCoverIndex]) return;
+      const c = db.cards[cardCoverIndex];
+      let rec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+      if (!rec) {
+        rec = { year: CURRENT_YEAR, month: CURRENT_MONTH, amount: 0, bigExpenses: [] };
+        c.records.push(rec);
+      }
+      if (!rec.bigExpenses) rec.bigExpenses = [];
+      rec.bigExpenses.push({
+        id: 'be_' + Date.now(),
+        title: nameInp.value.trim(),
+        amount: Number(amtInp.value) || 0
+      });
+      saveActiveProfileData();
+      renderCurrentInput();
+    }
+    function removeBigExpenseItem(idx) {
+      if (!db.cards[cardCoverIndex]) return;
+      const c = db.cards[cardCoverIndex];
+      const rec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+      if (rec && rec.bigExpenses) {
+        rec.bigExpenses.splice(idx, 1);
+        saveActiveProfileData();
+        renderCurrentInput();
+      }
+    }
+    function saveAndFinishCardInput() {
+      saveCardCurrentAmtTemp();
+      showToast('信用卡帳單已成功儲存！');
+      toggleViewInputMode();
+    }
+
+    /* 11.2 銀行餘額輸入面板 */
+    function renderBankInputPanel(wrapper) {
+      const banks = db.banks || [];
+      wrapper.innerHTML = `
+        <div class="bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-nord-2/60">
+            <div>
+              <span class="text-sm font-bold text-slate-800 dark:text-nord-6 block">校準銀行帳戶結餘</span>
+              <span class="text-xs text-slate-400">快速填寫各專戶網銀餘額</span>
+            </div>
+            <button onclick="fillBankTheoreticalValues()" class="px-3 py-1.5 rounded-lg bg-nord-8/15 text-nord-8 text-xs font-semibold hover:bg-nord-8/25 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+              <span>帶入理論預估值</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${banks.map((b, idx) => `
+              <div class="bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2 rounded-xl p-4 space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-slate-800 dark:text-nord-6 flex items-center gap-1.5">
+                    <i class="fa-solid fa-building-columns text-nord-9"></i>
+                    <span>${b.name}</span>
+                  </span>
+                  <span class="text-[11px] text-slate-400">底線: NT$ ${formatCurrency(b.minReserve || 20000)}</span>
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-400 mb-1">網銀最新存款餘額</label>
+                  <div class="relative">
+                    <input id="v2-bank-inp-${idx}" type="number" value="${b.balance || ''}" placeholder="請輸入金額"
+                      class="w-full px-3 py-2 rounded-xl bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 text-slate-800 dark:text-nord-6 text-lg font-bold font-mono outline-none">
+                    <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-mono">TWD</span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button onclick="saveBankInputValues()" class="px-6 py-2.5 rounded-xl bg-nord-9 hover:bg-nord-8 text-nord-0 font-bold text-xs shadow-md transition">
+              儲存銀行存款 (返回瀏覽)
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function fillBankTheoreticalValues() {
+      (db.banks || []).forEach((b, idx) => {
+        const inp = document.getElementById(`v2-bank-inp-${idx}`);
+        if (inp) {
+          // 薪轉預估微增
+          inp.value = Math.round((b.balance || 50000) * 1.02);
+        }
+      });
+      showToast('已帶入理論估算餘額');
+    }
+
+    function saveBankInputValues() {
+      (db.banks || []).forEach((b, idx) => {
+        const inp = document.getElementById(`v2-bank-inp-${idx}`);
+        if (inp) {
+          b.balance = Number(inp.value) || 0;
+        }
+      });
+      saveActiveProfileData();
+      showToast('銀行存款結餘已全數校準！');
+      toggleViewInputMode();
+    }
+
+    /* 11.3 固定費用輸入面板 */
+    function renderBillInputPanel(wrapper) {
+      const rawBills = db.bills || [];
+      wrapper.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- 左側：新增表單 (佔 5 欄) -->
+          <div class="lg:col-span-5 bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-nord-2/60">
+              <span class="text-sm font-bold text-slate-800 dark:text-nord-6 flex items-center gap-1.5">
+                <i class="fa-solid fa-plus text-nord-7"></i>
+                <span>新增固定支出</span>
+              </span>
+              <span class="text-xs text-slate-400">定期扣繳帳單</span>
+            </div>
+
+            <!-- 範本按鈕 -->
+            <div>
+              <span class="text-[11px] text-slate-400 block mb-1.5">快速套用常見範本</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button onclick="fillBillTemplate('生活房租', 25000, 10, 'bank_direct')" class="px-2.5 py-1 rounded-md text-xs bg-slate-100 dark:bg-nord-0 text-slate-700 dark:text-nord-4 hover:bg-slate-200">房租</button>
+                <button onclick="fillBillTemplate('光世代寬頻', 1099, 15, 'card_auto')" class="px-2.5 py-1 rounded-md text-xs bg-slate-100 dark:bg-nord-0 text-slate-700 dark:text-nord-4 hover:bg-slate-200">寬頻</button>
+                <button onclick="fillBillTemplate('台電電費', 3200, 20, 'card_auto')" class="px-2.5 py-1 rounded-md text-xs bg-slate-100 dark:bg-nord-0 text-slate-700 dark:text-nord-4 hover:bg-slate-200">電費</button>
+                <button onclick="fillBillTemplate('Netflix 訂閱', 390, 5, 'card_auto')" class="px-2.5 py-1 rounded-md text-xs bg-slate-100 dark:bg-nord-0 text-slate-700 dark:text-nord-4 hover:bg-slate-200">Netflix</button>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">費用名稱</label>
+                <input id="v2-bill-name" type="text" placeholder="例：管理費" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">扣款金額 (NT$)</label>
+                <input id="v2-bill-amt" type="number" placeholder="金額" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">扣款途徑</label>
+                  <select id="v2-bill-route" class="w-full px-2.5 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs outline-none">
+                    <option value="bank_direct">銀行直扣</option>
+                    <option value="card_auto">信用卡代繳</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">每月扣繳日</label>
+                  <input id="v2-bill-day" type="number" value="10" min="1" max="31" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+                </div>
+              </div>
+              <button onclick="addBillItem()" class="w-full py-2.5 rounded-xl bg-nord-7 text-nord-0 font-bold text-xs hover:bg-nord-8 transition">
+                新增此筆固定支出
+              </button>
+            </div>
+          </div>
+
+          <!-- 右側：現有固定支出狀態管理 (佔 7 欄) -->
+          <div class="lg:col-span-7 bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-nord-2/60">
+              <span class="text-sm font-bold text-slate-800 dark:text-nord-6">快速標記本期已扣繳</span>
+              <button onclick="toggleViewInputMode()" class="text-xs text-nord-8 font-semibold hover:underline">完成並返回 ➔</button>
+            </div>
+
+            <div class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+              ${rawBills.map((b, idx) => {
+                const isPaid = (b.status === 'paid');
+                return `
+                  <div class="p-3 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2 flex items-center justify-between">
+                    <div>
+                      <span class="font-bold text-xs text-slate-800 dark:text-nord-6 block">${b.name}</span>
+                      <span class="text-[11px] text-slate-400">NT$ ${formatCurrency(b.amount || b.defaultAmount)} • ${b.paymentMethod === 'bank_direct' ? '銀行直扣' : '信用卡代繳'}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <button onclick="toggleBillStatusInline(${idx})" class="px-2.5 py-1 rounded-lg text-xs font-semibold ${isPaid ? 'bg-nord-14 text-nord-0 font-bold' : 'bg-slate-200 dark:bg-nord-2 text-slate-600 dark:text-nord-4'} transition">
+                        ${isPaid ? '已扣繳' : '標記已繳'}
+                      </button>
+                      <button onclick="deleteBillItem(${idx})" class="text-nord-11 text-xs px-1">✕</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function fillBillTemplate(name, amt, day, route) {
+      document.getElementById('v2-bill-name').value = name;
+      document.getElementById('v2-bill-amt').value = amt;
+      document.getElementById('v2-bill-day').value = day;
+      document.getElementById('v2-bill-route').value = route;
+    }
+
+    function addBillItem() {
+      const name = document.getElementById('v2-bill-name').value.trim();
+      const amt = Number(document.getElementById('v2-bill-amt').value) || 0;
+      const day = Number(document.getElementById('v2-bill-day').value) || 10;
+      const route = document.getElementById('v2-bill-route').value;
+      if (!name) return;
+
+      if (!db.bills) db.bills = [];
+      db.bills.push({
+        id: 'bill_' + Date.now(),
+        name,
+        amount: amt,
+        dueDay: day,
+        cycle: '每月帳單',
+        paymentMethod: route,
+        status: 'unpaid'
+      });
+      saveActiveProfileData();
+      showToast('已新增固定費用：' + name);
+      renderCurrentInput();
+    }
+
+    function toggleBillStatusInline(idx) {
+      if (db.bills && db.bills[idx]) {
+        db.bills[idx].status = (db.bills[idx].status === 'paid') ? 'unpaid' : 'paid';
+        saveActiveProfileData();
+        renderCurrentInput();
+      }
+    }
+
+    function deleteBillItem(idx) {
+      if (db.bills && db.bills[idx]) {
+        db.bills.splice(idx, 1);
+        saveActiveProfileData();
+        renderCurrentInput();
+      }
+    }
+
+    /* 11.4 分期付款輸入面板 */
+    function renderInstallmentInputPanel(wrapper) {
+      const installments = db.installments || [];
+      wrapper.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- 左側：新增分期 (佔 5 欄) -->
+          <div class="lg:col-span-5 bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-nord-2/60">
+              <span class="text-sm font-bold text-slate-800 dark:text-nord-6 flex items-center gap-1.5">
+                <i class="fa-solid fa-plus text-nord-15"></i>
+                <span>新增分期款項</span>
+              </span>
+              <span class="text-xs text-slate-400">大額消費攤提</span>
+            </div>
+
+            <!-- 快速範本 -->
+            <div>
+              <span class="text-[11px] text-slate-400 block mb-1.5">快速套用範本</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button onclick="fillInstTemplate('iPhone 16 Pro', 37200, 12)" class="px-2.5 py-1 rounded-md text-xs bg-slate-100 dark:bg-nord-0 text-slate-700 dark:text-nord-4 hover:bg-slate-200">iPhone 手機</button>
+                <button onclick="fillInstTemplate('出國旅遊機票', 48000, 6)" class="px-2.5 py-1 rounded-md text-xs bg-slate-100 dark:bg-nord-0 text-slate-700 dark:text-nord-4 hover:bg-slate-200">機票行程</button>
+                <button onclick="fillInstTemplate('冷氣家電空調', 60000, 24)" class="px-2.5 py-1 rounded-md text-xs bg-slate-100 dark:bg-nord-0 text-slate-700 dark:text-nord-4 hover:bg-slate-200">家電空調</button>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">分期名稱</label>
+                <input id="v2-inst-name" type="text" placeholder="例：洗脫烘滾筒洗衣機" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">總金額 (NT$)</label>
+                  <input id="v2-inst-total" type="number" oninput="calcInstMonthlyPreview()" placeholder="總額" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">總期數</label>
+                  <input id="v2-inst-periods" type="number" value="12" oninput="calcInstMonthlyPreview()" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-100 dark:bg-nord-0/80 text-xs flex justify-between items-center text-slate-600 dark:text-nord-4">
+                <span>每期攤提試算：</span>
+                <span id="v2-inst-monthly-preview" class="font-mono font-bold text-nord-15">NT$ 0 /月</span>
+              </div>
+              <button onclick="addInstItem()" class="w-full py-2.5 rounded-xl bg-nord-15 text-white font-bold text-xs hover:opacity-90 transition">
+                新增此筆分期
+              </button>
+            </div>
+          </div>
+
+          <!-- 右側：推進所有期數與微調 (佔 7 欄) -->
+          <div class="lg:col-span-7 bg-white dark:bg-nord-1 border border-slate-200 dark:border-nord-2 rounded-2xl p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-nord-2/60">
+              <span class="text-sm font-bold text-slate-800 dark:text-nord-6">進行中分期管理</span>
+              <button onclick="advanceAllInstOnePeriod()" class="px-3 py-1.5 rounded-xl bg-nord-15/15 text-nord-15 font-bold text-xs hover:bg-nord-15/25 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-forward-step text-xs"></i>
+                <span>全部分期期數 +1</span>
+              </button>
+            </div>
+
+            <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+              ${installments.map((i, idx) => {
+                const total = i.totalPeriods || i.totalTerms || 12;
+                const cur = i.currentTerm !== undefined ? i.currentTerm : (i.paidPeriods || 1);
+                const monthly = Number(i.monthlyAmount) || Number(i.regularPeriodAmount) || Math.round((i.totalAmount || 36000) / total);
+
+                return `
+                  <div class="p-3 rounded-xl bg-slate-50 dark:bg-nord-0/60 border border-slate-200 dark:border-nord-2 flex items-center justify-between">
+                    <div>
+                      <span class="font-bold text-xs text-slate-800 dark:text-nord-6 block">${i.title || i.name}</span>
+                      <span class="text-[11px] text-slate-400">NT$ ${formatCurrency(monthly)} /月 • 第 ${cur} / ${total} 期</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <button onclick="stepInstItemInline(${idx}, -1)" class="w-7 h-7 rounded-lg bg-slate-200 dark:bg-nord-2 text-xs font-bold text-slate-700 dark:text-nord-4">-1</button>
+                      <button onclick="stepInstItemInline(${idx}, 1)" class="w-7 h-7 rounded-lg bg-nord-8/20 text-nord-8 text-xs font-bold">+1</button>
+                      <button onclick="deleteInstItem(${idx})" class="text-nord-11 text-xs px-2">✕</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <div class="pt-2 flex justify-end">
+              <button onclick="toggleViewInputMode()" class="px-5 py-2 rounded-xl bg-nord-8 text-nord-0 font-bold text-xs shadow-md">
+                完成並返回
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function fillInstTemplate(name, total, periods) {
+      document.getElementById('v2-inst-name').value = name;
+      document.getElementById('v2-inst-total').value = total;
+      document.getElementById('v2-inst-periods').value = periods;
+      calcInstMonthlyPreview();
+    }
+
+    function calcInstMonthlyPreview() {
+      const tot = Number(document.getElementById('v2-inst-total')?.value) || 0;
+      const per = Number(document.getElementById('v2-inst-periods')?.value) || 1;
+      const monthly = Math.round(tot / per);
+      const prev = document.getElementById('v2-inst-monthly-preview');
+      if (prev) prev.innerText = `NT$ ${formatCurrency(monthly)} /月`;
+    }
+
+    function addInstItem() {
+      const name = document.getElementById('v2-inst-name').value.trim();
+      const tot = Number(document.getElementById('v2-inst-total').value) || 0;
+      const per = Number(document.getElementById('v2-inst-periods').value) || 12;
+      if (!name) return;
+
+      if (!db.installments) db.installments = [];
+      db.installments.push({
+        id: 'inst_' + Date.now(),
+        name,
+        totalAmount: tot,
+        totalPeriods: per,
+        paidPeriods: 1,
+        currentTerm: 1,
+        monthlyAmount: Math.round(tot / per)
+      });
+      saveActiveProfileData();
+      showToast('已新增分期項目：' + name);
+      renderCurrentInput();
+    }
+
+    function advanceAllInstOnePeriod() {
+      (db.installments || []).forEach(i => {
+        const total = i.totalPeriods || i.totalTerms || 12;
+        if (i.currentTerm !== undefined) {
+          i.currentTerm = Math.min(total, i.currentTerm + 1);
+        } else if (i.paidPeriods !== undefined) {
+          i.paidPeriods = Math.min(total, i.paidPeriods + 1);
+        }
+      });
+      saveActiveProfileData();
+      showToast('全部分期期數已成功前進 1 期！');
+      renderCurrentInput();
+    }
+
+    function stepInstItemInline(idx, delta) {
+      if (db.installments && db.installments[idx]) {
+        const i = db.installments[idx];
+        const total = i.totalPeriods || i.totalTerms || 12;
+        if (i.currentTerm !== undefined) {
+          i.currentTerm = Math.max(1, Math.min(total, i.currentTerm + delta));
+        } else {
+          i.paidPeriods = Math.max(1, Math.min(total, (i.paidPeriods || 1) + delta));
+        }
+        saveActiveProfileData();
+        renderCurrentInput();
+      }
+    }
+
+    function deleteInstItem(idx) {
+      if (db.installments && db.installments[idx]) {
+        db.installments.splice(idx, 1);
+        saveActiveProfileData();
+        renderCurrentInput();
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+       12. 全域 Chart.js 折線圖繪製
+       ------------------------------------------------------------------------- */
+    function drawLineChart(labels, datasets) {
+      const ctx = document.getElementById('main-line-chart')?.getContext('2d');
+      if (!ctx) return;
+
+      if (lineChartInstance) {
+        lineChartInstance.destroy();
+        lineChartInstance = null;
+      }
+
+      const isDark = document.documentElement.classList.contains('dark');
+      const gridColor = isDark ? 'rgba(76, 86, 106, 0.25)' : 'rgba(216, 222, 233, 0.7)';
+      const textColor = isDark ? '#D8DEE9' : '#4C566A';
+
+      lineChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              display: datasets.length > 1,
+              position: 'top',
+              labels: {
+                color: textColor,
+                boxWidth: 12,
+                font: { size: 11, family: 'Inter, sans-serif' }
+              }
+            },
+            tooltip: {
+              backgroundColor: isDark ? 'rgba(46, 52, 64, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              titleColor: isDark ? '#ECEFF4' : '#2E3440',
+              bodyColor: isDark ? '#D8DEE9' : '#3B4252',
+              borderColor: isDark ? '#434C5E' : '#D8DEE9',
+              borderWidth: 1,
+              padding: 10,
+              boxPadding: 4,
+              callbacks: {
+                label: function (ctx) {
+                  return ctx.dataset.label + ': NT$ ' + formatCurrency(ctx.raw);
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 11 } }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                font: { size: 11 },
+                callback: function (val) {
+                  return val >= 10000 ? (val / 10000) + '萬' : val;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    /* -------------------------------------------------------------------------
+       13. 綜合視圖派發器 (renderCurrentView)
+       ------------------------------------------------------------------------- */
+    function renderCurrentView() {
+      // 隱藏所有分頁容器
+      document.getElementById('section-dashboard').classList.add('hidden');
+      document.getElementById('section-chart-module').classList.add('hidden');
+      document.getElementById('section-stocks').classList.add('hidden');
+      document.getElementById('section-settings').classList.add('hidden');
+
+      if (currentCategory === 'dashboard') {
+        document.getElementById('section-dashboard').classList.remove('hidden');
+        renderDashboardView();
+      } else if (currentCategory === 'cards' || currentCategory === 'banks' || currentCategory === 'bills' || currentCategory === 'installments') {
+        document.getElementById('section-chart-module').classList.remove('hidden');
+        renderChartModuleView(currentCategory);
+      } else if (currentCategory === 'stocks') {
+        document.getElementById('section-stocks').classList.remove('hidden');
+        renderStocksView();
+      } else if (currentCategory === 'settings') {
+        document.getElementById('section-settings').classList.remove('hidden');
+        renderSettingsView();
+      }
+
+      applyPrivacyUI();
+    }
+
+    /* -------------------------------------------------------------------------
+       14. 彈出對話框 (Modal) 工具
+       ------------------------------------------------------------------------- */
+    function openAppModal(title, html) {
+      document.getElementById('appModalTitle').innerText = title;
+      document.getElementById('appModalContent').innerHTML = html;
+      document.getElementById('appModal').classList.remove('hidden');
+    }
+
+    function closeAppModal() {
+      document.getElementById('appModal').classList.add('hidden');
+    }
+
+    function openStockModal(stkId = null) {
+      const stk = stkId ? (db.stocks || []).find(s => s.id === stkId) : null;
+      openAppModal(stk ? '編輯持股' : '新增個股', `
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">股票代號</label>
+            <input id="modal-stk-code" type="text" value="${stk ? stk.code : ''}" placeholder="例：2330" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">股票名稱</label>
+            <input id="modal-stk-name" type="text" value="${stk ? stk.name : ''}" placeholder="例：台積電" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs outline-none">
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">持有股數</label>
+              <input id="modal-stk-shares" type="number" value="${stk ? stk.shares : 1000}" class="w-full px-2 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">買進均價</label>
+              <input id="modal-stk-cost" type="number" value="${stk ? stk.avgCost : ''}" class="w-full px-2 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 dark:text-nord-4 mb-1">最新現價</label>
+              <input id="modal-stk-price" type="number" value="${stk ? stk.currentPrice : ''}" class="w-full px-2 py-2 rounded-xl bg-slate-50 dark:bg-nord-0 border border-slate-200 dark:border-nord-2 text-xs font-mono outline-none">
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-3">
+            ${stk ? `<button onclick="deleteStockItem('${stk.id}')" class="text-nord-11 text-xs font-bold">刪除此股</button>` : '<span></span>'}
+            <div class="flex gap-2">
+              <button onclick="closeAppModal()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-nord-2 text-xs font-semibold">取消</button>
+              <button onclick="saveStockModalForm('${stk ? stk.id : ''}')" class="px-4 py-2 rounded-xl bg-nord-8 text-nord-0 text-xs font-bold">儲存</button>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    function saveStockModalForm(stkId) {
+      const code = document.getElementById('modal-stk-code').value.trim();
+      const name = document.getElementById('modal-stk-name').value.trim();
+      const shares = Number(document.getElementById('modal-stk-shares').value) || 0;
+      const cost = Number(document.getElementById('modal-stk-cost').value) || 0;
+      const price = Number(document.getElementById('modal-stk-price').value) || 0;
+      if (!code || !name) return;
+
+      if (!db.stocks) db.stocks = [];
+      if (stkId) {
+        const item = db.stocks.find(s => s.id === stkId);
+        if (item) {
+          item.code = code;
+          item.name = name;
+          item.shares = shares;
+          item.avgCost = cost;
+          item.currentPrice = price;
+        }
+      } else {
+        db.stocks.push({
+          id: 'stk_' + Date.now(),
+          code,
+          name,
+          shares,
+          avgCost: cost,
+          currentPrice: price
+        });
+      }
+      saveActiveProfileData();
+      closeAppModal();
+      showToast('股票資料已更新！');
+      renderStocksView();
+    }
+
+    function deleteStockItem(stkId) {
+      if (confirm('確定要刪除此筆持股嗎？')) {
+        db.stocks = (db.stocks || []).filter(s => s.id !== stkId);
+        saveActiveProfileData();
+        closeAppModal();
+        showToast('已刪除持股');
+        renderStocksView();
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+       15. Excel 與 JSON 匯出匯入
+       ------------------------------------------------------------------------- */
+    function exportToExcelCSV() {
+      const m = computeFinancialMetrics();
+      let csv = '﻿'; // UTF-8 BOM
+      csv += 'PocketMoney v2 財務報表\n';
+      csv += '匯出時間,' + new Date().toLocaleString() + '\n';
+      csv += '使用人物,' + (db.profile?.label || currentProfileKey) + '\n\n';
+
+      csv += '【資產負債總覽】\n';
+      csv += '項目,金額(NT$)\n';
+      csv += '總淨資產,' + Math.round(m.netWorth) + '\n';
+      csv += '銀行總存款,' + Math.round(m.totalBankBalance) + '\n';
+      csv += '股票持股市值,' + Math.round(m.stockMarketValue) + '\n';
+      csv += '本月待扣款項,' + Math.round(m.totalUnpaidMonth) + '\n';
+      csv += '分期未還總額,' + Math.round(m.installmentRemainingTotal) + '\n\n';
+
+      csv += '【各銀行帳戶】\n';
+      csv += '代碼,銀行名稱,存款餘額,保留底線\n';
+      (db.banks || []).forEach(b => {
+        csv += `"${b.code || ''}","${b.name}",${b.balance},${b.minReserve || 0}\n`;
+      });
+      csv += '\n';
+
+      csv += '【信用卡明細】\n';
+      csv += '卡片名稱,本期帳單金額,扣款銀行,結帳日\n';
+      (db.cards || []).forEach(c => {
+        const rec = (c.records || []).find(r => r.year === CURRENT_YEAR && r.month === CURRENT_MONTH);
+        csv += `"${c.name}",${rec ? rec.amount : 0},"${c.bankId || ''}",${c.closingDay || 25}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `PocketMoney_Report_${currentProfileKey}_${CURRENT_YEAR}${CURRENT_MONTH}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Excel CSV 報表已成功匯出！');
+    }
+
+    function exportDatabaseJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `PocketMoney_${currentProfileKey}_backup.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      showToast('資料庫 JSON 已備份！');
+    }
+
+    function importDatabaseJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          normalizeProfileDb(imported);
+          db = imported;
+          saveActiveProfileData();
+          showToast('資料庫還原成功！');
+          renderCurrentView();
+        } catch (err) {
+          alert('匯入失敗：JSON 格式無效');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetProfileToDefault() {
+      if (confirm('確定要將當前人物資料重設為原始預設值嗎？')) {
+        const localKey = 'PocketMoney_v2_profile_' + currentProfileKey;
+        localStorage.removeItem(localKey);
+        db = loadActiveProfileData(currentProfileKey);
+        showToast('已重設為預設展示資料');
+        renderCurrentView();
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+       16. 初始化進入點
+       ------------------------------------------------------------------------- */
+    window.addEventListener('DOMContentLoaded', () => {
+      // 載入資料庫
+      db = loadActiveProfileData(currentProfileKey);
+
+      // 同步主題圖示與 Persona 選單
+      updateThemeIcon(document.documentElement.classList.contains('dark'));
+      const selMobile = document.getElementById('persona-select-mobile');
+      if (selMobile) selMobile.value = currentProfileKey;
+
+      // 若有 PIN 碼且初次進入，自動啟動 PIN 鎖定
+      if (db?.settings?.pinCode) {
+        lockScreenNow();
+      }
+
+      // 渲染預設 View 視圖 (總覽)
+      updateNavTabsUI();
+      renderCurrentView();
+    });
+  </script>
+</body>
+
+</html>
