@@ -1,1 +1,0 @@
-# Office package initialization
