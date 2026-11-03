@@ -324,7 +324,7 @@
             <i class="fa-solid fa-wallet text-xs"></i>
           </div>
           <div class="truncate">
-            <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">財務總覽與 30 號檢核</h1>
+            <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">財務總覽與扣款安全檢核</h1>
           </div>
         </div>
 
@@ -401,7 +401,7 @@
   <!-- ==================== 主內容容器 (等比例縮放網格) ==================== -->
   <main class="max-w-6xl mx-auto fluid-page-pad pt-4">
 
-    <!-- ==================== TAB 1: 總覽與 30 號扣款檢核 ==================== -->
+    <!-- ==================== TAB 1: 總覽與扣款安全檢核 ==================== -->
     <section id="tab-dashboard" class="tab-section space-y-4">
 
       <!-- 三大核心指標卡片 (在手機為單欄垂直堆疊，平板/電腦為三欄等比例排列) -->
@@ -565,7 +565,7 @@
         <div id="dashboardTimelineContainer" class="space-y-3"></div>
       </div>
 
-      <!-- 🔥 每月 30 號各銀行自動扣繳水位檢核 (上下分層標題，不再左右硬擠) -->
+      <!-- 🔥 每月各銀行扣繳水位檢核 (上下分層標題，不再左右硬擠) -->
       <div id="autoDebitAuditCard"
         class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div
@@ -895,7 +895,7 @@
               <i class="fa-solid fa-bolt text-emerald-500"></i>
               <span>固定生活費用 (水電、瓦斯、網路、房租)</span>
             </h2>
-            <p class="text-fluid-sub text-slate-400">標記為「待繳」的項目會自動計入指定銀行的 30 號扣款檢核</p>
+            <p class="text-fluid-sub text-slate-400">標記為「待繳」的項目會自動依各自扣款日計入指定銀行的扣款檢核</p>
           </div>
           <button onclick="openBillModal()"
             class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
@@ -1647,7 +1647,7 @@
         actionEl.innerHTML = `<span class="text-fluid-sub text-slate-400">請先新增銀行帳戶與信用卡帳單</span>`;
       } else if (m.shortfallBankCount > 0) {
         statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-rose-500">⚠️ ${m.shortfallBankCount} 個帳戶餘額不足</span>`;
-        actionEl.innerHTML = `<span class="text-fluid-sub text-rose-400 font-semibold">請儘速調度轉帳補足，避免 30 號扣款失敗</span>`;
+        actionEl.innerHTML = `<span class="text-fluid-sub text-rose-400 font-semibold">請儘速調度轉帳補足，避免扣款失敗</span>`;
       } else {
         statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">✅ 全數帳戶餘額充足</span>`;
         actionEl.innerHTML = `<span class="text-fluid-sub text-slate-400">所有扣繳戶頭皆足以支應本月扣款</span>`;
@@ -2146,7 +2146,7 @@
       if (totalDeducted === 0) return showToast('目前所有帳單皆已結清', 'info');
       saveState();
       renderAll();
-      showToast(`已完成 30 號全數自動扣繳，共扣除 ${fmtMoney(totalDeducted)}！`);
+      showToast(`已完成本月應扣項目全數扣繳，共扣除 ${fmtMoney(totalDeducted)}！`);
     }
 
     function resetAllCardsNewMonth() {
@@ -2567,7 +2567,7 @@
             <span>1 號</span>
             <span>10 號</span>
             <span>18 號</span>
-            <span>25 號 (發薪)</span>
+            <span>${salaryDay} 號 (發薪)</span>
             <span>31 號</span>
           </div>
           <div class="relative w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-visible">
