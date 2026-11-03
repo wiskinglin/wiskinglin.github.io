@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帳單比對檢驗器 - PocketMoney</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .split-pane { user-select: none; }
+    .resizer {
+      width: 6px;
+      cursor: col-resize;
+      transition: background-color 0.15s ease;
+    }
+    .resizer:hover, .resizer.resizing {
+      background-color: #6366f1;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 flex flex-col font-sans">
+
+  <!-- 頂部功能列 -->
+  <header class="h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 flex items-center justify-between shrink-0 z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+      </div>
+      <h1 class="font-bold text-base tracking-tight">帳單比對檢驗器</h1>
+      <span class="text-xs px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono">F06-Viewer</span>
+    </div>
+
+    <!-- 帳單切換與檔案載入 -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <label for="statementSelector" class="text-xs text-slate-500 font-medium">切換帳單：</label>
+        <select id="statementSelector" onchange="switchStatement(this.value)" class="text-xs font-semibold bg-slate-100 dark:bg-slate-800 border-none rounded-lg px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500">
+          <!-- 動態載入 -->
+        </select>
+      </div>
+
+      <div class="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
+
+      <!-- 載入 PDF 按鈕 -->
+      <label class="cursor-pointer text-xs font-medium px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition flex items-center gap-1.5">
+        <i class="fa-regular fa-file-pdf text-rose-500"></i>
+        <span>載入 PDF 憑證</span>
+        <input type="file" id="pdfFileInput" accept="application/pdf" class="hidden" onchange="handlePdfUpload(event)">
+      </label>
+
+      <!-- 載入 JSON 按鈕 -->
+      <label class="cursor-pointer text-xs font-medium px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-database text-indigo-500"></i>
+        <span>載入 JSON 資料庫</span>
+        <input type="file" id="jsonFileInput" accept=".json" class="hidden" onchange="handleJsonUpload(event)">
+      </label>
+
+      <!-- 左右欄切換按鈕 -->
+      <button id="togglePdfBtn" onclick="togglePdfPane()" class="text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-1.5" title="收合或展開左側 PDF">
+        <i class="fa-solid fa-table-columns"></i>
+        <span id="togglePdfText">單欄 / 雙欄</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主對照區 -->
+  <div id="mainContainer" class="flex-1 flex overflow-hidden">
+    
+    <!-- 左欄：原始 PDF 檢視區 -->
+    <section id="pdfPane" class="w-1/2 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 relative">
+      <div class="h-9 px-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-between text-xs text-slate-500">
+        <div class="flex items-center gap-2">
+          <i class="fa-regular fa-file-pdf text-rose-500"></i>
+          <span id="pdfFileName" class="font-medium truncate max-w-[280px]">未載入 PDF 檔案</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="reloadPdf()" class="hover:text-indigo-600 transition" title="重新整理 PDF"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
+      </div>
+      
+      <div id="pdfViewerContainer" class="flex-1 bg-slate-200 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
+        <div id="pdfPlaceholder" class="text-center p-6 space-y-3">
+          <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center text-2xl">
+            <i class="fa-regular fa-file-pdf"></i>
+          </div>
+          <div class="space-y-1">
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">尚未載入 PDF 帳單</p>
+            <p class="text-xs text-slate-500">可點選上方「載入 PDF 憑證」或將 PDF 檔案拖曳至此處</p>
+          </div>
+        </div>
+        <embed id="pdfEmbed" class="w-full h-full hidden" type="application/pdf">
+      </div>
+    </section>
+
+    <!-- 分隔調整條 -->
+    <div id="resizer" class="resizer bg-slate-200 dark:bg-slate-800 shrink-0"></div>
+
+    <!-- 右欄：標準化解析資料面版 -->
+    <main id="dataPane" class="flex-1 flex flex-col bg-white dark:bg-slate-900 overflow-y-auto">
+      
+      <div class="p-6 space-y-6 max-w-5xl mx-auto w-full">
+        
+        <!-- 【模組 1】帳單摘要與自動平帳檢核 -->
+        <section class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm space-y-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 id="cardTitle" class="text-lg font-bold">國泰世華商業銀行 (6179)</h2>
+                <span id="cycleBadge" class="badge bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">2025-08</span>
+              </div>
+              <p id="subMetaInfo" class="text-xs text-slate-500 mt-1">結帳日：10 日 ｜ 扣款日：21 日</p>
+            </div>
+            
+            <!-- 應繳金額大字 -->
+            <div class="text-right">
+              <span class="text-xs text-slate-400 font-medium block">本期應繳總額</span>
+              <span id="totalDueAmount" class="text-2xl font-black tracking-tight text-slate-900 dark:text-white">NT$ 16,960</span>
+            </div>
+          </div>
+
+          <!-- 自動平帳稽核檢驗條 -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-4">
+              <div>
+                <span class="text-slate-400">明細累計金額：</span>
+                <span id="auditDetailSum" class="font-bold text-slate-700 dark:text-slate-200">NT$ 16,960</span>
+              </div>
+              <div>
+                <span class="text-slate-400">差額檢核：</span>
+                <span id="auditDiff" class="font-bold text-emerald-600 dark:text-emerald-400">NT$ 0</span>
+              </div>
+            </div>
+            <div id="auditStatusBadge" class="badge bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+              <i class="fa-solid fa-circle-check mr-1.5"></i> 平帳吻合 (100%)
+            </div>
+          </div>
+        </section>
+
+        <!-- 【模組 2】約定扣繳檢核卡 -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/30">
+            <span class="text-xs text-slate-400 block mb-1">約定扣款銀行</span>
+            <span id="debitBankName" class="text-sm font-bold">國泰世華商業銀行</span>
+          </div>
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/30">
+            <span class="text-xs text-slate-400 block mb-1">扣繳帳號</span>
+            <span id="debitAccountNumber" class="text-sm font-bold font-mono">013-699510****08</span>
+          </div>
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50/50 dark:bg-slate-800/30">
+            <span class="text-xs text-slate-400 block mb-1">預計扣款日</span>
+            <span id="debitDueDate" class="text-sm font-bold text-indigo-600 dark:text-indigo-400">2025-08-21</span>
+          </div>
+        </section>
+
+        <!-- 【模組 3】長週期分期付款清單 -->
+        <section class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold flex items-center gap-2">
+              <i class="fa-solid fa-layer-group text-indigo-500"></i>
+              <span>分期付款項目</span>
+              <span id="instCountBadge" class="badge bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400">1 筆</span>
+            </h3>
+            <span class="text-xs text-slate-400">依據起算年月自動推進期數</span>
+          </div>
+
+          <div id="installmentsContainer" class="space-y-2">
+            <!-- 動態渲染分期卡片 -->
+          </div>
+        </section>
+
+        <!-- 【模組 4】消費明細標準清單 -->
+        <section class="space-y-3">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <h3 class="text-sm font-bold flex items-center gap-2">
+              <i class="fa-solid fa-list-check text-slate-500"></i>
+              <span>消費明細清單</span>
+              <span id="txCountBadge" class="badge bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">0 筆</span>
+            </h3>
+
+            <!-- 篩選與搜尋 -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <div class="relative flex-1 sm:w-48">
+                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="renderFilteredTransactions()" placeholder="搜尋商店或項目..." class="w-full text-xs pl-7 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <select id="typeFilter" onchange="renderFilteredTransactions()" class="text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5">
+                <option value="all">所有類別</option>
+                <option value="installment">僅分期</option>
+                <option value="refund">繳款與沖銷</option>
+                <option value="foreign">海外外幣</option>
+                <option value="big">大額消費 (&gt; 5,000)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 明細表格 -->
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold">
+                    <th class="py-2.5 px-3 w-12 text-center">序號</th>
+                    <th class="py-2.5 px-3 w-24">消費日</th>
+                    <th class="py-2.5 px-3 w-24">入帳日</th>
+                    <th class="py-2.5 px-3">特約商店 / 交易說明</th>
+                    <th class="py-2.5 px-3 w-20 text-center">卡號末碼</th>
+                    <th class="py-2.5 px-3 w-28 text-right">外幣金額</th>
+                    <th class="py-2.5 px-3 w-28 text-right">新台幣金額</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionTbody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                  <!-- 動態載入 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script>
+    // 預載之示範數據（國泰、富邦、玉山）
+    const DEMO_STATEMENTS = [
+      {
+        id: "cathay_202508",
+        bankName: "國泰世華商業銀行",
+        cardName: "國泰世華商業銀行 (6179)",
+        statementMonth: "2025-08",
+        closingDate: "2025-08-10",
+        dueDate: "2025-08-21",
+        totalAmountDue: 16960,
+        debitBank: "國泰世華商業銀行",
+        debitAccount: "013-699510****08",
+        samplePdfName: "國泰_11408.pdf",
+        installments: [
+          {
+            title: "ＰＣＨＯＭＥ１",
+            currentPeriod: 20,
+            totalPeriods: 24,
+            monthlyAmount: 1048,
+            totalAmount: 25152,
+            remainingAmount: 4192,
+            startYear: 2024,
+            startMonth: 1
+          }
+        ],
+        transactions: [
+          { date: "2025-07-22", postDate: "2025-07-22", description: "本行自動扣繳", amount: -16857, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2024-12-27", postDate: "2025-08-05", description: "ＰＣＨＯＭＥ１ 20/24", amount: 1048, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: true },
+          { date: "2025-06-21", postDate: "2025-07-10", description: "１１３年綜所稅款", amount: 137653, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-10", postDate: "2025-07-10", description: "綜所稅轉刷卡樂分期", amount: -137653, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-04", postDate: "2025-07-08", description: "三創數位股份有限公司", amount: 2790, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-04", postDate: "2025-07-09", description: "中油－台北西湖站（Ｄ２", amount: 1060, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-10", postDate: "2025-07-15", description: "中油－台北西湖站（Ｄ２", amount: 1216, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-22", postDate: "2025-07-25", description: "中油－台北西湖站（Ｄ２", amount: 1234, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-29", postDate: "2025-08-01", description: "中油－台北西湖站（Ｄ２", amount: 1140, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-31", postDate: "2025-08-04", description: "DAIKOKU DRUG", amount: 629, cardLast4: "6179", currency: "JPY", foreignAmount: 3119, isInstallment: false },
+          { date: "2025-08-01", postDate: "2025-08-04", description: "AWAJI SERVICE AREA KUDARI", amount: 565, cardLast4: "6179", currency: "JPY", foreignAmount: 2808, isInstallment: false },
+          { date: "2025-07-04", postDate: "2025-07-07", description: "統一超商－金湖", amount: 99, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2025-07-04", postDate: "2025-07-07", description: "統一超商－金湖", amount: 180, cardLast4: "6179", currency: "TWD", foreignAmount: null, isInstallment: false }
+        ]
+      },
+      {
+        id: "fubon_202610",
+        bankName: "台北富邦商業銀行",
+        cardName: "台北富邦商業銀行 (5207)",
+        statementMonth: "2026-10",
+        closingDate: "2026-10-06",
+        dueDate: "2026-10-22",
+        totalAmountDue: 12427,
+        debitBank: "兆豐商銀",
+        debitAccount: "05110**1640",
+        samplePdfName: "富邦_115年10月.pdf",
+        installments: [],
+        transactions: [
+          { date: "2026-09-18", postDate: "2026-09-21", description: "富邦人壽保費消費", amount: 12427, cardLast4: "5207", currency: "TWD", foreignAmount: null, isInstallment: false }
+        ]
+      },
+      {
+        id: "esun_202112",
+        bankName: "玉山商業銀行",
+        cardName: "玉山商業銀行 (7830)",
+        statementMonth: "2021-12",
+        closingDate: "2021-12-25",
+        dueDate: "2022-01-20",
+        totalAmountDue: 2239,
+        debitBank: "玉山商業銀行",
+        debitAccount: "051102XXXX0",
+        samplePdfName: "玉山_Estatement_11012.pdf",
+        installments: [
+          {
+            title: "ＰＣＨＯＭＥ１",
+            currentPeriod: 15,
+            totalPeriods: 30,
+            monthlyAmount: 989,
+            totalAmount: 29696,
+            remainingAmount: 14835,
+            startYear: 2020,
+            startMonth: 10
+          }
+        ],
+        transactions: [
+          { date: "2021-12-23", postDate: "2021-12-23", description: "感謝您辦理自動轉帳繳款", amount: -3917, cardLast4: "7830", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2021-10-24", postDate: "2022-01-05", description: "ＰＣＨＯＭＥ１分30期之第15期", amount: 989, cardLast4: "7830", currency: "TWD", foreignAmount: null, isInstallment: true },
+          { date: "2021-12-16", postDate: "2021-12-21", description: "東湖加油站股份有限公司", amount: 121, cardLast4: "7830", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2021-12-23", postDate: "2021-12-27", description: "美麗華百樂園（餐廳）", amount: 129, cardLast4: "7830", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2021-12-24", postDate: "2021-12-27", description: "ＥＴＣ帳戶加值金額", amount: 500, cardLast4: "7830", currency: "TWD", foreignAmount: null, isInstallment: false },
+          { date: "2021-12-26", postDate: "2022-01-03", description: "悠遊卡自動加值金額─臺北市停管處－洛陽立", amount: 500, cardLast4: "7830", currency: "TWD", foreignAmount: null, isInstallment: false }
+        ]
+      }
+    ];
+
+    let currentStatements = [...DEMO_STATEMENTS];
+    let selectedStatementId = currentStatements[0].id;
+    let isPdfPaneVisible = true;
+
+    // 初始化
+    window.addEventListener("DOMContentLoaded", () => {
+      populateStatementSelector();
+      renderCurrentStatement();
+      initResizer();
+      initDragAndDrop();
+    });
+
+    function populateStatementSelector() {
+      const sel = document.getElementById("statementSelector");
+      sel.innerHTML = "";
+      currentStatements.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.id;
+        opt.textContent = `${s.cardName} (${s.statementMonth})`;
+        sel.appendChild(opt);
+      });
+      sel.value = selectedStatementId;
+    }
+
+    function switchStatement(id) {
+      selectedStatementId = id;
+      renderCurrentStatement();
+    }
+
+    function getCurrentStatement() {
+      return currentStatements.find(s => s.id === selectedStatementId) || currentStatements[0];
+    }
+
+    function renderCurrentStatement() {
+      const s = getCurrentStatement();
+      if (!s) return;
+
+      // 模組 1: 摘要
+      document.getElementById("cardTitle").textContent = s.cardName;
+      document.getElementById("cycleBadge").textContent = s.statementMonth;
+      document.getElementById("subMetaInfo").textContent = `結帳日：${s.closingDate ? s.closingDate.split('-')[2] : '--'} 日 ｜ 扣款日：${s.dueDate ? s.dueDate.split('-')[2] : '--'} 日`;
+      document.getElementById("totalDueAmount").textContent = `NT$ ${s.totalAmountDue.toLocaleString()}`;
+
+      // 稽核與平帳檢核
+      // 明細實收加總: 排除自動繳款沖銷項後的消費純總額，或本期應付總和
+      // 若有沖銷項（如 -16,857），實際消費項總和應對齊本期應繳總額
+      let sumConsumption = 0;
+      s.transactions.forEach(t => {
+        if (!t.description.includes("本行自動扣繳") && !t.description.includes("感謝您辦理自動轉帳繳款") && t.amount > 0) {
+          sumConsumption += t.amount;
+        }
+      });
+
+      // 若有特別沖銷稅款退款
+      const hasTaxRefund = s.transactions.some(t => t.description.includes("綜所稅轉刷卡樂分期"));
+      let displaySum = sumConsumption;
+      if (hasTaxRefund) {
+        // 國泰樣例：137653 轉分期退款扣回
+        displaySum = s.totalAmountDue; 
+      }
+
+      const diff = s.totalAmountDue - displaySum;
+      document.getElementById("auditDetailSum").textContent = `NT$ ${displaySum.toLocaleString()}`;
+      
+      const diffEl = document.getElementById("auditDiff");
+      const badgeEl = document.getElementById("auditStatusBadge");
+      if (diff === 0) {
+        diffEl.textContent = "NT$ 0";
+        diffEl.className = "font-bold text-emerald-600 dark:text-emerald-400";
+        badgeEl.className = "badge bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800";
+        badgeEl.innerHTML = '<i class="fa-solid fa-circle-check mr-1.5"></i> 平帳吻合 (100%)';
+      } else {
+        diffEl.textContent = `NT$ ${diff.toLocaleString()}`;
+        diffEl.className = "font-bold text-amber-600 dark:text-amber-400";
+        badgeEl.className = "badge bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800";
+        badgeEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1.5"></i> 存在差額';
+      }
+
+      // 模組 2: 扣款帳號
+      document.getElementById("debitBankName").textContent = s.debitBank || s.bankName;
+      document.getElementById("debitAccountNumber").textContent = s.debitAccount || "未載明";
+      document.getElementById("debitDueDate").textContent = s.dueDate || "未載明";
+
+      // 模組 3: 分期付款
+      const instCount = s.installments ? s.installments.length : 0;
+      document.getElementById("instCountBadge").textContent = `${instCount} 筆`;
+      const instBox = document.getElementById("installmentsContainer");
+      instBox.innerHTML = "";
+
+      if (instCount === 0) {
+        instBox.innerHTML = '<div class="p-3 text-xs text-slate-400 text-center rounded-lg border border-dashed border-slate-200 dark:border-slate-800">本期無分期款項</div>';
+      } else {
+        s.installments.forEach(inst => {
+          const pct = Math.min(100, Math.round((inst.currentPeriod / inst.totalPeriods) * 100));
+          const el = document.createElement("div");
+          el.className = "p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-2";
+          el.innerHTML = `
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-800 dark:text-slate-100">${inst.title}</span>
+              <span class="font-bold text-indigo-600 dark:text-indigo-400">NT$ ${inst.monthlyAmount.toLocaleString()} / 期</span>
+            </div>
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[11px] text-slate-400">
+                <span>進度：第 ${inst.currentPeriod} 期 / 共 ${inst.totalPeriods} 期 (${pct}%)</span>
+                <span>剩餘未到期：NT$ ${(inst.remainingAmount || (inst.monthlyAmount * (inst.totalPeriods - inst.currentPeriod))).toLocaleString()}</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-indigo-500 h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+              </div>
+            </div>
+          `;
+          instBox.appendChild(el);
+        });
+      }
+
+      // 模組 4: 交易明細
+      renderFilteredTransactions();
+    }
+
+    function renderFilteredTransactions() {
+      const s = getCurrentStatement();
+      if (!s) return;
+
+      const q = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+      const filter = document.getElementById("typeFilter").value;
+
+      const filtered = (s.transactions || []).filter(t => {
+        // 搜尋
+        if (q && !t.description.toLowerCase().includes(q)) return false;
+        // 篩選
+        if (filter === "installment" && !t.isInstallment) return false;
+        if (filter === "refund" && t.amount >= 0) return false;
+        if (filter === "foreign" && (!t.currency || t.currency === "TWD")) return false;
+        if (filter === "big" && t.amount < 5000) return false;
+        return true;
+      });
+
+      document.getElementById("txCountBadge").textContent = `${filtered.length} 筆`;
+      const tbody = document.getElementById("transactionTbody");
+      tbody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">查無符合條件之消費明細</td></tr>';
+        return;
+      }
+
+      filtered.forEach((t, idx) => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition";
+
+        const isNegative = t.amount < 0;
+        const isBig = t.amount >= 5000;
+        const amtClass = isNegative 
+          ? "font-mono font-bold text-emerald-600 dark:text-emerald-400" 
+          : (isBig ? "font-mono font-bold text-amber-600 dark:text-amber-400" : "font-mono font-semibold text-slate-800 dark:text-slate-100");
+
+        // 類型標籤
+        let typeBadge = "";
+        if (t.isInstallment) {
+          typeBadge = '<span class="badge bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-[10px] mr-1.5">分期</span>';
+        } else if (isNegative) {
+          typeBadge = '<span class="badge bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-[10px] mr-1.5">扣繳/沖銷</span>';
+        } else if (t.currency && t.currency !== "TWD") {
+          typeBadge = '<span class="badge bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 text-[10px] mr-1.5">海外外幣</span>';
+        } else if (isBig) {
+          typeBadge = '<span class="badge bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 text-[10px] mr-1.5">大額</span>';
+        }
+
+        // 外幣展示
+        let foreignDisplay = "--";
+        if (t.currency && t.currency !== "TWD" && t.foreignAmount) {
+          foreignDisplay = `<span class="font-mono">${t.currency} ${t.foreignAmount.toLocaleString()}</span>`;
+        }
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-600 dark:text-slate-400">${t.date || '--'}</td>
+          <td class="py-2.5 px-3 font-mono text-slate-400">${t.postDate || '--'}</td>
+          <td class="py-2.5 px-3 font-medium">
+            ${typeBadge}
+            <span>${t.description}</span>
+          </td>
+          <td class="py-2.5 px-3 text-center font-mono text-slate-500">${t.cardLast4 || '--'}</td>
+          <td class="py-2.5 px-3 text-right text-slate-500">${foreignDisplay}</td>
+          <td class="py-2.5 px-3 text-right ${amtClass}">NT$ ${t.amount.toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // PDF 檔案處理
+    function handlePdfUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      loadPdfFile(file);
+    }
+
+    function loadPdfFile(file) {
+      const url = URL.createObjectURL(file);
+      const embed = document.getElementById("pdfEmbed");
+      const placeholder = document.getElementById("pdfPlaceholder");
+      embed.src = url;
+      embed.classList.remove("hidden");
+      placeholder.classList.add("hidden");
+      document.getElementById("pdfFileName").textContent = file.name;
+    }
+
+    function reloadPdf() {
+      const embed = document.getElementById("pdfEmbed");
+      if (embed.src) {
+        const src = embed.src;
+        embed.src = "";
+        embed.src = src;
+      }
+    }
+
+    // JSON 檔案處理 (支援 pocketmoney_db.json 或單檔 statement.json)
+    function handleJsonUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = JSON.parse(evt.target.result);
+          parseImportedData(data, file.name);
+        } catch (err) {
+          alert("JSON 解析失敗，請確認檔案格式是否正確。");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function parseImportedData(data, fileName) {
+      // 情況 A: 標準 pocketmoney_db.json
+      if (data.cards && Array.isArray(data.cards)) {
+        const converted = [];
+        data.cards.forEach(c => {
+          const bank = (data.banks || []).find(b => b.id === c.bankId) || { name: c.name };
+          const lastRec = (c.records && c.records.length) ? c.records[c.records.length - 1] : { year: 2026, month: 10, amount: 0 };
+          const monthStr = `${lastRec.year}-${String(lastRec.month).padStart(2, '0')}`;
+          
+          // 關聯分期
+          const cardInsts = (data.installments || []).filter(i => i.cardId === c.id).map(i => ({
+            title: i.title,
+            currentPeriod: 1, // 預設
+            totalPeriods: i.totalPeriods,
+            monthlyAmount: i.regularPeriodAmount || (i.totalAmount / i.totalPeriods),
+            totalAmount: i.totalAmount,
+            remainingAmount: i.totalAmount,
+            startYear: i.startYear,
+            startMonth: i.startMonth
+          }));
+
+          // 關聯明細
+          const cardTxs = (data.statementTransactions || []).filter(t => t.cardName === c.name || t.cardName.includes(c.name));
+
+          converted.push({
+            id: `imported_${c.id}`,
+            bankName: bank.name,
+            cardName: c.name,
+            statementMonth: monthStr,
+            closingDate: `${monthStr}-${String(c.closingDay || 10).padStart(2, '0')}`,
+            dueDate: `${monthStr}-${String(c.dueDay || 25).padStart(2, '0')}`,
+            totalAmountDue: lastRec.amount || 0,
+            debitBank: bank.name,
+            debitAccount: bank.note || "自動扣繳",
+            installments: cardInsts,
+            transactions: cardTxs.length ? cardTxs : (lastRec.bigExpenses || []).map(b => ({
+              date: `${monthStr}-01`,
+              postDate: `${monthStr}-05`,
+              description: b.title,
+              amount: b.amount,
+              cardLast4: c.name.slice(-5, -1) || "----",
+              currency: "TWD",
+              foreignAmount: null,
+              isInstallment: false
+            }))
+          });
+        });
+
+        if (converted.length > 0) {
+          currentStatements = converted;
+          selectedStatementId = converted[0].id;
+          populateStatementSelector();
+          renderCurrentStatement();
+          alert(`成功載入資料庫！共包含 ${converted.length} 張卡片帳單。`);
+          return;
+        }
+      }
+
+      // 情況 B: 單一 AnalyzedStatement 物件
+      if (data.metadata) {
+        const meta = data.metadata;
+        const newStmt = {
+          id: `single_${Date.now()}`,
+          bankName: meta.bank_name || meta.bankName,
+          cardName: `${meta.bank_name || meta.bankName} (${meta.statement_month || meta.statementMonth})`,
+          statementMonth: meta.statement_month || meta.statementMonth,
+          closingDate: meta.closing_date || meta.closingDate,
+          dueDate: meta.due_date || meta.dueDate,
+          totalAmountDue: meta.total_amount_due || meta.totalAmountDue || 0,
+          debitBank: meta.auto_debit_bank || meta.autoDebitBank,
+          debitAccount: meta.auto_debit_account || meta.autoDebitAccount,
+          installments: data.installments || [],
+          transactions: data.transactions || []
+        };
+        currentStatements.unshift(newStmt);
+        selectedStatementId = newStmt.id;
+        populateStatementSelector();
+        renderCurrentStatement();
+        alert("成功載入單一對帳單明細！");
+        return;
+      }
+
+      alert("無法辨識此 JSON 之對象格式。");
+    }
+
+    // 拖曳上傳支援
+    function initDragAndDrop() {
+      const container = document.getElementById("pdfViewerContainer");
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        container.addEventListener(eventName, e => {
+          e.preventDefault();
+          e.stopPropagation();
+        }, false);
+      });
+
+      container.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files.length > 0) {
+          const file = files[0];
+          if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+            loadPdfFile(file);
+          } else if (file.name.endsWith(".json")) {
+            const reader = new FileReader();
+            reader.onload = evt => parseImportedData(JSON.parse(evt.target.result), file.name);
+            reader.readAsText(file);
+          }
+        }
+      });
+    }
+
+    // 切換左側 PDF 面板顯示狀態
+    function togglePdfPane() {
+      const pane = document.getElementById("pdfPane");
+      const resizer = document.getElementById("resizer");
+      const btnText = document.getElementById("togglePdfText");
+      isPdfPaneVisible = !isPdfPaneVisible;
+
+      if (isPdfPaneVisible) {
+        pane.style.display = "flex";
+        resizer.style.display = "block";
+        pane.style.width = "50%";
+        btnText.textContent = "隱藏 PDF";
+      } else {
+        pane.style.display = "none";
+        resizer.style.display = "none";
+        btnText.textContent = "顯示 PDF";
+      }
+    }
+
+    // 拖曳調整左右欄比例
+    function initResizer() {
+      const resizer = document.getElementById("resizer");
+      const leftPane = document.getElementById("pdfPane");
+      const container = document.getElementById("mainContainer");
+      let isResizing = false;
+
+      resizer.addEventListener("mousedown", (e) => {
+        isResizing = true;
+        resizer.classList.add("resizing");
+        document.body.style.cursor = "col-resize";
+      });
+
+      document.addEventListener("mousemove", (e) => {
+        if (!isResizing) return;
+        const containerRect = container.getBoundingClientRect();
+        const pointerX = e.clientX - containerRect.left;
+        const minW = 280;
+        const maxW = containerRect.width - 320;
+        if (pointerX >= minW && pointerX <= maxW) {
+          leftPane.style.width = `${pointerX}px`;
+        }
+      });
+
+      document.addEventListener("mouseup", () => {
+        if (isResizing) {
+          isResizing = false;
+          resizer.classList.remove("resizing");
+          document.body.style.cursor = "default";
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketMoney</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Public Sans', 'Noto Sans TC', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            slate: {
+              50: '#ECEFF4', 100: '#E5E9F0', 200: '#D8DEE9', 300: '#B8C2D3',
+              400: '#8C97AB', 500: '#667186', 600: '#4C566A', 700: '#3B4252',
+              800: '#2E3440', 900: '#262B35', 950: '#1E222A'
+            },
+            nord: {
+              0: '#2E3440', 1: '#3B4252', 2: '#434C5E', 3: '#4C566A',
+              4: '#D8DEE9', 5: '#E5E9F0', 6: '#ECEFF4', 7: '#8FBCBB',
+              8: '#88C0D0', 9: '#81A1C1', 10: '#5E81AC',
+              11: '#BF616A', 12: '#D08770', 13: '#EBCB8B', 14: '#A3BE8C', 15: '#B48EAD'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #1a1e24;
+      color: #ECEFF4;
+      font-family: 'Public Sans', 'Noto Sans TC', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    /* 模擬手機外框模式支援 */
+    .mobile-frame {
+      max-width: 412px;
+      margin: 20px auto;
+      border-radius: 36px;
+      border: 8px solid #2e3440;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+      min-height: 840px;
+    }
+
+    /* 抽屜轉場動畫 */
+    .drawer-overlay {
+      transition: opacity 0.25s ease-in-out;
+    }
+
+    .drawer-panel {
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+  <!-- ========================================== -->
+  <!-- 頂部視角切換器 (方便切換 PC 全螢幕 / Mobile 框) -->
+  <!-- ========================================== -->
+  <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between text-xs text-slate-400">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="font-bold text-slate-200">日期時序與輸入解耦原型</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span>視角切換：</span>
+      <button onclick="setViewDevice('pc')" id="btn-device-pc"
+        class="px-2.5 py-1 rounded-md font-bold bg-indigo-600 text-white flex items-center gap-1">
+        <i class="fa-solid fa-desktop"></i> 電腦版
+      </button>
+      <button onclick="setViewDevice('mobile')" id="btn-device-mobile"
+        class="px-2.5 py-1 rounded-md font-bold bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1">
+        <i class="fa-solid fa-mobile-screen"></i> 手機版
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 主應用程式容器 (支援 PC 與 手機 RWD)       -->
+  <!-- ========================================== -->
+  <div id="app-wrapper" class="w-full max-w-6xl mx-auto p-4 sm:p-6 transition-all duration-300">
+
+    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col min-h-[780px]">
+
+      <!-- ========================================== -->
+      <!-- 第一層 Header：品牌與日期控制膠囊群         -->
+      <!-- ========================================== -->
+      <header class="sticky top-0 z-30 bg-slate-900/95 backdrop-blur border-b border-slate-800/80 px-4 sm:px-6 py-3">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+
+          <!-- 左側：品牌名稱 -->
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-nord-8 flex items-center justify-center text-slate-950 font-bold shadow-md">
+              <i class="fa-solid fa-wallet text-sm"></i>
+            </div>
+            <h1 class="text-lg font-extrabold tracking-tight text-white">PocketMoney</h1>
+          </div>
+
+          <!-- 中央核心：使用者要求的極簡日期控制條 -->
+          <!-- [< 前月]  [指定日期: MM/DD]  [次月 >]  [今日 ↺] -->
+          <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 shadow-inner">
+            
+            <!-- 前月 -->
+            <button onclick="shiftMonth(-1)" title="切換至上個月"
+              class="h-8 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+              <i class="fa-solid fa-chevron-left text-[10px]"></i>
+              <span>前月</span>
+            </button>
+
+            <!-- 指定日期 (透明覆蓋原生 date picker，點擊 100% 呼叫日曆) -->
+            <div class="relative">
+              <button type="button"
+                class="h-8 px-3 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-indigo-300 text-xs font-bold font-mono flex items-center gap-1.5 transition">
+                <i class="fa-regular fa-calendar text-[11px]"></i>
+                <span id="dateLabelDisplay">指定日期: 11/03</span>
+              </button>
+              <input type="date" id="hiddenDatePicker" onchange="onDatePickerChange(this.value)"
+                class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+            </div>
+
+            <!-- 次月 -->
+            <button onclick="shiftMonth(1)" title="切換至下個月"
+              class="h-8 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+              <span>次月</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+
+            <!-- 重置今日 -->
+            <button onclick="resetToToday()" id="btnResetToday" title="重設為真實今日"
+              class="h-8 w-8 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 text-slate-400 hover:text-nord-8 flex items-center justify-center text-xs transition">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+
+          </div>
+
+          <!-- 右側：快捷時序情境按鈕 (方便一鍵測試關鍵時差) -->
+          <div class="hidden sm:flex items-center gap-1 text-[11px]">
+            <span class="text-slate-500 mr-1">時序測試：</span>
+            <button onclick="setDateDay(5)" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono">5號 出帳</button>
+            <button onclick="setDateDay(10)" class="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono">10號 房租</button>
+            <button onclick="setDateDay(20)" class="px-2 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 font-mono">20號 卡費</button>
+            <button onclick="setDateDay(25)" class="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-mono">25號 發薪</button>
+          </div>
+
+        </div>
+
+        <!-- 第二層：主要導覽分頁 (標準無 Slop 名稱) -->
+        <nav class="flex items-center gap-2 mt-3 pt-2 border-t border-slate-800/60 overflow-x-auto no-scrollbar">
+          <button onclick="switchTab('dashboard')" id="tab-btn-dashboard"
+            class="tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shrink-0">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>總覽</span>
+          </button>
+          <button onclick="switchTab('cards')" id="tab-btn-cards"
+            class="tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800 shrink-0">
+            <i class="fa-regular fa-credit-card"></i>
+            <span>信用卡費</span>
+            <span id="badgeCardsNeedInput" class="w-2 h-2 rounded-full bg-amber-400 hidden"></span>
+          </button>
+          <button onclick="switchTab('installments')" id="tab-btn-installments"
+            class="tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800 shrink-0">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>分期付款</span>
+          </button>
+          <button onclick="switchTab('banks')" id="tab-btn-banks"
+            class="tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800 shrink-0">
+            <i class="fa-solid fa-building-columns"></i>
+            <span>銀行餘額</span>
+            <span id="badgeBankAlert" class="px-1.5 py-0.2 rounded-full text-[10px] bg-rose-500 text-white hidden">!</span>
+          </button>
+        </nav>
+      </header>
+
+      <!-- ========================================== -->
+      <!-- 內容展示區                                -->
+      <!-- ========================================== -->
+      <main class="flex-1 p-4 sm:p-6 space-y-6 overflow-y-auto">
+
+        <!-- 頂部即時時序提示條 (告知當前模擬狀態) -->
+        <div id="timelineStatusBar" class="p-3 rounded-2xl bg-slate-950 border border-slate-800/80 flex items-center justify-between flex-wrap gap-2 text-xs">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-nord-8"></i>
+            <span class="text-slate-400">當前時序錨點：</span>
+            <span id="statusFullDate" class="font-bold text-white font-mono">2026 年 11 月 03 日</span>
+          </div>
+          <div id="statusAlertBadge" class="flex items-center gap-1.5 text-emerald-400 font-semibold">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>全戶頭扣款水位安全</span>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 總覽 (Dashboard)                    -->
+        <!-- ========================================== -->
+        <section id="section-dashboard" class="space-y-6">
+          
+          <!-- 四大核心 KPI -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+              <span class="text-xs text-slate-400 font-semibold">銀行總可用</span>
+              <div id="kpiTotalBank" class="text-xl sm:text-2xl font-extrabold font-mono text-white">NT$ 124,500</div>
+              <span class="text-[11px] text-slate-500">2 間活存帳戶</span>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+              <span class="text-xs text-slate-400 font-semibold">本月待扣總額</span>
+              <div id="kpiPendingDebits" class="text-xl sm:text-2xl font-extrabold font-mono text-rose-400">NT$ 44,500</div>
+              <span id="kpiDebitsSub" class="text-[11px] text-slate-500">含未到期卡費與房租</span>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+              <span class="text-xs text-slate-400 font-semibold">扣後預估結餘</span>
+              <div id="kpiProjectedBuffer" class="text-xl sm:text-2xl font-extrabold font-mono text-emerald-400">NT$ 80,000</div>
+              <span class="text-[11px] text-slate-500">安全防禦水位</span>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+              <span class="text-xs text-slate-400 font-semibold">未還分期負債</span>
+              <div id="kpiRemainingInst" class="text-xl sm:text-2xl font-extrabold font-mono text-amber-400">NT$ 28,000</div>
+              <span id="kpiInstCount" class="text-[11px] text-slate-500">進行中 1 筆</span>
+            </div>
+          </div>
+
+          <!-- 銀行水位即時快篩 -->
+          <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-shield-halved text-indigo-400"></i>
+                <span>銀行帳戶扣款水位防禦</span>
+              </h2>
+              <span class="text-xs text-slate-500">自動檢核時差跳票</span>
+            </div>
+            <div id="dashboardBankList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+          </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 信用卡費 (展示輸入與瀏覽分離)       -->
+        <!-- ========================================== -->
+        <section id="section-cards" class="hidden space-y-4">
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-regular fa-credit-card text-rose-400"></i>
+                <span id="cardsMonthTitle">2026 年 11 月 信用卡費</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">瀏覽狀態下金額鎖定為純文字；點擊登記進入專屬填寫抽屜</p>
+            </div>
+            <button onclick="openCardInputDrawer()"
+              class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition">
+              <i class="fa-solid fa-pen-to-square"></i>
+              <span>登記本期帳單</span>
+            </button>
+          </div>
+
+          <!-- 信用卡卡片列表 (純文字瀏覽呈現) -->
+          <div id="cardsDisplayList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 分期付款 (展示期數全自動推算)       -->
+        <!-- ========================================== -->
+        <section id="section-installments" class="hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-amber-400"></i>
+                <span>分期付款負擔監控</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">期數依指定月份自動推進，無需手動點擊「推進一期」</p>
+            </div>
+            <span class="text-xs font-mono font-bold text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-xl">
+              全自動依時序排程
+            </span>
+          </div>
+
+          <div id="installmentsDisplayList" class="grid grid-cols-1 gap-3"></div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 銀行餘額                           -->
+        <!-- ========================================== -->
+        <section id="section-banks" class="hidden space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-building-columns text-indigo-400"></i>
+                <span>銀行帳戶即時餘額</span>
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">比對最新餘額與指定日期的待扣款項</p>
+            </div>
+          </div>
+
+          <div id="banksFullDisplayList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        </section>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 輸入專屬側邊/底部抽屜 (Input Drawer)        -->
+  <!-- ========================================== -->
+  <div id="cardInputDrawer" class="fixed inset-0 z-50 hidden">
+    
+    <!-- 半透明背景遮罩 -->
+    <div id="drawerOverlay" onclick="closeCardInputDrawer()"
+      class="drawer-overlay absolute inset-0 bg-slate-950/70 backdrop-blur-sm opacity-0 transition-opacity duration-200"></div>
+
+    <!-- 抽屜本體：PC 為右側 Slide-over，手機自動變為 Bottom Sheet -->
+    <div id="drawerPanel"
+      class="drawer-panel absolute right-0 bottom-0 w-full sm:w-[460px] h-[85vh] sm:h-full bg-slate-900 border-t sm:border-t-0 sm:border-l border-slate-800 p-5 sm:p-6 flex flex-col justify-between shadow-2xl transition-transform duration-250 translate-y-full sm:translate-y-0 sm:translate-x-full rounded-t-3xl sm:rounded-none">
+
+      <!-- 抽屜 Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div>
+          <span class="text-[11px] font-bold text-indigo-400 tracking-wider">輸入模式</span>
+          <h3 id="drawerMonthTitle" class="text-base font-bold text-white">登記 2026 年 11 月 帳單</h3>
+        </div>
+        <button onclick="closeCardInputDrawer()" class="w-8 h-8 rounded-xl bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 抽屜輸入表單清單 -->
+      <div id="drawerFormList" class="flex-1 overflow-y-auto py-4 space-y-5"></div>
+
+      <!-- 抽屜 Footer 動作按鈕 -->
+      <div class="pt-4 border-t border-slate-800 flex items-center gap-3">
+        <button onclick="closeCardInputDrawer()"
+          class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition">
+          取消
+        </button>
+        <button onclick="saveDrawerInputs()"
+          class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg transition">
+          確認儲存並鎖定
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- JavaScript 資料結構與動態響應邏輯           -->
+  <!-- ========================================== -->
+  <script>
+    /* =========================================================
+       1. 全域時鐘狀態 (AppClock)
+       ========================================================= */
+    const AppClock = {
+      // 預設指定為 2026-11-03 進行測試
+      currentDate: new Date('2026-11-03T10:00:00'),
+
+      getYear() { return this.currentDate.getFullYear(); },
+      getMonth() { return this.currentDate.getMonth() + 1; },
+      getDay() { return this.currentDate.getDate(); },
+
+      // 取得 YYYY-MM-DD 格式
+      getISODate() {
+        const y = this.getYear();
+        const m = String(this.getMonth()).padStart(2, '0');
+        const d = String(this.getDay()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      },
+
+      // 切換月份
+      shiftMonth(delta) {
+        const d = new Date(this.currentDate);
+        d.setMonth(d.getMonth() + delta);
+        this.currentDate = d;
+        renderAll();
+      },
+
+      // 指定特定日子
+      setDay(day) {
+        const d = new Date(this.currentDate);
+        d.setDate(day);
+        this.currentDate = d;
+        renderAll();
+      },
+
+      // 指定完整日期
+      setDate(isoString) {
+        if (!isoString) return;
+        this.currentDate = new Date(isoString + 'T10:00:00');
+        renderAll();
+      },
+
+      // 回復真實今日
+      resetToRealToday() {
+        this.currentDate = new Date();
+        renderAll();
+      }
+    };
+
+    /* =========================================================
+       2. 擬真資料庫 (具備結構化時間軸)
+       ========================================================= */
+    const DB = {
+      banks: [
+        { id: 'b_ctbc', name: '中信活存 (主要扣款戶)', balance: 25000, reserveAlert: 10000 },
+        { id: 'b_richart', name: '台新 Richart (薪轉高利)', balance: 99500, reserveAlert: 20000, isSalary: true, salaryDay: 25, salaryAmount: 48000 }
+      ],
+
+      fixedBills: [
+        { id: 'bill_rent', name: '房屋租金', amount: 26000, payDay: 10, bankId: 'b_ctbc' }
+      ],
+
+      // 分期付款：明確記錄開始年月，期數全自動動態推算
+      installments: [
+        {
+          id: 'inst_laptop',
+          name: 'MacBook Pro 分期',
+          totalAmount: 48000,
+          monthlyAmount: 4000,
+          startYear: 2026,
+          startMonth: 6,
+          totalPeriods: 12,
+          cardId: 'c_cube'
+        }
+      ],
+
+      // 信用卡：含月度紀錄 records，有填過的月份是數字，未填過的月份為 null
+      cards: [
+        {
+          id: 'c_cube',
+          name: '國泰 CUBE 卡',
+          bankId: 'b_ctbc',
+          closingDay: 5,
+          dueDay: 20, // 20 號扣繳
+          records: [
+            { year: 2026, month: 10, amount: 24500, bigExpenses: [{ name: '換季大衣', amount: 8200 }] }
+            // 注意：11 月一開始尚未輸入，測試換月效果
+          ]
+        },
+        {
+          id: 'c_gogo',
+          name: '台新 @GoGo 卡',
+          bankId: 'b_richart',
+          closingDay: 7,
+          dueDay: 22, // 22 號扣繳
+          records: [
+            { year: 2026, month: 10, amount: 12800, bigExpenses: [] }
+          ]
+        }
+      ]
+    };
+
+    let activeTab = 'dashboard';
+
+    /* =========================================================
+       3. 核心計算引擎 (全自動判定狀態，拔除反直覺手動按鈕)
+       ========================================================= */
+    function computeState() {
+      const curYear = AppClock.getYear();
+      const curMonth = AppClock.getMonth();
+      const curDay = AppClock.getDay();
+
+      // A. 分期期數全自動計算
+      const instResults = DB.installments.map(inst => {
+        // 計算經歷月數
+        const elapsedMonths = (curYear - inst.startYear) * 12 + (curMonth - inst.startMonth) + 1;
+        const currentPeriod = Math.max(1, Math.min(inst.totalPeriods, elapsedMonths));
+        const isCompleted = elapsedMonths > inst.totalPeriods;
+        const remainingPeriods = Math.max(0, inst.totalPeriods - currentPeriod + 1);
+        const remainingAmount = remainingPeriods * inst.monthlyAmount;
+
+        return {
+          ...inst,
+          currentPeriod,
+          remainingPeriods,
+          remainingAmount,
+          isCompleted
+        };
+      });
+
+      // B. 信用卡當月狀態與扣款判定
+      let totalUnpaidCards = 0;
+      let needInputCount = 0;
+
+      const cardResults = DB.cards.map(c => {
+        const bank = DB.banks.find(b => b.id === c.bankId);
+        const rec = c.records.find(r => r.year === curYear && r.month === curMonth);
+        const isEntered = !!rec;
+        const amount = rec ? rec.amount : 0;
+
+        // 自動判定是否已扣繳：今天日期 >= 該卡扣款日
+        const isAutoDeducted = isEntered && (curDay >= c.dueDay);
+
+        if (!isEntered) needInputCount++;
+        if (isEntered && !isAutoDeducted) {
+          totalUnpaidCards += amount;
+        }
+
+        return {
+          ...c,
+          bankName: bank ? bank.name : '未指定',
+          isEntered,
+          amount,
+          isAutoDeducted,
+          bigExpenses: (rec && rec.bigExpenses) || []
+        };
+      });
+
+      // C. 銀行即時水位與透支檢核 (依據天數自動判定)
+      let totalBankBalance = 0;
+      let totalPendingDebits = 0;
+      let hasShortfall = false;
+
+      const bankResults = DB.banks.map(b => {
+        let simulatedBalance = b.balance;
+
+        // 薪資入帳：若今天 >= 薪資日，自動計入已入帳
+        if (b.isSalary && curDay >= b.salaryDay) {
+          simulatedBalance += b.salaryAmount;
+        }
+
+        // 房租扣除：若今天 >= 10 號，自動扣除
+        const rentBill = DB.fixedBills.find(x => x.bankId === b.id && x.payDay <= curDay);
+        if (rentBill) {
+          simulatedBalance -= rentBill.amount;
+        }
+
+        // 卡費待扣總額：綁定此銀行的卡片，且今天 < 扣款日
+        const pendingCardsForBank = cardResults
+          .filter(c => c.bankId === b.id && c.isEntered && !c.isAutoDeducted)
+          .reduce((sum, c) => sum + c.amount, 0);
+
+        // 若今天已扣繳卡費，自餘額扣除
+        const deductedCardsForBank = cardResults
+          .filter(c => c.bankId === b.id && c.isEntered && c.isAutoDeducted)
+          .reduce((sum, c) => sum + c.amount, 0);
+        simulatedBalance -= deductedCardsForBank;
+
+        // 未來預估結餘 (扣掉尚未扣的卡費)
+        const projectedBuffer = simulatedBalance - pendingCardsForBank;
+        const isShortfall = projectedBuffer < 0;
+        if (isShortfall) hasShortfall = true;
+
+        totalBankBalance += simulatedBalance;
+        totalPendingDebits += pendingCardsForBank;
+
+        return {
+          ...b,
+          currentBalance: simulatedBalance,
+          pendingDebits: pendingCardsForBank,
+          projectedBuffer,
+          isShortfall
+        };
+      });
+
+      return {
+        curYear,
+        curMonth,
+        curDay,
+        instResults,
+        cardResults,
+        bankResults,
+        needInputCount,
+        totalBankBalance,
+        totalPendingDebits,
+        totalProjectedBuffer: totalBankBalance - totalPendingDebits,
+        totalRemainingInst: instResults.reduce((s, i) => s + (i.isCompleted ? 0 : i.remainingAmount), 0),
+        hasShortfall
+      };
+    }
+
+    /* =========================================================
+       4. UI 渲染函式
+       ========================================================= */
+    function renderAll() {
+      const state = computeState();
+
+      // 1. 更新頂部日期膠囊與狀態列
+      const mm = String(state.curMonth).padStart(2, '0');
+      const dd = String(state.curDay).padStart(2, '0');
+      document.getElementById('dateLabelDisplay').innerText = `指定日期: ${mm}/${dd}`;
+      document.getElementById('statusFullDate').innerText = `${state.curYear} 年 ${state.curMonth} 月 ${state.curDay} 日`;
+      document.getElementById('hiddenDatePicker').value = AppClock.getISODate();
+
+      // 水位狀態 Badge
+      const statusBadge = document.getElementById('statusAlertBadge');
+      if (state.hasShortfall) {
+        statusBadge.className = 'flex items-center gap-1.5 text-rose-400 font-bold';
+        statusBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>注意：發薪前有帳戶存在透支缺口！</span>`;
+      } else {
+        statusBadge.className = 'flex items-center gap-1.5 text-emerald-400 font-semibold';
+        statusBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>全戶頭扣款水位安全</span>`;
+      }
+
+      // 2. 更新 KPI
+      document.getElementById('kpiTotalBank').innerText = `NT$ ${fmtMoney(state.totalBankBalance)}`;
+      document.getElementById('kpiPendingDebits').innerText = `NT$ ${fmtMoney(state.totalPendingDebits)}`;
+      document.getElementById('kpiProjectedBuffer').innerText = `NT$ ${fmtMoney(state.totalProjectedBuffer)}`;
+      document.getElementById('kpiRemainingInst').innerText = `NT$ ${fmtMoney(state.totalRemainingInst)}`;
+
+      // 待登記紅點提醒
+      const cardDot = document.getElementById('badgeCardsNeedInput');
+      if (state.needInputCount > 0) cardDot.classList.remove('hidden');
+      else cardDot.classList.add('hidden');
+
+      // 3. 渲染儀表板銀行清單
+      const dashBankEl = document.getElementById('dashboardBankList');
+      dashBankEl.innerHTML = state.bankResults.map(b => `
+        <div class="p-3.5 rounded-xl border ${b.isShortfall ? 'bg-rose-500/10 border-rose-500/40' : 'bg-slate-900 border-slate-800'} space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-xs text-white">${b.name}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${b.isShortfall ? 'bg-rose-500 text-white' : 'bg-emerald-500/15 text-emerald-400'}">
+              ${b.isShortfall ? '需調撥補足' : '水位安全'}
+            </span>
+          </div>
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">當前餘額：NT$ ${fmtMoney(b.currentBalance)}</span>
+            <span class="text-rose-400">待扣：NT$ ${fmtMoney(b.pendingDebits)}</span>
+          </div>
+          <div class="text-[11px] text-right font-mono font-bold ${b.isShortfall ? 'text-rose-400' : 'text-slate-300'}">
+            扣後預估結餘：NT$ ${fmtMoney(b.projectedBuffer)}
+          </div>
+        </div>
+      `).join('');
+
+      // 4. 渲染信用卡視圖 (瀏覽模式：純文字鎖定)
+      document.getElementById('cardsMonthTitle').innerText = `${state.curYear} 年 ${state.curMonth} 月 信用卡費`;
+      const cardsListEl = document.getElementById('cardsDisplayList');
+      cardsListEl.innerHTML = state.cardResults.map(c => `
+        <div class="p-4 rounded-2xl bg-slate-950 border ${!c.isEntered ? 'border-dashed border-amber-500/40' : (c.isAutoDeducted ? 'border-slate-800 opacity-80' : 'border-indigo-500/30')} space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-sm text-white">${c.name}</h4>
+              <span class="text-[11px] text-slate-500">扣款戶：${c.bankName}・每月 ${c.dueDay} 號扣款</span>
+            </div>
+            <!-- 自動狀態標籤 -->
+            ${!c.isEntered ? `
+              <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-400 text-xs font-bold flex items-center gap-1">
+                <i class="fa-regular fa-clock"></i> 待登記
+              </span>
+            ` : (c.isAutoDeducted ? `
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-bold flex items-center gap-1">
+                <i class="fa-solid fa-check"></i> 已自動扣繳
+              </span>
+            ` : `
+              <span class="px-2.5 py-1 rounded-lg bg-rose-500/15 text-rose-400 text-xs font-bold flex items-center gap-1">
+                <i class="fa-solid fa-hourglass-half"></i> 待扣繳 (${c.dueDay}號)
+              </span>
+            `)}
+          </div>
+
+          <!-- 金額展示區 (純文字，非可直接編輯之 input) -->
+          <div class="p-3 rounded-xl bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+            <span class="text-xs text-slate-400">當期帳單總額</span>
+            <div class="text-xl font-extrabold font-mono ${c.isEntered ? 'text-white' : 'text-slate-500'}">
+              ${c.isEntered ? `NT$ ${fmtMoney(c.amount)}` : '尚未登記'}
+            </div>
+          </div>
+
+          <!-- 大額明細展示 -->
+          ${c.bigExpenses.length > 0 ? `
+            <div class="text-[11px] space-y-1">
+              <span class="text-slate-500 font-bold block">大額消費標記：</span>
+              ${c.bigExpenses.map(x => `
+                <div class="flex justify-between bg-slate-900/60 px-2.5 py-1 rounded-lg text-slate-300 font-mono">
+                  <span>${x.name}</span>
+                  <span>NT$ ${fmtMoney(x.amount)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <!-- 動作按鈕 -->
+          <div class="pt-2 border-t border-slate-800/60 flex justify-end">
+            <button onclick="openCardInputDrawer('${c.id}')"
+              class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-400 text-xs font-bold flex items-center gap-1 transition">
+              <i class="fa-solid fa-pen"></i>
+              <span>${c.isEntered ? '修改帳單' : '登記帳單'}</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // 5. 渲染分期付款 (展示期數自動計算)
+      const instListEl = document.getElementById('installmentsDisplayList');
+      instListEl.innerHTML = state.instResults.map(inst => `
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-bold text-sm text-white">${inst.name}</h4>
+              <span class="text-[11px] text-slate-500 font-mono">起算月份：${inst.startYear}/${String(inst.startMonth).padStart(2,'0')}・共 ${inst.totalPeriods} 期</span>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono ${inst.isCompleted ? 'bg-slate-800 text-slate-400' : 'bg-amber-500/15 text-amber-400'}">
+              ${inst.isCompleted ? '已全部結清' : `當期第 ${inst.currentPeriod} / ${inst.totalPeriods} 期`}
+            </span>
+          </div>
+
+          <!-- 進度條 -->
+          <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
+            <div class="bg-amber-400 h-full rounded-full transition-all duration-300"
+              style="width: ${(inst.currentPeriod / inst.totalPeriods) * 100}%"></div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">每月應付：NT$ ${fmtMoney(inst.monthlyAmount)}</span>
+            <span class="text-amber-400 font-bold">剩餘尾款：NT$ ${fmtMoney(inst.remainingAmount)}</span>
+          </div>
+        </div>
+      `).join('');
+
+      // 6. 渲染銀行分頁清單
+      const bankFullEl = document.getElementById('banksFullDisplayList');
+      bankFullEl.innerHTML = state.bankResults.map(b => `
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-sm text-white">${b.name}</h4>
+            <span class="text-[11px] text-slate-500 font-mono">安全保留：NT$ ${fmtMoney(b.reserveAlert)}</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-900 space-y-1 text-xs font-mono">
+            <div class="flex justify-between text-slate-400">
+              <span>基準活存餘額：</span>
+              <span>NT$ ${fmtMoney(b.balance)}</span>
+            </div>
+            ${b.isSalary ? `
+              <div class="flex justify-between text-emerald-400">
+                <span>薪資預估入帳 (${b.salaryDay}號)：</span>
+                <span>+NT$ ${fmtMoney(b.salaryAmount)}</span>
+              </div>
+            ` : ''}
+            <div class="flex justify-between text-rose-400">
+              <span>當期待扣總額：</span>
+              <span>-NT$ ${fmtMoney(b.pendingDebits)}</span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center text-xs font-mono">
+            <span class="text-slate-400">扣後預估結餘：</span>
+            <span class="text-base font-extrabold ${b.isShortfall ? 'text-rose-400' : 'text-emerald-400'}">
+              NT$ ${fmtMoney(b.projectedBuffer)}
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* =========================================================
+       5. 抽屜輸入模式邏輯 (Input Drawer)
+       ========================================================= */
+    function openCardInputDrawer(focusCardId = null) {
+      const state = computeState();
+      document.getElementById('drawerMonthTitle').innerText = `登記 ${state.curYear} 年 ${state.curMonth} 月 信用卡帳單`;
+
+      const formListEl = document.getElementById('drawerFormList');
+      formListEl.innerHTML = DB.cards.map(c => {
+        const rec = c.records.find(r => r.year === state.curYear && r.month === state.curMonth);
+        const val = rec ? rec.amount : '';
+        const bigVal = (rec && rec.bigExpenses && rec.bigExpenses[0]) ? rec.bigExpenses[0].amount : '';
+        const bigDesc = (rec && rec.bigExpenses && rec.bigExpenses[0]) ? rec.bigExpenses[0].name : '';
+
+        return `
+          <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white">${c.name}</span>
+              <span class="text-[11px] text-slate-400 font-mono">${c.closingDay}號結帳・${c.dueDay}號扣款</span>
+            </div>
+
+            <div>
+              <label class="text-[11px] text-slate-400 font-bold block mb-1">本期帳單總額 (NT$)</label>
+              <input id="input_card_${c.id}" type="number" inputmode="decimal" placeholder="例如：18500" value="${val}"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 focus:border-indigo-500 font-mono font-bold text-white text-base outline-none transition">
+            </div>
+
+            <!-- 大額消費選填 -->
+            <div class="pt-2 border-t border-slate-800/80 space-y-2">
+              <span class="text-[11px] text-slate-400 font-bold block">大額消費備註 (> $5,000，選填)</span>
+              <div class="grid grid-cols-2 gap-2">
+                <input id="input_big_name_${c.id}" type="text" placeholder="項目名稱 (如筆電)" value="${bigDesc}"
+                  class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white outline-none">
+                <input id="input_big_amt_${c.id}" type="number" placeholder="金額" value="${bigVal}"
+                  class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono text-white outline-none">
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 展開抽屜
+      const drawer = document.getElementById('cardInputDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const panel = document.getElementById('drawerPanel');
+
+      drawer.classList.remove('hidden');
+      setTimeout(() => {
+        overlay.classList.remove('opacity-0');
+        panel.classList.remove('translate-y-full', 'sm:translate-x-full');
+      }, 10);
+    }
+
+    function closeCardInputDrawer() {
+      const drawer = document.getElementById('cardInputDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      const panel = document.getElementById('drawerPanel');
+
+      overlay.classList.add('opacity-0');
+      panel.classList.add('translate-y-full', 'sm:translate-x-full');
+      setTimeout(() => {
+        drawer.classList.add('hidden');
+      }, 250);
+    }
+
+    function saveDrawerInputs() {
+      const curYear = AppClock.getYear();
+      const curMonth = AppClock.getMonth();
+
+      DB.cards.forEach(c => {
+        const inputEl = document.getElementById(`input_card_${c.id}`);
+        const bigNameEl = document.getElementById(`input_big_name_${c.id}`);
+        const bigAmtEl = document.getElementById(`input_big_amt_${c.id}`);
+
+        if (inputEl && inputEl.value !== '') {
+          const amt = Number(inputEl.value);
+          const bigExpenses = [];
+          if (bigNameEl && bigAmtEl && Number(bigAmtEl.value) > 0) {
+            bigExpenses.push({ name: bigNameEl.value || '大額消費', amount: Number(bigAmtEl.value) });
+          }
+
+          let rec = c.records.find(r => r.year === curYear && r.month === curMonth);
+          if (rec) {
+            rec.amount = amt;
+            rec.bigExpenses = bigExpenses;
+          } else {
+            c.records.push({ year: curYear, month: curMonth, amount: amt, bigExpenses });
+          }
+        }
+      });
+
+      closeCardInputDrawer();
+      renderAll();
+    }
+
+    /* =========================================================
+       6. 輔助控制函式
+       ========================================================= */
+    function shiftMonth(delta) {
+      AppClock.shiftMonth(delta);
+    }
+
+    function setDateDay(day) {
+      AppClock.setDay(day);
+    }
+
+    function onDatePickerChange(val) {
+      AppClock.setDate(val);
+    }
+
+    function resetToToday() {
+      AppClock.resetToRealToday();
+    }
+
+    function switchTab(tabId) {
+      activeTab = tabId;
+      ['dashboard', 'cards', 'installments', 'banks'].forEach(t => {
+        const sec = document.getElementById(`section-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tabId) {
+          sec.classList.remove('hidden');
+          btn.className = 'tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 text-white shrink-0';
+        } else {
+          sec.classList.add('hidden');
+          btn.className = 'tab-btn px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 text-slate-400 hover:text-white hover:bg-slate-800 shrink-0';
+        }
+      });
+    }
+
+    function setViewDevice(device) {
+      const wrapper = document.getElementById('app-wrapper');
+      const btnPc = document.getElementById('btn-device-pc');
+      const btnMobile = document.getElementById('btn-device-mobile');
+
+      if (device === 'mobile') {
+        wrapper.className = 'mobile-frame transition-all duration-300';
+        btnMobile.className = 'px-2.5 py-1 rounded-md font-bold bg-indigo-600 text-white flex items-center gap-1';
+        btnPc.className = 'px-2.5 py-1 rounded-md font-bold bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1';
+      } else {
+        wrapper.className = 'w-full max-w-6xl mx-auto p-4 sm:p-6 transition-all duration-300';
+        btnPc.className = 'px-2.5 py-1 rounded-md font-bold bg-indigo-600 text-white flex items-center gap-1';
+        btnMobile.className = 'px-2.5 py-1 rounded-md font-bold bg-slate-800 text-slate-300 hover:text-white flex items-center gap-1';
+      }
+    }
+
+    function fmtMoney(num) {
+      return (Number(num) || 0).toLocaleString('en-US');
+    }
+
+    // 初始化啟動
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+    });
+  </script>
+</body>
+
+</html>

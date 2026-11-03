@@ -2,10 +2,10 @@
 
 - **實驗名稱**：`F01` — Input 參數與收入設定閉環（拔除寫死日期假設）
 - **狀態**：✅ **G1 自動驗證通過 / G2 主 Agent 審查通過 ➔ 待 Manager 審查 (`compare.html`)**
-- **審查板入口**：[`prototypes/F01-input-params/compare.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/compare.html)
+- **審查板入口**：[`prototypes/F01-input-params/r1/compare.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/r1/compare.html)
 - **單獨預覽**：
-  - 方案 A：[`prototypes/F01-input-params/A.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/A.html)
-  - 方案 B：[`prototypes/F01-input-params/B.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/B.html)
+  - 方案 A：[`prototypes/F01-input-params/r1/A.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/r1/A.html)
+  - 方案 B：[`prototypes/F01-input-params/r1/B.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/F01-input-params/r1/B.html)
 
 ---
 

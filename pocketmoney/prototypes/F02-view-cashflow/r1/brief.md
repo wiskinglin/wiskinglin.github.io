@@ -4,14 +4,14 @@
 - **解決核心痛點**：
   1. **抓出「月底看似夠扣，但發薪前先跳票」的時序風險**：原本只算 `目前餘額 - 本月應扣總額`，若 10 號扣房租、18 號扣卡費、25 號才發薪水，18 號當天戶頭可能已經見底跳票。必須依真實日期（1～31 號）排序模擬每一筆流出與流入後的**「當月盤中最低水位（Min Balance Point）」**。
   2. **月底結算封存與跨月推進閉環**：提供清楚的「本月結算封存 ➔ 推進至下個月」機制，將當月最終餘額與帳單寫入各銀行的歷史 `records`（遵循 ADR-002 主從派生規範），並自動將工作月份推進至下個月、重置當月待扣狀態，讓 12 個月趨勢圖左側累積真實歷史、右側滾算未來預測。
-- **基準檔案**：[`pocketmoney_view.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney_view.html)（預設測試資料請內建真實日期參數：如 10 號房租 $16,000、18 號國泰卡費 $22,500、25 號薪資入帳 $58,000、27 號富邦卡費 $14,800，讓打開頁面即呈現「加總看似有餘裕，但 18 號發薪前國泰世華會先短缺」的真實時序警示）。
+- **基準檔案**：[`pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney.html)（預設測試資料請內建真實日期參數：如 10 號房租 $16,000、18 號國泰卡費 $22,500、25 號薪資入帳 $58,000、27 號富邦卡費 $14,800，讓打開頁面即呈現「加總看似有餘裕，但 18 號發薪前國泰世華會先短缺」的真實時序警示）。
 - **儲存隔離鍵**：`PocketMoney_exp_F02_A` / `PocketMoney_exp_F02_B`
 - **Flash 上下文包（限讀清單）**：
   1. [`AGENTS.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/AGENTS.md)
-  2. [`prototypes/F02-view-cashflow/brief.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F02-view-cashflow/brief.md)
+  2. [`prototypes/F02-view-cashflow/r1/brief.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F02-view-cashflow/r1/brief.md)
   3. [`schema/SCHEMA.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/schema/SCHEMA.md)（§2 核心實體與 §3 月度快照 `records` 結構）
   4. [`specs/UXD.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/specs/UXD.md) 第零章（零 AI Slop 鐵律）與第五章（Mobile 規範）
-  5. [`prototypes/_template/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/_template/compare.html)
+  5. [`prototypes/_template/r1/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/_template/r1/compare.html)
 
 ---
 
@@ -37,5 +37,5 @@
 - [ ] `A.html`、`B.html`、`compare.html` 載入無任何 Console Error。
 - [ ] 預設載入資料必須能直接看出「18 號發薪前最低水位 `< 0`」的時序警示，且支援點擊「月底結算封存」將紀錄寫入 `records` 並重繪 Chart.js 趨勢圖。
 - [ ] 遵守零 AI Slop 鐵律：畫面上無 `v4`、`Mockup`、`Beta`、`F02` 或長篇開發者說明副標。
-- [ ] 產出 `prototypes/F02-view-cashflow/report.md` 記錄 G1 自檢結果。
+- [ ] 產出 `prototypes/F02-view-cashflow/r1/report.md` 記錄 G1 自檢結果。
 

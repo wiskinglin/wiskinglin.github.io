@@ -11,24 +11,52 @@
 | :--- | :--- | :---: | :--- | :--- |
 | **ADR-001** | 繳費狀態與分期期數：日期自動推算 vs. 手動標記 | 🟡 待實驗拍板 | Main 維持手動按鈕；v4 趨勢圖採用日期推算 | `SCHEMA` §2/§3 |
 | **ADR-002** | 銀行歷史快照雙軌結構（`bank.records` vs `bankSnapshots`） | 🟢 已定案（主從派生） | 以 `bank.records` 為唯一寫入源，`bankSnapshots` 為前端衍生快取 | `SCHEMA` §3 |
-| **ADR-003** | 薪資與獎金流入模型（`BANK` 內嵌欄位 vs `INFLOW_PLAN` 獨立表） | 🟢 階段一已落地 | 常態月薪內嵌於 `BANK`（已在 Main 實作）；不定期獎金走 `BANK_EVENT` | `SCHEMA` §2、`pocketmoney_view.html` |
-| **ADR-004** | 證券交割戶綁定層級（全域多選 vs 單一股票指定） | 🟢 已定案（雙層相容） | 全域 `settings.securitiesBankIds` 算現金池；股利/平倉彈窗預設帶入首個交割戶並允許當場切換 | `pocketmoney_view.html` |
+| **ADR-003** | 薪資與獎金流入模型（`BANK` 內嵌欄位 vs `INFLOW_PLAN` 獨立表） | 🟢 階段一已落地 | 常態月薪內嵌於 `BANK`（已在 Main 實作）；不定期獎金走 `BANK_EVENT` | `SCHEMA` §2、`pocketmoney.html` |
+| **ADR-004** | 證券交割戶綁定層級（全域多選 vs 單一股票指定） | 🟢 已定案（雙層相容） | 全域 `settings.securitiesBankIds` 算現金池；股利/平倉彈窗預設帶入首個交割戶並允許當場切換 | `pocketmoney.html` |
 | **ADR-005** | 信用卡月份定義（`CARD_MONTHLY_RECORD.month`） | 🟢 已定案 | 定義為「當月應扣繳帳單期（對齊當月 `dueDay`）」 | `SCHEMA` §3 |
 | **ADR-006** | 銀行收支事件類型列舉（`BANK_EVENT.type`） | 🟢 已定案 | 統一為 7 類（補齊 `transfer_in` 以支援跨行調撥配對） | `SCHEMA` §3 |
 | **ADR-007** | 多幣別帳戶支援時機 | ⏸️ 延後（P2） | 現階段聚焦台幣現金流防禦；外幣折算列為 P2 | `BACKLOG` |
-| **ADR-008** | 功能探索與驗收工作流（A/B 雙 HTML + `compare.html`） | 🟢 Manager 已拍板 | 每個新功能建立 `prototypes/Fxx-*/`，產出 `A.html`、`B.html`、`compare.html` 並排比較，勝出後合併回 `pocketmoney_view.html` | `AGENTS.md` |
-| **ADR-009** | F01 Input 參數與收入設定：A 內嵌式 vs B 集中式收支規則中心 | 🟢 Manager 選 B（2026-11-03） | 採方案 B：獨立「收支規則設定」分頁（`tab-rules`）＋ 規則總表行內直改 ＋ 首頁 1～31 號收支時序條 | `SCHEMA`、`UXD`、`UI_VOCABULARY`、`pocketmoney_view.html` |
-| **ADR-010** | 銀行餘額與信用卡費拆分及導航列重排 | 🟢 Manager 定案（2026-11-03） | 將原 `tab-cards` 拆分為獨立的 `tab-banks` 與 `tab-cards`，導航順序統一為：總覽 ➔ 銀行餘額 ➔ 投資部位 ➔ 信用卡費 ➔ 分期付款 ➔ 固定費用 ➔ 收支規則 ➔ 設定 | `UXD`、`pocketmoney_view.html` |
+| **ADR-008** | 功能探索與驗收工作流（A/B 雙 HTML + `compare.html`） | 🟢 Manager 已拍板 | 每個新功能建立 `prototypes/Fxx-*/`，產出 `A.html`、`B.html`、`compare.html` 並排比較，勝出後合併回 `pocketmoney.html` | `AGENTS.md` |
+| **ADR-009** | F01 Input 參數與收入設定：A 內嵌式 vs B 集中式收支規則中心 | 🟢 Manager 選 B（2026-11-03） | 採方案 B：獨立「收支規則設定」分頁（`tab-rules`）＋ 規則總表行內直改 ＋ 首頁 1～31 號收支時序條 | `SCHEMA`、`UXD`、`UI_VOCABULARY`、`pocketmoney.html` |
+| **ADR-010** | 銀行餘額與信用卡費拆分及導航列重排 | 🟢 Manager 定案（2026-11-03） | 將原 `tab-cards` 拆分為獨立的 `tab-banks` 與 `tab-cards`，導航順序統一為：總覽 ➔ 銀行餘額 ➔ 投資部位 ➔ 信用卡費 ➔ 分期付款 ➔ 固定費用 ➔ 收支規則 ➔ 設定 | `UXD`、`pocketmoney.html` |
 | **ADR-011** | 漸進式功能解鎖架構（從單筆存量防禦到跨月歷史趨勢） | 🟢 Manager 定案（2026-11-03） | 解決初期無歷史數據問題：初期聚焦「當下存量盤點與扣款時序防禦」，隱藏/折疊未成形之 12 個月走勢圖；隨每月底「結算封存」累積真實歷史後，漸進解鎖走勢圖、月均分析與退坡曲線 | `PRODUCT.md`、`UXD.md`、`BACKLOG.md` |
+| **ADR-012** | 原型 F04（多帳戶多卡版面）與 F05（日期控制）導入 Main | 🟢 Manager 定案（2026-11-03） | 合併至 `pocketmoney.html`，帳戶/卡片 ≥ 4 啟用自適應版面；日期控制器與抽屜式帳單登記 | `CHANGELOG`、`pocketmoney.html` |
+| **ADR-013** | 外部對帳單分析模組架構（`analyzer`、機敏隔離與通用匯入 DB 設計） | 🟢 Manager 定案（2026-11-03） | 程式命名 `analyzer/` 納入 Git；真實 PDF 與 `result/` 個人 DB 實施 Git 忽略隔離；支援信用卡/證券/銀行擴充，輸出累積至相容主程式匯入之 `pocketmoney_db.json` | `analyzer/`、`BACKLOG.md` |
 
 ---
 
 ## 詳細決策紀錄
 
+### ADR-013：外部對帳單分析模組架構（analyzer、機敏隔離與通用匯入 DB 設計）
+- **背景**：使用者需分析外部信用卡帳單（國泰、富邦、玉山等）與未來之證券對帳單、銀行存摺明細，且堅持機敏個人資料不得進入 Git 版本控制，同時期望分析結果能以累積方式輸出為單一 DB 檔案，供主程式 `pocketmoney.html` 直接一鍵匯入。
+- **決定**：
+  1. **模組命名與位置**：定名為 `pocketmoney/analyzer/`，程式碼受 Git 追蹤維護。
+  2. **機敏隔離規範**：`.gitignore` 強制排除 `samples/`、`result/`、所有真實 `*.pdf` 與個人 `result/*.json`，杜絕真實個資上傳風險。
+  3. **可擴充性架構**：
+     - `analyzer/core/`：共通剖析管線、標準資料模型（`models.py`）與增量合併引擎（`merge_engine.py`）。
+     - `analyzer/credit_cards/`：信用卡帳單專屬解析器（國泰、富邦、玉山等）。
+     - `analyzer/securities/`：未來證券對帳單（持股、損益、除權息）保留插槽。
+     - `analyzer/banks/`：未來銀行明細與存摺收支流水保留插槽。
+  4. **結果資料庫與主程式相容**：
+     - 分析結果累積輸出至 `result/pocketmoney_db.json`。
+     - 每次執行自動讀取既有 DB 檔案進行增量合併（月結金額覆蓋更新、分期自動追蹤、不破壞既有手動設定），輸出格式嚴格符合 `pocketmoney.html` 內建之 `importDatabaseJSON` 規格。
+- **影響範圍**：`.gitignore`、`pocketmoney/analyzer/`、`BACKLOG.md`。
+
+---
+
+### ADR-012：原型 F04（多帳戶多卡版面）與 F05（日期控制）導入 Main
+- **決定**：🟢 Manager 已審閱核可 `prototypes/F04-multi-card-account-layout/r1/B.html` 與 `prototypes/F05-date-controller-flow/r1/index.html`，於 2026-11-03 合併至 `pocketmoney.html`（v0.1.0）。
+- **F04 採用規則**：帳戶或信用卡數量 ≥ 4 才啟用例外優先、表格切換、無消費收納與歸戶檢視；少於 4 維持原平鋪。
+- **F05 採用範圍**：日期控制列（檢視日期不寫入儲存）、帳單登記抽屜、分期依起算年月自動推進（`startYear / startMonth` 為選填，向下相容）。這與 ADR-001 方案 A 一致。
+- **未導入**：信用卡逐月 `records`、依日期自動判定已扣款、銀行餘額模擬扣款。仍沿用手動確認扣款，ADR-001 維持待拍板。
+- **影響範圍**：`pocketmoney.html`、`CHANGELOG.md`、`BACKLOG.md`；`SCHEMA.md` 的 `InstallmentItem.startYear / startMonth` 本已定義，無需改動。
+
+---
+
 ### ADR-001：繳費狀態與分期期數（日期自動推算 vs. 手動點擊結算）
 - **背景與衝突（C1）**：
   - `UXD.md` §1.3 提出移除手動 `paid` 切換，改由盤點日期 `D_snap` 與扣款日 `dueDay` 自動判斷是否已扣款；分期付款也改由 `startYear/startMonth` 自動推算當前期數。
-  - 但 `pocketmoney_view.html`（Main）目前仍依賴使用者手動點擊「標記已繳 / 信用卡全數扣款 / +1 期」，因為若不記錄實際扣款確認，遇到「銀行餘額不足導致扣款失敗」時，純日期推算會誤以為已經扣款成功。
+  - 但 `pocketmoney.html`（Main）目前仍依賴使用者手動點擊「標記已繳 / 信用卡全數扣款 / +1 期」，因為若不記錄實際扣款確認，遇到「銀行餘額不足導致扣款失敗」時，純日期推算會誤以為已經扣款成功。
 - **選項**：
   - **方案 A（混合防禦模式 — 主 Agent 建議）**：分期期數與未來月份推估全面採用 `startYear/startMonth` 自動推算（免手動按 `+1 期`）；但當月帳單與固定費用保留「到期自動提示 ＋ 一鍵確認扣款入帳」，避免餘額不足時被系統靜默略過。
   - **方案 B（純日期自動判定）**：只要系統日期 `> dueDay` 一律視為已扣款。
@@ -45,14 +73,14 @@
 ### ADR-003：薪資與獎金流入模型
 - **背景與衝突（C3）**：`UXD` 將月薪放在 `BANK.defaultSalary`，而 `todo.md` 提案拆出獨立的 `INFLOW_PLAN` 實體。
 - **決定**：🟢 **採漸進式設計**：
-  1. **常態月薪**：直接內嵌於 `BANK`（`isSalaryAccount`、`salaryDay`、`salaryAmount`），已在 `pocketmoney_view.html` 落地，設定最直覺且零跨表關聯負擔。
+  1. **常態月薪**：直接內嵌於 `BANK`（`isSalaryAccount`、`salaryDay`、`salaryAmount`），已在 `pocketmoney.html` 落地，設定最直覺且零跨表關聯負擔。
   2. **非固定流入（年終獎金、端午/中秋獎金、退稅、租金補貼）**：不強迫使用者預先建立複雜排程表，而是以「當月流入事件（`BANK_EVENT`）」或輕量級「年度節點提醒」呈現。
 
 ---
 
 ### ADR-004：證券交割戶綁定機制
 - **背景與衝突（C4）**：`settings.securitiesBankIds` 為全域多選，而 `todo.md` 另提 `stock.settleBankId`。
-- **決定**：🟢 **維持全域 `settings.securitiesBankIds` 作為待命現金池計算基準**；在執行「股利入帳」或「賣出平倉」時，彈窗預設選中第一個證券交割戶，並允許使用者下拉切換入帳銀行（已在 `pocketmoney_view.html` 實作）。
+- **決定**：🟢 **維持全域 `settings.securitiesBankIds` 作為待命現金池計算基準**；在執行「股利入帳」或「賣出平倉」時，彈窗預設選中第一個證券交割戶，並允許使用者下拉切換入帳銀行（已在 `pocketmoney.html` 實作）。
 
 ---
 
@@ -77,7 +105,7 @@
      - 解鎖分期付款到期後之月支出減輕對比。
   4. **Stage 4（成熟期，累積 6～12 個月以上）**：
      - 解鎖完整信用卡真實月均消費水準、大額消費週期性分析與閒置資金調度警示。
-- **影響範圍**：`PRODUCT.md`、`UXD.md`、`BACKLOG.md`、`pocketmoney_view.html`。
+- **影響範圍**：`PRODUCT.md`、`UXD.md`、`BACKLOG.md`、`pocketmoney.html`。
 
 ---
 
@@ -99,7 +127,7 @@
 ### ADR-009：F01 選擇方案 B（集中式收支規則中心）
 - **決定**：🟢 Manager 於 2026-11-03 回覆「F01 請使用 B」。
 - **採用內容**：收入（薪資＋其他收入 `state.inflows`）、信用卡結帳日/扣款日、固定費用扣款日與 `銀行直扣 / card_auto 信用卡代繳`，集中於「收支規則設定」分頁，表格行內直改；首頁保留 1～31 號收支時序條。
-- **待辦**：①同步更新 `SCHEMA.md`、`UXD.md`、`UI_VOCABULARY.md`；②由 Flash 將 B 乾淨合併回 `pocketmoney_view.html`（恢復正式 `STORAGE_KEY`）；③合併後更新 `CHANGELOG.md`。
+- **待辦**：①同步更新 `SCHEMA.md`、`UXD.md`、`UI_VOCABULARY.md`；②由 Flash 將 B 乾淨合併回 `pocketmoney.html`（恢復正式 `STORAGE_KEY`）；③合併後更新 `CHANGELOG.md`。
 - **備註**：觀察重點②（行內直改）、③（時序條）隨 B 一併採用，Manager 若有「B，但…」之調整請再告知。
 
 ---

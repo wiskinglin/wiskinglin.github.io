@@ -324,7 +324,7 @@
             <i class="fa-solid fa-wallet text-xs"></i>
           </div>
           <div class="truncate">
-            <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">財務總覽與扣款安全檢核</h1>
+            <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">PocketMoney</h1>
           </div>
         </div>
 
@@ -354,6 +354,31 @@
         </div>
       </div>
 
+      <!-- 檢視日期控制列 -->
+      <div class="flex items-center gap-1 pb-2 border-t border-slate-100 dark:border-slate-800/80 pt-2">
+        <button onclick="shiftViewMonth(-1)" title="切換至上個月"
+          class="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-600 dark:text-slate-300 text-fluid-sub font-semibold flex items-center gap-1 num-nowrap transition">
+          <i class="fa-solid fa-chevron-left text-[10px]"></i><span>前月</span>
+        </button>
+        <div class="relative">
+          <button type="button" id="viewDateBtn"
+            class="h-8 px-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-600 dark:text-indigo-300 text-fluid-sub font-bold font-mono flex items-center gap-1.5 num-nowrap transition">
+            <i class="fa-regular fa-calendar text-[11px]"></i>
+            <span id="viewDateLabel">今天</span>
+          </button>
+          <input type="date" id="viewDatePicker" onchange="onViewDatePick(this.value)"
+            class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+        </div>
+        <button onclick="shiftViewMonth(1)" title="切換至下個月"
+          class="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-600 dark:text-slate-300 text-fluid-sub font-semibold flex items-center gap-1 num-nowrap transition">
+          <span>次月</span><i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </button>
+        <button onclick="resetViewToToday()" id="btnViewToday" title="回到今天"
+          class="h-8 w-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-500 dark:text-slate-400 flex items-center justify-center text-xs transition">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+      </div>
+
       <!-- 第二層：6 大功能分頁膠囊列 (支援手機左右滑動 & 電腦完整排列，完全避開手機底部系統按鈕) -->
       <nav
         class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80">
@@ -370,11 +395,11 @@
           <span>銀行餘額</span>
           <span id="navBadgeBanks" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] hidden">!</span>
         </button>
-        <!-- 3. 投資部位 -->
+        <!-- 3. 台股部位 -->
         <button onclick="switchTab('stocks')" data-tab="stocks"
           class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i>
-          <span>投資部位</span>
+          <span>台股部位</span>
         </button>
         <!-- 4. 信用卡費 -->
         <button onclick="switchTab('cards')" data-tab="cards"
@@ -478,7 +503,7 @@
               <div id="kpiStockRatioBar" class="bg-indigo-500 h-full transition-all duration-500" style="width: 0%">
               </div>
             </div>
-            <p id="kpiStockHint" class="text-fluid-sub text-slate-400 mt-1.5 truncate">點擊調整波段持股與交割現金池</p>
+            <p id="kpiStockHint" class="text-fluid-sub text-slate-400 mt-1.5 truncate">波段持股與交割帳戶</p>
           </div>
         </div>
 
@@ -488,7 +513,7 @@
           <div>
             <div class="flex items-center justify-between gap-2 mb-2">
               <span class="text-fluid-sub font-bold text-slate-500 dark:text-slate-400 num-nowrap">
-                <i class="fa-solid fa-file-invoice-dollar text-rose-500 mr-1"></i>本月待扣款總結
+                <i class="fa-solid fa-file-invoice-dollar text-rose-500 mr-1"></i>本月待扣總額
               </span>
               <span
                 class="text-fluid-sub font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 num-nowrap">自動扣繳檢核</span>
@@ -560,8 +585,7 @@
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-5 rounded-full bg-emerald-500 shrink-0"></span>
               <h2 class="text-fluid-h2 font-extrabold flex items-center gap-2">
-                <span>📅 每月 1～31 號收支時序軸</span>
-                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Cashflow Timeline</span>
+                <span>每月收支時序</span>
               </h2>
             </div>
             <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
@@ -571,7 +595,7 @@
           <button onclick="switchTab('rules')"
             class="self-start sm:self-center px-3.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap border border-indigo-200/60 dark:border-indigo-800/60 transition shrink-0">
             <i class="fa-solid fa-sliders text-indigo-500"></i>
-            <span>⚙️ 集中設定收支日期與規則</span>
+            <span>收支規則</span>
           </button>
         </div>
 
@@ -587,18 +611,18 @@
           <div class="space-y-1.5">
             <div class="flex items-center flex-wrap gap-2">
               <span class="w-2 h-5 rounded-full bg-indigo-500 shrink-0"></span>
-              <h2 class="text-fluid-h2 font-extrabold">戶頭扣款安全檢查</h2>
+              <h2 class="text-fluid-h2 font-extrabold">扣款安全檢核</h2>
               <span id="bankShortfallSummaryBadge"
                 class="text-fluid-sub px-2.5 py-0.5 rounded-full font-bold num-nowrap">檢核中</span>
             </div>
             <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
-              戶頭裡的錢，夠不夠扣卡費與生活開銷？自動將未繳信用卡與水電房租歸戶到指定銀行，提早 15~20 天攔截餘額不足。
+              檢核各銀行帳戶是否足以支應綁定之信用卡費與固定支出。
             </p>
           </div>
           <button onclick="settleAllPendingBills()"
             class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition shrink-0">
             <i class="fa-solid fa-bolt-lightning"></i>
-            <span>信用卡全數扣款</span>
+            <span>一鍵平帳結算</span>
           </button>
         </div>
 
@@ -616,11 +640,11 @@
             <div>
               <h3 class="text-fluid-h3 font-bold flex items-center gap-1.5">
                 <i class="fa-solid fa-magnifying-glass-dollar text-amber-500"></i>
-                <span>本期 > $5,000 大額消費雷達</span>
+                <span>本期大額消費</span>
               </h3>
-              <p class="text-fluid-sub text-slate-400">抓大放小：只記大筆開銷，不記瑣碎流水帳</p>
+              <p class="text-fluid-sub text-slate-400">重大非經常性開銷明細</p>
             </div>
-            <button onclick="switchTab('banks')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i
+            <button onclick="switchTab('cards')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i
                 class="fa-solid fa-angle-right"></i></button>
           </div>
           <div id="dashboardBigExpensesList" class="space-y-2"></div>
@@ -631,9 +655,9 @@
             <div>
               <h3 class="text-fluid-h3 font-bold flex items-center gap-1.5">
                 <i class="fa-solid fa-hourglass-half text-purple-500"></i>
-                <span>進行中分期付款負擔</span>
+                <span>分期付款負擔</span>
               </h3>
-              <p class="text-fluid-sub text-slate-400">買東西分期很無痛？算算每個月默默被扣了多少錢</p>
+              <p class="text-fluid-sub text-slate-400">每月固定分期攤提支出</p>
             </div>
             <button onclick="switchTab('installments')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">查看全部
               <i class="fa-solid fa-angle-right"></i></button>
@@ -654,10 +678,10 @@
           <div class="space-y-1">
             <div class="flex items-center gap-2">
               <span class="w-2.5 h-5 rounded-full bg-indigo-500 shrink-0"></span>
-              <h2 class="text-fluid-h2 font-extrabold">每月 1～31 號收支時序即時預覽條</h2>
+              <h2 class="text-fluid-h2 font-extrabold">收支時序預覽</h2>
             </div>
             <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
-              在下方規則總表修改日期或金額時，時序條會即時同步移動，清晰對照幾號扣卡費 vs 幾號領薪水
+              即時連動收支日期與扣款流向
             </p>
           </div>
           <div class="flex items-center gap-1.5 flex-wrap self-start sm:self-center text-xs">
@@ -678,7 +702,7 @@
               <i class="fa-solid fa-money-bill-wave text-emerald-500"></i>
               <span>每月薪資與其他收入來源設定 (Inflows)</span>
             </h3>
-            <p class="text-fluid-sub text-slate-400 mt-0.5">管理每月本業薪資、兼職接案、特定月份獎金或股利，直接在列上修改入帳日、金額與歸戶銀行</p>
+            <p class="text-fluid-sub text-slate-400 mt-0.5">管理每月薪資、兼職與配息入帳規則</p>
           </div>
           <button onclick="openInflowModal()"
             class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition">
@@ -697,11 +721,11 @@
               <i class="fa-solid fa-credit-card text-rose-500"></i>
               <span>信用卡結帳日、扣款日與帳單拆解規則 (Cards)</span>
             </h3>
-            <p class="text-fluid-sub text-slate-400 mt-0.5">每張卡獨立設定「結帳日」與「扣款日」，同一畫面清晰檢視「分期攤提 + >5K大額 + 一般日常」三段拆解</p>
+            <p class="text-fluid-sub text-slate-400 mt-0.5">設定結帳日、扣款日與關聯銀行</p>
           </div>
           <button onclick="openCardModal()"
             class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition">
-            <i class="fa-solid fa-plus"></i> 新增信用卡
+            <i class="fa-solid fa-plus"></i> + 新增信用卡
           </button>
         </div>
 
@@ -716,7 +740,7 @@
               <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i>
               <span>固定費用扣款日與扣繳管道規則 (Bills)</span>
             </h3>
-            <p class="text-fluid-sub text-slate-400 mt-0.5">行內快速切換「銀行直扣 vs 信用卡代繳」，代繳費用不重複計入銀行待扣款</p>
+            <p class="text-fluid-sub text-slate-400 mt-0.5">設定每月固定支出與扣款管道</p>
           </div>
           <button onclick="openBillModal()"
             class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition">
@@ -765,18 +789,25 @@
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
               <i class="fa-solid fa-building-columns text-indigo-500"></i>
-              <span>各銀行帳戶清單與水位監控</span>
+              <span>銀行餘額</span>
             </h2>
-            <p class="text-fluid-sub text-slate-400">點擊輸入框可直接修改餘額，系統將即時重算扣繳水位</p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <div id="bankViewToggleWrap" style="display:none" class="items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-fluid-sub">
+              <button onclick="setBanksViewMode('grid')" id="btnBankModeGrid" class="px-2.5 py-1 rounded-lg font-bold transition num-nowrap">
+                <i class="fa-solid fa-table-cells-large mr-1"></i>卡片網格
+              </button>
+              <button onclick="setBanksViewMode('table')" id="btnBankModeTable" class="px-2.5 py-1 rounded-lg font-bold transition num-nowrap">
+                <i class="fa-solid fa-table-list mr-1"></i>緊湊表格
+              </button>
+            </div>
             <button onclick="openSalaryInflowModal()"
               class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
               <i class="fa-solid fa-money-bill-wave"></i> 薪資入帳
             </button>
             <button onclick="openBankModal()"
               class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
-              <i class="fa-solid fa-plus"></i> 新增銀行帳戶
+              <i class="fa-solid fa-plus"></i> + 新增帳戶
             </button>
           </div>
         </div>
@@ -822,14 +853,25 @@
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
               <i class="fa-solid fa-credit-card text-rose-500"></i>
-              <span>各家信用卡本期帳單 (依各卡結帳日與扣款日)</span>
+              <span>信用卡費</span>
             </h2>
-            <p class="text-fluid-sub text-slate-400">只需輸入本期帳單總額，並記下超過 $5,000 元的大額刷卡項目</p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <div id="cardsGroupToggleWrap" style="display:none" class="items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-fluid-sub">
+              <button onclick="setCardsGroupMode('byCard')" id="btnCardModeByCard" class="px-2.5 py-1 rounded-lg font-bold transition num-nowrap">
+                <i class="fa-solid fa-credit-card mr-1"></i>依卡片顯示
+              </button>
+              <button onclick="setCardsGroupMode('byBank')" id="btnCardModeByBank" class="px-2.5 py-1 rounded-lg font-bold transition num-nowrap">
+                <i class="fa-solid fa-building-columns mr-1"></i>依扣款銀行歸戶
+              </button>
+            </div>
+            <button onclick="openCardInputDrawer()"
+              class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
+              <i class="fa-solid fa-pen-to-square"></i> 登記本期帳單
+            </button>
             <button onclick="resetAllCardsNewMonth()"
               class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold num-nowrap">
-              <i class="fa-solid fa-rotate-right mr-1"></i>新月份信用卡費已登錄
+              <i class="fa-solid fa-arrows-rotate mr-1"></i>換月重置
             </button>
             <button onclick="openCardModal()"
               class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
@@ -851,13 +893,13 @@
           <span class="text-fluid-sub font-bold bg-white/20 px-2.5 py-0.5 rounded-full num-nowrap">每月分期現金支出</span>
           <div id="instMonthlyTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-2 mb-1">NT$ 0 / 月
           </div>
-          <p class="text-fluid-sub text-amber-100">各張信用卡分期每月應繳加總</p>
+          <p class="text-fluid-sub text-amber-100">本月應繳分期總額</p>
         </div>
         <div
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-center">
           <span class="text-fluid-sub text-slate-400 font-bold">分期未繳負債</span>
           <div id="instRemainingTotal" class="text-fluid-hero font-extrabold font-mono num-nowrap mt-1">NT$ 0</div>
-          <p class="text-fluid-sub text-slate-400 mt-1">負債監控，避免負債持續增加造成每月現金流壓力</p>
+          <p class="text-fluid-sub text-slate-400 mt-1">未還本金總額</p>
         </div>
         <div
           class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
@@ -867,7 +909,7 @@
           </div>
           <button onclick="openInstallmentModal()"
             class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3">
-            <i class="fa-solid fa-plus"></i> 新增分期項目
+            <i class="fa-solid fa-plus"></i> + 新增分期
           </button>
         </div>
       </div>
@@ -875,10 +917,10 @@
       <div
         class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
-          <h2 class="text-fluid-h2 font-bold">各卡分期付款明細表</h2>
+          <h2 class="text-fluid-h2 font-bold">分期付款</h2>
           <button onclick="advanceAllInstallmentsOnePeriod()"
             class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold num-nowrap transition">
-            <i class="fa-solid fa-forward-step mr-1"></i>全部推進一期 (+1 期)
+            <i class="fa-solid fa-forward-step mr-1"></i>批次前進一期
           </button>
         </div>
         <div id="installmentsListContainer" class="grid grid-cols-1 md:grid-cols-2 fluid-gap"></div>
@@ -921,7 +963,7 @@
           </div>
           <button onclick="toggleAllBimonthlyBillsStatus()"
             class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3 transition">
-            <i class="fa-solid fa-arrows-rotate"></i> 雙月帳單一鍵切換免繳/待繳
+            <i class="fa-solid fa-toggle-on"></i> 雙月費用一鍵開關
           </button>
         </div>
       </div>
@@ -932,13 +974,12 @@
           <div>
             <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
               <i class="fa-solid fa-bolt text-emerald-500"></i>
-              <span>固定生活費用 (水電、瓦斯、網路、房租)</span>
+              <span>固定費用</span>
             </h2>
-            <p class="text-fluid-sub text-slate-400">標記為「待繳」的項目會自動依各自扣款日計入指定銀行的扣款檢核</p>
           </div>
           <button onclick="openBillModal()"
             class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
-            <i class="fa-solid fa-plus"></i> 新增週期費用
+            <i class="fa-solid fa-plus"></i> + 新增固定支出
           </button>
         </div>
 
@@ -957,7 +998,7 @@
             <div>
               <h2 class="text-fluid-h2 font-bold flex items-center gap-2">
                 <i class="fa-solid fa-scale-balanced text-indigo-500"></i>
-                <span>股票與資金監控</span>
+                <span>台股部位</span>
               </h2>
               <p class="text-fluid-sub text-slate-400">台股慣例：<span class="text-rose-500 font-bold">紅漲 (獲利)</span> / <span
                   class="text-emerald-500 font-bold">綠跌 (虧損)</span></p>
@@ -1009,7 +1050,7 @@
               <button onclick="openSecuritiesBanksModal()"
                 class="px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-fluid-sub font-bold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-colors num-nowrap shadow-xs">
                 <i class="fa-solid fa-building-columns text-indigo-500"></i>
-                <span>設定連動銀行</span>
+                <span>設定證券交割銀行</span>
                 <span id="stockSecuritiesLinkedCount"
                   class="text-xs px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-500 dark:text-indigo-400 font-mono font-bold">0
                   戶</span>
@@ -1036,7 +1077,7 @@
 
           <button onclick="openStockModal()"
             class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap transition-colors shadow-sm">
-            <i class="fa-solid fa-plus"></i> 新增股票部位
+            <i class="fa-solid fa-plus"></i> + 新增股票
           </button>
         </div>
       </div>
@@ -1045,8 +1086,7 @@
         class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div>
-            <h2 class="text-fluid-h2 font-bold">股票部位清單</h2>
-            <p class="text-fluid-sub text-slate-400">可直接在卡片內修改「目前市價」或「股數」即時試算損益</p>
+            <h2 class="text-fluid-h2 font-bold">持股清單</h2>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="openDividendModal()"
@@ -1073,7 +1113,7 @@
           <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-lg">
             <i class="fa-solid fa-file-csv"></i>
           </div>
-          <h3 class="text-fluid-h2 font-bold">Excel 報表匯出 & 數據完整備份</h3>
+          <h3 class="text-fluid-h2 font-bold">資料備份與匯出</h3>
           <p class="text-fluid-body text-slate-500 dark:text-slate-400">
             資料 100% 儲存在你的瀏覽器本地端。可隨時匯出成 .csv 進行Excel試算表分析，或匯出備份檔在電腦與手機之間轉移資料。
           </p>
@@ -1081,16 +1121,16 @@
             <button onclick="exportToExcelCSV()"
               class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
               <i class="fa-solid fa-file-excel"></i>
-              <span>匯出 Excel CSV 財務總表</span>
+              <span>匯出 Excel 報表 (CSV)</span>
             </button>
             <div class="grid grid-cols-2 gap-2">
               <button onclick="exportDatabaseJSON()"
                 class="py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
-                <i class="fa-solid fa-download"></i> 匯出備份
+                <i class="fa-solid fa-download"></i> 匯出 JSON 資料庫
               </button>
               <label
                 class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold flex items-center justify-center gap-1.5 cursor-pointer num-nowrap">
-                <i class="fa-solid fa-upload"></i> 匯入備份
+                <i class="fa-solid fa-upload"></i> 匯入 JSON 資料庫
                 <input type="file" accept=".json" onchange="importDatabaseJSON(event)" class="hidden">
               </label>
             </div>
@@ -1102,7 +1142,7 @@
           <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-lg">
             <i class="fa-solid fa-laptop-code"></i>
           </div>
-          <h3 class="text-fluid-h2 font-bold">單機離線版打包 & PIN 碼設定</h3>
+          <h3 class="text-fluid-h2 font-bold">安全與隱私鎖定</h3>
           <p class="text-fluid-body text-slate-500 dark:text-slate-400">
             此應用程式由JS撰寫，資料與功能可下載成單一網頁 <code>.html</code> 檔案離線開啟。
           </p>
@@ -1110,17 +1150,17 @@
             <button onclick="downloadStandaloneHTML()"
               class="w-full py-2.5 px-4 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-fluid-sub font-bold flex items-center justify-center gap-2 num-nowrap">
               <i class="fa-solid fa-box-archive"></i>
-              <span>下載單機版 HTML 檔案及數據備份</span>
+              <span>下載單檔離線版 HTML</span>
             </button>
             <div class="grid grid-cols-2 gap-2">
               <button onclick="openPinSetupModal()"
                 class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
                 <i class="fa-solid fa-key text-amber-500"></i>
-                <span id="pinSetupBtnText">設定 PIN 碼</span>
+                <span id="pinSetupBtnText">變更 / 設定 PIN 碼</span>
               </button>
               <button onclick="resetToDemoData()"
                 class="py-2.5 px-3 rounded-xl bg-rose-500/10 text-rose-500 text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap">
-                <i class="fa-solid fa-trash-can"></i> 清空重置歸零
+                <i class="fa-solid fa-trash-can"></i> 完全清空重設 (清空所有資料)
               </button>
             </div>
           </div>
@@ -1148,13 +1188,35 @@
     </div>
   </div>
 
+  <!-- 帳單登記抽屜：電腦為右側滑出，手機為底部面板 -->
+  <div id="cardInputDrawer" class="fixed inset-0 z-50 hidden">
+    <div id="drawerOverlay" onclick="closeCardInputDrawer()"
+      class="absolute inset-0 bg-slate-950/70 backdrop-blur-sm opacity-0 transition-opacity duration-200"></div>
+    <div id="drawerPanel"
+      class="absolute right-0 bottom-0 w-full sm:w-[460px] h-[85vh] sm:h-full bg-white dark:bg-slate-900 border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-slate-800 p-5 flex flex-col shadow-2xl transition-transform duration-300 translate-y-full sm:translate-y-0 sm:translate-x-full rounded-t-3xl sm:rounded-none">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+        <h3 id="drawerMonthTitle" class="text-fluid-h2 font-bold">登記本期帳單</h3>
+        <button onclick="closeCardInputDrawer()" class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="drawerFormList" class="flex-1 overflow-y-auto py-4 space-y-3"></div>
+      <div class="pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center gap-3">
+        <button onclick="closeCardInputDrawer()"
+          class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-fluid-sub transition">取消</button>
+        <button onclick="saveDrawerInputs()"
+          class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-fluid-sub shadow-sm transition">儲存</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 頂部通知 Toast -->
   <div id="toastContainer" class="fixed top-16 right-4 z-50 space-y-2 pointer-events-none"></div>
 
   <!-- ==================== 應用程式邏輯 ==================== -->
   <script>
     // 應用程式版本：與 STORAGE_KEY 分開管理，升版時不需要更動儲存 key
-    const APP_VERSION = '0.0.2';
+    const APP_VERSION = '0.1.0';
     const STORAGE_KEY = 'PocketMoney_tw_finance_v3';
 
 
@@ -1195,6 +1257,66 @@
     let state = loadState();
     let currentTab = 'dashboard';
     let enteredPin = '';
+
+    // 檢視日期：僅限本次瀏覽、不寫入儲存資料；未指定時一律取今天
+    const AppClock = {
+      override: null,
+      now() { return this.override ? new Date(this.override) : new Date(); }
+    };
+
+    // 帳戶或信用卡達此數量時，改用例外優先與收納版面；未達則維持平鋪
+    const ADAPTIVE_MIN_COUNT = 4;
+    let banksViewMode = 'table'; // 'grid' | 'table'
+    let cardsGroupMode = 'byCard'; // 'byCard' | 'byBank'
+    let isZeroCardsExpanded = false;
+    let isSurplusBanksExpanded = false;
+
+    // 分期期數：填有起算年月者依檢視月份自動推算，其餘沿用手動已繳期數
+    function instPaid(inst) {
+      const total = Number(inst.totalPeriods) || 0;
+      if (inst.startYear && inst.startMonth) {
+        const v = AppClock.now();
+        const elapsed = (v.getFullYear() - Number(inst.startYear)) * 12 + (v.getMonth() + 1 - Number(inst.startMonth));
+        return Math.min(total, Math.max(0, elapsed));
+      }
+      return Math.min(total, Math.max(0, Number(inst.paidPeriods) || 0));
+    }
+
+    function shiftViewMonth(delta) {
+      const d = AppClock.now();
+      const target = new Date(d.getFullYear(), d.getMonth() + delta, 1, 10, 0, 0);
+      const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+      target.setDate(Math.min(d.getDate(), lastDay));
+      AppClock.override = target;
+      renderAll();
+    }
+
+    function onViewDatePick(iso) {
+      if (!iso) return;
+      AppClock.override = new Date(iso + 'T10:00:00');
+      renderAll();
+    }
+
+    function resetViewToToday() {
+      AppClock.override = null;
+      renderAll();
+    }
+
+    function updateViewDateBar() {
+      const v = AppClock.now();
+      const mm = String(v.getMonth() + 1).padStart(2, '0');
+      const dd = String(v.getDate()).padStart(2, '0');
+      const label = document.getElementById('viewDateLabel');
+      if (label) label.innerText = AppClock.override ? `指定日期 ${v.getFullYear()}/${mm}/${dd}` : `今天 ${mm}/${dd}`;
+      const picker = document.getElementById('viewDatePicker');
+      if (picker) picker.value = `${v.getFullYear()}-${mm}-${dd}`;
+      const btnToday = document.getElementById('btnViewToday');
+      if (btnToday) {
+        btnToday.className = AppClock.override
+          ? 'h-8 w-8 rounded-xl bg-amber-500/15 text-amber-500 active:scale-95 flex items-center justify-center text-xs transition'
+          : 'h-8 w-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 text-slate-500 dark:text-slate-400 flex items-center justify-center text-xs transition';
+      }
+    }
 
     function readStoredRaw() {
       return localStorage.getItem(STORAGE_KEY);
@@ -1287,13 +1409,13 @@
 
       const titles = {
         dashboard: 'PocketMoney',
-        banks: '銀行餘額與專戶存款',
-        stocks: '股票與資產部位',
-        cards: '信用卡費與大額消費',
-        installments: '分期付款&現金流監控',
-        bills: '定期性固定費用管理',
-        rules: '收支規則設定中心',
-        settings: 'PIN碼設置與數據匯出'
+        banks: '銀行餘額',
+        stocks: '台股部位',
+        cards: '信用卡費',
+        installments: '分期付款',
+        bills: '固定費用',
+        rules: '收支規則',
+        settings: '設定'
       };
       if (titles[tabId]) {
         document.getElementById('pageHeaderTitle').innerText = titles[tabId];
@@ -1382,7 +1504,7 @@
       let installmentRemainingTotal = 0;
       let activeInstallmentsCount = 0;
       state.installments.forEach(inst => {
-        const leftPeriods = Math.max(0, (Number(inst.totalPeriods) || 0) - (Number(inst.paidPeriods) || 0));
+        const leftPeriods = Math.max(0, (Number(inst.totalPeriods) || 0) - instPaid(inst));
         if (leftPeriods > 0) {
           activeInstallmentsCount++;
           installmentMonthlyTotal += Number(inst.monthlyAmount) || 0;
@@ -1393,7 +1515,7 @@
       // 各銀行自動扣款水位檢核：
       // 1. 綁定流入 (Inflows)：讀取全域 state.inflows 歸戶到該銀行的收入
       // 2. 綁定流出：只有 bank_direct 直扣與未繳卡費
-      const currentMonthNum = (new Date()).getMonth() + 1;
+      const currentMonthNum = AppClock.now().getMonth() + 1;
       const bankCheckups = state.banks.map(bank => {
         const boundInflows = (state.inflows || []).filter(inf => {
           const isActive = !inf.activeMonths || inf.activeMonths.includes(currentMonthNum);
@@ -1444,6 +1566,7 @@
     }
 
     function renderAll() {
+      updateViewDateBar();
       const pIcon = document.getElementById('privacyIcon');
       const pText = document.getElementById('privacyText');
       if (state.settings.privacyMode) {
@@ -1454,7 +1577,7 @@
         pText.innerText = '顯示金額';
       }
 
-      const today = new Date();
+      const today = AppClock.now();
       const day = today.getDate();
       const currentMonth = today.getMonth() + 1;
       const countdownEl = document.getElementById('countdown30th');
@@ -1576,67 +1699,9 @@
 
       const bankGrid = document.getElementById('bankCheckupGrid');
       if (m.bankCheckups.length === 0) {
-        bankGrid.innerHTML = `<div class="col-span-full text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未新增銀行帳戶，請至「<button onclick="switchTab('banks')" class="text-indigo-500 font-bold hover:underline">銀行餘額與信用卡費</button>」新增帳戶，或至「<button onclick="switchTab('settings')" class="text-indigo-500 font-bold hover:underline">設定</button>」匯入 v3 備份檔</div>`;
+        bankGrid.innerHTML = `<div class="col-span-full text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未新增銀行帳戶，請至「<button onclick="switchTab('banks')" class="text-indigo-500 font-bold hover:underline">銀行餘額</button>」新增帳戶，或至「<button onclick="switchTab('settings')" class="text-indigo-500 font-bold hover:underline">設定</button>」匯入 JSON 資料庫</div>`;
       } else {
-      bankGrid.innerHTML = m.bankCheckups.map(b => {
-        const borderClass = b.isShortfall
-          ? 'border-2 border-rose-500/80 bg-rose-500/5 dark:bg-rose-950/20'
-          : 'border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40';
-        const statusBadge = b.isShortfall
-          ? `<span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-rose-500 text-white num-nowrap shrink-0"><i class="fa-solid fa-triangle-exclamation mr-1"></i>差 ${fmtMoney(Math.abs(b.afterBalance))}</span>`
-          : `<span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 num-nowrap shrink-0"><i class="fa-solid fa-circle-check mr-1"></i>餘額充足</span>`;
-
-        const itemsTags = [
-          ...b.boundUnpaidCards.map(c => `<span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 font-semibold num-nowrap"><i class="fa-regular fa-credit-card"></i>${c.name}: ${fmtMoney(c.statementTotal)}</span>`),
-          ...b.boundUnpaidBills.map(bill => `<span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 font-semibold num-nowrap"><i class="fa-solid fa-bolt"></i>${bill.name}: ${fmtMoney(bill.amount)}</span>`)
-        ];
-
-        return `
-          <div class="rounded-2xl p-4 ${borderClass} flex flex-col justify-between space-y-3">
-            <div>
-              <!-- 頂部：銀行標題與單行狀態標籤 -->
-              <div class="flex items-start justify-between gap-2 mb-2.5">
-                <div class="min-w-0">
-                  <h4 class="font-bold text-fluid-h3 truncate">${b.name}</h4>
-                  <p class="text-fluid-sub text-slate-400 truncate">${b.note || '自動扣繳帳戶'}</p>
-                </div>
-                ${statusBadge}
-              </div>
-
-              <!-- 改用左標籤、右單行金額的清單式結構，解決 3 欄在窄手機斷行的問題 -->
-              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-slate-400">目前帳戶餘額</span>
-                  <span class="font-bold font-mono num-nowrap text-fluid-body">${fmtMoney(b.balance)}</span>
-                </div>
-                <div class="flex items-center justify-between gap-2">
-                  <span class="text-slate-400">本期待扣總額</span>
-                  <span class="font-bold font-mono text-rose-500 num-nowrap text-fluid-body">${fmtMoney(b.requiredTotal)}</span>
-                </div>
-                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                  <span class="font-semibold text-slate-500 dark:text-slate-300">${b.isShortfall ? '尚缺需補金額' : '扣後預計結餘'}</span>
-                  <span class="font-extrabold font-mono num-nowrap text-fluid-body ${b.isShortfall ? 'text-rose-500' : 'text-emerald-500'}">${fmtMoney(b.afterBalance, true)}</span>
-                </div>
-              </div>
-
-              <div class="mt-2.5 flex flex-wrap gap-1.5">
-                ${itemsTags.length > 0 ? itemsTags.join('') : '<span class="text-fluid-sub text-slate-400">本月已無待扣帳單</span>'}
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-fluid-sub">
-              <button onclick="openBankModal('${b.id}')" class="text-indigo-500 font-bold num-nowrap">
-                <i class="fa-solid fa-pen-to-square mr-1"></i>修改餘額
-              </button>
-              ${b.requiredTotal > 0 ? `
-                <button onclick="settleSingleBankBills('${b.id}')" class="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white font-bold num-nowrap transition">
-                  執行扣款入帳
-                </button>
-              ` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
+      bankGrid.innerHTML = renderBankCheckupSection(m.bankCheckups);
       }
 
       const allBigExpenses = [];
@@ -1647,7 +1712,7 @@
       });
       const bigListEl = document.getElementById('dashboardBigExpensesList');
       if (allBigExpenses.length === 0) {
-        bigListEl.innerHTML = `<div class="text-center py-5 text-fluid-sub text-slate-400">本期尚無超過 $5,000 元的大額刷卡紀錄</div>`;
+        bigListEl.innerHTML = `<div class="text-center py-5 text-fluid-sub text-slate-400">尚無大額消費項目</div>`;
       } else {
         bigListEl.innerHTML = allBigExpenses.map(item => `
           <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-800">
@@ -1679,8 +1744,8 @@
           ${state.installments.slice(0, 3).map(inst => {
         const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
         const cardName = card ? card.name : (inst.cardName || '未指定卡片');
-        const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
-        const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
+        const left = Math.max(0, inst.totalPeriods - instPaid(inst));
+        const pct = Math.min(100, Math.round((instPaid(inst) / inst.totalPeriods) * 100));
         return `
               <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-fluid-sub">
                 <div class="flex items-center justify-between gap-2 font-bold mb-1">
@@ -1694,6 +1759,186 @@
             `;
       }).join('')}
         </div>
+      `;
+    }
+
+    function renderBankCheckupCard(b) {
+        const borderClass = b.isShortfall
+          ? 'border-2 border-rose-500/80 bg-rose-500/5 dark:bg-rose-950/20'
+          : 'border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40';
+        const statusBadge = b.isShortfall
+          ? `<span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-rose-500 text-white num-nowrap shrink-0"><i class="fa-solid fa-triangle-exclamation mr-1"></i>差 ${fmtMoney(Math.abs(b.afterBalance))}</span>`
+          : `<span class="text-fluid-sub font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 num-nowrap shrink-0"><i class="fa-solid fa-circle-check mr-1"></i>餘額充足</span>`;
+
+        const itemsTags = [
+          ...b.boundUnpaidCards.map(c => `<span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300 font-semibold num-nowrap"><i class="fa-regular fa-credit-card"></i>${c.name}: ${fmtMoney(c.statementTotal)}</span>`),
+          ...b.boundUnpaidBills.map(bill => `<span class="inline-flex items-center gap-1 text-fluid-sub px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 font-semibold num-nowrap"><i class="fa-solid fa-bolt"></i>${bill.name}: ${fmtMoney(bill.amount)}</span>`)
+        ];
+
+        return `
+          <div class="rounded-2xl p-4 ${borderClass} flex flex-col justify-between space-y-3">
+            <div>
+              <!-- 頂部：銀行標題與單行狀態標籤 -->
+              <div class="flex items-start justify-between gap-2 mb-2.5">
+                <div class="min-w-0">
+                  <h4 class="font-bold text-fluid-h3 truncate">${b.name}</h4>
+                  <p class="text-fluid-sub text-slate-400 truncate">${b.note || '自動扣繳帳戶'}</p>
+                </div>
+                ${statusBadge}
+              </div>
+
+              <!-- 改用左標籤、右單行金額的清單式結構，解決 3 欄在窄手機斷行的問題 -->
+              <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">當前餘額</span>
+                  <span class="font-bold font-mono num-nowrap text-fluid-body">${fmtMoney(b.balance)}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-slate-400">本期待扣總額</span>
+                  <span class="font-bold font-mono text-rose-500 num-nowrap text-fluid-body">${fmtMoney(b.requiredTotal)}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <span class="font-semibold text-slate-500 dark:text-slate-300">${b.isShortfall ? '尚缺需補金額' : '扣後預計結餘'}</span>
+                  <span class="font-extrabold font-mono num-nowrap text-fluid-body ${b.isShortfall ? 'text-rose-500' : 'text-emerald-500'}">${fmtMoney(b.afterBalance, true)}</span>
+                </div>
+              </div>
+
+              <div class="mt-2.5 flex flex-wrap gap-1.5">
+                ${itemsTags.length > 0 ? itemsTags.join('') : '<span class="text-fluid-sub text-slate-400">本月已無待扣帳單</span>'}
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-fluid-sub">
+              <button onclick="openBankModal('${b.id}')" class="text-indigo-500 font-bold num-nowrap">
+                <i class="fa-solid fa-pen-to-square mr-1"></i>修改餘額
+              </button>
+              ${b.requiredTotal > 0 ? `
+                <button onclick="settleSingleBankBills('${b.id}')" class="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white font-bold num-nowrap transition">
+                  執行扣款入帳
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+
+    }
+
+    // 帳戶達 4 個以上：不足帳戶置頂並附調撥建議，其餘充足帳戶收斂為摘要列
+    function renderBankCheckupSection(checkups) {
+      if (checkups.length < ADAPTIVE_MIN_COUNT) return checkups.map(renderBankCheckupCard).join('');
+
+      const shortfall = checkups.filter(b => b.isShortfall);
+      const surplus = checkups.filter(b => !b.isShortfall);
+      const richest = [...surplus].sort((a, b) => b.afterBalance - a.afterBalance)[0];
+      let html = '';
+
+      shortfall.forEach(b => {
+        const suggest = Math.ceil(Math.abs(b.afterBalance) / 1000) * 1000;
+        const canTransfer = richest && richest.afterBalance >= suggest;
+        html += `
+          <div class="space-y-2">
+            ${renderBankCheckupCard(b)}
+            ${canTransfer ? `
+              <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-fluid-sub">
+                <span><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i>建議自 <strong>${richest.name}</strong> 調撥 <strong>${fmtMoney(suggest)}</strong> 至 ${b.name}</span>
+                <button onclick="transferBetweenBanks('${richest.id}', '${b.id}', ${suggest})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold num-nowrap shrink-0">調撥 ${fmtMoney(suggest)}</button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+
+      if (surplus.length > 0) {
+        html += `
+          <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/5 overflow-hidden">
+            <button onclick="toggleSurplusBanks()" class="w-full px-4 py-3 flex items-center justify-between gap-2 text-left hover:bg-emerald-500/10 transition">
+              <span class="flex items-center gap-2 text-fluid-body font-bold text-emerald-600 dark:text-emerald-400">
+                <i class="fa-solid fa-circle-check"></i>${shortfall.length > 0 ? '其餘' : '全部'} ${surplus.length} 個帳戶餘額充足
+              </span>
+              <span class="flex items-center gap-1.5 text-fluid-sub font-bold text-emerald-600 dark:text-emerald-400 num-nowrap">
+                ${isSurplusBanksExpanded ? '收合' : '展開'}
+                <i class="fa-solid fa-chevron-${isSurplusBanksExpanded ? 'up' : 'down'} text-[10px]"></i>
+              </span>
+            </button>
+            ${isSurplusBanksExpanded ? `
+              <div class="p-3 pt-0 border-t border-emerald-500/20">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">${surplus.map(renderBankCheckupCard).join('')}</div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+      return `<div class="col-span-full space-y-3">${html}</div>`;
+    }
+
+    function toggleSurplusBanks() {
+      isSurplusBanksExpanded = !isSurplusBanksExpanded;
+      renderAll();
+    }
+
+    function transferBetweenBanks(fromId, toId, amount) {
+      const from = state.banks.find(b => b.id === fromId);
+      const to = state.banks.find(b => b.id === toId);
+      if (!from || !to || (Number(from.balance) || 0) < amount) return showToast('調出帳戶餘額不足', 'warn');
+      if (!confirm(`自「${from.name}」調撥 NT$ ${amount.toLocaleString('zh-TW')} 至「${to.name}」？`)) return;
+      from.balance = (Number(from.balance) || 0) - amount;
+      to.balance = (Number(to.balance) || 0) + amount;
+      saveState();
+      renderAll();
+      showToast(`已調撥至「${to.name}」`);
+    }
+
+    // ==================== 銀行頁籤：卡片網格 / 緊湊表格 ====================
+    function setBanksViewMode(mode) {
+      banksViewMode = mode;
+      renderAll();
+    }
+
+    function syncBankViewToggle(count) {
+      const wrap = document.getElementById('bankViewToggleWrap');
+      if (!wrap) return;
+      wrap.style.display = count >= ADAPTIVE_MIN_COUNT ? 'flex' : 'none';
+      const on = 'px-2.5 py-1 rounded-lg font-bold transition num-nowrap bg-indigo-600 text-white shadow-sm';
+      const off = 'px-2.5 py-1 rounded-lg font-bold transition num-nowrap text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white';
+      document.getElementById('btnBankModeGrid').className = banksViewMode === 'grid' ? on : off;
+      document.getElementById('btnBankModeTable').className = banksViewMode === 'table' ? on : off;
+    }
+
+    function renderBanksTable(checkups) {
+      return `
+        <table class="w-full text-left text-fluid-sub border-collapse">
+          <thead>
+            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold">
+              <th class="py-2.5 px-3">帳戶</th>
+              <th class="py-2.5 px-3">備註</th>
+              <th class="py-2.5 px-3 text-right">目前餘額</th>
+              <th class="py-2.5 px-3 text-right">本期待扣</th>
+              <th class="py-2.5 px-3 text-right">扣後餘額</th>
+              <th class="py-2.5 px-3 text-center">狀態</th>
+              <th class="py-2.5 px-3"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            ${checkups.map(b => `
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+                <td class="py-2.5 px-3 font-bold num-nowrap">${b.name}</td>
+                <td class="py-2.5 px-3 text-slate-400">
+                  ${(b.isSalaryAccount || (b.boundInflows && b.boundInflows.length > 0)) ? '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mr-1.5 num-nowrap">薪資戶</span>' : ''}${b.note || ''}
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold num-nowrap">${fmtMoney(b.balance)}</td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold num-nowrap ${b.requiredTotal > 0 ? 'text-rose-500' : 'text-slate-400'}">${b.requiredTotal > 0 ? '-' : ''}${fmtMoney(b.requiredTotal)}</td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold num-nowrap ${b.isShortfall ? 'text-rose-500' : 'text-emerald-500'}">${fmtMoney(b.afterBalance)}</td>
+                <td class="py-2.5 px-3 text-center">
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-bold num-nowrap ${b.isShortfall ? 'bg-rose-500/15 text-rose-500' : 'bg-emerald-500/15 text-emerald-500'}">${b.isShortfall ? '需調撥' : '餘額充足'}</span>
+                </td>
+                <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                  <button onclick="openBankModal('${b.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500"><i class="fa-solid fa-pen"></i></button>
+                  <button onclick="deleteBank('${b.id}')" class="p-1.5 text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
       `;
     }
 
@@ -1754,8 +1999,14 @@
       renderCardsTab(m);
 
       const bankListEl = document.getElementById('bankAccountsList');
-      bankListEl.innerHTML = m.bankCheckups.length === 0
-        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何銀行帳戶，請點擊右上角「+ 新增銀行帳戶」開始建立</div>`
+      const bankTableMode = m.bankCheckups.length >= ADAPTIVE_MIN_COUNT && banksViewMode === 'table';
+      syncBankViewToggle(m.bankCheckups.length);
+      bankListEl.className = bankTableMode
+        ? 'overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 no-scrollbar'
+        : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 fluid-gap';
+      if (bankTableMode) bankListEl.innerHTML = renderBanksTable(m.bankCheckups);
+      else bankListEl.innerHTML = m.bankCheckups.length === 0
+        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚無銀行帳戶</div>`
         : m.bankCheckups.map((b, idx) => `
         <div id="${idx === 0 ? 'firstBankCard' : 'bankCard_' + b.id}" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-3">
           <div class="flex items-start justify-between gap-2">
@@ -1811,10 +2062,10 @@
         </div>
       `).join('');
 
-      const cardListEl = document.getElementById('creditCardsList');
-      cardListEl.innerHTML = state.cards.length === 0
-        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何信用卡，請點擊右上角「+ 新增信用卡」開始建立</div>`
-        : state.cards.map((c, idx) => {
+      renderCardsList(m);
+    }
+
+    function renderCreditCardItem(c, idx) {
         const bank = state.banks.find(b => b.id === c.bankId);
         const bankName = bank ? bank.name : '未綁定銀行';
         const bigSum = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
@@ -1823,7 +2074,7 @@
         // 取得綁定此信用卡的進行中分期
         const boundInsts = state.installments.filter(inst => {
           const matchCard = inst.cardId ? (inst.cardId === c.id) : (inst.cardName === c.name);
-          const left = Math.max(0, (Number(inst.totalPeriods) || 0) - (Number(inst.paidPeriods) || 0));
+          const left = Math.max(0, (Number(inst.totalPeriods) || 0) - instPaid(inst));
           return matchCard && left > 0;
         });
         const boundInstMonthly = boundInsts.reduce((sum, inst) => sum + (Number(inst.monthlyAmount) || 0), 0);
@@ -1861,12 +2112,12 @@
               <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 mb-3">
                 <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
                   <span class="text-fluid-sub font-semibold text-slate-500">本期帳單總額 (NT$)</span>
+                  <button onclick="openCardInputDrawer('${c.id}')" class="text-fluid-sub font-bold text-indigo-500 hover:underline num-nowrap">登記帳單</button>
                   <button onclick="toggleCardPaidStatus('${c.id}')" class="text-fluid-sub font-bold num-nowrap ${c.paid ? 'text-slate-400 hover:text-rose-500' : 'text-emerald-500 hover:underline'}">
                     ${c.paid ? '設為未繳' : '✓ 標記已扣款'}
                   </button>
                 </div>
-                <input type="number" value="${c.statementTotal}" onchange="updateCardTotalInline('${c.id}', this.value)"
-                  class="w-full px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-extrabold text-fluid-h2 text-rose-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <div class="w-full px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-mono font-extrabold text-fluid-h2 text-rose-500 num-nowrap">${fmtMoney(c.statementTotal)}</div>
                 
                 <div class="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 space-y-1 text-fluid-sub">
                   <div class="text-[11px] font-bold text-slate-400">帳單結構三段拆解：</div>
@@ -1881,15 +2132,15 @@
               <div>
                 <div class="flex items-center justify-between gap-2 mb-2">
                   <span class="text-fluid-sub font-bold text-slate-600 dark:text-slate-300">
-                    <i class="fa-solid fa-fire text-amber-500 mr-1"></i>單筆 > $5,000 大額項目
+                    <i class="fa-solid fa-fire text-amber-500 mr-1"></i>大額消費備註
                   </span>
                   <button onclick="openBigExpenseModal('${c.id}')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">
-                    + 記一筆大額
+                    + 新增大額項目
                   </button>
                 </div>
                 <div class="space-y-1.5">
                   ${(c.bigExpenses || []).length === 0
-            ? `<div class="text-fluid-sub text-slate-400 py-2 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">本期無超過 $5,000 大額刷卡</div>`
+            ? `<div class="text-fluid-sub text-slate-400 py-2 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">尚無大額消費項目</div>`
             : (c.bigExpenses || []).map(be => `
                         <div class="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-fluid-sub">
                           <span class="font-medium truncate">${be.title}</span>
@@ -1905,7 +2156,180 @@
             </div>
           </div>
         `;
+    }
+
+    // ==================== 信用卡頁籤：本期無消費收納 / 依扣款銀行歸戶 ====================
+    const CARDS_GRID_CLASS = 'grid grid-cols-1 lg:grid-cols-2 fluid-gap';
+
+    function setCardsGroupMode(mode) {
+      cardsGroupMode = mode;
+      renderAll();
+    }
+
+    function toggleZeroCards() {
+      isZeroCardsExpanded = !isZeroCardsExpanded;
+      renderAll();
+    }
+
+    function syncCardsGroupToggle(isMulti) {
+      const wrap = document.getElementById('cardsGroupToggleWrap');
+      if (!wrap) return;
+      wrap.style.display = isMulti ? 'flex' : 'none';
+      const on = 'px-2.5 py-1 rounded-lg font-bold transition num-nowrap bg-indigo-600 text-white shadow-sm';
+      const off = 'px-2.5 py-1 rounded-lg font-bold transition num-nowrap text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white';
+      document.getElementById('btnCardModeByCard').className = cardsGroupMode === 'byCard' ? on : off;
+      document.getElementById('btnCardModeByBank').className = cardsGroupMode === 'byBank' ? on : off;
+    }
+
+    function renderCardsList(m) {
+      const el = document.getElementById('creditCardsList');
+      const isMulti = state.cards.length >= ADAPTIVE_MIN_COUNT;
+      syncCardsGroupToggle(isMulti);
+
+      if (state.cards.length === 0) {
+        el.className = CARDS_GRID_CLASS;
+        el.innerHTML = `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚無信用卡</div>`;
+        return;
+      }
+      if (!isMulti) {
+        el.className = CARDS_GRID_CLASS;
+        el.innerHTML = state.cards.map((c, idx) => renderCreditCardItem(c, idx)).join('');
+        return;
+      }
+      if (cardsGroupMode === 'byBank') {
+        el.className = 'space-y-3';
+        el.innerHTML = renderCardsByBank(m);
+        return;
+      }
+
+      const activeCards = state.cards.filter(c => (Number(c.statementTotal) || 0) > 0);
+      const zeroCards = state.cards.filter(c => !((Number(c.statementTotal) || 0) > 0));
+      el.className = 'space-y-4';
+      let html = '';
+      if (activeCards.length > 0) {
+        html += `<div class="${CARDS_GRID_CLASS}">${activeCards.map(c => renderCreditCardItem(c, state.cards.indexOf(c))).join('')}</div>`;
+      }
+      if (zeroCards.length > 0) {
+        html += `
+          <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 overflow-hidden">
+            <button onclick="toggleZeroCards()" class="w-full px-4 py-3 flex items-center justify-between gap-2 text-left hover:bg-slate-100 dark:hover:bg-slate-800/60 transition">
+              <span class="flex items-center gap-2 text-fluid-body font-bold text-slate-500 dark:text-slate-300">
+                <i class="fa-solid fa-moon text-slate-400"></i>本期無消費信用卡 (${zeroCards.length} 張)
+              </span>
+              <span class="flex items-center gap-1.5 text-fluid-sub font-bold text-slate-500 num-nowrap">
+                ${isZeroCardsExpanded ? '收合' : '展開'}
+                <i class="fa-solid fa-chevron-${isZeroCardsExpanded ? 'up' : 'down'} text-[10px]"></i>
+              </span>
+            </button>
+            ${isZeroCardsExpanded ? `
+              <div class="p-3 pt-0 border-t border-slate-200 dark:border-slate-800">
+                <div class="${CARDS_GRID_CLASS} mt-3">${zeroCards.map(c => renderCreditCardItem(c, state.cards.indexOf(c))).join('')}</div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+      el.innerHTML = html;
+    }
+
+    function renderCardsByBank(m) {
+      const groups = m.bankCheckups
+        .map(b => ({ bank: b, cards: state.cards.filter(c => c.bankId === b.id) }))
+        .filter(g => g.cards.length > 0);
+      const orphanCards = state.cards.filter(c => !state.banks.some(b => b.id === c.bankId));
+
+      const cardRow = c => {
+        const amt = Number(c.statementTotal) || 0;
+        return `
+          <div class="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between gap-2 text-fluid-sub">
+            <div class="min-w-0">
+              <span class="font-bold block truncate">${c.name}</span>
+              <span class="text-slate-400 num-nowrap">每月 ${c.dueDay || 20} 號扣款</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="font-mono font-bold num-nowrap ${c.paid ? 'text-emerald-500' : (amt > 0 ? 'text-rose-500' : 'text-slate-400')}">${c.paid ? '已繳清' : (amt > 0 ? fmtMoney(amt) : '0 元免繳')}</span>
+              <button onclick="openCardInputDrawer('${c.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500"><i class="fa-solid fa-pen"></i></button>
+            </div>
+          </div>
+        `;
+      };
+
+      const groupHtml = groups.map(({ bank: b, cards }) => `
+        <div class="p-4 rounded-xl border ${b.isShortfall ? 'border-rose-500/80 bg-rose-500/5' : 'border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40'} space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-slate-200/70 dark:border-slate-700/60">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h4 class="font-bold text-fluid-h3 truncate">${b.name}</h4>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-bold num-nowrap ${b.isShortfall ? 'bg-rose-500/15 text-rose-500' : 'bg-emerald-500/15 text-emerald-500'}">${b.isShortfall ? '餘額不足' : '餘額充足'}</span>
+              </div>
+              <p class="text-fluid-sub text-slate-400">目前餘額 ${fmtMoney(b.balance)}・本期待扣 ${fmtMoney(b.requiredTotal)}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-fluid-sub text-slate-400 block">${b.isShortfall ? '尚缺需補' : '扣後餘額'}</span>
+              <span class="font-mono font-extrabold num-nowrap ${b.isShortfall ? 'text-rose-500' : 'text-emerald-500'}">${fmtMoney(Math.abs(b.afterBalance))}</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">${cards.map(cardRow).join('')}</div>
+        </div>
+      `).join('');
+
+      const orphanHtml = orphanCards.length === 0 ? '' : `
+        <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 space-y-3">
+          <h4 class="font-bold text-fluid-h3">未綁定銀行</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">${orphanCards.map(cardRow).join('')}</div>
+        </div>
+      `;
+      return groupHtml + orphanHtml;
+    }
+
+    // ==================== 帳單登記抽屜 ====================
+    function openCardInputDrawer(focusCardId = null) {
+      if (state.cards.length === 0) return showToast('請先新增信用卡', 'warn');
+      const v = AppClock.now();
+      document.getElementById('drawerMonthTitle').innerText = `登記 ${v.getFullYear()} 年 ${v.getMonth() + 1} 月帳單`;
+      document.getElementById('drawerFormList').innerHTML = state.cards.map(c => {
+        const bank = state.banks.find(b => b.id === c.bankId);
+        return `
+          <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-fluid-body truncate">${c.name}</span>
+              <span class="text-fluid-sub text-slate-400 font-mono num-nowrap">${c.closingDay || 10}號結帳・${c.dueDay || 20}號扣款</span>
+            </div>
+            <label class="text-fluid-sub text-slate-400 font-semibold block">本期帳單總額 (NT$)・扣款戶 ${bank ? bank.name : '未綁定'}</label>
+            <input id="drawerCardAmt_${c.id}" type="number" inputmode="decimal" placeholder="例如：18500" value="${Number(c.statementTotal) > 0 ? c.statementTotal : ''}"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold text-fluid-h3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        `;
       }).join('');
+
+      document.getElementById('cardInputDrawer').classList.remove('hidden');
+      setTimeout(() => {
+        document.getElementById('drawerOverlay').classList.remove('opacity-0');
+        document.getElementById('drawerPanel').classList.remove('translate-y-full', 'sm:translate-x-full');
+        if (focusCardId) {
+          const input = document.getElementById(`drawerCardAmt_${focusCardId}`);
+          if (input) { input.scrollIntoView({ block: 'center' }); input.focus(); }
+        }
+      }, 10);
+    }
+
+    function closeCardInputDrawer() {
+      document.getElementById('drawerOverlay').classList.add('opacity-0');
+      document.getElementById('drawerPanel').classList.add('translate-y-full', 'sm:translate-x-full');
+      setTimeout(() => document.getElementById('cardInputDrawer').classList.add('hidden'), 250);
+    }
+
+    function saveDrawerInputs() {
+      state.cards.forEach(c => {
+        const input = document.getElementById(`drawerCardAmt_${c.id}`);
+        if (!input || input.value.trim() === '') return;
+        const n = Number(input.value);
+        if (!isNaN(n) && n >= 0) c.statementTotal = n;
+      });
+      saveState();
+      closeCardInputDrawer();
+      renderAll();
+      showToast('已儲存本期帳單');
     }
 
     function renderInstallments(m) {
@@ -1915,14 +2339,14 @@
 
       const container = document.getElementById('installmentsListContainer');
       if (state.installments.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400">目前沒有任何分期付款，現金流非常健康！</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400">尚無進行中的分期付款</div>`;
         return;
       }
 
       container.innerHTML = state.installments.map(inst => {
-        const leftPeriods = Math.max(0, inst.totalPeriods - inst.paidPeriods);
+        const leftPeriods = Math.max(0, inst.totalPeriods - instPaid(inst));
         const leftAmount = leftPeriods * inst.monthlyAmount;
-        const pct = Math.min(100, Math.round((inst.paidPeriods / inst.totalPeriods) * 100));
+        const pct = Math.min(100, Math.round((instPaid(inst) / inst.totalPeriods) * 100));
         const isDone = leftPeriods === 0;
         const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
         const cardName = card ? card.name : (inst.cardName || '未指定卡片');
@@ -1944,7 +2368,9 @@
                 ` : ''}
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button onclick="stepInstallment('${inst.id}', 1)" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold num-nowrap">+1 期</button>
+                ${(inst.startYear && inst.startMonth)
+                  ? `<span class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 text-fluid-sub font-bold num-nowrap">依月份自動推進</span>`
+                  : `<button onclick="stepInstallment('${inst.id}', 1)" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold num-nowrap">+1 期</button>`}
                 <button onclick="openInstallmentModal('${inst.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteInstallment('${inst.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
               </div>
@@ -1970,7 +2396,7 @@
 
             <div>
               <div class="flex justify-between text-fluid-sub font-bold mb-1">
-                <span class="num-nowrap">進度：已繳 ${inst.paidPeriods} / ${inst.totalPeriods} 期</span>
+                <span class="num-nowrap">進度：已繳 ${instPaid(inst)} / ${inst.totalPeriods} 期</span>
                 <span class="num-nowrap ${isDone ? 'text-emerald-500' : 'text-indigo-400'}">${isDone ? '🎉 已結清' : `還剩 ${leftPeriods} 期`}</span>
               </div>
               <div class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -1993,7 +2419,7 @@
 
       const container = document.getElementById('recurringBillsList');
       container.innerHTML = state.bills.length === 0
-        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何固定費用，請點擊右上角「+ 新增週期費用」開始建立</div>`
+        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚無固定費用</div>`
         : state.bills.map(b => {
         const bank = state.banks.find(x => x.id === b.bankId);
         const bankName = bank ? bank.name : '未指定銀行';
@@ -2101,7 +2527,7 @@
 
       const listEl = document.getElementById('stocksListContainer');
       listEl.innerHTML = state.stocks.length === 0
-        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未建立任何股票部位，請點擊「+ 新增股票部位」開始建立</div>`
+        ? `<div class="col-span-full text-center py-8 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚無股票部位</div>`
         : state.stocks.map(s => {
         const marketVal = s.shares * s.currentPrice;
         const costVal = s.shares * s.avgCost;
@@ -2256,7 +2682,7 @@
       if (totalDeducted === 0) return showToast('目前所有帳單皆已結清', 'info');
       saveState();
       renderAll();
-      showToast(`已完成本月應扣項目全數扣繳，共扣除 ${fmtMoney(totalDeducted)}！`);
+      showToast('⚡ 已完成一鍵平帳結算');
     }
 
     function resetAllCardsNewMonth() {
@@ -2264,11 +2690,12 @@
       state.bills.forEach(b => { if (b.status === 'paid') b.status = 'unpaid'; });
       saveState();
       renderAll();
-      showToast('已重置為新月份「待繳」狀態！', 'info');
+      showToast('🔄 信用卡帳單已換月重置');
     }
 
     function stepInstallment(id, delta) {
       const inst = state.installments.find(x => x.id === id);
+      if (inst && inst.startYear && inst.startMonth) return;
       if (inst) {
         inst.paidPeriods = Math.min(inst.totalPeriods, Math.max(0, (Number(inst.paidPeriods) || 0) + delta));
         saveState();
@@ -2279,11 +2706,11 @@
 
     function advanceAllInstallmentsOnePeriod() {
       state.installments.forEach(inst => {
-        if (inst.paidPeriods < inst.totalPeriods) inst.paidPeriods += 1;
+        if (!(inst.startYear && inst.startMonth) && inst.paidPeriods < inst.totalPeriods) inst.paidPeriods += 1;
       });
       saveState();
       renderAll();
-      showToast('所有進行中分期皆已推進 +1 期！');
+      showToast('⏩ 全部分期已批次前進一期');
     }
 
     function updateBillAmountInline(id, val) {
@@ -2311,10 +2738,10 @@
     }
 
     function openSecuritiesBanksModal() {
-      openAppModal('設定證券可用資金關聯帳戶', `
+      openAppModal('設定證券交割銀行', `
         <div class="space-y-3 text-fluid-body">
           <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
-            勾選欲納入股市買賣的待命現金銀行帳戶，系統將自動彙整可用餘額並試算持股比例。勾選後即自動儲存。
+            選擇專門用於股票買賣扣款的交割帳戶。
           </p>
           <div id="modalSecuritiesBanksList" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
           <div class="pt-3 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
@@ -2421,7 +2848,7 @@
       };
       const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
 
-      openAppModal(inflowId ? '編輯收入來源規則' : '新增每月薪資與收入來源', `
+      openAppModal(inflowId ? '編輯收入來源' : '新增收入來源', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">收入項目名稱</label>
@@ -2547,7 +2974,7 @@
       const container = document.getElementById(containerId);
       if (!container) return;
 
-      const today = new Date();
+      const today = AppClock.now();
       const currentMonth = today.getMonth() + 1;
       const todayDay = today.getDate();
 
@@ -2705,7 +3132,7 @@
 
         <!-- 依 1~31 號時序排開之事件膠囊序列 -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
-          ${events.length === 0 ? `<div class="col-span-full py-4 text-center text-xs text-slate-400">目前尚無收支規則，請點擊下方按鈕新增</div>` : events.map(e => {
+          ${events.length === 0 ? `<div class="col-span-full py-4 text-center text-xs text-slate-400">目前尚無收支規則</div>` : events.map(e => {
             const isPlus = e.source === 'inflow';
             const sign = isPlus ? '+' : '-';
             const badgeText = e.isReceived ? '已入帳' : (e.isSkipped ? '免繳' : (isPlus ? '待入帳' : '待扣繳'));
@@ -2746,7 +3173,7 @@
       const bankOptions = state.banks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
 
       if (!state.inflows || state.inflows.length === 0) {
-        container.innerHTML = `<div class="text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">尚無收入來源，點擊右上角「+ 新增收入來源」開始建立</div>`;
+        container.innerHTML = `<div class="text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">尚無收入來源</div>`;
         return;
       }
 
@@ -2821,7 +3248,7 @@
       if (!container) return;
 
       if (!state.cards || state.cards.length === 0) {
-        container.innerHTML = `<div class="text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">尚無信用卡，點擊右上角「+ 新增信用卡」開始建立</div>`;
+        container.innerHTML = `<div class="text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">尚無信用卡</div>`;
         return;
       }
 
@@ -2842,7 +3269,7 @@
             ${state.cards.map(c => {
               const boundInsts = state.installments.filter(inst => {
                 const matchCard = inst.cardId ? (inst.cardId === c.id) : (inst.cardName === c.name);
-                const left = Math.max(0, (Number(inst.totalPeriods) || 0) - (Number(inst.paidPeriods) || 0));
+                const left = Math.max(0, (Number(inst.totalPeriods) || 0) - instPaid(inst));
                 return matchCard && left > 0;
               });
               const boundInstMonthly = boundInsts.reduce((sum, inst) => sum + (Number(inst.monthlyAmount) || 0), 0);
@@ -2907,7 +3334,7 @@
       if (!container) return;
 
       if (!state.bills || state.bills.length === 0) {
-        container.innerHTML = `<div class="text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">尚無固定費用，點擊右上角「+ 新增固定費用」開始建立</div>`;
+        container.innerHTML = `<div class="text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">尚無固定費用</div>`;
         return;
       }
 
@@ -2983,14 +3410,14 @@
 
     function openBankModal(bankId = null) {
       const existing = state.banks.find(b => b.id === bankId) || { name: '', balance: 0, note: '', isSalaryAccount: false, salaryDay: 5, salaryAmount: 0 };
-      openAppModal(bankId ? '編輯台幣銀行帳戶' : '新增台幣銀行帳戶', `
+      openAppModal(bankId ? '編輯銀行帳戶' : '新增銀行帳戶', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">銀行名稱</label>
             <input id="mBankName" type="text" value="${existing.name}" placeholder="例如：永豐大戶、國泰世華" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <div>
-            <label class="font-bold block mb-1">目前台幣餘額 (NT$)</label>
+            <label class="font-bold block mb-1">目前活存餘額 (NT$)</label>
             <input id="mBankBal" type="number" value="${existing.balance}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
           </div>
           <div>
@@ -3068,7 +3495,7 @@
       }
 
       saveState(); closeAppModal(); renderAll();
-      showToast('已儲存銀行帳戶並同步收支規則！');
+      showToast('✅ 銀行帳戶已儲存');
     }
 
     function openSalaryInflowModal(targetBankId = null) {
@@ -3299,8 +3726,10 @@
     }
 
     function deleteBank(bankId) {
+      if (!confirm('確定要刪除此帳戶嗎？此動作無法復原！')) return;
       state.banks = state.banks.filter(b => b.id !== bankId);
       saveState(); renderAll();
+      showToast('🗑️ 銀行帳戶已刪除');
     }
 
     function openCardModal(cardId = null) {
@@ -3311,7 +3740,7 @@
         ? '<option value="">請先新增銀行帳戶</option>'
         : state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
 
-      openAppModal(cardId ? '編輯信用卡與日期規則' : '新增信用卡與日期規則', `
+      openAppModal(cardId ? '編輯信用卡' : '新增信用卡', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">信用卡名稱</label>
@@ -3319,27 +3748,27 @@
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="font-bold block mb-1">每月結帳日</label>
+              <label class="font-bold block mb-1">結帳日 (出帳日)</label>
               <select id="mCardClosingDay" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
                 ${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${(existing.closingDay || 10) === i+1 ? 'selected' : ''}>${i+1} 號結帳</option>`).join('')}
               </select>
             </div>
             <div>
-              <label class="font-bold block mb-1 text-rose-500">每月扣款日 (自動扣繳)</label>
+              <label class="font-bold block mb-1 text-rose-500">扣款日 (繳款截止日)</label>
               <select id="mCardDueDay" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
                 ${Array.from({length: 31}, (_, i) => `<option value="${i+1}" ${(existing.dueDay || 20) === i+1 ? 'selected' : ''}>${i+1} 號扣款</option>`).join('')}
               </select>
             </div>
           </div>
           <div>
-            <label class="font-bold block mb-1">自動扣款銀行帳戶</label>
+            <label class="font-bold block mb-1">綁定扣款銀行</label>
             <select id="mCardBank" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${bankOptions}</select>
           </div>
           <div>
             <label class="font-bold block mb-1">本期帳單總額 (NT$)</label>
             <input id="mCardTotal" type="number" value="${existing.statementTotal}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
           </div>
-          <button onclick="saveCardForm('${cardId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存信用卡規則</button>
+          <button onclick="saveCardForm('${cardId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存信用卡</button>
         </div>
       `);
     }
@@ -3358,30 +3787,29 @@
         state.cards.push({ id: 'card_' + Date.now(), name, closingDay, dueDay, bankId, statementTotal, paid: false, bigExpenses: [] });
       }
       saveState(); closeAppModal(); renderAll();
+      showToast('✅ 信用卡已儲存');
     }
 
     function deleteCard(cardId) {
-      const boundCount = state.installments.filter(x => x.cardId === cardId).length;
-      if (boundCount > 0) {
-        if (!confirm(`此信用卡目前有 ${boundCount} 筆進行中的分期付款綁定！\n確定要刪除這張卡嗎？（刪除後分期項目仍會保留並標記為未指定卡片）`)) return;
-        state.installments.forEach(x => {
-          if (x.cardId === cardId) {
-            x.cardId = '';
-            x.cardName = '已刪除信用卡';
-          }
-        });
-      }
+      if (!confirm('確定要刪除這張信用卡嗎？其底下的大額備註也會一併移除！')) return;
+      state.installments.forEach(x => {
+        if (x.cardId === cardId) {
+          x.cardId = '';
+          x.cardName = '已刪除信用卡';
+        }
+      });
       state.cards = state.cards.filter(c => c.id !== cardId);
       saveState(); renderAll();
+      showToast('🗑️ 信用卡已刪除');
     }
 
     function openBigExpenseModal(cardId) {
       const card = state.cards.find(c => c.id === cardId);
       if (!card) return;
-      openAppModal(`新增 >$5,000 大額刷卡 (${card.name})`, `
+      openAppModal('新增大額消費備註', `
         <div class="space-y-3 text-fluid-body">
           <div>
-            <label class="font-bold block mb-1">消費項目說明</label>
+            <label class="font-bold block mb-1">項目說明</label>
             <input id="mBigTitle" type="text" placeholder="例如：保費、機票、百貨週年慶" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <div>
@@ -3392,7 +3820,7 @@
             <input type="checkbox" id="mBigAddTotal" class="accent-indigo-600">
             <span>同時將此金額加進「本期帳單總額」</span>
           </label>
-          <button onclick="saveBigExpenseForm('${cardId}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">新增大額紀錄</button>
+          <button onclick="saveBigExpenseForm('${cardId}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">新增大額項目</button>
         </div>
       `);
     }
@@ -3407,7 +3835,7 @@
       card.bigExpenses = card.bigExpenses || [];
       card.bigExpenses.push({ id: 'be_' + Date.now(), title, amount });
       if (addTotal) card.statementTotal = (Number(card.statementTotal) || 0) + amount;
-      saveState(); closeAppModal(); renderAll();
+      saveState(); closeAppModal(); renderAll(); showToast('✅ 大額消費備註已新增');
     }
 
     function deleteBigExpense(cardId, beId) {
@@ -3415,6 +3843,7 @@
       if (!card) return;
       card.bigExpenses = (card.bigExpenses || []).filter(x => x.id !== beId);
       saveState(); renderAll();
+      showToast('🗑️ 大額備註已刪除');
     }
 
     function openInstallmentModal(instId = null) {
@@ -3430,29 +3859,29 @@
           return `<option value="${c.id}" ${c.id === activeCardId ? 'selected' : ''}>${c.name}${bankText}</option>`;
         }).join('');
 
-      openAppModal(instId ? '編輯信用卡分期' : '新增信用卡分期項目', `
+      openAppModal(instId ? '編輯分期付款' : '新增分期付款', `
         <div class="space-y-3 text-fluid-body">
           <div>
-            <label class="font-bold block mb-1">分期項目名稱</label>
+            <label class="font-bold block mb-1">項目名稱</label>
             <input id="mInstTitle" type="text" value="${existing.title}" placeholder="例如：MacBook Pro / 大型家電" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <div>
-            <label class="font-bold block mb-1">所屬信用卡 (自動連動扣款帳戶)</label>
+            <label class="font-bold block mb-1">歸屬信用卡 (自動連動扣款帳單)</label>
             <select id="mInstCard" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">${cardOptions}</select>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="font-bold block mb-1">分期總額 (NT$)</label>
+              <label class="font-bold block mb-1">總金額 (NT$)</label>
               <input id="mInstTotal" type="number" value="${existing.totalAmount}" oninput="autoCalcInstMonthly()" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
             </div>
             <div>
-              <label class="font-bold block mb-1">總期數 (月)</label>
+              <label class="font-bold block mb-1">總期數 (期)</label>
               <input id="mInstPeriods" type="number" value="${existing.totalPeriods}" oninput="autoCalcInstMonthly()" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="font-bold block mb-1 text-amber-500">每期扣款 (NT$/月)</label>
+              <label class="font-bold block mb-1 text-amber-500">每期金額 (NT$/期)</label>
               <input id="mInstMonthly" type="number" value="${existing.monthlyAmount}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
             </div>
             <div>
@@ -3460,7 +3889,11 @@
               <input id="mInstPaid" type="number" value="${existing.paidPeriods}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
             </div>
           </div>
-          <button onclick="saveInstallmentForm('${instId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存分期項目</button>
+          <div>
+            <label class="font-bold block mb-1">起算年月 (選填，填寫後期數依月份自動推進)</label>
+            <input id="mInstStart" type="month" value="${existing.startYear && existing.startMonth ? `${existing.startYear}-${String(existing.startMonth).padStart(2, '0')}` : ''}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
+          </div>
+          <button onclick="saveInstallmentForm('${instId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存分期設定</button>
         </div>
       `);
     }
@@ -3481,18 +3914,23 @@
       const monthlyAmount = Number(document.getElementById('mInstMonthly').value) || 0;
       const paidPeriods = Math.min(totalPeriods, Math.max(0, Number(document.getElementById('mInstPaid').value) || 0));
       if (!title) return showToast('請輸入分期名稱', 'warn');
+      const startVal = document.getElementById('mInstStart').value;
+      const [startYear, startMonth] = startVal ? startVal.split('-').map(Number) : [null, null];
       if (instId) {
         const item = state.installments.find(x => x.id === instId);
-        if (item) Object.assign(item, { title, cardId, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
+        if (item) Object.assign(item, { title, cardId, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods, startYear, startMonth });
       } else {
-        state.installments.push({ id: 'inst_' + Date.now(), title, cardId, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods });
+        state.installments.push({ id: 'inst_' + Date.now(), title, cardId, cardName, totalAmount, totalPeriods, monthlyAmount, paidPeriods, startYear, startMonth });
       }
       saveState(); closeAppModal(); renderAll();
+      showToast('✅ 分期付款已儲存');
     }
 
     function deleteInstallment(id) {
+      if (!confirm('確定要刪除這筆分期付款設定嗎？')) return;
       state.installments = state.installments.filter(x => x.id !== id);
       saveState(); renderAll();
+      showToast('🗑️ 分期付款已刪除');
     }
 
     function openBillModal(billId = null) {
@@ -3504,7 +3942,7 @@
       const bankOptions = state.banks.map(b => `<option value="${b.id}" ${b.id === existing.bankId ? 'selected' : ''}>${b.name}</option>`).join('');
       const cardOptions = state.cards.map(c => `<option value="${c.id}" ${c.id === existing.cardId ? 'selected' : ''}>${c.name}</option>`).join('');
 
-      openAppModal(billId ? '編輯固定費用扣繳規則' : '新增固定費用扣繳規則', `
+      openAppModal(billId ? '編輯固定支出' : '新增固定支出', `
         <div class="space-y-3 text-fluid-body">
           <div>
             <label class="font-bold block mb-1">費用名稱</label>
@@ -3512,7 +3950,7 @@
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="font-bold block mb-1">繳費週期</label>
+              <label class="font-bold block mb-1">扣費週期</label>
               <select id="mBillCycle" onchange="onModalBillCycleChange(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                 <option value="每月固定" ${existing.cycle === '每月固定' ? 'selected' : ''}>每月固定</option>
                 <option value="雙月帳單" ${existing.cycle === '雙月帳單' ? 'selected' : ''}>雙月帳單</option>
@@ -3530,7 +3968,7 @@
 
           <!-- 扣繳管道選擇 -->
           <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-2">
-            <label class="font-bold block mb-1 text-fluid-sub">扣款管道設定</label>
+            <label class="font-bold block mb-1 text-fluid-sub">扣繳方式與管道</label>
             <div class="grid grid-cols-2 gap-2">
               <label class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer bg-white dark:bg-slate-900">
                 <input type="radio" name="mBillMethodRadio" value="bank_direct" ${(existing.paymentMethod !== 'card_auto') ? 'checked' : ''} onchange="toggleModalBillMethod('bank_direct')" class="accent-indigo-600">
@@ -3557,7 +3995,7 @@
             <label class="font-bold block mb-1">當期金額 (NT$)</label>
             <input id="mBillAmt" type="number" value="${existing.amount}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold">
           </div>
-          <button onclick="saveBillForm('${billId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存固定費用規則</button>
+          <button onclick="saveBillForm('${billId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存固定費用</button>
         </div>
       `);
     }
@@ -3592,16 +4030,19 @@
         state.bills.push({ id: 'bill_' + Date.now(), name, cycle, dueDay, paymentMethod, bankId, cardId, activeMonths, amount, status: 'unpaid' });
       }
       saveState(); closeAppModal(); renderAll();
+      showToast('✅ 固定費用已儲存');
     }
 
     function deleteBill(id) {
+      if (!confirm('確定要刪除這筆固定費用嗎？')) return;
       state.bills = state.bills.filter(b => b.id !== id);
       saveState(); renderAll();
+      showToast('🗑️ 固定費用已刪除');
     }
 
     function openStockModal(stkId = null) {
       const existing = state.stocks.find(s => s.id === stkId) || { code: '', name: '', shares: 0, avgCost: 0, currentPrice: 0, note: '' };
-      openAppModal(stkId ? '編輯台股波段持倉' : '新增台股波段部位', `
+      openAppModal(stkId ? '編輯持股資訊' : '新增台股持股', `
         <div class="space-y-3 text-fluid-body">
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -3619,16 +4060,16 @@
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="font-bold block mb-1">買入均價</label>
+              <label class="font-bold block mb-1">買入平均成本 (NT$)</label>
               <input id="mStkCost" type="number" step="0.01" value="${existing.avgCost}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
             </div>
             <div>
-              <label class="font-bold block mb-1">目前市價</label>
+              <label class="font-bold block mb-1">目前市價 (NT$)</label>
               <input id="mStkPrice" type="number" step="0.01" value="${existing.currentPrice}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-indigo-500">
             </div>
           </div>
           <div>
-            <label class="font-bold block mb-1">備註</label>
+            <label class="font-bold block mb-1">備註說明</label>
             <input id="mStkNote" type="text" value="${existing.note || ''}" placeholder="例如：破月線減碼" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
           </div>
           <button onclick="saveStockForm('${stkId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存台股部位</button>
@@ -3651,15 +4092,18 @@
         state.stocks.push({ id: 'stk_' + Date.now(), code, name, shares, avgCost, currentPrice, note });
       }
       saveState(); closeAppModal(); renderAll();
+      showToast('✅ 台股持股已儲存');
     }
 
     function deleteStock(id) {
+      if (!confirm('確定要刪除此持股紀錄嗎？')) return;
       state.stocks = state.stocks.filter(s => s.id !== id);
       saveState(); renderAll();
+      showToast('🗑️ 台股持股已刪除');
     }
 
     function openPinSetupModal() {
-      openAppModal('設定 4 位數本地安全 PIN 碼', `
+      openAppModal('設定 PIN 安全鎖', `
         <div class="space-y-3 text-fluid-body">
           <p class="text-fluid-sub text-slate-400">設定後，開啟網頁或點擊鎖頭時需輸入 PIN 碼（留空儲存即可關閉）。</p>
           <input id="mPinInput" type="password" maxlength="4" value="${state.settings.pinCode || ''}" placeholder="4位數字 (如 8888)" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-center text-lg tracking-widest">
@@ -3673,7 +4117,7 @@
       if (val !== '' && !/^\d{4}$/.test(val)) return showToast('請輸入 4 位數字，或留空關閉', 'warn');
       state.settings.pinCode = val;
       saveState(); closeAppModal(); renderAll();
-      showToast(val ? '已啟用 PIN 碼！' : '已關閉 PIN 碼鎖定');
+      showToast(val ? '🔒 PIN 安全鎖已啟用' : '🔓 PIN 安全鎖已解除');
     }
 
     function triggerPinLockOrSetup() {
@@ -3729,34 +4173,34 @@
         ['總淨資產', m.netWorth, '總資產(銀行+股票市值)', m.totalAssets, '本月待繳總負債', m.totalUnpaidLiabilities],
         ['常態每月固定生活支出', m.billsMonthlyBaseCost, '現金部位', m.stockCashPool, '波段持倉總市值', m.stockMarketValue],
         [],
-        ['=== 一、銀行自動扣繳餘額檢查 ==='],
+        ['=== 一、銀行扣款安全檢核 ==='],
         ['銀行名稱', '目前餘額', '待扣卡費', '待扣固定費', '待扣總計', '扣後預計結餘', '狀態']
       ];
       m.bankCheckups.forEach(b => {
         rows.push([b.name, b.balance, b.cardsSum, b.billsSum, b.requiredTotal, b.afterBalance, b.isShortfall ? '餘額不足' : '餘額充足']);
       });
-      rows.push([], ['=== 二、信用卡本期帳單與 >5000 大額明細 ==='], ['信用卡名稱', '扣款銀行', '本期總額', '狀態', '>5000大額明細']);
+      rows.push([], ['=== 二、信用卡費與大額消費明細 ==='], ['信用卡名稱', '扣款銀行', '本期總額', '狀態', '>5000大額明細']);
       state.cards.forEach(c => {
         const bankName = state.banks.find(b => b.id === c.bankId)?.name || '';
         const bigStr = (c.bigExpenses || []).map(x => `${x.title}($${x.amount})`).join(' / ');
         rows.push([c.name, bankName, c.statementTotal, c.paid ? '已繳清' : '未繳', bigStr || '無']);
       });
-      rows.push([], ['=== 三、獨立分期付款追蹤 ==='], ['分期項目', '所屬信用卡', '扣款銀行', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
+      rows.push([], ['=== 三、分期付款明細 ==='], ['分期項目', '所屬信用卡', '扣款銀行', '每期扣款', '總期數', '已繳期數', '剩餘尾款']);
       state.installments.forEach(inst => {
         const card = state.cards.find(c => c.id === inst.cardId) || state.cards.find(c => c.name === inst.cardName);
         const cardName = card ? card.name : (inst.cardName || '未指定');
         const bank = card ? state.banks.find(b => b.id === card.bankId) : null;
         const bankName = bank ? bank.name : '-';
-        const left = Math.max(0, inst.totalPeriods - inst.paidPeriods);
-        rows.push([inst.title, cardName, bankName, inst.monthlyAmount, inst.totalPeriods, inst.paidPeriods, left * inst.monthlyAmount]);
+        const left = Math.max(0, inst.totalPeriods - instPaid(inst));
+        rows.push([inst.title, cardName, bankName, inst.monthlyAmount, inst.totalPeriods, instPaid(inst), left * inst.monthlyAmount]);
       });
-      rows.push([], ['=== 四、台股波段持倉部位 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
+      rows.push([], ['=== 四、台股部位明細 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
       state.stocks.forEach(s => {
         const val = s.shares * s.currentPrice;
         const cost = s.shares * s.avgCost;
         rows.push([s.code, s.name, s.shares, s.avgCost, s.currentPrice, val, val - cost]);
       });
-      rows.push([], ['=== 五、每月/雙月週期固定費用 ==='], ['費用名稱', '繳費週期', '扣款銀行', '當期金額', '狀態']);
+      rows.push([], ['=== 五、固定費用明細 ==='], ['費用名稱', '繳費週期', '扣款銀行', '當期金額', '狀態']);
       state.bills.forEach(b => {
         const bankName = state.banks.find(x => x.id === b.bankId)?.name || '未指定';
         const statusMap = { unpaid: '待繳', paid: '已繳', skipped: '免繳' };
@@ -3771,7 +4215,7 @@
       a.download = `PocketMoney_財務報表_${getExportTimestamp()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('已匯出 Excel CSV 報表！');
+      showToast('📊 Excel CSV 報表已成功匯出');
     }
 
     function exportDatabaseJSON() {
@@ -3782,7 +4226,7 @@
       a.download = `PocketMoney_備份_${getExportTimestamp()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('已匯出備份檔！');
+      showToast('💾 JSON 資料庫已成功匯出');
     }
 
     function importDatabaseJSON(event) {
@@ -3816,11 +4260,11 @@
       a.download = `PocketMoney_單機版_${getExportTimestamp()}.html`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('已下載單機版 HTML！');
+      showToast('📦 單檔離線 HTML 已下載');
     }
 
     function resetToDemoData() {
-      if (confirm('確定要將所有資料清空並重置為 0 嗎？\n\n⚠️ 注意：這將會清除您目前的本機暫存資料（建議先匯出備份檔）。')) {
+      if (confirm('⚠️ 警告：這將會清除您本機瀏覽器中的所有財務紀錄並重設！\n\n確定要完全清空嗎？')) {
         state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         saveState();
         renderAll();
@@ -3866,7 +4310,7 @@
     }
 
     function getTrendTimeSlots() {
-      const today = new Date();
+      const today = AppClock.now();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth() + 1; // 1~12
       const slots = [];
@@ -3937,7 +4381,7 @@
             // 未來第 m 月仍在繳款期的分期
             const instForMonth = (state.installments || []).filter(inst => {
               const matchCard = inst.cardId ? (inst.cardId === c.id) : (inst.cardName === c.name);
-              const currentPaid = Number(inst.paidPeriods) || 0;
+              const currentPaid = instPaid(inst);
               const totalP = Number(inst.totalPeriods) || 0;
               return matchCard && (currentPaid + passedMonths <= totalP);
             }).reduce((s, inst) => s + (Number(inst.monthlyAmount) || 0), 0);
@@ -3954,7 +4398,7 @@
             // 該卡常態日常基底 (扣除當期分期與大額消費)
             const currInstTotal = (state.installments || []).filter(inst => {
               const matchCard = inst.cardId ? (inst.cardId === c.id) : (inst.cardName === c.name);
-              return matchCard && (Number(inst.paidPeriods) < Number(inst.totalPeriods));
+              return matchCard && (instPaid(inst) < Number(inst.totalPeriods));
             }).reduce((s, inst) => s + (Number(inst.monthlyAmount) || 0), 0);
             const currBigTotal = (c.bigExpenses || []).reduce((s, x) => s + (Number(x.amount) || 0), 0);
             let dailyBase = Math.max(0, (Number(c.statementTotal) || 0) - currInstTotal - currBigTotal);
@@ -4009,7 +4453,7 @@
       const ctx = canvas.getContext('2d');
       if (typeof Chart === 'undefined') return;
 
-      const today = new Date();
+      const today = AppClock.now();
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth() + 1;
       const slots = getTrendTimeSlots();
@@ -4022,6 +4466,9 @@
         subtitleEl.innerText = chartRangeMode === 'ytd'
           ? `${currentYear}/01 ~ ${currentYear}/12 (未來未發生月份為自動滾算推估)`
           : `連續近 12 個月歷史走勢`;
+        if ((state.banks || []).length >= ADAPTIVE_MIN_COUNT && selectedChartBankId === 'all') {
+          subtitleEl.innerText += '・帳戶線顯示餘額前 3 名';
+        }
       }
 
       const pillsContainer = document.getElementById('chartBankFilterPills');
@@ -4084,7 +4531,12 @@
         }
 
         if ((state.banks || []).length > 1) {
-          (state.banks || []).forEach((b, idx) => {
+          const allBanks = state.banks || [];
+          const lineBanks = allBanks.length >= ADAPTIVE_MIN_COUNT
+            ? [...allBanks].sort((a, b) => (Number(b.balance) || 0) - (Number(a.balance) || 0)).slice(0, 3)
+            : allBanks;
+          lineBanks.forEach((b) => {
+            const idx = allBanks.indexOf(b);
             const color = palette[(idx + 1) % palette.length];
             const series = slots.map((slot, sIdx) => {
               if (slot.isFuture) return calcFutureMonthBankBalance(b, slot.month, currentMonth, currentYear);

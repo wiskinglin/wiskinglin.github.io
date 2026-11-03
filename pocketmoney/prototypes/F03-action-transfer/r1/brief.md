@@ -4,14 +4,14 @@
 - **解決核心痛點**：
   1. **發現某銀行扣款不足時，缺乏「一鍵跨行調撥（Transfer）」閉環**：當首頁檢核出 A 銀行在 18 號將短缺 `$8,500`，而 B 銀行有充裕閒置資金時，使用者目前只能手動去改兩家銀行的餘額，既容易算錯又沒有留下調撥紀錄。需支援一鍵產生配對的 `transfer_out` 與 `transfer_in` 事件（遵循 ADR-006），同步更新兩行餘額並消除缺口警示。
   2. **單期突發金額調整會破壞全年常態基準**：例如夏季電費暴增、某月房租含管理費微調，若直接修改固定費用的基準 `amount`，會連帶把未來 12 個月的推估全部改錯。需支援**「僅覆寫本月應繳金額（`currentMonthOverride`）」**，不影響常態規則基準值。
-- **基準檔案**：[`pocketmoney_view.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney_view.html)（預設測試資料請配置：國泰世華目前餘額 `$30,000`、應扣 `$38,500` 出現 `-$8,500` 缺口；台新 Richart 閒置餘額 `$85,000` 可供調撥，方便打開 `compare.html` 立即測試一鍵調撥與單期金額覆寫）。
+- **基準檔案**：[`pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney.html)（預設測試資料請配置：國泰世華目前餘額 `$30,000`、應扣 `$38,500` 出現 `-$8,500` 缺口；台新 Richart 閒置餘額 `$85,000` 可供調撥，方便打開 `compare.html` 立即測試一鍵調撥與單期金額覆寫）。
 - **儲存隔離鍵**：`PocketMoney_exp_F03_A` / `PocketMoney_exp_F03_B`
 - **Flash 上下文包（限讀清單）**：
   1. [`AGENTS.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/AGENTS.md)
-  2. [`prototypes/F03-action-transfer/brief.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F03-action-transfer/brief.md)
+  2. [`prototypes/F03-action-transfer/r1/brief.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F03-action-transfer/r1/brief.md)
   3. [`DECISIONS.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/DECISIONS.md)（ADR-006 `BANK_EVENT.type` 7 種事件列舉：`transfer_in` / `transfer_out`）
   4. [`specs/UXD.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/specs/UXD.md) 第零章（零 AI Slop 鐵律）與第五章（Mobile 規範）
-  5. [`prototypes/_template/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/_template/compare.html)
+  5. [`prototypes/_template/r1/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/_template/r1/compare.html)
 
 ---
 
@@ -37,5 +37,5 @@
 - [ ] 執行跨行調撥後，轉出銀行減少、轉入銀行增加，總淨資產維持不變（內部轉帳不虛增資產），且缺口紅燈即時轉為綠燈「餘額充足」。
 - [ ] 修改固定費用之「僅改本月」金額時，本月待扣總額即時更新，但未來第 2～12 個月的趨勢推估仍維持常態基準金額。
 - [ ] 遵守零 AI Slop 鐵律：畫面上無 `v4`、`Mockup`、`Beta`、`F03` 或長篇開發者說明副標。
-- [ ] 產出 `prototypes/F03-action-transfer/report.md` 記錄 G1 自檢結果。
+- [ ] 產出 `prototypes/F03-action-transfer/r1/report.md` 記錄 G1 自檢結果。
 

@@ -2,9 +2,10 @@
 
 > **文件性質**：L1 唯一資料結構與計算公式真實來源（Single Source of Truth）。
 > **涵蓋範圍**：
-> 1. **Main 現行結構（v3.5）**：[`pocketmoney_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney_view.html) 實際運行的 `state` 結構與計算公式。
-> 2. **v4 時序快照結構**：[`database/dummy_db_*.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/) 與 [`mockup_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/mockup_view.html) 使用的 12 個月時序擴充結構。
-> 3. **演進對照與待決議項目**：連向 [`DECISIONS.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/DECISIONS.md)。
+> 1. **Main 現行結構（v3.5 / v3.6）**：[`pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney.html) 實際運行的 `state` 結構與計算公式。
+> 2. **v4 時序快照結構**：包含 12 個月時序擴充結構與雙軌儲存隔離。
+> 3. **核心計算公式**：Safe-to-Spend、信用卡分期尾差、T+2 證券交割營業日與除權息淨額公式。
+> 4. **Multi-Profile 多帳本儲存規格**：支援 Demo 示範帳本與一人多帳本無縫切換。
 
 ---
 
@@ -13,234 +14,172 @@
 | 環境 / 用途 | `STORAGE_KEY` | 說明與紅線 |
 | :--- | :--- | :--- |
 | **正式版 (`tools/kipomo.html`)** | `PocketMoney_tw_finance_v3` | 使用者真實本機資料 |
-| **Main 雛型 (`pocketmoney_view.html`)** | `PocketMoney_tw_finance_v3` | 與正式版共用，已向後相容新增薪資戶、股利與趨勢圖欄位 |
-| **功能實驗 (`prototypes/Fxx-*/A.html`, `B.html`)** | `PocketMoney_exp_Fxx_A` / `B` | **強制隔離**，嚴禁在 A/B 實驗中直接覆寫 `PocketMoney_tw_finance_v3` |
-| **三人物測試集 (`database/dummy_db_*.json`)** | `schemaVersion: "PocketMoney_tw_finance_v4"` | 包含 `junior`、`family`、`senior` 完整 12 個月（`2025-11`～`2026-10`）時序資料 |
+| **Main 雛型 (`pocketmoney.html`)** | `PocketMoney_tw_finance_v3` | 與正式版相容，支援收支規則 (`inflows`) 與自訂日期 |
+| **Multi-Profile 總控設定** | `PocketMoney_profiles_meta` | 紀錄目前選用之 `currentProfileId` 與所有帳本清單 |
+| **個別 Profile 資料空間** | `PocketMoney_profile_{profileId}` | 每個帳本（個人/家庭/工作室/Demo）各自獨立儲存，互不污染 |
+| **功能實驗 (`prototypes/Fxx-*/A.html`, `B.html`)** | `PocketMoney_exp_Fxx_A` / `B` | **強制隔離**，嚴禁在 A/B 實驗中覆寫使用者本機資料 |
 
 ---
 
-## 2. Main 雛型現行資料模型（v3.5 — `pocketmoney_view.html`）
+## 2. Main 雛型現行資料模型（v3.6 — `pocketmoney.html`）
 
-目前 `pocketmoney_view.html` 運作的根物件 `state` 結構如下：
+目前 `pocketmoney.html` 運作的根物件 `state` 結構如下：
 
 ```ts
-interface PocketMoneyStateV35 {
+interface PocketMoneyStateV36 {
   settings: {
     privacyMode: boolean;         // 金額隱私遮罩 (NT$ ••••••)
     pinCode: string;              // 4 位數本地安全鎖 (空字串為停用)
     stockMinHoldRatio: number;    // 股票目標最低持股水位百分比 (預設 70)
     securitiesBankIds: string[];  // 綁定作為證券交割現金池的 BANK.id 清單
+    safetyThreshold: number;      // 全域最低防禦安全水位 (預設 20,000 或 6 個月緊急備用金)
   };
-  banks: BankV35[];
-  cards: CreditCardV35[];
-  installments: InstallmentV35[];
-  bills: RecurringBillV35[];
-  stocks: StockPositionV35[];
+  inflows: InflowItem[];          // 【v3.6 新增】收入規則中心 (薪資、副業、股利、特定月獎金)
+  banks: BankItem[];
+  cards: CreditCardItem[];
+  installments: InstallmentItem[];
+  bills: RecurringBillItem[];
+  stocks: StockPositionItem[];
 }
 
-interface BankV35 {
+interface InflowItem {
+  id: string;                     // e.g. "inf_1730..."
+  title: string;                  // 收入項目 (如 "每月正職薪資", "三節獎金")
+  type: 'salary' | 'bonus' | 'dividend' | 'side_income';
+  amount: number;                 // 金額 (NT$)
+  day: number;                    // 每月入帳日 (1~31)
+  targetBankId: string;           // FK -> BankItem.id (指定入帳銀行)
+  activeMonths?: number[];        // 若為特定月份生效 (如 [1, 6, 12])，省略則為每月
+  holidayAdjustment?: 'before_friday' | 'after_monday' | 'none'; // 遇假日順延機制
+}
+
+interface BankItem {
   id: string;                     // e.g. "bank_1730..."
-  name: string;                   // 銀行名稱 (如 "永豐大戶")
+  name: string;                   // 銀行名稱 (如 "永豐大戶", "台新Richart")
   balance: number;                // 目前台幣餘額 (NT$)
+  minReserve?: number;            // 帳戶專屬最低保留水位 (下限防跳票)
   note?: string;                  // 用途備註
-  isSalaryAccount?: boolean;      // 【v3.5 新增】是否為薪資入帳戶
-  salaryDay?: number;             // 【v3.5 新增】每月發薪日 (1~31，預設 5)
-  salaryAmount?: number;          // 【v3.5 新增】預估每月固定薪資 (NT$)
+  isSalaryAccount?: boolean;      // 是否為薪資入帳戶
+  salaryDay?: number;             // 每月發薪日 (1~31)
+  salaryAmount?: number;          // 預估每月固定薪資 (NT$)
+  updatedAt?: string;             // 餘額最後確認日期 (YYYY-MM-DD)
 }
 
-interface CreditCardV35 {
+interface CreditCardItem {
   id: string;                     // e.g. "card_1730..."
   name: string;                   // 信用卡名稱
-  bankId: string;                 // FK -> BankV35.id (指定扣繳銀行)
+  bankId: string;                 // FK -> BankItem.id (指定扣繳銀行)
   statementTotal: number;         // 本期帳單應繳總額 (NT$)
+  closingDay: number;             // 每月結帳日 (1~31)
+  dueDay: number;                 // 每月自動扣款日 (1~31)
   paid: boolean;                  // 本期是否已扣繳結清
-  bigExpenses?: {                 // 本期 > $5,000 大額消費註記 (不重複累加至 statementTotal)
+  bigExpenses?: {                 // 本期 > $5,000 大額消費註記 (已包含在 statementTotal 內)
     id: string;
     title: string;
     amount: number;
   }[];
 }
 
-interface InstallmentV35 {
-  id: string;                     // e.g. "inst_1730..."
-  title: string;                  // 分期項目名稱
-  cardId: string;                 // FK -> CreditCardV35.id
-  cardName?: string;              // 冗餘名稱備份 (向後相容)
-  totalAmount: number;            // 分期總金額
-  totalPeriods: number;           // 總期數
-  monthlyAmount: number;          // 每期應繳金額
-  paidPeriods: number;            // 已繳期數 (0 ~ totalPeriods)
-}
-
-interface RecurringBillV35 {
+interface RecurringBillItem {
   id: string;                     // e.g. "bill_1730..."
   name: string;                   // 費用名稱 (房租、台電電費、網路費)
+  paymentMethod: 'bank_direct' | 'card_auto'; // 銀行直扣 vs 信用卡代繳 (防重複扣款核心)
+  bankId?: string;                // 若為 bank_direct 時指定之 BankItem.id
+  cardId?: string;                // 若為 card_auto 時指定之 CreditCardItem.id
   cycle: '每月固定' | '雙月帳單' | '季繳/年繳';
+  activeMonths?: number[];        // 雙月或季繳之生效月份 (如 [2, 4, 6, 8, 10, 12])
+  dueDay: number;                 // 每月扣款日 (1~31)
   amount: number;                 // 當期金額
-  bankId: string;                 // FK -> BankV35.id (指定扣款銀行)
-  status: 'unpaid' | 'paid' | 'skipped'; // 待繳 | 已繳 | 本期免繳
+  status: 'unpaid' | 'paid' | 'skipped';
 }
 
-interface StockPositionV35 {
+interface InstallmentItem {
+  id: string;                     // e.g. "inst_1730..."
+  title: string;                  // 分期項目名稱 (如 "iPhone 16 Pro 24期")
+  cardId: string;                 // FK -> CreditCardItem.id
+  totalAmount: number;            // 分期總金額
+  totalPeriods: number;           // 總期數
+  firstPeriodAmount?: number;     // 首期金額 (含除不盡尾差)
+  monthlyAmount: number;          // 後續每期金額
+  paidPeriods: number;            // 已繳期數 (0 ~ totalPeriods)
+  startYear?: number;             // 起始年份
+  startMonth?: number;            // 起始月份
+  includedInStatement?: boolean;  // 是否已包含在當期信用卡 statementTotal (防重複)
+}
+
+interface StockPositionItem {
   id: string;                     // e.g. "stk_1730..."
   code: string;                   // 台股代號 (如 "2330", "0050")
   name: string;                   // 股票名稱
-  shares: number;                 // 持有股數 (1 張 = 1000 股)
+  shares: number;                 // 持有股數
   avgCost: number;                // 買入成本均價
   currentPrice: number;           // 目前市價
-  note?: string;                  // 波段操作備註
+  note?: string;
 }
 ```
 
 ---
 
-## 3. v4 時序與雙軌快照擴充模型（`database/dummy_db_*.json`）
+## 3. 核心計算公式與商業邏輯 (Core Computation Rules)
 
-為解決「換月重置覆蓋歷史資料」並支援真實 12 個月趨勢分析，v4 引入了**時序子陣列 (`records`)** 與**跨行快照表 (`bankSnapshots`)**。逐步往 Main 合併時以此為標準：
+### 3.1 可自由支配金額 (Safe-to-Spend, STS)
+可自由支配金額代表使用者「在不影響未來所有固定義務與安全防線下，當下最高可花費金額」：
+$$\text{Safe-to-Spend} = \text{活存現有餘額} + \text{預估薪資流入} - \text{剛性固定支出} - \text{信用卡應繳款項(含當期分期)} - \text{安全預備水位}$$
 
-```mermaid
-erDiagram
-    BANK ||--o{ BANK_SNAPSHOT : "bankId / records"
-    BANK_SNAPSHOT ||--o{ BANK_EVENT : "events (收支事件歸戶)"
-    BANK ||--o{ CREDIT_CARD : "bankId"
-    BANK ||--o{ RECURRING_BILL : "targetId (bank_direct)"
-    
-    CREDIT_CARD ||--o{ CARD_MONTHLY_RECORD : "records"
-    CARD_MONTHLY_RECORD ||--o{ BIG_EXPENSE_NOTE : "bigExpenses"
-    CREDIT_CARD ||--o{ INSTALLMENT : "cardId"
-    CREDIT_CARD ||--o{ RECURRING_BILL : "targetId (card_auto)"
+* **活存現有餘額**：截至當日全域（或指定日常活存）可用結餘。
+* **預估薪資流入**：評估週期內確定會發放之薪水金額（若發薪日遇假日則依順延規則調整）。
+* **剛性固定支出**：週期內所有已排程且不可延遲之固定開銷加總（僅計 `bank_direct` 銀行直扣項目）。
+* **信用卡應繳款項**：週期內已出帳與預估即將出帳之款項（包含當期分期本金及手續費）。
+* **安全預備水位**：使用者自訂之最低緩衝防禦金（如 6 個月緊急備用金或預設 NT$ 20,000）。
 
-    BANK {
-        string id PK
-        string code "銀行代碼 (如 812, 822, 013)"
-        string name
-        number balance "最新一期確認餘額快取"
-        number defaultSalary "預設每月固定薪資入帳金額"
-        number salaryDay "每月發薪日 (如 5 號)"
-        number minReserve "最低保留安全水位 (下限防跳票)"
-        number cashDragWarn "閒置資金提醒門檻 (黃燈)"
-        number cashDragAlert "閒置資金過高警報門檻 (橘紅燈)"
-        string note
-    }
+### 3.2 信用卡分期帳單歸屬與除不盡尾差邏輯
+假定消費交易日為 $T$，信用卡每月結帳日為 $\text{ClosingDay}$，次月自動扣款日為 $\text{DueDay}$：
+1. **首期入帳判斷**：
+   * 若 $T \le \text{ClosingDay}$：首期列入當期帳單，並於緊接之 $\text{DueDay}$ 扣款。
+   * 若 $T > \text{ClosingDay}$：首期順延至次月帳單，並於再次月之 $\text{DueDay}$ 扣款。
+2. **小數點除不盡差額處理（尾差全數併入首期）**：
+   $$\text{RegularPeriodAmount} = \lfloor \text{TotalAmount} / \text{TotalPeriods} \rfloor$$
+   $$\text{FirstPeriodAmount} = \text{RegularPeriodAmount} + \Big(\text{TotalAmount} - (\text{RegularPeriodAmount} \times \text{TotalPeriods})\Big)$$
+   * 範例：消費 10,000 元分 3 期：
+     * 每期金額 $\text{RegularPeriodAmount} = \lfloor 10000 / 3 \rfloor = 3,333$ 元。
+     * 首期金額 $\text{FirstPeriodAmount} = 3,333 + (10,000 - 9,999) = 3,334$ 元。
+     * 第 2 期與第 3 期各為 3,333 元，總和嚴格等於 10,000 元。
 
-    BANK_SNAPSHOT {
-        string id PK "snap_YYYY_MM_DD_bankId"
-        string bankId FK
-        string date "YYYY-MM-DD"
-        number year
-        number month
-        number day
-        number balance "確認後之實際或推估餘額"
-        number theoreticalBalance "系統自動滾算之理論餘額"
-        number pendingBills "當月盤點後待扣直扣費用"
-        number pendingCards "當月盤點後待扣信用卡費"
-        number projectedBalance "扣後預估結餘"
-        string note
-    }
-
-    BANK_EVENT {
-        string id PK
-        string type "'withdrawal' | 'dividend' | 'interest' | 'transfer_in' | 'transfer_out' | 'salary' | 'bonus'"
-        string title "事件說明 (如：0050 股息、ATM 提款)"
-        number amount "事件金額 (流入為正、流出為負)"
-    }
-
-    CREDIT_CARD {
-        string id PK
-        string name
-        string bankId FK
-        number closingDay "結帳日"
-        number dueDay "扣款日"
-        number highSpendWarn "大額開銷提醒門檻"
-    }
-
-    CARD_MONTHLY_RECORD {
-        number year PK
-        number month PK
-        number amount "未持卡或未出帳為 null"
-        string note
-    }
-
-    BIG_EXPENSE_NOTE {
-        string id PK
-        string title
-        number amount
-    }
-
-    RECURRING_BILL {
-        string id PK
-        string name
-        string paymentMethod "'bank_direct' | 'card_auto'"
-        string targetId FK "指向 BANK 或 CREDIT_CARD"
-        string cycle "'monthly' | 'bimonthly'"
-        array activeMonths "生效月份 [1..12]"
-        number dueDay "扣款日"
-        number defaultAmount "基準金額"
-    }
-
-    INSTALLMENT {
-        string id PK
-        string title
-        string cardId FK
-        number totalAmount
-        number totalPeriods
-        number firstPeriodAmount "首期含零頭金額"
-        number regularPeriodAmount "續期每期金額"
-        number startYear "起始年"
-        number startMonth "起始月"
-    }
-```
-
-### 3.1 Main (v3.5) 與 v4 欄位對照表（開發轉接必讀）
-
-| 概念 | Main (`pocketmoney_view.html` v3.5) | v4 (`dummy_db_*.json`) | 轉接規則 |
-| :--- | :--- | :--- | :--- |
-| **固定費用集合名稱** | `state.bills` | `state.recurringBills` | 讀取時支援 `state.bills \|\| state.recurringBills` |
-| **銀行預設月薪** | `bank.salaryAmount` + `bank.isSalaryAccount` | `bank.defaultSalary` | `const salary = bank.salaryAmount ?? bank.defaultSalary ?? 0` |
-| **固定費用扣款對象** | `bill.bankId`（僅支援銀行） | `bill.paymentMethod` (`bank_direct` \| `card_auto`) + `bill.targetId` | 若 `paymentMethod === 'card_auto'`，不計入銀行直扣，避免與卡費重複扣款 |
-| **分期剩餘期數** | 手動維護 `inst.paidPeriods` | 由 `(year, month)` 與 `startYear, startMonth` 自動推算 | 見 `DECISIONS.md` ADR-001 |
+### 3.3 證券交割 T+2 營業日排程與除權息淨額
+1. **T+2 營業日排程**：
+   * 買進/賣出交易嚴格對齊「台灣證券交易所營業日曆」，週末及國定假日自動順延至下一營業日。
+   * 當交割戶餘額小於 T+2 應扣款時，觸發「交割保衛警示」，顯示需跨行調撥之缺額。
+2. **現金股利 (除息) 入帳淨額**：
+   $$\text{GrossDividend} = \text{Shares} \times \text{CashDividendPerShare}$$
+   $$\text{NHISurcharge} = \begin{cases} \text{round}(\text{GrossDividend} \times 2.11\%) & \text{if } \text{GrossDividend} \ge 20,000 \\ 0 & \text{otherwise} \end{cases}$$
+   $$\text{WireFee} = (\text{isCustodianBank} ? 0 : 10)$$
+   $$\text{NetDividend} = \text{GrossDividend} - \text{NHISurcharge} - \text{WireFee}$$
+3. **股票股利 (除權) 入帳與成本重算**：
+   $$\text{NewShares} = \text{Shares} \times \left(1 + \frac{\text{StockDividendPerShare}}{10}\right)$$
+   $$\text{AdjustedCostPerShare} = \frac{\text{OriginalTotalCost}}{\text{NewShares}}$$
 
 ---
 
-## 4. 核心計算公式 (Computation Rules)
+## 4. Multi-Profile 多帳本資料結構規格
 
-### 4.1 總資產與總淨資產（防重複計算鐵律）
-- **全部銀行總餘額**：
-  $$\text{TotalBankBalance} = \sum_{b \in \text{Banks}} b.\text{balance}$$
-- **股票持倉總市值與波段損益**：
-  $$\text{StockMarketValue} = \sum_{s \in \text{Stocks}} s.\text{shares} \times s.\text{currentPrice}, \quad \text{StockCostValue} = \sum_{s \in \text{Stocks}} s.\text{shares} \times s.\text{avgCost}$$
-- **證券交割待命現金池**（僅供計算股票部位配置比例，**不得再次加進總資產**）：
-  $$\text{StockCashPool} = \sum_{b \in \text{Banks},\, b.\text{id} \in \text{securitiesBankIds}} b.\text{balance}$$
-  $$\text{StockHoldRatio} = \mathrm{round}\left(\frac{\text{StockMarketValue}}{\text{StockMarketValue} + \text{StockCashPool}} \times 100\right)\%$$
-- **總資產與總淨資產**：
-  $$\text{TotalAssets} = \text{TotalBankBalance} + \text{StockMarketValue}$$
-  $$\text{TotalUnpaidLiabilities} = \sum_{c \in \text{Cards},\, \neg c.\text{paid}} c.\text{statementTotal} + \sum_{b \in \text{Bills},\, b.\text{status}='unpaid'} b.\text{amount}$$
-  $$\text{NetWorth} = \text{TotalAssets} - \text{TotalUnpaidLiabilities}$$
+支援教學示範 (Demo) 與多身分切換之儲存模型：
 
-### 4.2 指定銀行扣款安全檢核（防跳票核心）
-針對每一家銀行 $B_i$ 分別獨立計算，**嚴禁以全體銀行總餘額掩蓋單一銀行缺口**：
-- **待扣信用卡費**：
-  $$\text{CardsSum}(B_i) = \sum_{c \in \text{Cards},\, c.\text{bankId} = B_i.\text{id},\, \neg c.\text{paid}} c.\text{statementTotal}$$
-- **待扣直扣固定費用**：
-  $$\text{BillsSum}(B_i) = \sum_{b \in \text{Bills},\, b.\text{bankId} = B_i.\text{id},\, b.\text{status} = 'unpaid'} b.\text{amount}$$
-- **扣後預估結餘與四段水位燈號**：
-  $$\text{ProjectedBalance}(B_i) = B_i.\text{balance} - \big(\text{CardsSum}(B_i) + \text{BillsSum}(B_i)\big)$$
-  $$\text{Status}(B_i) = \begin{cases} \text{SHORTFALL / LOW\_RESERVE (紅燈)} & \text{if } \text{ProjectedBalance}(B_i) < (B_i.\text{minReserve} \lor 0) \\ \text{CASH\_DRAG\_ALERT (橘紅燈)} & \text{if } B_i.\text{cashDragAlert} > 0 \land \text{ProjectedBalance}(B_i) \ge B_i.\text{cashDragAlert} \\ \text{CASH\_DRAG\_WARN (黃燈)} & \text{if } B_i.\text{cashDragWarn} > 0 \land \text{ProjectedBalance}(B_i) \ge B_i.\text{cashDragWarn} \\ \text{SAFE (綠燈)} & \text{otherwise} \end{cases}$$
+```ts
+interface ProfileMetadata {
+  id: string;                     // e.g. "prof_default", "prof_demo_junior", "prof_family"
+  name: string;                   // 帳本名稱 (如 "個人日常帳", "家庭公費帳", "小資分期示範")
+  isDemo: boolean;                // 是否為示範帳本 (Demo Profile 支援一鍵重置)
+  colorTheme?: string;            // 帳本主題色標籤 (如藍色、綠色、紫色)
+  createdAt: string;              // ISO 8601
+  lastActiveAt: string;
+}
 
-### 4.3 常態每月固定開銷平準化
-$$\text{BillsMonthlyBaseCost} = \sum_{b \in \text{Bills}} \begin{cases} b.\text{amount} & \text{每月固定} \\ \mathrm{round}(b.\text{amount} / 2) & \text{雙月帳單} \\ \mathrm{round}(b.\text{amount} / 3) & \text{季繳} \end{cases}$$
+interface MultiProfileRegistry {
+  currentProfileId: string;       // 目前選取的 Profile ID
+  profiles: ProfileMetadata[];    // 所有可切換帳本清單
+}
+```
 
-### 4.4 未發生月份（$m > M_{\text{current}}$）之銀行餘額自動滾算推估
-在 12 個月趨勢圖的 `[當年度]` 模式下，對尚未發生的月份 $m$ 以當前確認餘額遞推：
-$$\widehat{\text{Balance}}(B_i, m) = \widehat{\text{Balance}}(B_i, m-1) + \text{Salary}(B_i) - \text{DirectBills}(B_i, m) - \sum_{c.\text{bankId}=B_i.\text{id}} \text{MonthlyAvg}(c)$$
-
-### 4.5 信用卡有效月平均（v4 時序紀錄）
-- 區間總計：$\text{PeriodTotal}(c, S) = \sum_{r \in c.\text{records},\, r.\text{amount} \neq \text{null}} r.\text{amount}$
-- 有效持卡月數（`amount === 0` 計入分母，`amount === null` 未持卡或未出帳**不計入分母**）：
-  $$\text{ActiveMonths}(c, S) = \text{count}(r \in c.\text{records} \mid r.\text{amount} \neq \text{null})$$
-- 有效月平均：$\text{MonthlyAvg}(c, S) = \text{ActiveMonths} > 0 \ ? \ \mathrm{round}(\text{PeriodTotal} / \text{ActiveMonths}) : 0$
-
-### 4.6 分期付款目標年月期數推算
-- 對目標年月 $(Y, M)$：$\text{PeriodIndex}(Y, M) = (Y - \text{startYear}) \times 12 + (M - \text{startMonth}) + 1$
-- 若 $1 \le \text{PeriodIndex} \le \text{totalPeriods}$，第 1 期金額為 `firstPeriodAmount`，第 2 期起為 `regularPeriodAmount`。
-
+* **儲存機制**：
+  * 當切換 `currentProfileId = "prof_family"` 時，系統自動自 `localStorage.getItem("PocketMoney_profile_prof_family")` 載入該帳本的獨立 `state`。
+  * 示範帳本 (`isDemo: true`) 永遠從唯讀範本初始化，使用者在示範模式下的任何修改均儲存於沙盒中，隨時可按「重置示範資料」還原。

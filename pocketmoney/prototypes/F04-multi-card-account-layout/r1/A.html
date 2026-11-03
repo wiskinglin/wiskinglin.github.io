@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PocketMoney — 現行標準平鋪版</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Public Sans', 'Inter', 'Noto Sans TC', 'sans-serif'],
+            mono: ['Public Sans', 'Inter', 'monospace']
+          },
+          colors: {
+            slate: {
+              50: '#ECEFF4', 100: '#E5E9F0', 200: '#D8DEE9', 300: '#B8C2D3',
+              400: '#8C97AB', 500: '#667186', 600: '#4C566A', 700: '#3B4252',
+              800: '#2E3440', 900: '#262B35', 950: '#1D2129'
+            },
+            indigo: {
+              50: '#ECEFF4', 100: '#DCE5EF', 200: '#C3D3E3', 300: '#A6BDD5',
+              400: '#93B0C9', 500: '#81A1C1', 600: '#5F83A8', 700: '#4C6A8C',
+              800: '#3B5270', 900: '#2F4259', 950: '#222F40'
+            },
+            emerald: {
+              400: '#A3BE8C', 500: '#8FA876', 600: '#758C5E'
+            },
+            rose: { 200: '#E9C3C7', 400: '#CD7C84', 500: '#BF616A', 600: '#A84E57' },
+            amber: { 400: '#EBCB8B', 500: '#D4B06F', 600: '#BC9654' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { background-color: #1D2129; color: #ECEFF4; font-family: 'Public Sans', 'Noto Sans TC', sans-serif; }
+    .num-nowrap { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .custom-scroll::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #262B35; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #4C566A; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#1D2129] text-slate-100">
+
+  <!-- 頂部導航列 -->
+  <header class="bg-[#262B35] border-b border-slate-700/80 sticky top-0 z-30 px-3 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm font-bold text-sm">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-extrabold text-base tracking-tight text-white">PocketMoney</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">方案 A (平鋪展開版)</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">多帳戶與信用卡現行版面（8 帳戶 ＋ 8 卡全部平鋪）</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <div class="text-right">
+          <span class="text-slate-400 block text-[10px]">總資產水位</span>
+          <span id="headerTotalAssets" class="font-mono font-bold text-sm text-indigo-300">NT$ 451,000</span>
+        </div>
+        <button onclick="resetData()" title="重置範例資料" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- 頁籤導覽列 -->
+    <div class="max-w-7xl mx-auto flex items-center gap-2 mt-2 pt-2 border-t border-slate-700/50 overflow-x-auto custom-scroll">
+      <button onclick="switchTab('overview')" id="nav-overview" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 bg-indigo-600 text-white">
+        <i class="fa-solid fa-gauge-high"></i><span>首頁總覽</span>
+      </button>
+      <button onclick="switchTab('banks')" id="nav-banks" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 text-slate-400 hover:text-white">
+        <i class="fa-solid fa-building-columns"></i><span>銀行帳戶</span>
+        <span class="px-1.5 py-0.2 rounded-full bg-slate-700 text-[10px] text-slate-300">8</span>
+      </button>
+      <button onclick="switchTab('cards')" id="nav-cards" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 text-slate-400 hover:text-white">
+        <i class="fa-regular fa-credit-card"></i><span>信用卡費</span>
+        <span class="px-1.5 py-0.2 rounded-full bg-rose-500/80 text-[10px] text-white">8</span>
+      </button>
+      <button onclick="switchTab('chart')" id="nav-chart" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 text-slate-400 hover:text-white">
+        <i class="fa-solid fa-chart-line"></i><span>趨勢走勢</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 主內容區 -->
+  <main class="max-w-7xl mx-auto p-3 sm:p-6 w-full flex-1 space-y-6">
+
+    <!-- ==================== 頁籤 1: 首頁總覽 ==================== -->
+    <section id="tab-overview" class="tab-content space-y-6">
+      <!-- KPI 摘要卡片 -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-4 rounded-xl bg-[#262B35] border border-slate-700/80">
+          <span class="text-xs text-slate-400 font-medium">銀行總餘額</span>
+          <div class="text-lg sm:text-xl font-mono font-extrabold text-indigo-400 mt-1">NT$ 451,000</div>
+          <span class="text-[11px] text-slate-400 mt-1 block">8 家活存與數位帳戶</span>
+        </div>
+        <div class="p-4 rounded-xl bg-[#262B35] border border-slate-700/80">
+          <span class="text-xs text-slate-400 font-medium">本期信用卡待扣</span>
+          <div class="text-lg sm:text-xl font-mono font-extrabold text-rose-400 mt-1">NT$ 50,400</div>
+          <span class="text-[11px] text-slate-400 mt-1 block">共 8 張卡（5 張待繳）</span>
+        </div>
+        <div class="p-4 rounded-xl bg-[#262B35] border border-slate-700/80">
+          <span class="text-xs text-slate-400 font-medium">全額扣款後淨額</span>
+          <div class="text-lg sm:text-xl font-mono font-extrabold text-emerald-400 mt-1">NT$ 400,600</div>
+          <span class="text-[11px] text-emerald-400/80 mt-1 block">總體流動性充足</span>
+        </div>
+        <div class="p-4 rounded-xl bg-[#262B35] border border-rose-500/40 bg-rose-500/5">
+          <span class="text-xs text-rose-300 font-medium">帳戶扣款檢核</span>
+          <div class="text-lg sm:text-xl font-mono font-extrabold text-rose-400 mt-1">1 帳戶不足</div>
+          <span class="text-[11px] text-rose-400 mt-1 block">需自其他帳戶調撥</span>
+        </div>
+      </div>
+
+      <!-- 首頁扣款檢核區塊（方案 A：8 個帳戶全部平鋪卡片網格） -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-[#262B35] border border-slate-700/80 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-700/60">
+          <div>
+            <h2 class="font-extrabold text-sm sm:text-base flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved text-indigo-400"></i>
+              <span>各銀行帳戶扣款檢核（8 個帳戶全平鋪）</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">所有帳戶均直接鋪平展示，需逐一滾動檢視哪張卡片紅框不足</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-bold border border-slate-700">
+            共 8 個帳戶
+          </span>
+        </div>
+
+        <!-- 8 個帳戶全數展開的卡片網格 -->
+        <div id="overviewBankGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- JS 渲染 8 個平鋪卡片 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 頁籤 2: 銀行帳戶 ==================== -->
+    <section id="tab-banks" class="tab-content hidden space-y-4">
+      <div class="p-4 sm:p-5 rounded-2xl bg-[#262B35] border border-slate-700/80 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-700/60">
+          <div>
+            <h2 class="font-extrabold text-sm sm:text-base flex items-center gap-2">
+              <i class="fa-solid fa-building-columns text-indigo-400"></i>
+              <span>銀行帳戶總覽（卡片網格平鋪展開）</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">8 張銀行卡片垂直長滾動展示</p>
+          </div>
+        </div>
+
+        <div id="banksListGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- JS 渲染 8 個平鋪卡片 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 頁籤 3: 信用卡費 ==================== -->
+    <section id="tab-cards" class="tab-content hidden space-y-4">
+      <div class="p-4 sm:p-5 rounded-2xl bg-[#262B35] border border-slate-700/80 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-700/60">
+          <div>
+            <h2 class="font-extrabold text-sm sm:text-base flex items-center gap-2">
+              <i class="fa-regular fa-credit-card text-rose-400"></i>
+              <span>信用卡費管理（8 張卡片完全平鋪）</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">包含 3 張本期無消費 (0 元) 卡片，全部平鋪排列</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-bold border border-slate-700">
+            8 張信用卡
+          </span>
+        </div>
+
+        <div id="cardsListGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- JS 渲染 8 張信用卡平鋪卡片 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 頁籤 4: 趨勢走勢 ==================== -->
+    <section id="tab-chart" class="tab-content hidden space-y-4">
+      <div class="p-4 sm:p-5 rounded-2xl bg-[#262B35] border border-slate-700/80 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-700/60">
+          <div>
+            <h2 class="font-extrabold text-sm sm:text-base flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-indigo-400"></i>
+              <span>資產與各帳戶走勢（8 條折線全畫出）</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">同時繪製總資產與 8 家銀行線條，顏色交錯重疊（義大利麵圖）</p>
+          </div>
+        </div>
+
+        <div class="h-80 w-full relative">
+          <canvas id="trendChartCanvas"></canvas>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-xs text-slate-400 leading-relaxed">
+          <i class="fa-solid fa-circle-info text-amber-400 mr-1"></i>
+          方案 A 現行設計：當帳戶擴增至 8 個時，折線圖會直接畫出 8 條不同顏色的折線與總額線，線條密集交錯難以分辨單一帳戶趨勢。
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'PocketMoney_exp_F04_A';
+
+    // 擬真 8 帳戶 + 8 信用卡資料（1 個不足，3 張 0 元卡）
+    const INITIAL_DATA = {
+      banks: [
+        { id: 'b_cathay', name: '國泰世華', balance: 12500, isSalaryAccount: true, salaryDay: 5, note: '薪資主帳戶' },
+        { id: 'b_esun', name: '玉山銀行', balance: 68000, isSalaryAccount: false, note: '生活網購' },
+        { id: 'b_taishin', name: '台新銀行', balance: 45000, isSalaryAccount: false, note: 'Richart 高利活儲' },
+        { id: 'b_fubon', name: '台北富邦', balance: 152000, isSalaryAccount: false, note: '緊急備用金' },
+        { id: 'b_sinopac', name: '永豐銀行', balance: 38500, isSalaryAccount: false, note: '大戶數位帳戶' },
+        { id: 'b_ctbc', name: '中國信託', balance: 29000, isSalaryAccount: false, note: '薪轉備用' },
+        { id: 'b_ubot', name: '聯邦銀行', balance: 21000, isSalaryAccount: false, note: 'NewNewBank' },
+        { id: 'b_sc', name: '渣打銀行', balance: 85000, isSalaryAccount: false, note: '心幸福外幣/活存' }
+      ],
+      cards: [
+        { id: 'c_cube', name: '國泰世華 CUBE 卡', bankId: 'b_cathay', statementTotal: 24800, billingDay: 12, dueDay: 27, paid: false },
+        { id: 'c_ubear', name: '玉山銀行 UBear 卡', bankId: 'b_esun', statementTotal: 9800, billingDay: 15, dueDay: 2, paid: false },
+        { id: 'c_pi', name: '玉山銀行 Pi 拍錢包卡', bankId: 'b_esun', statementTotal: 5400, billingDay: 15, dueDay: 2, paid: false },
+        { id: 'c_flygo', name: '台新銀行 FlyGo 卡', bankId: 'b_taishin', statementTotal: 6200, billingDay: 7, dueDay: 22, paid: false },
+        { id: 'c_dawho', name: '永豐銀行 大戶 DAWHO 卡', bankId: 'b_sinopac', statementTotal: 4200, billingDay: 18, dueDay: 5, paid: false },
+        { id: 'c_fubon_j', name: '台北富邦 J 卡', bankId: 'b_fubon', statementTotal: 0, billingDay: 20, dueDay: 6, paid: true },
+        { id: 'c_ubot_g', name: '聯邦銀行 吉鶴卡', bankId: 'b_ubot', statementTotal: 0, billingDay: 16, dueDay: 3, paid: true },
+        { id: 'c_sc_cash', name: '渣打銀行 現金回饋卡', bankId: 'b_sc', statementTotal: 0, billingDay: 10, dueDay: 25, paid: true }
+      ]
+    };
+
+    let state = loadState();
+    let chartInstance = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {
+        console.error('Error loading state:', e);
+      }
+      return JSON.parse(JSON.stringify(INITIAL_DATA));
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        console.error('Error saving state:', e);
+      }
+    }
+
+    function resetData() {
+      state = JSON.parse(JSON.stringify(INITIAL_DATA));
+      saveState();
+      renderAll();
+    }
+
+    function fmtMoney(num) {
+      return (Number(num) || 0).toLocaleString('en-US');
+    }
+
+    // 計算各帳戶與總體扣款檢核
+    function calcBankCheckups() {
+      return state.banks.map(bank => {
+        const boundCards = state.cards.filter(c => c.bankId === bank.id && !c.paid);
+        const cardSum = boundCards.reduce((acc, c) => acc + (Number(c.statementTotal) || 0), 0);
+        const requiredTotal = cardSum;
+        const afterBalance = bank.balance - requiredTotal;
+        const isShortfall = afterBalance < 0;
+        return {
+          ...bank,
+          boundCards,
+          cardSum,
+          requiredTotal,
+          afterBalance,
+          isShortfall
+        };
+      });
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeSection = document.getElementById(`tab-${tabId}`);
+      const activeBtn = document.getElementById(`nav-${tabId}`);
+      if (activeSection) activeSection.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-400');
+        activeBtn.classList.add('bg-indigo-600', 'text-white');
+      }
+
+      if (tabId === 'chart') {
+        setTimeout(renderChart, 50);
+      }
+    }
+
+    // 方案 A：渲染首頁 8 個全平鋪帳戶
+    function renderOverview() {
+      const checkups = calcBankCheckups();
+      const container = document.getElementById('overviewBankGrid');
+      if (!container) return;
+
+      container.innerHTML = checkups.map(b => {
+        const borderClass = b.isShortfall
+          ? 'border-2 border-rose-500 bg-rose-500/10'
+          : 'border border-slate-700/80 bg-slate-800/40';
+
+        return `
+          <div class="p-3.5 rounded-xl ${borderClass} flex flex-col justify-between space-y-2.5 transition">
+            <div class="flex items-start justify-between gap-1">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-sm text-white truncate">${b.name}</span>
+                  ${b.isSalaryAccount ? '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300">薪資戶</span>' : ''}
+                </div>
+                <p class="text-[11px] text-slate-400 truncate">${b.note || '活期帳戶'}</p>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${b.isShortfall ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'} shrink-0">
+                ${b.isShortfall ? '不足' : '充足'}
+              </span>
+            </div>
+
+            <div class="space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-300">
+                <span class="text-slate-400">當前餘額</span>
+                <span class="font-mono font-bold">NT$ ${fmtMoney(b.balance)}</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-300">
+                <span class="text-slate-400">待扣卡費</span>
+                <span class="font-mono font-bold text-rose-400">-NT$ ${fmtMoney(b.requiredTotal)}</span>
+              </div>
+              <div class="pt-1.5 border-t border-slate-700/60 flex items-center justify-between">
+                <span class="text-slate-400">${b.isShortfall ? '尚缺需補' : '扣後剩餘'}</span>
+                <span class="font-mono font-bold ${b.isShortfall ? 'text-rose-400' : 'text-emerald-400'}">
+                  ${b.isShortfall ? '不足 NT$ ' + fmtMoney(Math.abs(b.afterBalance)) : 'NT$ ' + fmtMoney(b.afterBalance)}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 方案 A：渲染銀行帳戶頁籤（平鋪）
+    function renderBanksTab() {
+      const checkups = calcBankCheckups();
+      const container = document.getElementById('banksListGrid');
+      if (!container) return;
+
+      container.innerHTML = checkups.map(b => `
+        <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-700/80 flex flex-col justify-between space-y-3">
+          <div class="flex items-start justify-between gap-1">
+            <div>
+              <h4 class="font-bold text-sm text-white">${b.name}</h4>
+              <p class="text-xs text-slate-400">${b.note}</p>
+            </div>
+            ${b.isSalaryAccount ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300">薪資戶</span>' : ''}
+          </div>
+
+          <div>
+            <span class="text-[11px] text-slate-400 block mb-0.5">帳戶餘額</span>
+            <div class="text-base font-mono font-extrabold text-white">NT$ ${fmtMoney(b.balance)}</div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-700/60 space-y-1 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">綁定信用卡待扣</span>
+              <span class="font-mono font-bold text-rose-400">-NT$ ${fmtMoney(b.requiredTotal)}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">扣款後水位</span>
+              <span class="font-mono font-bold ${b.isShortfall ? 'text-rose-400' : 'text-emerald-400'}">
+                NT$ ${fmtMoney(b.afterBalance)}
+              </span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 方案 A：渲染信用卡頁籤（8 張卡片完全平鋪）
+    function renderCardsTab() {
+      const container = document.getElementById('cardsListGrid');
+      if (!container) return;
+
+      container.innerHTML = state.cards.map(c => {
+        const bank = state.banks.find(b => b.id === c.bankId);
+        const isZero = c.statementTotal === 0;
+
+        return `
+          <div class="p-4 rounded-xl bg-slate-800/40 border border-slate-700/80 flex flex-col justify-between space-y-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <h4 class="font-bold text-sm text-white truncate">${c.name}</h4>
+                <p class="text-xs text-slate-400">扣款帳戶：${bank ? bank.name : '未綁定'}</p>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isZero ? 'bg-slate-700 text-slate-300' : 'bg-rose-500/20 text-rose-300'} shrink-0">
+                ${isZero ? '0元免繳' : '待繳'}
+              </span>
+            </div>
+
+            <div>
+              <span class="text-[11px] text-slate-400 block mb-0.5">本期待扣金額</span>
+              <div class="text-base sm:text-lg font-mono font-extrabold ${isZero ? 'text-slate-400' : 'text-rose-400'}">
+                NT$ ${fmtMoney(c.statementTotal)}
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-xs text-slate-400">
+              <span>結帳日：${c.billingDay} 號</span>
+              <span>扣款日：${c.dueDay} 號</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // 方案 A：渲染折線圖（8 條折線 + 1 條總資產線全畫出）
+    function renderChart() {
+      const canvas = document.getElementById('trendChartCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      const labels = ['5月', '6月', '7月', '8月', '9月', '10月 (本月)'];
+
+      // 8 條銀行的不同色彩（密集交錯）
+      const bankColors = [
+        '#81A1C1', '#A3BE8C', '#EBCB8B', '#BF616A',
+        '#B48EAD', '#88C0D0', '#D08770', '#5E81AC'
+      ];
+
+      const datasets = [
+        {
+          label: '總資產水位',
+          data: [410000, 425000, 418000, 439000, 442000, 451000],
+          borderColor: '#ECEFF4',
+          borderWidth: 3,
+          tension: 0.2,
+          pointRadius: 3
+        },
+        ...state.banks.map((b, idx) => {
+          const base = b.balance;
+          return {
+            label: b.name,
+            data: [
+              Math.round(base * 0.88),
+              Math.round(base * 0.93),
+              Math.round(base * 0.91),
+              Math.round(base * 1.04),
+              Math.round(base * 0.97),
+              base
+            ],
+            borderColor: bankColors[idx % bankColors.length],
+            borderWidth: 1.5,
+            borderDash: [idx % 2 === 0 ? 0 : 3, idx % 2 === 0 ? 0 : 3],
+            tension: 0.2,
+            pointRadius: 2
+          };
+        })
+      ];
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: '#D8DEE9',
+                boxWidth: 10,
+                font: { size: 11, family: "'Public Sans', 'Noto Sans TC'" }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#2E3440',
+              titleColor: '#ECEFF4',
+              bodyColor: '#D8DEE9',
+              borderColor: '#4C566A',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(76, 86, 106, 0.2)' },
+              ticks: { color: '#8C97AB' }
+            },
+            y: {
+              grid: { color: 'rgba(76, 86, 106, 0.2)' },
+              ticks: {
+                color: '#8C97AB',
+                callback: v => '$' + (v / 1000) + 'k'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderAll() {
+      renderOverview();
+      renderBanksTab();
+      renderCardsTab();
+      const currentTab = document.querySelector('.tab-content:not(.hidden)');
+      if (currentTab && currentTab.id === 'tab-chart') {
+        renderChart();
+      }
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>

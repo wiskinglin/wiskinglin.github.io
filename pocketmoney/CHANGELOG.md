@@ -1,6 +1,34 @@
 # PocketMoney 變更紀錄 (CHANGELOG.md)
 
-> 本文件記錄已通過 Manager 驗收並合併至主力雛型 [`pocketmoney_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney_view.html) 或正式版 [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html) 的版本歷史。
+> 本文件記錄已通過 Manager 驗收並合併至主力雛型 [`pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney.html) 或正式版 [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html) 的版本歷史。
+
+---
+
+## [v0.1.0] — 2026-11-03（F04 多帳戶多信用卡版面 ＋ F05 日期控制導入 ＋ F06 對帳單分析器）
+### Added（新增與整合）
+- **F06 外部對帳單與明細分析器 (`pocketmoney/analyzer`) [ADR-013]**：
+  - **獨立雙欄比對檢驗器 (`viewer.html`) [F06-Viewer]**：提供獨立單檔 HTML 工具，支援左欄 PDF 憑證即時預覽、右欄四大標準化資料模組（帳單摘要與自動平帳檢核、約定扣繳檢核卡、長週期分期付款進度條、消費明細標準表格）。支援載入 `pocketmoney_db.json` 與拖曳檔案對照。
+  - **模組架構與機敏隔離**：獨立建立 `analyzer/` 程式套件（納入 Git 版本控制），並於 `.gitignore` 嚴格隔離真實 `samples/`、所有 `*.pdf` 與個人 `result/*.json`。
+  - **三大銀行信用卡帳單剖析器**：支援國泰世華、台北富邦、玉山銀行原生數位 PDF 之應繳總額、扣款日、扣繳帳號、卡號末四碼與消費明細。
+  - **長週期分期付款自動追蹤**：精準解析 `20/24`、`分30期之第15期`，並自動倒推回起算年月 (`startYear/startMonth`) 與剩餘金額。
+  - **通用 DB 累積合併引擎 (`merge_engine.py`)**：每次執行增量將最新帳單數據合併寫入 `result/pocketmoney_db.json`，格式嚴格相容主程式 `pocketmoney.html` 之 `importDatabaseJSON`，可直接於設定頁「匯入 JSON 資料庫」一鍵載入。
+  - **未來擴充介面**：保留 `securities/`（證券持股與除權息）與 `banks/`（存摺收支明細）擴充介面。
+- **F04 方案 B 自適應版面**（帳戶或信用卡 ≥ 4 才啟用，少於 4 維持原平鋪）：
+  - 首頁扣款安全檢核改為例外優先：不足帳戶置頂並附調撥建議（含「調撥」確認動作），其餘充足帳戶收斂為摘要列，可展開檢視。
+  - 銀行餘額分頁新增「卡片網格 / 緊湊表格」切換（預設緊湊表格）。
+  - 信用卡費分頁：本期無消費的卡片收納為可展開摘要列；新增「依卡片顯示 / 依扣款銀行歸戶」切換。
+  - 趨勢圖預設只畫銀行總餘額與餘額前 3 名帳戶，點選帳戶標籤可單獨聚焦。
+- **F05 日期控制**：頂部新增「前月 / 指定日期 / 次月 / 回到今天」列；檢視日期只存在本次瀏覽，不寫入儲存資料。扣款倒數、收入生效月份、收支時序軸、趨勢圖當月皆依檢視日期計算。
+- **F05 帳單登記抽屜**：信用卡費瀏覽狀態金額改為純文字，新增「登記本期帳單」抽屜（電腦為右側滑出、手機為底部面板）批次填寫各卡帳單。
+- **分期自動推進**：分期設定新增選填「起算年月」；填寫後期數依檢視月份自動推算，不再提供手動「+1 期」。
+
+### Changed（調整與改進）
+- `APP_VERSION` 升為 `0.1.0`（`STORAGE_KEY` 不變，資料向下相容；分期新增 `startYear / startMonth` 為選填欄位）。
+- 信用卡卡片的「本期帳單總額」由行內輸入改為文字顯示，修改請用「登記帳單」。
+
+### 未納入（F05 原型內容）
+- 原型的「時序測試」快捷按鈕與頁面頂部狀態條屬測試輔助，未帶入。
+- 原型的信用卡逐月 `records`、依日期自動判定已扣款、銀行餘額模擬扣款，與 Main 現行「手動確認扣款」模型衝突（見 ADR-001 方案 A），暫不導入，信用卡金額不隨檢視月份切換。
 
 ---
 
@@ -34,12 +62,12 @@
 
 ---
 
-## [v3.5-dev] — 2026-11-02（`pocketmoney_view.html` 基準線建立）
+## [v3.5-dev] — 2026-11-02（`pocketmoney.html` 基準線建立）
 ### 新增與整合
 - **12 個月趨勢圖與未來推估區間**：於首頁整合 Chart.js 折線圖，支援 `[當年度]`（含未來未發生月份淡色區隔＋自動滾算虛線 `futureZoneTrendPlugin`）與 `[近 12 個月]` 雙模式切換，並支援單一銀行膠囊篩選。
 - **薪資戶設定與一鍵薪資入帳**：銀行編輯彈窗新增「設為薪資入帳戶（每月入帳日、預估月薪）」，並提供「登記薪資入帳」快捷彈窗直接增加銀行餘額。
 - **股票股利入帳與賣出平倉結算**：投資部位新增「股利入帳」與「賣出平倉結算（即時預覽賣出交割款、原始買進成本、資本利得/損失）」，確認後自動扣減股數並將款項注入指定證券交割銀行。
-- **Agentic 四層文件體系**：建立 `AGENTS.md`、`PRODUCT.md`、`SCENARIOS.md`、`schema/SCHEMA.md`、`DECISIONS.md`、`BACKLOG.md` 與 `prototypes/_template/compare.html`。
+- **Agentic 四層文件體系**：建立 `AGENTS.md`、`PRODUCT.md`、`SCENARIOS.md`、`schema/SCHEMA.md`、`DECISIONS.md`、`BACKLOG.md` 與 `prototypes/_template/r1/compare.html`。
 
 ---
 

@@ -1,7 +1,7 @@
 # PocketMoney — 專案與文件導覽 (README.md)
 
 本資料夾為個人現金流與扣款安全管理工具 **PocketMoney** 之開發演進中心與規格文件庫。
-主力演進雛型為 [`pocketmoney_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney_view.html)（線上正式版基線為 [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html)）。
+主力演進雛型為 [`pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney.html)（線上正式版基線為 [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html)）。
 
 ---
 
@@ -28,7 +28,7 @@
 - **版本變更紀錄**：[`CHANGELOG.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/CHANGELOG.md)
 
 ### L3：功能實驗與巡檢紀錄
-- **A/B 並排審查板模板**：[`prototypes/_template/compare.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/_template/compare.html)
+- **A/B 並排審查板模板**：[`prototypes/_template/r1/compare.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/_template/r1/compare.html)
 - **三大人物模擬巡檢報告**：[`logs/persona-runs/2026-11-02_baseline_run.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/logs/persona-runs/2026-11-02_baseline_run.md)
 - **Manager 日常使用日誌**：[`logs/usage.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/logs/usage.md)
 

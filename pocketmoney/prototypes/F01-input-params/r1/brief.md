@@ -1,10 +1,10 @@
 # F01：Input 端「真實日期參數、每月薪資與其他收入」設定入口與現金流連動
 
 - **解決核心痛點**：
-  1. 拔除 `pocketmoney_view.html` 畫面上所有寫死的 `30號扣款`、`10號收單 / 20號扣款` 假設。
+  1. 拔除 `pocketmoney.html` 畫面上所有寫死的 `30號扣款`、`10號收單 / 20號扣款` 假設。
   2. 補齊真實使用者必備的三大參數輸入入口：**① 每月薪資（如 20～25 號撥款）與其他收入方式（副業、特定月份獎金/配息）**、**② 各信用卡結帳日與扣款日**、**③ 固定費用扣款日、單雙月/季繳生效月、以及「銀行直扣 vs 信用卡代繳（防重複扣款）」**。
   3. 修正分期與未來現金流連動：信用卡帳單下方清楚拆解 `分期攤提 + >5K 大額 + 一般日常`，且未來月份推估（`calcFutureMonthBankBalance`）會隨分期剩餘期數到期而自動減輕負擔。
-- **基準檔案**：[`pocketmoney_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney_view.html)
+- **基準檔案**：[`pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney.html)
 - **儲存隔離鍵**：`PocketMoney_exp_F01_A` / `PocketMoney_exp_F01_B`（若本機尚無資料，預設載入一組包含「25 號發薪、18 號與 27 號卡費、10 號房租直扣、雙月電費刷卡代繳」的範例狀態，方便打開 `compare.html` 立即操作比較）。
 
 ---
