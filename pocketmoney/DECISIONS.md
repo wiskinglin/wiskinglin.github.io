@@ -18,6 +18,7 @@
 | **ADR-007** | 多幣別帳戶支援時機 | ⏸️ 延後（P2） | 現階段聚焦台幣現金流防禦；外幣折算列為 P2 | `BACKLOG` |
 | **ADR-008** | 功能探索與驗收工作流（A/B 雙 HTML + `compare.html`） | 🟢 Manager 已拍板 | 每個新功能建立 `prototypes/Fxx-*/`，產出 `A.html`、`B.html`、`compare.html` 並排比較，勝出後合併回 `pocketmoney_view.html` | `AGENTS.md` |
 | **ADR-009** | F01 Input 參數與收入設定：A 內嵌式 vs B 集中式收支規則中心 | 🟢 Manager 選 B（2026-11-03） | 採方案 B：獨立「收支規則設定」分頁（`tab-rules`）＋ 規則總表行內直改 ＋ 首頁 1～31 號收支時序條 | `SCHEMA`、`UXD`、`UI_VOCABULARY`、`pocketmoney_view.html` |
+| **ADR-010** | 銀行餘額與信用卡費拆分及導航列重排 | 🟢 Manager 定案（2026-11-03） | 將原 `tab-cards` 拆分為獨立的 `tab-banks` 與 `tab-cards`，導航順序統一為：總覽 ➔ 銀行餘額 ➔ 投資部位 ➔ 信用卡費 ➔ 分期付款 ➔ 固定費用 ➔ 收支規則 ➔ 設定 | `UXD`、`pocketmoney_view.html` |
 
 ---
 
@@ -57,6 +58,21 @@
 ### ADR-005：信用卡月份定義
 - **背景與衝突（C5）**：信用卡有消費日、結帳日（`closingDay`）、扣款日（`dueDay`），跨月時容易混淆。
 - **決定**：🟢 **`CARD_MONTHLY_RECORD` 的 `(year, month)` 一律代表「實際從銀行扣款的年月」**，確保月底進行銀行帳戶扣款安全檢核時，月份 100% 對齊。
+
+---
+
+### ADR-010：銀行餘額與信用卡費拆分及導航列重排
+- **決定**：🟢 Manager 於 2026-11-03 指定：參考 `pocketmoney_v2.html`，將原本合一的「銀行與卡片」正式拆分為獨立的「銀行餘額」與「信用卡費」雙模組。
+- **導航順序規範**：
+  1. 總覽 (`dashboard`)
+  2. 銀行餘額 (`banks`)
+  3. 投資部位 (`stocks`)
+  4. 信用卡費 (`cards`)
+  5. 分期付款 (`installments`)
+  6. 固定費用 (`bills`)
+  7. 收支規則 (`rules`)
+  8. 設定 (`settings`)
+- **實作要求**：各自分頁配置專屬 3 大 KPI 卡、獨立卡片列表與操作按鈕；修復首頁與跨模組快捷跳轉導引。
 
 ---
 

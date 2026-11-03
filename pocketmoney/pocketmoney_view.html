@@ -357,40 +357,54 @@
       <!-- 第二層：6 大功能分頁膠囊列 (支援手機左右滑動 & 電腦完整排列，完全避開手機底部系統按鈕) -->
       <nav
         class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80">
+        <!-- 1. 總覽 -->
         <button onclick="switchTab('dashboard')" data-tab="dashboard"
           class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-chart-pie"></i>
-          <span>總覽檢核</span>
+          <span>總覽</span>
         </button>
+        <!-- 2. 銀行餘額 -->
+        <button onclick="switchTab('banks')" data-tab="banks"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-building-columns text-indigo-400"></i>
+          <span>銀行餘額</span>
+          <span id="navBadgeBanks" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] hidden">!</span>
+        </button>
+        <!-- 3. 投資部位 -->
+        <button onclick="switchTab('stocks')" data-tab="stocks"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i>
+          <span>投資部位</span>
+        </button>
+        <!-- 4. 信用卡費 -->
+        <button onclick="switchTab('banks')" data-tab="cards"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-regular fa-credit-card text-rose-400"></i>
+          <span>信用卡費</span>
+          <span id="navBadgeCards" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] hidden">!</span>
+        </button>
+        <!-- 5. 分期付款 -->
+        <button onclick="switchTab('installments')" data-tab="installments"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-layer-group text-amber-400"></i>
+          <span>分期付款</span>
+        </button>
+        <!-- 6. 固定費用 -->
+        <button onclick="switchTab('bills')" data-tab="bills"
+          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-bolt text-teal-400"></i>
+          <span>固定費用</span>
+        </button>
+        <!-- 7. 收支規則 -->
         <button onclick="switchTab('rules')" data-tab="rules"
           class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
           <i class="fa-solid fa-sliders text-indigo-400"></i>
-          <span>收支規則設定</span>
+          <span>收支規則</span>
         </button>
-        <button onclick="switchTab('cards')" data-tab="cards"
-          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
-          <i class="fa-solid fa-credit-card"></i>
-          <span>銀行餘額與信用卡費</span>
-          <span id="navBadgeCards" class="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] hidden">!</span>
-        </button>
-        <button onclick="switchTab('installments')" data-tab="installments"
-          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
-          <i class="fa-solid fa-layer-group"></i>
-          <span>信用卡分期管理</span>
-        </button>
-        <button onclick="switchTab('bills')" data-tab="bills"
-          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
-          <i class="fa-solid fa-bolt"></i>
-          <span>固定費用</span>
-        </button>
-        <button onclick="switchTab('stocks')" data-tab="stocks"
-          class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
-          <i class="fa-solid fa-arrow-trend-up"></i>
-          <span>投資部位</span>
-        </button>
+        <!-- 8. 設定 -->
         <button onclick="switchTab('settings')" data-tab="settings"
           class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
-          <i class="fa-solid fa-database"></i>
+          <i class="fa-solid fa-gear"></i>
           <span>設定</span>
         </button>
       </nav>
@@ -606,7 +620,7 @@
               </h3>
               <p class="text-fluid-sub text-slate-400">抓大放小：只記大筆開銷，不記瑣碎流水帳</p>
             </div>
-            <button onclick="switchTab('cards')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i
+            <button onclick="switchTab('banks')" class="text-fluid-sub font-bold text-indigo-500 num-nowrap">管理帳單 <i
                 class="fa-solid fa-angle-right"></i></button>
           </div>
           <div id="dashboardBigExpensesList" class="space-y-2"></div>
@@ -1248,11 +1262,12 @@
 
       const titles = {
         dashboard: 'PocketMoney',
-        rules: '集中收支規則中心',
-        cards: '銀行餘額與信用卡帳單',
+        banks: '銀行餘額與專戶存款',
+        stocks: '股票與資產部位',
+        cards: '信用卡費與大額消費',
         installments: '分期付款&現金流監控',
         bills: '定期性固定費用管理',
-        stocks: '股票與資金',
+        rules: '收支規則設定中心',
         settings: 'PIN碼設置與數據匯出'
       };
       if (titles[tabId]) {
@@ -1454,12 +1469,23 @@
       renderOverviewTrendChart();
 
       const shortfallCount = m.bankCheckups.filter(b => b.isShortfall).length;
-      const badge = document.getElementById('navBadgeCards');
-      if (shortfallCount > 0) {
-        badge.classList.remove('hidden');
-        badge.innerText = shortfallCount;
-      } else {
-        badge.classList.add('hidden');
+      const badgeCards = document.getElementById('navBadgeCards');
+      if (badgeCards) {
+        if (m.unpaidCardsCount > 0) {
+          badgeCards.classList.remove('hidden');
+          badgeCards.innerText = m.unpaidCardsCount;
+        } else {
+          badgeCards.classList.add('hidden');
+        }
+      }
+      const badgeBanks = document.getElementById('navBadgeBanks');
+      if (badgeBanks) {
+        if (shortfallCount > 0) {
+          badgeBanks.classList.remove('hidden');
+          badgeBanks.innerText = shortfallCount;
+        } else {
+          badgeBanks.classList.add('hidden');
+        }
       }
 
       const pinBtnText = document.getElementById('pinSetupBtnText');
@@ -1525,7 +1551,7 @@
 
       const bankGrid = document.getElementById('bankCheckupGrid');
       if (m.bankCheckups.length === 0) {
-        bankGrid.innerHTML = `<div class="col-span-full text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未新增銀行帳戶，請至「<button onclick="switchTab('cards')" class="text-indigo-500 font-bold hover:underline">銀行餘額與信用卡費</button>」新增帳戶，或至「<button onclick="switchTab('settings')" class="text-indigo-500 font-bold hover:underline">設定</button>」匯入 v3 備份檔</div>`;
+        bankGrid.innerHTML = `<div class="col-span-full text-center py-6 text-fluid-sub text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">尚未新增銀行帳戶，請至「<button onclick="switchTab('banks')" class="text-indigo-500 font-bold hover:underline">銀行餘額與信用卡費</button>」新增帳戶，或至「<button onclick="switchTab('settings')" class="text-indigo-500 font-bold hover:underline">設定</button>」匯入 v3 備份檔</div>`;
       } else {
       bankGrid.innerHTML = m.bankCheckups.map(b => {
         const borderClass = b.isShortfall
@@ -1646,24 +1672,61 @@
       `;
     }
 
-    function renderBanksAndCards(m) {
-      document.getElementById('bankTotalBalanceKPI').innerText = fmtMoney(m.totalBankBalance);
-      document.getElementById('bankAfterTotalBalanceKPI').innerText = `待扣款後預計結餘 ${fmtMoney(m.totalAfterBankBalance)}`;
-      document.getElementById('cardsUnpaidTotalKPI').innerText = fmtMoney(m.unpaidCardTotal);
-      document.getElementById('cardsStatusSummaryKPI').innerText = `待繳 ${m.unpaidCardsCount} 張卡・已繳清 ${m.paidCardsCount} 張卡`;
+    function renderBanksTab(m) {
+      const bankBalKPI = document.getElementById('bankTotalBalanceKPI');
+      if (bankBalKPI) bankBalKPI.innerText = fmtMoney(m.totalBankBalance);
+
+      const totalInflowsMonth = (state.inflows || []).reduce((s, inf) => s + (Number(inf.amount) || 0), 0);
+      const inflowsKPI = document.getElementById('bankInflowsTotalKPI');
+      if (inflowsKPI) inflowsKPI.innerText = `+${fmtMoney(totalInflowsMonth)}`;
+      const inflowsSumKPI = document.getElementById('bankInflowsSummaryKPI');
+      if (inflowsSumKPI) inflowsSumKPI.innerText = `共 ${(state.inflows || []).length} 筆收入項目已登錄`;
+
+      const afterBalKPI = document.getElementById('bankAfterTotalBalanceKPI');
+      if (afterBalKPI) afterBalKPI.innerText = `待扣款後預計結餘 ${fmtMoney(m.totalAfterBankBalance)}`;
 
       const statusEl = document.getElementById('bankShortfallStatusKPI');
-      const actionEl = document.getElementById('bankShortfallActionKPI');
-      if (m.bankCheckups.length === 0) {
-        statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-slate-400">尚未設定銀行帳戶</span>`;
-        actionEl.innerHTML = `<span class="text-fluid-sub text-slate-400">請先新增銀行帳戶與信用卡帳單</span>`;
-      } else if (m.shortfallBankCount > 0) {
-        statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-rose-500">⚠️ ${m.shortfallBankCount} 個帳戶餘額不足</span>`;
-        actionEl.innerHTML = `<span class="text-fluid-sub text-rose-400 font-semibold">請儘速調度轉帳補足，避免扣款失敗</span>`;
-      } else {
-        statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">✅ 全數帳戶餘額充足</span>`;
-        actionEl.innerHTML = `<span class="text-fluid-sub text-slate-400">所有扣繳戶頭皆足以支應本月扣款</span>`;
+      if (statusEl) {
+        if (m.bankCheckups.length === 0) {
+          statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-slate-400">尚未設定銀行帳戶</span>`;
+        } else if (m.shortfallBankCount > 0) {
+          statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-rose-500">⚠️ ${m.shortfallBankCount} 個帳戶餘額不足</span>`;
+        } else {
+          statusEl.innerHTML = `<span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">✅ 全數帳戶餘額充足</span>`;
+        }
       }
+    }
+
+    function renderCardsTab(m) {
+      const unpaidKPI = document.getElementById('cardsUnpaidTotalKPI');
+      if (unpaidKPI) unpaidKPI.innerText = fmtMoney(m.unpaidCardTotal);
+      const statusKPI = document.getElementById('cardsStatusSummaryKPI');
+      if (statusKPI) statusKPI.innerText = `待繳 ${m.unpaidCardsCount} 張卡・已繳清 ${m.paidCardsCount} 張卡`;
+
+      let allBigSum = 0;
+      let allBigCount = 0;
+      state.cards.forEach(c => {
+        (c.bigExpenses || []).forEach(x => {
+          allBigSum += Number(x.amount) || 0;
+          allBigCount++;
+        });
+      });
+      const bigTotalKPI = document.getElementById('cardsBigExpenseTotalKPI');
+      if (bigTotalKPI) bigTotalKPI.innerText = fmtMoney(allBigSum);
+      const bigCountKPI = document.getElementById('cardsBigExpenseCountKPI');
+      if (bigCountKPI) bigCountKPI.innerText = `共 ${allBigCount} 筆超過 $5,000 大額消費`;
+
+      const safetyKPI = document.getElementById('cardsDeductSafetyKPI');
+      if (safetyKPI) {
+        safetyKPI.innerHTML = m.shortfallBankCount > 0
+          ? `<span class="text-fluid-h3 font-extrabold num-nowrap text-rose-500">⚠️ 扣款帳戶有缺口</span>`
+          : `<span class="text-fluid-h3 font-extrabold num-nowrap text-emerald-500">✅ 扣款帳戶準備就緒</span>`;
+      }
+    }
+
+    function renderBanksAndCards(m) {
+      renderBanksTab(m);
+      renderCardsTab(m);
 
       const bankListEl = document.getElementById('bankAccountsList');
       bankListEl.innerHTML = m.bankCheckups.length === 0
