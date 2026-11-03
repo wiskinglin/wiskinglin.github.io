@@ -22,10 +22,28 @@
 | **ADR-011** | 漸進式功能解鎖架構（從單筆存量防禦到跨月歷史趨勢） | 🟢 Manager 定案（2026-11-03） | 解決初期無歷史數據問題：初期聚焦「當下存量盤點與扣款時序防禦」，隱藏/折疊未成形之 12 個月走勢圖；隨每月底「結算封存」累積真實歷史後，漸進解鎖走勢圖、月均分析與退坡曲線 | `PRODUCT.md`、`UXD.md`、`BACKLOG.md` |
 | **ADR-012** | 原型 F04（多帳戶多卡版面）與 F05（日期控制）導入 Main | 🟢 Manager 定案（2026-11-03） | 合併至 `pocketmoney.html`，帳戶/卡片 ≥ 4 啟用自適應版面；日期控制器與抽屜式帳單登記 | `CHANGELOG`、`pocketmoney.html` |
 | **ADR-013** | 外部對帳單分析模組架構（`analyzer`、機敏隔離與通用匯入 DB 設計） | 🟢 Manager 定案（2026-11-03） | 程式命名 `analyzer/` 納入 Git；真實 PDF 與 `result/` 個人 DB 實施 Git 忽略隔離；支援信用卡/證券/銀行擴充，輸出累積至相容主程式匯入之 `pocketmoney_db.json` | `analyzer/`、`BACKLOG.md` |
+| **ADR-014** | 取消 F03 扣款缺口跨行調撥與單期覆寫 | ❌ 使用者決策取消 | 使用者判定功能無實用效益，正式廢棄不實施；維持使用者自行調撥 | `BACKLOG.md` |
+| **ADR-015** | 初次使用與重設資料全面歸零 | 🟢 已實作定案 | `DEFAULT_STATE` 資料全面清空為 0（空陣列）；重設功能明確清空 localStorage 達成乾淨零狀態 | `pocketmoney.html` |
 
 ---
 
 ## 詳細決策紀錄
+
+### ADR-015：初次使用與重設資料全面歸零（Zero Initial State）
+- **背景**：舊版 `DEFAULT_STATE` 包含預設寫死的假帳戶、假信用卡與假股票，導致新使用者初次開啟或於設定頁點選「完全清空重設」時，資料無法真正歸零，仍會回填寫死數據。
+- **決定**：🟢
+  1. `DEFAULT_STATE` 中的所有實體陣列（`banks`, `inflows`, `cards`, `installments`, `bills`, `stocks`）預設皆設為空陣列 `[]`，數值為 0。
+  2. `resetToDemoData()` 明確呼叫 `localStorage.removeItem(STORAGE_KEY)` 並重設為 `DEFAULT_STATE`，再執行 `renderAll()`，讓重設與初次進入均呈現真實乾淨的零狀態。
+- **影響範圍**：`pocketmoney.html`、`BACKLOG.md`。
+
+---
+
+### ADR-014：取消 F03 扣款缺口跨行調撥與單期覆寫
+- **背景**：原 Roadmap 規劃 Step 3 (`F03`) 於 View 模擬出扣款缺口時，由系統自動提供跨行調撥建議並生成 `transfer_out`/`transfer_in` 配對，以及支援單期金額覆寫。
+- **決定**：❌ 使用者於 2026-11-03 評估該功能無實質效益，指示從 Backlog 註記不實施。維持由使用者自行依實際需要於銀行端轉帳，系統保持專注於防禦與對帳核心。
+- **影響範圍**：`BACKLOG.md`、`DECISIONS.md`。
+
+---
 
 ### ADR-013：外部對帳單分析模組架構（analyzer、機敏隔離與通用匯入 DB 設計）
 - **背景**：使用者需分析外部信用卡帳單（國泰、富邦、玉山等）與未來之證券對帳單、銀行存摺明細，且堅持機敏個人資料不得進入 Git 版本控制，同時期望分析結果能以累積方式輸出為單一 DB 檔案，供主程式 `pocketmoney.html` 直接一鍵匯入。

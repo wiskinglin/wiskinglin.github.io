@@ -14,18 +14,22 @@
 | :--- | :--- | :---: | :--- | :--- |
 | **F01** | Input 參數與收支規則中心 | 🟢 已合併 | prototypes/F01-input-params/r1/ | ADR-009 |
 | **F02** | 跨月時序現金流模擬與自動扣款 | 🟡 開發中 | prototypes/F02-view-cashflow/r1/ | ADR-001, ADR-005 |
-| **F03** | 扣款缺口跨行調撥與單期覆寫 | ⏳ 待探索 | prototypes/F03-action-transfer/r1/ | ADR-006 |
+| **F03** | 扣款缺口跨行調撥與單期覆寫 | ❌ 不實施 | - | ADR-014 |
+| **F09** | 初次使用與重設資料全面歸零 | 🟢 已合併 | pocketmoney.html | ADR-015 |
 | **F04** | 多帳戶與多信用卡自適應版面 | 🟢 已合併 | prototypes/F04-multi-card-account-layout/r1/ | ADR-012 |
 | **F05** | 日期控制與輸入瀏覽分離 | 🟢 已合併 | prototypes/F05-date-controller-flow/r1/ | ADR-012 |
 | **F06** | 外部對帳單與明細分析器 | 🟢 已完成 (Viewer進行中) | nalyzer/ | ADR-013 |
 | **F07** | 漸進式功能解鎖 (Progressive Disclosure) | ⏳ 規劃定案 | - | ADR-011 |
 | **F08** | Profile 雙軌切換架構 (Demo與多帳本) | ⏳ 規格已備 | - | SCENARIOS |
+| **F10** | 證券戶與持股資料模型正規化 | ⏳ 待辦探索 | - | ADR-004、ERD |
 
 ---
 
 ## 📊 STATUS 儀表板（最後更新：2026-11-03）
 
 ### 🟢 已完成並合併（Completed & Merged）
+- **F09 — 初次使用與重設資料全面歸零（Zero Initial State & Reset）**
+  - **交付成果**：移除 DEFAULT_STATE 中的預設寫死示範數據（台新、中信、永豐、CUBE卡等），所有帳戶、信用卡、收支規則、分期與持股預設皆清空歸零（空陣列）。修復設定頁「完全清空重設」功能，執行時確實清除 localStorage 與記憶體狀態並重新渲染，徹底解決初次開啟與點選重設無法歸零的問題。
 - **`F06-Viewer` — 帳單比對檢驗器（Split-Pane Bill & PDF Verification Viewer）**
   - **交付成果**：獨立單檔工具 [`viewer.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/analyzer/viewer.html)，支援左右雙欄對照（左欄原生 PDF 預覽、右欄四大標準化模組：帳單摘要與平帳檢核、約定扣繳檢核卡、長週期分期進度條、消費明細標準表格）。支援拖曳載入 PDF/JSON，通過零 AI Slop 規範驗收。
 - **`F06` — 外部對帳單與明細分析器（External Statement & Bill Analyzer）[第一階段]**
@@ -59,6 +63,7 @@
 | **Step 4** | **`F04`** | **漸進式功能解鎖（Progressive Disclosure：從單月防禦到成熟期趨勢）** | 1. **單筆資料狀態（Zero/Low History State）**：當尚無歷史封存快照時，隱藏失真的 12 個月趨勢圖與失真月均，改以「當期存量防禦卡」與「首月結算指引」為核心。<br>2. **累積 2~3 個月後**：隨使用者每月執行「月底結算封存」，自動展開真實成長走勢圖。<br>3. **累積 6~12 個月後**：自動解鎖信用卡真實月均日常消費水準與分期退坡深度分析。 | ⏳ **規劃已定案 (ADR-011)** |
 | **Step 5** | **`F05`** | **Profile 雙軌切換架構（教學示範沙盒 ＋ 多身分 Multi-Profile 切換）** | 1. **教學示範 Profile (Demo Showcase)**：內建小資多卡分期與家庭房貸時差示範資料，開箱即看圖表，並支援一鍵重置沙盒，不污染真實資料。<br>2. **多身分 Multi-Profile 帳本切換**：單一 User 免登出秒級切換「個人生活帳」、「家庭公用帳」、「副業/工作室帳」，各自獨立儲存空間。 | ⏳ **規格已備 (SCENARIOS & UXD)** |
 | **Step 6** | **`F06`** | **外部對帳單與明細分析器（External Statement & Bill Analyzer）** | 1. **信用卡/證券/銀行對帳單自動分析**：針對數位原生 PDF 萃取應繳總額、扣款日、單筆消費與長週期分期資訊（見 ADR-013）。<br>2. **機敏個資隔離與結果累積匯入**：原始帳單與分析 DB 完全隔離於 Git 之外；分析結果累積輸出至 `result/pocketmoney_db.json`，支援主程式一鍵匯入。<br>3. **雙欄比對檢視器 (`viewer.html`)**：提供雙向平帳稽核與明細標準化核對。 | 🟢 **已完成 (含 F06-Viewer)** |
+| **Step 7** | **`F10`** | **Data 端：證券戶與持股資料模型正規化（移除 SETTINGS 中介依賴）** | 1. **建立 `SECURITIES_ACCOUNT` 實體**：引入證券戶（如「國泰證券」、「元大證券」），建立 `BANK ||--o{ SECURITIES_ACCOUNT ||--o{ STOCK` 正規化階層。<br>2. **解除 SETTINGS 轉介耦合**：移除由全域偏好設定轉介交割帳戶的非正規化設計，讓持股、T+2 交割與除權息直接歸屬證券戶與綁定銀行。<br>3. **多券商水位獨立管理**：支援不同券商獨立計算待命現金池與持股防禦水位。 | ⏳ **待辦探索 (待啟動)** |
 
 ---
 
@@ -69,7 +74,7 @@ timeline
     title PocketMoney 產品長期演進藍圖
     Phase 1 (MVP 當前階段) : F01 Input 規則與自訂日期
                           : F02 時序水位模擬與月結推進
-                          : F03 缺口調撥與單期覆寫
+                          %% F03 缺口調撥與單期覆寫 (已取消)
                           : Safe-to-Spend 決策卡
                           : F08 Demo 示範與多帳本切換
     Phase 2 (體驗優化)    : 90 天互動日曆與走勢圖

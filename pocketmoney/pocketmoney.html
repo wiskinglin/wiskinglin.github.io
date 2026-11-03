@@ -1225,33 +1225,14 @@
         privacyMode: false,
         pinCode: '',
         stockMinHoldRatio: 70,
-        securitiesBankIds: ['bank_sinopac']
+        securitiesBankIds: []
       },
-      banks: [
-        { id: 'bank_taishin', name: '台新 Richart (薪轉戶)', balance: 48000, note: '25號撥薪與日常轉帳', isSalaryAccount: true, salaryDay: 25, salaryAmount: 58000 },
-        { id: 'bank_ctbc', name: '中國信託 (房租與卡費戶)', balance: 26000, note: '扣房租與主力卡費', isSalaryAccount: false, salaryDay: 5, salaryAmount: 0 },
-        { id: 'bank_sinopac', name: '永豐大戶 (證券交割戶)', balance: 85000, note: '台股波段交割池', isSalaryAccount: false, salaryDay: 5, salaryAmount: 0 }
-      ],
-      inflows: [
-        { id: 'inf_1', name: '本業每月薪資', type: 'salary', cycle: '每月固定', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], payDay: 25, amount: 58000, bankId: 'bank_taishin', receivedThisMonth: false },
-        { id: 'inf_2', name: '專案顧問兼職收入', type: 'side', cycle: '每月固定', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], payDay: 10, amount: 12000, bankId: 'bank_taishin', receivedThisMonth: true },
-        { id: 'inf_3', name: '年終與績效獎金', type: 'bonus', cycle: '特定月份', activeMonths: [1, 7], payDay: 25, amount: 120000, bankId: 'bank_taishin', receivedThisMonth: false }
-      ],
-      cards: [
-        { id: 'card_cube', name: '國泰 CUBE 卡', bankId: 'bank_ctbc', closingDay: 3, dueDay: 18, statementTotal: 22500, paid: false, bigExpenses: [{ id: 'be_1', title: '日本機票預訂', amount: 11500 }] },
-        { id: 'card_gogo', name: '台新 @GoGo 卡', bankId: 'bank_taishin', closingDay: 12, dueDay: 27, statementTotal: 14800, paid: false, bigExpenses: [] }
-      ],
-      installments: [
-        { id: 'inst_1', title: 'MacBook Air M3 (12期)', cardId: 'card_cube', cardName: '國泰 CUBE 卡', totalAmount: 36000, totalPeriods: 12, monthlyAmount: 3000, paidPeriods: 9 }
-      ],
-      bills: [
-        { id: 'bill_rent', name: '房屋租金', cycle: '每月固定', dueDay: 10, paymentMethod: 'bank_direct', bankId: 'bank_ctbc', cardId: '', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], amount: 16000, status: 'unpaid' },
-        { id: 'bill_elec', name: '台電雙月電費', cycle: '雙月帳單', dueDay: 15, paymentMethod: 'card_auto', bankId: '', cardId: 'card_cube', activeMonths: [2,4,6,8,10,12], amount: 2400, status: 'unpaid' },
-        { id: 'bill_net', name: '光世代網路費', cycle: '每月固定', dueDay: 20, paymentMethod: 'card_auto', bankId: '', cardId: 'card_gogo', activeMonths: [1,2,3,4,5,6,7,8,9,10,11,12], amount: 999, status: 'unpaid' }
-      ],
-      stocks: [
-        { id: 'stk_1', code: '0050', name: '元大台灣50', shares: 2000, avgCost: 155, currentPrice: 185, note: '長期核心持股' }
-      ]
+      banks: [],
+      inflows: [],
+      cards: [],
+      installments: [],
+      bills: [],
+      stocks: []
     };
 
     let state = loadState();
@@ -4264,11 +4245,12 @@
     }
 
     function resetToDemoData() {
-      if (confirm('⚠️ 警告：這將會清除您本機瀏覽器中的所有財務紀錄並重設！\n\n確定要完全清空嗎？')) {
+      if (confirm('確定要完全清空所有財務資料嗎？此動作將清除本機所有紀錄並歸零。')) {
+        localStorage.removeItem(STORAGE_KEY);
         state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         saveState();
         renderAll();
-        showToast('已將所有資料清空重置為 0', 'info');
+        showToast('已清空所有資料並歸零為 0', 'info');
       }
     }
 
