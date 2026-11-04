@@ -615,9 +615,7 @@
               <span id="bankShortfallSummaryBadge"
                 class="text-fluid-sub px-2.5 py-0.5 rounded-full font-bold num-nowrap">檢核中</span>
             </div>
-            <p class="text-fluid-sub text-slate-500 dark:text-slate-400">
-              檢核各銀行帳戶是否足以支應綁定之信用卡費與固定支出。
-            </p>
+            
           </div>
           <button onclick="settleAllPendingBills()"
             class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition shrink-0">
@@ -702,7 +700,7 @@
               <i class="fa-solid fa-money-bill-wave text-emerald-500"></i>
               <span>每月薪資與其他收入來源設定 (Inflows)</span>
             </h3>
-            <p class="text-fluid-sub text-slate-400 mt-0.5">管理每月薪資、兼職與配息入帳規則</p>
+            
           </div>
           <button onclick="openInflowModal()"
             class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition">
@@ -721,7 +719,7 @@
               <i class="fa-solid fa-credit-card text-rose-500"></i>
               <span>信用卡結帳日、扣款日與帳單拆解規則 (Cards)</span>
             </h3>
-            <p class="text-fluid-sub text-slate-400 mt-0.5">設定結帳日、扣款日與關聯銀行</p>
+            
           </div>
           <button onclick="openCardModal()"
             class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition">
@@ -793,7 +791,7 @@
             </h2>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
-            <div id="bankViewToggleWrap" style="display:none" class="items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-fluid-sub">
+            <div id="bankViewToggleWrap" class="items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-fluid-sub">
               <button onclick="setBanksViewMode('grid')" id="btnBankModeGrid" class="px-2.5 py-1 rounded-lg font-bold transition num-nowrap">
                 <i class="fa-solid fa-table-cells-large mr-1"></i>卡片網格
               </button>
@@ -857,7 +855,7 @@
             </h2>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
-            <div id="cardsGroupToggleWrap" style="display:none" class="items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-fluid-sub">
+            <div id="cardsGroupToggleWrap" class="items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-fluid-sub">
               <button onclick="setCardsGroupMode('byCard')" id="btnCardModeByCard" class="px-2.5 py-1 rounded-lg font-bold transition num-nowrap">
                 <i class="fa-solid fa-credit-card mr-1"></i>依卡片顯示
               </button>
@@ -1000,8 +998,7 @@
                 <i class="fa-solid fa-scale-balanced text-indigo-500"></i>
                 <span>台股部位</span>
               </h2>
-              <p class="text-fluid-sub text-slate-400">台股慣例：<span class="text-rose-500 font-bold">紅漲 (獲利)</span> / <span
-                  class="text-emerald-500 font-bold">綠跌 (虧損)</span></p>
+              
             </div>
             <span id="stockTabAlertBadge"
               class="text-fluid-sub font-bold px-2.5 py-1 rounded-full num-nowrap">計算中</span>
@@ -1059,7 +1056,7 @@
             <div class="mt-1">
               <span id="stockSecuritiesCashTotal"
                 class="font-mono font-black text-amber-500 text-fluid-h2 tracking-tight num-nowrap block">NT$ 0</span>
-              <p class="text-fluid-sub text-slate-400 mt-0.5">已連結所選銀行帳戶餘額，自動計算持股比例</p>
+              
             </div>
           </div>
 
@@ -1367,6 +1364,332 @@ function instPaid(inst) {
       return localStorage.getItem(STORAGE_KEY);
     }
 
+const DEMO_H2_DATA = {
+  "schemaVersion": 2,
+  "settings": {
+    "privacyMode": false,
+    "stockMinHoldRatio": 70,
+    "securitiesBankIds": [
+      "bank_sinopac"
+    ],
+    "snapshotDate": "2026-10-31",
+    "snapshotConfirmed": true
+  },
+  "banks": [
+    {
+      "id": "bank_taishin",
+      "name": "台新銀行",
+      "accountType": "savings",
+      "balance": 145000,
+      "isSalaryAccount": true,
+      "salaryAmount": 58000,
+      "color": "rose",
+      "historyRecords": [
+        { "year": 2026, "month": 8, "balance": 122000 },
+        { "year": 2026, "month": 9, "balance": 130000 },
+        { "year": 2026, "month": 10, "balance": 141000 }
+      ]
+    },
+    {
+      "id": "bank_ctbc",
+      "name": "中國信託",
+      "accountType": "savings",
+      "balance": 52000,
+      "isSalaryAccount": false,
+      "color": "emerald",
+      "historyRecords": [
+        { "year": 2026, "month": 8, "balance": 45000 },
+        { "year": 2026, "month": 9, "balance": 48000 },
+        { "year": 2026, "month": 10, "balance": 50000 }
+      ]
+    },
+    {
+      "id": "bank_sinopac",
+      "name": "永豐銀行",
+      "accountType": "securities",
+      "balance": 88000,
+      "isSalaryAccount": false,
+      "color": "amber",
+      "historyRecords": [
+        { "year": 2026, "month": 8, "balance": 80000 },
+        { "year": 2026, "month": 9, "balance": 82000 },
+        { "year": 2026, "month": 10, "balance": 85000 }
+      ]
+    }
+  ],
+  "inflows": [
+    {
+      "id": "inf_salary",
+      "name": "正職薪水",
+      "amount": 58000,
+      "payDay": 25,
+      "bankId": "bank_taishin",
+      "receivedThisMonth": false,
+      "activeMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    }
+  ],
+  "cards": [
+    {
+      "id": "card_ctbc_linepay",
+      "name": "中信 LINE Pay",
+      "bankId": "bank_ctbc",
+      "billingDay": 5,
+      "dueDay": 20,
+      "statementTotal": 18399,
+      "paymentStatus": "unpaid",
+      "records": [
+        {
+          "year": 2026,
+          "month": 8,
+          "amount": 14200,
+          "status": "paid",
+          "bigExpenses": []
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "amount": 16800,
+          "status": "paid",
+          "bigExpenses": []
+        },
+        {
+          "year": 2026,
+          "month": 10,
+          "amount": 38500,
+          "status": "paid",
+          "bigExpenses": [
+            {
+              "title": "日本機票預訂",
+              "amount": 22000,
+              "note": "年假旅遊"
+            }
+          ]
+        },
+        {
+          "year": 2026,
+          "month": 11,
+          "amount": 18399,
+          "status": "unpaid",
+          "bigExpenses": []
+        }
+      ],
+      "bigExpenses": []
+    },
+    {
+      "id": "card_taishin_flygo",
+      "name": "台新 FlyGo",
+      "bankId": "bank_taishin",
+      "billingDay": 12,
+      "dueDay": 27,
+      "statementTotal": 12000,
+      "paymentStatus": "unpaid",
+      "records": [
+        {
+          "year": 2026,
+          "month": 8,
+          "amount": 8500,
+          "status": "paid",
+          "bigExpenses": []
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "amount": 12000,
+          "status": "paid",
+          "bigExpenses": []
+        },
+        {
+          "year": 2026,
+          "month": 10,
+          "amount": 9200,
+          "status": "paid",
+          "bigExpenses": []
+        },
+        {
+          "year": 2026,
+          "month": 11,
+          "amount": 12000,
+          "status": "unpaid",
+          "bigExpenses": []
+        }
+      ],
+      "bigExpenses": []
+    }
+  ],
+  "installments": [
+    {
+      "id": "inst_macbook",
+      "name": "MacBook Pro 16\"",
+      "cardId": "card_ctbc_linepay",
+      "cardName": "中信 LINE Pay",
+      "totalAmount": 36000,
+      "totalPeriods": 12,
+      "monthlyAmount": 3000,
+      "paidPeriods": 7,
+      "startYear": 2026,
+      "startMonth": 5,
+      "startYearMonth": "2026-05"
+    }
+  ],
+  "bills": [
+    {
+      "id": "bill_rent",
+      "name": "房屋租金",
+      "amount": 16000,
+      "dueDay": 10,
+      "category": "rigid",
+      "cycle": "每月固定",
+      "paymentMethod": "bank_direct",
+      "bankId": "bank_taishin",
+      "status": "unpaid",
+      "activeMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    },
+    {
+      "id": "bill_power",
+      "name": "台電電費",
+      "amount": 2400,
+      "dueDay": 20,
+      "category": "utility",
+      "cycle": "雙月帳單",
+      "paymentMethod": "card_auto",
+      "cardId": "card_ctbc_linepay",
+      "status": "unpaid",
+      "activeMonths": [2, 4, 6, 8, 10, 12]
+    },
+    {
+      "id": "bill_hinet",
+      "name": "光世代網路",
+      "amount": 999,
+      "dueDay": 20,
+      "category": "utility",
+      "cycle": "每月固定",
+      "paymentMethod": "card_auto",
+      "cardId": "card_ctbc_linepay",
+      "status": "unpaid",
+      "activeMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    }
+  ],
+  "stocks": [
+    {
+      "id": "stock_2330",
+      "code": "2330",
+      "name": "台積電",
+      "shares": 200,
+      "currentPrice": 1050,
+      "avgCost": 920
+    },
+    {
+      "id": "stock_0050",
+      "code": "0050",
+      "name": "元大台灣50",
+      "shares": 1000,
+      "currentPrice": 190,
+      "avgCost": 165
+    }
+  ]
+}
+;
+
+    function loadDemoH2Data() {
+      state = normalizeState(JSON.parse(JSON.stringify(DEMO_H2_DATA)));
+      saveState();
+      renderAll();
+      showToast('已成功載入半年展示測試資料庫！');
+    }
+    window.loadDemoH2Data = loadDemoH2Data;
+
+function normalizeState(loaded) {
+      if (!loaded || typeof loaded !== 'object') {
+        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      }
+      if (!loaded.schemaVersion || loaded.schemaVersion < 2) {
+        loaded.schemaVersion = 2;
+      }
+      if (!loaded.settings) loaded.settings = {};
+      if (!loaded.settings.snapshotDate) {
+        loaded.settings.snapshotDate = '2026-10-31';
+        loaded.settings.snapshotConfirmed = false;
+      }
+      if (!Array.isArray(loaded.banks)) loaded.banks = [];
+      loaded.banks.forEach(b => {
+        b.name = b.name || '銀行帳戶';
+        b.balance = Number(b.balance) || 0;
+      });
+
+      if (!Array.isArray(loaded.cards)) loaded.cards = [];
+      loaded.cards.forEach(c => {
+        c.name = c.name || c.title || '信用卡';
+        if (!Array.isArray(c.records)) {
+          c.records = [];
+          const snapD = new Date(loaded.settings.snapshotDate || '2026-10-31');
+          const sY = snapD.getFullYear();
+          const sM = snapD.getMonth() + 1;
+          c.records.push({
+            year: sY,
+            month: sM,
+            amount: Number(c.statementTotal) || 0,
+            bigExpenses: JSON.parse(JSON.stringify(c.bigExpenses || [])),
+            status: c.paid ? 'paid' : 'auto'
+          });
+        }
+      });
+
+      if (!Array.isArray(loaded.installments)) loaded.installments = [];
+      loaded.installments.forEach(inst => {
+        inst.title = inst.title || inst.name || '分期項目';
+        inst.name = inst.name || inst.title;
+        inst.totalPeriods = Number(inst.totalPeriods) || 1;
+        inst.monthlyAmount = Number(inst.monthlyAmount) || 0;
+        inst.paidPeriods = Number(inst.paidPeriods) || 0;
+        if (!inst.cardId && inst.cardName) {
+          const matched = loaded.cards.find(c => c.name === inst.cardName);
+          if (matched) inst.cardId = matched.id;
+          else if (loaded.cards[0]) inst.cardId = loaded.cards[0].id;
+        }
+      });
+
+      if (!Array.isArray(loaded.bills)) loaded.bills = [];
+      loaded.bills.forEach(b => {
+        b.name = b.name || b.title || '固定費用';
+        b.amount = Number(b.amount) || 0;
+        b.dueDay = Number(b.dueDay) || 10;
+        if (!Array.isArray(b.activeMonths)) {
+          b.activeMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+        }
+      });
+
+      if (!Array.isArray(loaded.stocks)) loaded.stocks = [];
+      loaded.stocks.forEach(st => {
+        st.name = st.name || st.title || '股票部位';
+        st.symbol = st.symbol || st.code || '';
+        st.shares = Number(st.shares ?? 0);
+        st.currentPrice = Number(st.currentPrice ?? st.current_price ?? 0);
+        st.avgCost = Number(st.avgCost ?? st.costPrice ?? st.cost_price ?? 0);
+      });
+
+      if (!Array.isArray(loaded.inflows)) loaded.inflows = [];
+      loaded.inflows.forEach(inf => {
+        inf.name = inf.name || '收入項目';
+        inf.amount = Number(inf.amount) || 0;
+        inf.payDay = Number(inf.payDay) || 5;
+      });
+
+      if (!Array.isArray(loaded.settings.securitiesBankIds) && loaded.banks) {
+        loaded.settings.securitiesBankIds = loaded.banks
+          .filter(b => b.name.includes('證券') || b.id.includes('sec'))
+          .map(b => b.id);
+      }
+
+      return loaded;
+    }
+
+    function loadDemoH2Data() {
+      state = normalizeState(JSON.parse(JSON.stringify(DEMO_H2_DATA)));
+      saveState();
+      renderAll();
+      showToast('已成功載入半年展示測試資料庫！');
+    }
+
     function loadState() {
       try {
         let loaded;
@@ -1437,10 +1760,10 @@ function instPaid(inst) {
             .filter(b => b.name.includes('證券') || b.id.includes('sec'))
             .map(b => b.id);
         }
-        return loaded;
+        return normalizeState(loaded);
       } catch (e) {
-        console.error('[PocketMoney] 讀取本地資料失敗，改用預設值：', e);
-        return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        console.error('[PocketMoney] 載入資料失敗，使用預設值:', e);
+        return normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
       }
     }
 
@@ -1459,7 +1782,8 @@ function instPaid(inst) {
 
     function fmtMoney(num, showSign = false) {
       const n = Number(num) || 0;
-      if (state.settings.privacyMode) return 'NT$ ••••••';
+      if (state && state.settings && state.settings.privacyMode) return 'NT$ ••••••';
+      if (Math.abs(n) < 0.001) return 'NT$ 0';
       const sign = showSign && n > 0 ? '+' : (n < 0 ? '-' : '');
       return `${sign}NT$ ${Math.abs(Math.round(n)).toLocaleString('zh-TW')}`;
     }
@@ -1633,7 +1957,7 @@ function instPaid(inst) {
       });
 
       const totalAssets = totalBankBalance + stockMarketValue;
-      const netWorth = totalAssets - totalUnpaidLiabilities;
+      const netWorth = totalAssets - totalUnpaidLiabilities - installmentRemainingTotal;
 
       const unpaidCardsCount = state.cards.filter(c => !isCardDeducted(c, vDate)).length;
       const paidCardsCount = state.cards.filter(c => isCardDeducted(c, vDate)).length;
@@ -1731,7 +2055,7 @@ function instPaid(inst) {
 
     }
 
-    function renderDashboard(m) {
+    function renderDashboard(m = computeFinancialMetrics()) {
       document.getElementById('kpiNetWorth').innerText = fmtMoney(m.netWorth);
       document.getElementById('kpiTotalAssets').innerText = fmtMoney(m.totalAssets);
       document.getElementById('kpiTotalUnpaid').innerText = fmtMoney(m.totalUnpaidLiabilities);
@@ -1837,7 +2161,7 @@ function instPaid(inst) {
         return `
               <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-fluid-sub">
                 <div class="flex items-center justify-between gap-2 font-bold mb-1">
-                  <span class="truncate">${inst.title} <span class="font-normal text-slate-400">(${cardName})</span></span>
+                  <span class="truncate">${inst.title || inst.name || "未命名分期"} <span class="font-normal text-slate-400">(${cardName})</span></span>
                   <span class="font-mono num-nowrap shrink-0">${fmtMoney(inst.monthlyAmount)}/月 (剩${left}期)</span>
                 </div>
                 <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -1985,7 +2309,7 @@ function instPaid(inst) {
     function syncBankViewToggle(count) {
       const wrap = document.getElementById('bankViewToggleWrap');
       if (!wrap) return;
-      wrap.style.display = count >= ADAPTIVE_MIN_COUNT ? 'flex' : 'none';
+      wrap.style.display = 'flex';
       const on = 'px-2.5 py-1 rounded-lg font-bold transition num-nowrap bg-indigo-600 text-white shadow-sm';
       const off = 'px-2.5 py-1 rounded-lg font-bold transition num-nowrap text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white';
       document.getElementById('btnBankModeGrid').className = banksViewMode === 'grid' ? on : off;
@@ -2030,7 +2354,7 @@ function instPaid(inst) {
       `;
     }
 
-    function renderBanksTab(m) {
+    function renderBanksTab(m = computeFinancialMetrics()) {
       const bankBalKPI = document.getElementById('bankTotalBalanceKPI');
       if (bankBalKPI) bankBalKPI.innerText = fmtMoney(m.totalBankBalance);
 
@@ -2055,7 +2379,7 @@ function instPaid(inst) {
       }
     }
 
-    function renderCardsTab(m) {
+    function renderCardsTab(m = computeFinancialMetrics()) {
       const unpaidKPI = document.getElementById('cardsUnpaidTotalKPI');
       if (unpaidKPI) unpaidKPI.innerText = fmtMoney(m.unpaidCardTotal);
       const statusKPI = document.getElementById('cardsStatusSummaryKPI');
@@ -2084,12 +2408,12 @@ function instPaid(inst) {
       }
     }
 
-    function renderBanksAndCards(m) {
+    function renderBanksAndCards(m = computeFinancialMetrics()) {
       renderBanksTab(m);
       renderCardsTab(m);
 
       const bankListEl = document.getElementById('bankAccountsList');
-      const bankTableMode = m.bankCheckups.length >= ADAPTIVE_MIN_COUNT && banksViewMode === 'table';
+      const bankTableMode = banksViewMode === 'table';
       syncBankViewToggle(m.bankCheckups.length);
       bankListEl.className = bankTableMode
         ? 'overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 no-scrollbar'
@@ -2132,7 +2456,7 @@ function instPaid(inst) {
             ` : ''}
             <div class="flex items-center justify-between gap-2">
               <span class="text-slate-400">本期待扣總額</span>
-              <span class="font-mono font-bold num-nowrap text-rose-500">-${fmtMoney(b.requiredTotal)}</span>
+              <span class="font-mono font-bold num-nowrap text-rose-500">${b.requiredTotal > 0 ? "-" : ""}${fmtMoney(b.requiredTotal)}</span>
             </div>
             <div class="flex items-center justify-between gap-2">
               <span class="text-slate-400">${b.isShortfall ? '尚缺需補' : '扣後剩餘'}</span>
@@ -2453,7 +2777,7 @@ function instPaid(inst) {
       showToast('已儲存本期帳單');
     }
 
-    function renderInstallments(m) {
+    function renderInstallments(m = computeFinancialMetrics()) {
       document.getElementById('instMonthlyTotal').innerText = `${fmtMoney(m.installmentMonthlyTotal)} / 月`;
       document.getElementById('instRemainingTotal').innerText = fmtMoney(m.installmentRemainingTotal);
       document.getElementById('instActiveCount').innerText = `${m.activeInstallmentsCount} 筆`;
@@ -2497,7 +2821,7 @@ function instPaid(inst) {
               </div>
             </div>
 
-            <h4 class="font-bold text-fluid-h3">${inst.title}</h4>
+            <h4 class="font-bold text-fluid-h3">${inst.title || inst.name || "未命名分期"}</h4>
 
             <!-- 改為清晰的三行對齊列表，徹底消除手機三欄擠壓斷行 -->
             <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
@@ -2529,7 +2853,7 @@ function instPaid(inst) {
       }).join('');
     }
 
-    function renderBills(m) {
+    function renderBills(m = computeFinancialMetrics()) {
       document.getElementById('billsUnpaidTotal').innerText = fmtMoney(m.unpaidBillsTotal);
       document.getElementById('billsMonthlyBaseCost').innerText = `${fmtMoney(m.billsMonthlyBaseCost)} / 月`;
       document.getElementById('billsStatusSummary').innerHTML = `
@@ -2604,7 +2928,7 @@ function instPaid(inst) {
       showToast(targetStatus === 'skipped' ? '已將所有雙月帳單切換為「本期免繳」' : '已將所有雙月帳單切換為「待繳」');
     }
 
-    function renderStocks(m) {
+    function renderStocks(m = computeFinancialMetrics()) {
       document.getElementById('stockPoolTotal').innerText = fmtMoney(m.stockTotalPool);
       document.getElementById('stockHoldingsValue').innerText = fmtMoney(m.stockMarketValue);
       document.getElementById('stockHoldingsCost').innerText = fmtMoney(m.stockCostValue);
@@ -2845,7 +3169,7 @@ function toggleCardPaidStatus(cardId) {
         inst.paidPeriods = Math.min(inst.totalPeriods, Math.max(0, (Number(inst.paidPeriods) || 0) + delta));
         saveState();
         renderAll();
-        showToast(`「${inst.title}」已更新為 ${inst.paidPeriods}/${inst.totalPeriods} 期`);
+        showToast(`「${inst.title || inst.name || "未命名分期"}」已更新為 ${inst.paidPeriods}/${inst.totalPeriods} 期`);
       }
     }
 
@@ -3258,7 +3582,7 @@ function openAppModal(title, htmlContent) {
           <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-800/60 flex items-center justify-between">
             <div>
               <span class="text-slate-500 dark:text-slate-400 block text-xs">本月預計待扣 (Outflow)</span>
-              <span class="font-extrabold font-mono text-rose-500 text-fluid-body">-${fmtMoney(totalOutflow)}</span>
+              <span class="font-extrabold font-mono text-rose-500 text-fluid-body">${totalOutflow > 0 ? "-" : ""}${fmtMoney(totalOutflow)}</span>
             </div>
             <i class="fa-solid fa-arrow-up-long text-rose-500 text-lg opacity-80"></i>
           </div>
@@ -4375,7 +4699,7 @@ function openAppModal(title, htmlContent) {
         const bank = card ? state.banks.find(b => b.id === card.bankId) : null;
         const bankName = bank ? bank.name : '-';
         const left = Math.max(0, inst.totalPeriods - instPaid(inst));
-        rows.push([inst.title, cardName, bankName, inst.monthlyAmount, inst.totalPeriods, instPaid(inst), left * inst.monthlyAmount]);
+        rows.push([inst.title || inst.name || "未命名分期", cardName, bankName, inst.monthlyAmount, inst.totalPeriods, instPaid(inst), left * inst.monthlyAmount]);
       });
       rows.push([], ['=== 四、台股部位明細 ==='], ['代號', '名稱', '股數', '均價', '市價', '市值', '損益']);
       state.stocks.forEach(s => {
@@ -4412,23 +4736,51 @@ function openAppModal(title, htmlContent) {
       showToast('💾 JSON 資料庫已成功匯出');
     }
 
-    function importDatabaseJSON(event) {
-      const file = event.target.files[0];
+    function importDatabaseJSON(eventOrData) {
+      const doImport = (imported) => {
+        try {
+          if (!imported || typeof imported !== 'object' || (!imported.banks && !imported.cards)) {
+            showToast('匯入失敗：檔案格式不符', 'error');
+            return;
+          }
+          state = normalizeState(imported);
+          saveState();
+          renderAll();
+          showToast('資料匯入成功！');
+        } catch (err) {
+          showToast('匯入失敗：JSON 解析錯誤', 'error');
+        }
+      };
+
+      if (typeof eventOrData === 'string') {
+        try {
+          const parsed = JSON.parse(eventOrData);
+          doImport(parsed);
+        } catch(e) {
+          showToast('匯入失敗：JSON 解析錯誤', 'error');
+        }
+        return;
+      }
+
+      if (eventOrData && typeof eventOrData === 'object' && !eventOrData.target) {
+        doImport(eventOrData);
+        return;
+      }
+
+      const file = eventOrData && eventOrData.target && eventOrData.target.files && eventOrData.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = function (e) {
         try {
-          const imported = JSON.parse(e.target.result);
-          if (!imported.banks || !imported.cards) throw new Error('Invalid');
-          state = imported;
-          saveState(); renderAll();
-          showToast('成功還原資料庫備份！');
+          const parsed = JSON.parse(e.target.result);
+          doImport(parsed);
         } catch (err) {
-          showToast('匯入失敗：檔案格式不符', 'error');
+          showToast('匯入失敗：JSON 解析錯誤', 'error');
         }
       };
       reader.readAsText(file);
     }
+    window.importDatabaseJSON = importDatabaseJSON;
 
     function downloadStandaloneHTML() {
       const cloneDoc = document.documentElement.cloneNode(true);
@@ -4852,8 +5204,12 @@ function openAppModal(title, htmlContent) {
               }
             },
             y: {
+              min: datasets.some(ds => (ds.data || []).some(v => v !== null && v !== undefined && v < 0)) ? undefined : 0,
+              suggestedMin: 0,
+              suggestedMax: 10000,
               grid: { color: 'rgba(76, 86, 106, 0.18)' },
               ticks: {
+                precision: 0,
                 color: '#8C97AB',
                 font: { family: "'Public Sans', sans-serif", size: 11 },
                 callback: function(value) {

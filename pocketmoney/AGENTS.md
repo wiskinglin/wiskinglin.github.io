@@ -11,8 +11,8 @@
 | :--- | :--- | :--- | :--- |
 | **Manager（使用者）** | 提出想法、挑選情境、在 `compare.html` 審查板選 A/B、驗收合併結果 | 決策回覆、`logs/usage.md` | — |
 | **主 Agent** | 維護規格真實來源、拆解 Brief/Ticket、指派並審查 Flash 產出、執行情境發現 | `PRODUCT.md`、`SCENARIOS.md`、`schema/SCHEMA.md`、`specs/*`、`DECISIONS.md`、`BACKLOG.md`、`CHANGELOG.md`、`prototypes/*/brief.md` | 未記錄於 `DECISIONS.md` 前不得擅改 `SCHEMA.md` 核心結構 |
-| **Flash（實作）** | 依 `brief.md` 實作 `A.html` / `B.html` 與 `compare.html`，或將定案方案合併進 Main 雛型 | 指定之 `prototypes/Fxx-*/` 檔案、合併時之 `pocketmoney.html` | **嚴禁修改任何 L0/L1/L2 規格與決策文件**；不得觸碰工單範圍外之檔案 |
-| **Flash（巡檢/驗證）** | 扮演 3 大人物進行情境巡檢、檢查 JS Error、對照 `UI_VOCABULARY.md` 零 Slop 規範、截圖 | `prototypes/Fxx-*/report.md`、`logs/persona-runs/*.md` | **嚴禁修改程式碼** |
+| **Flash（實作）** | 依 `brief.md` 實作 `A.html` / `B.html` 與 `compare.html`，或將定案方案合併進 Main 雛型 | 指定之 `prototypes/Fxx-*/` 檔案、合併時之 `pocketmoney.html` | **嚴禁修改任何 L0/L1/L2 規格與決策文件**；不得觸碰工單範圍外之檔案；**嚴禁球員兼裁判自行宣告最終 QA 驗收通過** |
+| **Flash（獨立 QA 驗收）** | 擔任獨立的 **Flash Vision QA Inspector**：執行 Playwright 全頁長截圖 (`full_page=True`)、DOM 邊界與分頁隱藏斷言、透過多模態影像辨識執行「數值邏輯與視覺守門 (Vision QA)」、檢查 JS Error、對照零 Slop 規範 | `prototypes/Fxx-*/report.md`、`logs/persona-runs/*.md` | **嚴禁修改程式碼**；必須與實作開發 Subagent 嚴格分立 |
 
 ---
 
@@ -59,7 +59,7 @@
 3. **③ 定案循環（`Fxx 選 A/B`）**：
    - 主 Agent 將 Manager 的選擇記錄至 `DECISIONS.md`，並同步更新 `SCHEMA.md`、`UXD.md`、`UI_VOCABULARY.md`。
 4. **④ 交付循環（合併回 Main）**：
-   - Flash 將勝出方案乾淨合併回 `pocketmoney.html`（恢復正式 `STORAGE_KEY`），確認 0 JS Error 且符合零 AI Slop 鐵律，由主 Agent 更新 `BACKLOG.md` 與 `CHANGELOG.md`。
+   - Flash 將勝出方案乾淨合併回 `pocketmoney.html`（恢復正式 `STORAGE_KEY`），確認 0 JS Error、通過「視覺影像辨識驗收與數值邏輯守門員 (Vision QA)」且符合零 AI Slop 鐵律，由主 Agent 更新 `BACKLOG.md` 與 `CHANGELOG.md`。
 
 ---
 
@@ -129,3 +129,66 @@ vMAJOR.MINOR.PATCH (例如 v0.0.2)
    - **於測試完成且測試報告產出存檔至 `logs/` 之後，必須一律將該 `.py` 檔案移動歸檔至 [`pocketmoney/archive/python/`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/archive/python/) 資料夾中**。
 3. **歷史追溯與重複利用**：
    - 歸檔至 `archive/python/` 下的測試腳本仍保留其完整性，若未來需要再次進行迴歸測試（Regression Test）時，可直接自該目錄呼叫或作為撰寫新測試之基準。
+
+---
+
+## 9. 與 Manager 溝通與工作指南 (Communication & Workflow Guideline)
+
+1. **極致簡化溝通資訊量**：
+   - 每次回覆**僅針對 Manager 的具體提問精準回答**，隨後進行必要之邏輯推理，避免冗長鋪墊或無關說明。
+2. **Agent 承擔所有討論過程之紀錄**：
+   - 所有需求探索、設計討論、時序狀態機演進與 ADR 方案記錄，由 Agent 主動記錄並維護於相關文件中，不增加 Manager 閱讀負擔。
+3. **Manager 僅針對最終產出之主程式 (`pocketmoney.html`) 進行成果驗收與評估**。
+4. **Prototype 原型標題與目錄明確性規範**：
+   - 建立與呈現 Prototype 原型時，**HTML <title>、頁面頂部大標題與報告名稱必須包含功能全名**（例如：F11（收支餘裕與防入不敷出卡）、F13（單月現金流趨勢圖）），以利 Manager 一眼辨識，嚴禁僅以模糊的代號（如僅顯示 PocketMoney）命名。
+   - 原型檔案直接放置於該功能資料夾頂層（如 `prototypes/Fxx-<slug>/index.html`），不額外增加巢狀子目錄層級。
+
+---
+
+## 10. 強制視覺影像辨識驗收與數值邏輯守門員規範 (Visual QA & Math Consistency Gate)
+
+> **專案完整地毯式測試標準與 6 大維度執行矩陣**：請嚴格參照 [`specs/QA_TEST_PLAN.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/specs/QA_TEST_PLAN.md)。
+
+### 1. 職責分離鐵律 (Developer Agent vs. Independent QA Agent)
+- **嚴禁球員兼裁判**：負責寫程式碼、重構或修復 Bug 的實作開發 Subagent，與負責驗收把關的 **QA Subagent (`Flash Vision QA Inspector`)** 必須是兩個**完全獨立**的 Subagent。
+- **流程規範**：實作 Subagent 提交完成後，主 Agent 必須另行指派專屬的獨立 QA Subagent 執行全盤驗收。QA Subagent 嚴禁直接修改程式碼，僅專注執行測試腳本、影像辨識審查與產出驗收報告。
+
+### 2. 禁止僅靠程式碼靜態檢查驗收 (Anti-Pattern & Historical Lessons)
+- **歷史教訓 (F11 & F15 慘痛破綻)**：
+  - **F11**：未設定常態收入 (0) 卻將 `0 - 16,000` 誤判為入不敷出赤字紅字警告，且子項目加總 (`16,000 + 3,399`) 不等於總支出 (`16,000`)。
+  - **F15**：先前 QA 僅截取視窗高度 (`1280x800`) 且開發者自行回報通過，未捲動至頁面底部，完全漏檢 `#tab-banks` 圖表因 `<div>` 閉合錯誤而漏在 `#tab-dashboard` 最底下、脫離 `<main>` 容器寬度變成全螢幕滿版，且空狀態時 Chart.js 出現 `-0.2, -0.4, -0.8` 負數小數座標軸！
+- **鐵律**：嚴禁僅憑靜態程式碼、DOM 檢查或單元測試即宣稱「驗收完成」。所有原型（Prototype）與主程式改動，必須由獨立 QA Agent 以「真實全頁渲染截圖 ＋ 視覺影像辨識」為唯一最終驗收依據。
+
+### 3. 強制全頁長截圖規範 (`full_page=True`)
+- **全頁長截圖鐵律**：**Playwright 截圖必須強制開啟 `full_page=True` 全頁長截圖，嚴禁只截首屏視窗高度而漏檢頁面下方破版**。拍攝必須覆蓋**從頁首到頁尾的完整長截圖**，嚴禁僅截取可視範圍（Viewport）。
+- **完整審視長圖**：QA Subagent 必須使用 `read_file` 工具直接讀取產出的 `.png` 長圖，逐一檢視長截圖從最頂端至最底端之所有渲染區塊（嚴禁只產圖不讀圖）。
+- **雙狀態必檢**：所有原型與功能均須在以下兩種狀態下分別截取全頁長圖：
+  1. **純淨歸零狀態 (Empty State / Zero Data)**：完全無資料或首次啟動之狀態。
+  2. **載入測試資料狀態 (Loaded State)**：載入完整銀行、信用卡、固定收支等模擬資料之狀態。
+
+### 4. DOM 容器邊界與分頁隱藏斷言 (DOM Containment Gate)
+測試腳本與 QA 檢驗必須執行嚴格的結構性斷言：
+1. **容器邊界與閉合檢核**：所有卡片、圖表與內容區塊必須嚴格包裹在 `<main>` 容器與當前啟用的 `#tab-*` 分頁內；任何卡片或圖表的寬度絕對不得超出 `<main>` 容器寬度（嚴禁元素脫離容器滿版外漏破格）。
+2. **分頁隔離與隱藏檢核**：非當前作用中分頁（帶有 `.hidden` 類別之分頁）內的任何元素或圖表，絕對不可外漏渲染在當前可見畫面上。
+
+### 5. 空狀態圖表座標軸防呆 (Zero-State Chart Axis Gate)
+- 當系統資料全為 0（空狀態）時，Chart.js 等圖表之 Y 軸刻度**嚴禁出現 `-0.2, -0.4, -0.8, -1` 等無意義負數小數刻度**。
+- **防呆實作規範**：所有圖表 scales 必須配置 `min: 0` 或 `suggestedMin: 0, suggestedMax: 10000`（或在無資料時優雅隱藏圖表並切換為空狀態引導提示卡）。
+
+### 6. 三欄卡片與數值邏輯防呆專項 (Hero KPI & Math Consistency)
+- **數值邏輯與加總 100% 吻合**：卡片上醒目的總額大字，必須與下方所有展開子項目的金額加總 **100% 嚴格吻合**，不得有任何遺漏加總、重複計算或算術錯誤。
+- **Hero KPI 大字純數字鐵律**：凡使用 `.text-fluid-hero` 的三欄 KPI 主數字，**僅允許顯示純金額（如 `NT$ +16,700`、`NT$ -21,000`、`NT$ 0`）**，嚴禁在 `text-fluid-hero` 內塞入中文前綴（如「⚠️ 本月入不敷出 NT$ -21,000」），否則必在三欄卡片中破版截斷。狀態文字一律放在右上角 Badge 或下方 Sub-hint。
+- **Playwright 寬度溢出斷言**：測試腳本必須對所有 KPI 與卡片執行 `el.scrollWidth <= el.clientWidth` 溢出檢查。
+
+### 7. 視覺影像辨識多模態檢驗清單 (Vision QA Checklist)
+QA Subagent 透過 `read_file` 檢視全頁長截圖，逐一核對並在報告中逐項記錄：
+- **a. 標題與 `<title>` 規範**：確認頁面大標題與 `<title>` 是否明確包含完整功能編號與名稱（例如：`F15（總覽重構與三段式時間切換整合）`），嚴禁僅有模糊專案名稱。
+- **b. 空狀態優雅性**：0 資料狀態下是否友善優雅顯示引導提示；嚴禁出現負數警告、`NaN`、`undefined`、除以零、無收入卻觸發赤字警報、或座標軸負數小數。
+- **c. 數值邏輯一致性**：總額與細項加總完全一致，符號（`+`/`-`）與警示顏色狀態符合常理。
+- **d. 容器完整性**：長圖底部無漏出元件、無全螢幕滿版破格、無其他分頁殘留內容。
+- **e. 視覺排版與零 AI Slop 鐵律**：檢查是否有版面破裂、文字截斷、重疊、水平捲軸異常，並嚴格遵循 `UI_VOCABULARY.md` 與 `UXD.md` 零 Slop 鐵律（無內部黑話、無多餘教學說明文字、無未定義詞彙）。
+
+### 8. 模型配額保護原則 (Model Quota Preservation)
+- 主 Agent 若處於高階模型（如 Argon），**嚴禁**直接進行繁重的程式碼實作與多圖視覺檢驗。
+- 應將實作工單全面委派給開發 Subagent，並將全頁截圖執行與視覺檢查任務委派給獨立的 **QA Subagent (`Model: 'flash'`)** 執行，以最佳化模型配額並節省主 Agent 流量。
+
