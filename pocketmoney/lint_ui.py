@@ -78,6 +78,9 @@ def lint_file(file_path):
             if m:
                 actual = m.group(1)
                 if actual != expected and actual != '總覽':
+                    # 允許 prototype 原型 dashboard 標題顯示特定功能代號與名稱 (如 F15（...）)
+                    if 'prototypes' in file_path.replace('\\', '/') and tab == 'dashboard' and re.match(r'^F\d+', actual):
+                        continue
                     violations.append(f"[{os.path.basename(file_path)}] 【分頁標題不符規範】tab '{tab}' 應為 '{expected}'，實際為 '{actual}'")
     else:
         violations.append(f"[{os.path.basename(file_path)}] 【代碼結構警告】未找到 const titles 字典定義")
