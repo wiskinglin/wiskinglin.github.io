@@ -1216,8 +1216,9 @@
   <!-- ==================== 應用程式邏輯 ==================== -->
   <script>
     // 應用程式版本：與 STORAGE_KEY 分開管理，升版時不需要更動儲存 key
-    const APP_VERSION = '0.1.0';
+    const APP_VERSION = '0.2.0';
     const STORAGE_KEY = 'PocketMoney_tw_finance_v3';
+    const BACKUP_STORAGE_KEY_PREFIX = 'PocketMoney_backup_';
 
 
     const DEFAULT_STATE = {
@@ -1253,7 +1254,70 @@
     let isSurplusBanksExpanded = false;
 
     // 分期期數：填有起算年月者依檢視月份自動推算，其餘沿用手動已繳期數
-    function instPaid(inst) {
+    
+    // [F02 輔助] 取得特定卡片在特定年月的帳單 record
+    function getCardRecord(card, year, month) {
+      if (!card) return null;
+      if (!Array.isArray(card.records)) card.records = [];
+      return card.records.find(r => r.year === year && r.month === month) || null;
+    }
+
+    // [F02 輔助] 取得特定卡片在特定檢視年月的應繳總額與大額消費
+    function getCardEffectiveData(card, viewDate = AppClock.now()) {
+      const vY = viewDate.getFullYear();
+      const vM = viewDate.getMonth() + 1;
+      const rec = getCardRecord(card, vY, vM);
+      if (rec) {
+        return {
+          hasRecord: true,
+          amount: Number(rec.amount) || 0,
+          bigExpenses: Array.isArray(rec.bigExpenses) ? rec.bigExpenses : [],
+          status: rec.status || 'auto'
+        };
+      }
+      // 若該月無 record，且檢視月即盤點月，回退使用卡片頂層 statementTotal
+      const snapD = new Date(state.settings.snapshotDate || '2026-10-31');
+      if (vY === snapD.getFullYear() && vM === (snapD.getMonth() + 1)) {
+        return {
+          hasRecord: true,
+          amount: Number(card.statementTotal) || 0,
+          bigExpenses: Array.isArray(card.bigExpenses) ? card.bigExpenses : [],
+          status: card.paid ? 'paid' : 'auto'
+        };
+      }
+      return {
+        hasRecord: false,
+        amount: 0,
+        bigExpenses: [],
+        status: 'unrecorded'
+      };
+    }
+
+    // [F02 輔助] 判定特定卡片在檢視日期是否已扣款
+    function isCardDeducted(card, viewDate = AppClock.now()) {
+      const snapD = new Date(state.settings.snapshotDate || '2026-10-31');
+      const eff = getCardEffectiveData(card, viewDate);
+      if (!eff.hasRecord || eff.amount === 0) return true; // 無帳單視為不需扣款
+
+      // 盤點日當月或之前：依既有 paid / status 標記為準 (既成事實)
+      const vY = viewDate.getFullYear();
+      const vM = viewDate.getMonth() + 1;
+      const sY = snapD.getFullYear();
+      const sM = snapD.getMonth() + 1;
+      if (vY < sY || (vY === sY && vM <= sM)) {
+        return eff.status === 'paid' || !!card.paid;
+      }
+
+      // 盤點日之後：若手動標記扣款失敗或跳票，則為未扣款
+      if (eff.status === 'failed') return false;
+      if (eff.status === 'paid') return true;
+
+      // 日期自動判定：若檢視日期的「日」大於等於卡片的扣款日 dueDay，即視為自動扣繳已發生
+      const dueDay = Number(card.dueDay) || 20;
+      return viewDate.getDate() >= dueDay;
+    }
+
+function instPaid(inst) {
       const total = Number(inst.totalPeriods) || 0;
       if (inst.startYear && inst.startMonth) {
         const v = AppClock.now();
@@ -1313,6 +1377,14 @@
           if (!raw) loaded = JSON.parse(JSON.stringify(DEFAULT_STATE));
           else {
             const parsed = JSON.parse(raw);
+            // 自動備份原始資料 (防止新功能影響歷史資料)
+            try {
+              if (!localStorage.getItem(BACKUP_STORAGE_KEY_PREFIX + 'v0.1.0')) {
+                localStorage.setItem(BACKUP_STORAGE_KEY_PREFIX + 'v0.1.0', raw);
+              }
+            } catch (e) {
+              console.warn('[PocketMoney] 自動備份失敗:', e);
+            }
             loaded = {
               ...DEFAULT_STATE,
               ...parsed,
@@ -1321,7 +1393,35 @@
             };
           }
         }
-        // 向後相容遷移：若分期項目缺少 cardId，依據 cardName 自動連結至對應信用卡
+        
+        // [F02 升級] 盤點日 (snapshotDate) 與信用卡逐月 records 升級
+        if (!loaded.schemaVersion || loaded.schemaVersion < 2) {
+          loaded.schemaVersion = 2;
+        }
+        if (!loaded.settings.snapshotDate) {
+          // 預設盤點日為 2026-10-31
+          loaded.settings.snapshotDate = '2026-10-31';
+          loaded.settings.snapshotConfirmed = false; // 首次彈窗確認標記
+        }
+        // 信用卡 records 升級：將既有 statementTotal 與 bigExpenses 寫入盤點月 (2026-10) 的 record
+        if (Array.isArray(loaded.cards)) {
+          loaded.cards.forEach(c => {
+            if (!Array.isArray(c.records)) {
+              c.records = [];
+              const snapD = new Date(loaded.settings.snapshotDate);
+              const sY = snapD.getFullYear();
+              const sM = snapD.getMonth() + 1;
+              c.records.push({
+                year: sY,
+                month: sM,
+                amount: Number(c.statementTotal) || 0,
+                bigExpenses: JSON.parse(JSON.stringify(c.bigExpenses || [])),
+                status: c.paid ? 'paid' : 'auto'
+              });
+            }
+          });
+        }
+    // 向後相容遷移：若分期項目缺少 cardId，依據 cardName 自動連結至對應信用卡
         if (loaded.installments && loaded.cards) {
           loaded.installments.forEach(inst => {
             if (!inst.cardId && inst.cardName) {
@@ -1455,7 +1555,11 @@
       const stockHoldRatio = stockTotalPool > 0 ? Math.round((stockMarketValue / stockTotalPool) * 100) : 0;
       const stockCashRatio = stockTotalPool > 0 ? (100 - stockHoldRatio) : 0;
 
-      const unpaidCardTotal = state.cards.filter(c => !c.paid).reduce((sum, c) => sum + (Number(c.statementTotal) || 0), 0);
+      const vDate = AppClock.now();
+      const unpaidCardTotal = state.cards.filter(c => !isCardDeducted(c, vDate)).reduce((sum, c) => {
+        const eff = getCardEffectiveData(c, vDate);
+        return sum + eff.amount;
+      }, 0);
       
       // 所有固定費用未繳總額 (含直扣與信用卡代繳)
       const unpaidBillsTotal = state.bills.filter(b => b.status === 'unpaid').reduce((sum, b) => sum + (Number(b.amount) || 0), 0);
@@ -1502,7 +1606,10 @@
           const isActive = !inf.activeMonths || inf.activeMonths.includes(currentMonthNum);
           return inf.bankId === bank.id && isActive;
         });
-        const boundUnpaidCards = state.cards.filter(c => c.bankId === bank.id && !c.paid);
+        const boundUnpaidCards = state.cards.filter(c => c.bankId === bank.id && !isCardDeducted(c, vDate)).map(c => {
+          const eff = getCardEffectiveData(c, vDate);
+          return { ...c, statementTotal: eff.amount, effectiveData: eff };
+        });
         const boundUnpaidBills = state.bills.filter(b => (b.paymentMethod === 'bank_direct' || !b.paymentMethod) && b.bankId === bank.id && b.status === 'unpaid');
         const inflowSum = boundInflows.reduce((s, inf) => s + (Number(inf.amount) || 0), 0);
         const cardsSum = boundUnpaidCards.reduce((s, c) => s + (Number(c.statementTotal) || 0), 0);
@@ -1528,8 +1635,8 @@
       const totalAssets = totalBankBalance + stockMarketValue;
       const netWorth = totalAssets - totalUnpaidLiabilities;
 
-      const unpaidCardsCount = state.cards.filter(c => !c.paid).length;
-      const paidCardsCount = state.cards.filter(c => c.paid).length;
+      const unpaidCardsCount = state.cards.filter(c => !isCardDeducted(c, vDate)).length;
+      const paidCardsCount = state.cards.filter(c => isCardDeducted(c, vDate)).length;
       const totalBankRequired = bankCheckups.reduce((sum, b) => sum + (b.requiredTotal || 0), 0);
       const totalAfterBankBalance = totalBankBalance - totalBankRequired;
       const shortfallBankCount = bankCheckups.filter(b => b.isShortfall).length;
@@ -1954,10 +2061,12 @@
       const statusKPI = document.getElementById('cardsStatusSummaryKPI');
       if (statusKPI) statusKPI.innerText = `待繳 ${m.unpaidCardsCount} 張卡・已繳清 ${m.paidCardsCount} 張卡`;
 
+      const v = AppClock.now();
       let allBigSum = 0;
       let allBigCount = 0;
       state.cards.forEach(c => {
-        (c.bigExpenses || []).forEach(x => {
+        const eff = getCardEffectiveData(c, v);
+        (eff.bigExpenses || []).forEach(x => {
           allBigSum += Number(x.amount) || 0;
           allBigCount++;
         });
@@ -2267,9 +2376,12 @@
     function openCardInputDrawer(focusCardId = null) {
       if (state.cards.length === 0) return showToast('請先新增信用卡', 'warn');
       const v = AppClock.now();
-      document.getElementById('drawerMonthTitle').innerText = `登記 ${v.getFullYear()} 年 ${v.getMonth() + 1} 月帳單`;
+      const vY = v.getFullYear();
+      const vM = v.getMonth() + 1;
+      document.getElementById('drawerMonthTitle').innerText = `登記 ${vY} 年 ${vM} 月帳單`;
       document.getElementById('drawerFormList').innerHTML = state.cards.map(c => {
         const bank = state.banks.find(b => b.id === c.bankId);
+        const eff = getCardEffectiveData(c, v);
         return `
           <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800 space-y-2">
             <div class="flex items-center justify-between gap-2">
@@ -2277,7 +2389,7 @@
               <span class="text-fluid-sub text-slate-400 font-mono num-nowrap">${c.closingDay || 10}號結帳・${c.dueDay || 20}號扣款</span>
             </div>
             <label class="text-fluid-sub text-slate-400 font-semibold block">本期帳單總額 (NT$)・扣款戶 ${bank ? bank.name : '未綁定'}</label>
-            <input id="drawerCardAmt_${c.id}" type="number" inputmode="decimal" placeholder="例如：18500" value="${Number(c.statementTotal) > 0 ? c.statementTotal : ''}"
+            <input id="drawerCardAmt_${c.id}" type="number" inputmode="decimal" placeholder="例如：18500" value="${eff.hasRecord && eff.amount > 0 ? eff.amount : ''}"
               class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono font-bold text-fluid-h3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
         `;
@@ -2301,11 +2413,39 @@
     }
 
     function saveDrawerInputs() {
+      const v = AppClock.now();
+      const vY = v.getFullYear();
+      const vM = v.getMonth() + 1;
       state.cards.forEach(c => {
         const input = document.getElementById(`drawerCardAmt_${c.id}`);
-        if (!input || input.value.trim() === '') return;
-        const n = Number(input.value);
-        if (!isNaN(n) && n >= 0) c.statementTotal = n;
+        if (!input) return;
+        const valStr = input.value.trim();
+        if (!Array.isArray(c.records)) c.records = [];
+        let rec = c.records.find(r => r.year === vY && r.month === vM);
+        if (valStr === '') {
+          // 清空或無填寫
+          if (rec) rec.amount = 0;
+        } else {
+          const n = Number(valStr);
+          if (!isNaN(n) && n >= 0) {
+            if (rec) {
+              rec.amount = n;
+            } else {
+              c.records.push({
+                year: vY,
+                month: vM,
+                amount: n,
+                bigExpenses: [],
+                status: 'auto'
+              });
+            }
+            // 若正好是在盤點月份登記，同步更新頂層相容欄位
+            const snapD = new Date(state.settings.snapshotDate || '2026-10-31');
+            if (vY === snapD.getFullYear() && vM === (snapD.getMonth() + 1)) {
+              c.statementTotal = n;
+            }
+          }
+        }
       });
       saveState();
       closeCardInputDrawer();
@@ -2599,7 +2739,31 @@
       }
     }
 
-    function toggleCardPaidStatus(cardId) {
+    
+    function toggleCardFailedStatus(cardId) {
+      const card = state.cards.find(c => c.id === cardId);
+      if (!card) return;
+      const v = AppClock.now();
+      const vY = v.getFullYear();
+      const vM = v.getMonth() + 1;
+      let rec = getCardRecord(card, vY, vM);
+      if (!rec) {
+        if (!Array.isArray(card.records)) card.records = [];
+        rec = { year: vY, month: vM, amount: Number(card.statementTotal) || 0, bigExpenses: [], status: 'auto' };
+        card.records.push(rec);
+      }
+      if (rec.status === 'failed') {
+        rec.status = 'auto';
+        showToast(`已恢復「${card.name}」為自動扣繳排程`);
+      } else {
+        rec.status = 'failed';
+        showToast(`已將「${card.name}」標記為扣款失敗`, 'warn');
+      }
+      saveState();
+      renderAll();
+    }
+
+function toggleCardPaidStatus(cardId) {
       const card = state.cards.find(c => c.id === cardId);
       if (!card) return;
       const bank = state.banks.find(b => b.id === card.bankId);
@@ -2803,7 +2967,45 @@
       }
     }
 
-    function openAppModal(title, htmlContent) {
+    
+    // [F02 盤點日確認] 檢查是否需確認盤點日期
+    function checkSnapshotDatePrompt() {
+      if (state.settings && state.settings.snapshotConfirmed === false) {
+        const defaultDate = state.settings.snapshotDate || '2026-10-31';
+        openAppModal('確認資料盤點基準日', `
+          <div class="space-y-4 text-fluid-body">
+            <p class="text-slate-600 dark:text-slate-300">
+              系統已為您啟用自動扣款功能。請確認目前各銀行餘額是哪一天的盤點基準：
+            </p>
+            <div>
+              <label class="text-fluid-sub text-slate-500 font-semibold block mb-1">盤點基準日期</label>
+              <input id="promptSnapshotDate" type="date" value="${defaultDate}"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono font-bold text-fluid-body focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <button onclick="confirmSnapshotDate()"
+                class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-fluid-sub transition">
+                確認基準日
+              </button>
+            </div>
+          </div>
+        `);
+      }
+    }
+
+    function confirmSnapshotDate() {
+      const input = document.getElementById('promptSnapshotDate');
+      if (input && input.value) {
+        state.settings.snapshotDate = input.value;
+      }
+      state.settings.snapshotConfirmed = true;
+      saveState();
+      closeAppModal();
+      renderAll();
+      showToast('已確認盤點基準日');
+    }
+
+function openAppModal(title, htmlContent) {
       document.getElementById('modalTitle').innerText = title;
       document.getElementById('modalBody').innerHTML = htmlContent;
       const modal = document.getElementById('appModal');
@@ -4250,6 +4452,7 @@
         state = JSON.parse(JSON.stringify(DEFAULT_STATE));
         saveState();
         renderAll();
+        setTimeout(checkSnapshotDatePrompt, 500);
         showToast('已清空所有資料並歸零為 0', 'info');
       }
     }

@@ -9,7 +9,7 @@
 
 | ADR 編號 | 主題 | 狀態 | 現行採用 / 主 Agent 建議 | 影響範圍 |
 | :--- | :--- | :---: | :--- | :--- |
-| **ADR-001** | 繳費狀態與分期期數：日期自動推算 vs. 手動標記 | 🟡 待實驗拍板 | Main 維持手動按鈕；v4 趨勢圖採用日期推算 | `SCHEMA` §2/§3 |
+| **ADR-001** | 繳費狀態與分期期數：日期自動推算 vs. 手動標記 | 🟢 已定案（方案 B ＋ 例外出口） | 盤點日後依日期自動判定扣繳；不足時標記扣款失敗 | `SCHEMA` §2/§3, Main |
 | **ADR-002** | 銀行歷史快照雙軌結構（`bank.records` vs `bankSnapshots`） | 🟢 已定案（主從派生） | 以 `bank.records` 為唯一寫入源，`bankSnapshots` 為前端衍生快取 | `SCHEMA` §3 |
 | **ADR-003** | 薪資與獎金流入模型（`BANK` 內嵌欄位 vs `INFLOW_PLAN` 獨立表） | 🟢 階段一已落地 | 常態月薪內嵌於 `BANK`（已在 Main 實作）；不定期獎金走 `BANK_EVENT` | `SCHEMA` §2、`pocketmoney.html` |
 | **ADR-004** | 證券交割戶綁定層級（全域多選 vs 單一股票指定） | 🟢 已定案（雙層相容） | 全域 `settings.securitiesBankIds` 算現金池；股利/平倉彈窗預設帶入首個交割戶並允許當場切換 | `pocketmoney.html` |
