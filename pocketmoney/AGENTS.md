@@ -36,6 +36,7 @@
 | | [`SCENARIOS.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/SCENARIOS.md) | 情境庫（人物 × 時間點 × 心裡問題）、Main 支援度（✅/◐/❌）、缺口評分排序 | 功能探索的唯一來源 |
 | | [`schema/SCHEMA.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/schema/SCHEMA.md) | 唯一資料模型與計算公式（涵蓋 Main v3.5 實作結構與 v4 演進目標） | 唯一資料結構依據 |
 | | [`specs/UXD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md) | 零 AI Slop 鐵律、使用者流程、視圖規格、行動端 RWD 規範 | 唯一 UI/UX 依據 |
+| | [`specs/PAGE_DATA_SPEC.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/specs/PAGE_DATA_SPEC.md) | 全分頁功能描述、視覺截圖與後台資料庫結構 (`SCHEMA`) 映射規格書 | 唯一頁面資訊與資料對標依據 |
 | | [`specs/UI_VOCABULARY.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UI_VOCABULARY.md) | 允許出現在畫面上的標準詞彙與禁用詞對照 | 唯一文案依據 |
 | **L2 決策追蹤** | [`DECISIONS.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/DECISIONS.md) | 架構與設計決策紀錄（ADR）：問題、選項、Manager 決定 | 跨版本變更依據 |
 | | [`BACKLOG.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/BACKLOG.md) | 頂端為 **STATUS 儀表板**（待審查、進行中、待決議），下方為統一功能待辦清單 | 唯一進度看板 |
@@ -66,7 +67,7 @@
 ## 5. Flash 子 Agent 上下文包規則（Context Budget ≤ 40 KB）
 
 指派 Flash 時，Prompt 必須明確列出本次允許讀取的檔案與章節，**禁止讓 Flash 自行掃描全資料夾**：
-- **必讀**：`AGENTS.md` + 該任務之 `prototypes/Fxx-*/brief.md`。
+- **必讀**：`AGENTS.md` + `DECISIONS.md`（特別是 **ADR-017 瀏覽純 Insight 與專用輸入分離及三層資料生命週期通則**）+ `specs/PAGE_DATA_SPEC.md` 對應章節 + 該任務之 `prototypes/Fxx-*/brief.md`。
 - **按需指定章節**：
   - 涉及資料計算 → 指定 `schema/SCHEMA.md` 對應實體章節。
   - 涉及畫面與響應式 → 指定 `specs/UXD.md` 第零章（零 Slop 鐵律）與第五章（Mobile 規範）。
