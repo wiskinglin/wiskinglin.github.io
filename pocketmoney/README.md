@@ -28,7 +28,7 @@
 - **版本變更紀錄**：[`CHANGELOG.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/CHANGELOG.md)
 
 ### L3：功能實驗與巡檢紀錄
-- **A/B 並排審查板模板**：[`prototypes/_template/r1/compare.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/_template/r1/compare.html)
+- **A/B 並排審查板模板**：[`prototypes/_template/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/_template/compare.html)
 - **三大人物模擬巡檢報告**：[`logs/persona-runs/2026-11-02_baseline_run.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/logs/persona-runs/2026-11-02_baseline_run.md)
 - **Manager 日常使用日誌**：[`logs/usage.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/logs/usage.md)
 

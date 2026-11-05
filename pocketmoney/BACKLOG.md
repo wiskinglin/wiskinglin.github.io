@@ -10,11 +10,11 @@
 
 | 編號 | 功能名稱 | 狀態 | 原型/模組路徑 | 關聯決策 |
 | :--- | :--- | :---: | :--- | :--- |
-| **F01** | Input 參數與收支規則中心 | 🟢 已合併 | prototypes/F01-input-params/r1/ | ADR-009 |
-| **F02** | 跨月時序現金流模擬與自動扣款 | 🟡 開發中 | prototypes/F02-view-cashflow/r1/ | ADR-001, ADR-005 |
+| **F01** | Input 參數與收支規則中心 | 🟢 已合併 | prototypes/F01-input-params/ | ADR-009 |
+| **F02** | 跨月時序現金流模擬與自動扣款 | 🟡 開發中 | prototypes/F02-view-cashflow/ | ADR-001, ADR-005 |
 | **F03** | 扣款缺口跨行調撥與單期覆寫 | ❌ 不實施 | - | ADR-014 |
-| **F04** | 多帳戶與多信用卡自適應版面 | 🟢 已合併 | prototypes/F04-multi-card-account-layout/r1/ | ADR-012 |
-| **F05** | 日期控制與輸入瀏覽分離 | 🟢 已合併 | prototypes/F05-date-controller-flow/r1/ | ADR-012 |
+| **F04** | 多帳戶與多信用卡自適應版面 | 🟢 已合併 | prototypes/F04-multi-card-account-layout/ | ADR-012 |
+| **F05** | 日期控制與輸入瀏覽分離 | 🟢 已合併 | prototypes/F05-date-controller-flow/ | ADR-012 |
 | **F06** | 外部對帳單與明細分析器 | 🟢 已完成 (Viewer進行中) | analyzer/ | ADR-013 |
 | **F07** | 漸進式功能解鎖 (Progressive Disclosure) | ⏳ 規劃定案 | prototypes/F07-progressive-disclosure/ | ADR-011 |
 | **F08** | Profile 雙軌切換架構 (Demo與多帳本) | ⏳ 規格已備 | prototypes/F08-profile-switch/ | SCENARIOS |

@@ -42,7 +42,7 @@
 | | [`BACKLOG.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/BACKLOG.md) | 頂端為 **STATUS 儀表板**（待審查、進行中、待決議），下方為統一功能待辦清單 | 唯一進度看板 |
 | | [`CHANGELOG.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/CHANGELOG.md) | 已合併回 `pocketmoney.html` 之變更紀錄 | 交付歷史 |
 | **L3 實驗工單** | `prototypes/Fxx-<slug>/` | 每個功能實驗一個資料夾：`brief.md`、`A.html`、`B.html`、`compare.html`、`report.md` | 單次實驗範圍 |
-| | [`prototypes/_template/r1/compare.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/prototypes/_template/r1/compare.html) | A/B 並排審查板標準模板（支援 PC/手機寬度切換、3 個觀察重點） | 審查板母版 |
+| | [`prototypes/_template/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/_template/compare.html) | A/B 並排審查板標準模板（支援 PC/手機寬度切換、3 個觀察重點） | 審查板母版 |
 | **L4 參考封存** | `baseline-v3/` | `SDD.md`、`DEVELOPMENT_PLAN.md`（v3 基線規格，凍結供查閱） | 歷史基線 |
 | | `docs/research/` | `market_analysis.md`、`feature_overview.md`（市場調研與前期視覺盤點） | 研究參考 |
 | | `archive/` | 早期探索提案與原型（`PocketMoneyObjects.md`、`SUB_DATABASE_*`、`TIMELINE_*`、`analysis.md`、`mockup_*.html`） | 已封存 |
@@ -55,7 +55,7 @@
    - 由 Flash 扮演 3 大人物（初級大人、少子化勇者、高級大人）在 `pocketmoney.html` 走訪每月關鍵日（5/10/15/20/28/30 號）與年度事件，將回答不了或操作卡頓的問題登錄至 `SCENARIOS.md` 並計算缺口分數。
 2. **② 探索循環（`做 Sxx`）**：
    - 主 Agent 撰寫 `prototypes/Fxx-<slug>/brief.md`，定義方案 A 與方案 B 的設計差異與最多 3 個觀察重點。
-   - Flash 從 `pocketmoney.html` 複製出 `A.html` 與 `B.html` 分別實作，並套用 `_template/r1/compare.html` 產出審查板。
+   - Flash 從 `pocketmoney.html` 複製出 `A.html` 與 `B.html` 分別實作，並套用 `_template/compare.html` 產出審查板。
    - **資料隔離紅線**：實驗檔 `A.html` / `B.html` 必須將 `STORAGE_KEY` 改為 `'PocketMoney_exp_Fxx_A'` / `'PocketMoney_exp_Fxx_B'`（或支援 URL `?persona=junior|family|senior` 載入預置測試資料），**嚴禁直接覆寫正式儲存鍵 `PocketMoney_tw_finance_v3`**。
 3. **③ 定案循環（`Fxx 選 A/B`）**：
    - 主 Agent 將 Manager 的選擇記錄至 `DECISIONS.md`，並同步更新 `SCHEMA.md`、`UXD.md`、`UI_VOCABULARY.md`。

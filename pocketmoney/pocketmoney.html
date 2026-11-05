@@ -698,7 +698,7 @@
           <div>
             <h3 class="text-fluid-h3 font-bold flex items-center gap-2">
               <i class="fa-solid fa-money-bill-wave text-emerald-500"></i>
-              <span>每月薪資與其他收入來源設定 (Inflows)</span>
+              <span>每月薪資與其他收入來源設定</span>
             </h3>
             
           </div>
@@ -717,7 +717,7 @@
           <div>
             <h3 class="text-fluid-h3 font-bold flex items-center gap-2">
               <i class="fa-solid fa-credit-card text-rose-500"></i>
-              <span>信用卡結帳日、扣款日與帳單拆解規則 (Cards)</span>
+              <span>信用卡結帳日與扣款日規則</span>
             </h3>
             
           </div>
@@ -736,7 +736,7 @@
           <div>
             <h3 class="text-fluid-h3 font-bold flex items-center gap-2">
               <i class="fa-solid fa-file-invoice-dollar text-amber-500"></i>
-              <span>固定費用扣款日與扣繳管道規則 (Bills)</span>
+              <span>固定費用扣款日與扣繳管道規則</span>
             </h3>
             <p class="text-fluid-sub text-slate-400 mt-0.5">設定每月固定支出與扣款管道</p>
           </div>
@@ -763,7 +763,7 @@
         </div>
 
         <div class="fluid-card bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between">
-          <span class="text-fluid-sub text-slate-400 font-bold">本月預估流入 (Inflow)</span>
+          <span class="text-fluid-sub text-slate-400 font-bold">本月預估流入</span>
           <div id="bankInflowsTotalKPI" class="text-fluid-hero font-extrabold font-mono text-emerald-500 num-nowrap mt-1">+NT$ 0</div>
           <span id="bankInflowsSummaryKPI" class="text-fluid-sub text-slate-400 mt-2">包含本月薪資、獎金與投資配息</span>
         </div>
@@ -869,7 +869,7 @@
             </button>
             <button onclick="resetAllCardsNewMonth()"
               class="px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-fluid-sub font-bold num-nowrap">
-              <i class="fa-solid fa-arrows-rotate mr-1"></i>換月重置
+              <i class="fa-solid fa-arrows-rotate mr-1"></i>重置帳單狀態
             </button>
             <button onclick="openCardModal()"
               class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm">
@@ -918,7 +918,7 @@
           <h2 class="text-fluid-h2 font-bold">分期付款</h2>
           <button onclick="advanceAllInstallmentsOnePeriod()"
             class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold num-nowrap transition">
-            <i class="fa-solid fa-forward-step mr-1"></i>批次前進一期
+            <i class="fa-solid fa-forward-step mr-1"></i>推進分期期數
           </button>
         </div>
         <div id="installmentsListContainer" class="grid grid-cols-1 md:grid-cols-2 fluid-gap"></div>
@@ -961,7 +961,7 @@
           </div>
           <button onclick="toggleAllBimonthlyBillsStatus()"
             class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white text-fluid-sub font-bold flex items-center justify-center gap-1.5 num-nowrap mt-3 transition">
-            <i class="fa-solid fa-toggle-on"></i> 雙月費用一鍵開關
+            <i class="fa-solid fa-toggle-on"></i> 切換雙月帳單
           </button>
         </div>
       </div>
@@ -1141,7 +1141,7 @@
           </div>
           <h3 class="text-fluid-h2 font-bold">安全與隱私鎖定</h3>
           <p class="text-fluid-body text-slate-500 dark:text-slate-400">
-            此應用程式由JS撰寫，資料與功能可下載成單一網頁 <code>.html</code> 檔案離線開啟。
+            可將完整應用程式與目前資料打包下載為單一 .html 檔案，方便離線保存或跨裝置攜帶。
           </p>
           <div class="space-y-2 pt-1">
             <button onclick="downloadStandaloneHTML()"
@@ -1594,7 +1594,7 @@ const DEMO_H2_DATA = {
       state = normalizeState(JSON.parse(JSON.stringify(DEMO_H2_DATA)));
       saveState();
       renderAll();
-      showToast('已成功載入半年展示測試資料庫！');
+      showToast('已載入測試資料庫');
     }
     window.loadDemoH2Data = loadDemoH2Data;
 
@@ -1687,7 +1687,7 @@ function normalizeState(loaded) {
       state = normalizeState(JSON.parse(JSON.stringify(DEMO_H2_DATA)));
       saveState();
       renderAll();
-      showToast('已成功載入半年展示測試資料庫！');
+      showToast('已載入測試資料庫');
     }
 
     function loadState() {
@@ -1922,7 +1922,7 @@ function normalizeState(loaded) {
       });
 
       // 各銀行自動扣款水位檢核：
-      // 1. 綁定流入 (Inflows)：讀取全域 state.inflows 歸戶到該銀行的收入
+      // 1. 綁定流入：讀取全域 state.inflows 歸戶到該銀行的收入
       // 2. 綁定流出：只有 bank_direct 直扣與未繳卡費
       const currentMonthNum = AppClock.now().getMonth() + 1;
       const bankCheckups = state.banks.map(bank => {
@@ -2814,7 +2814,7 @@ function normalizeState(loaded) {
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
                 ${(inst.startYear && inst.startMonth)
-                  ? `<span class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 text-fluid-sub font-bold num-nowrap">依月份自動推進</span>`
+                  ? `<span class="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500 text-fluid-sub font-mono font-bold num-nowrap">${inst.startYear}/${String(inst.startMonth).padStart(2, '0')} 起算</span>`
                   : `<button onclick="stepInstallment('${inst.id}', 1)" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold num-nowrap">+1 期</button>`}
                 <button onclick="openInstallmentModal('${inst.id}')" class="p-1.5 text-slate-400 hover:text-indigo-500 text-xs"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteInstallment('${inst.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 text-xs"><i class="fa-solid fa-trash"></i></button>
@@ -2826,7 +2826,7 @@ function normalizeState(loaded) {
             <!-- 改為清晰的三行對齊列表，徹底消除手機三欄擠壓斷行 -->
             <div class="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-fluid-sub">
               <div class="flex items-center justify-between gap-2">
-                <span class="text-slate-400">每期吃掉現金流</span>
+                <span class="text-slate-400">每月攤提金額</span>
                 <span class="font-extrabold font-mono text-amber-500 text-fluid-body num-nowrap">${fmtMoney(inst.monthlyAmount)} /月</span>
               </div>
               <div class="flex items-center justify-between gap-2">
@@ -2967,7 +2967,7 @@ function normalizeState(loaded) {
         badge.innerHTML = `⚠️ 現金偏高 (${m.stockCashRatio}%)・目標持倉 ${state.settings.stockMinHoldRatio}%`;
       } else {
         badge.className = 'text-fluid-sub font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-500 num-nowrap';
-        badge.innerHTML = `✅ 波段持倉達標 (${m.stockHoldRatio}%)`;
+        badge.innerHTML = `✅ 持股水位正常 (${m.stockHoldRatio}%)`;
       }
 
       const listEl = document.getElementById('stocksListContainer');
@@ -3159,7 +3159,7 @@ function toggleCardPaidStatus(cardId) {
       state.bills.forEach(b => { if (b.status === 'paid') b.status = 'unpaid'; });
       saveState();
       renderAll();
-      showToast('🔄 信用卡帳單已換月重置');
+      showToast('🔄 信用卡帳單已重置狀態');
     }
 
     function stepInstallment(id, delta) {
@@ -3179,7 +3179,7 @@ function toggleCardPaidStatus(cardId) {
       });
       saveState();
       renderAll();
-      showToast('⏩ 全部分期已批次前進一期');
+      showToast('⏩ 全部分期已推進一期');
     }
 
     function updateBillAmountInline(id, val) {
@@ -3574,7 +3574,7 @@ function openAppModal(title, htmlContent) {
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-fluid-sub">
           <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-between">
             <div>
-              <span class="text-slate-500 dark:text-slate-400 block text-xs">本月預估流入 (Inflow)</span>
+              <span class="text-slate-500 dark:text-slate-400 block text-xs">本月預估流入</span>
               <span class="font-extrabold font-mono text-emerald-600 dark:text-emerald-400 text-fluid-body">+${fmtMoney(totalInflow)}</span>
             </div>
             <i class="fa-solid fa-arrow-down-long text-emerald-500 text-lg opacity-80"></i>
@@ -4397,7 +4397,7 @@ function openAppModal(title, htmlContent) {
             </div>
           </div>
           <div>
-            <label class="font-bold block mb-1">起算年月 (選填，填寫後期數依月份自動推進)</label>
+            <label class="font-bold block mb-1">起算年月</label>
             <input id="mInstStart" type="month" value="${existing.startYear && existing.startMonth ? `${existing.startYear}-${String(existing.startMonth).padStart(2, '0')}` : ''}" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono">
           </div>
           <button onclick="saveInstallmentForm('${instId || ''}')" class="w-full py-2.5 rounded-xl bg-indigo-600 text-white font-bold mt-2">儲存分期設定</button>
