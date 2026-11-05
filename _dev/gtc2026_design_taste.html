@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NVIDIA GTC 2026 主題報告 | 系統級智算工廠與自主代理革命</title>
+    <meta name="description" content="NVIDIA GTC 2026 核心提煉：從晶片供應商到全球 AI 基礎設施操作系統，解析 Vera Rubin 硬體架構、OpenClaw 代理協定與 AI 工廠每瓦特 Token 經濟學。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-canvas: #090a0f;
+            --bg-surface: #10121a;
+            --bg-surface-elevated: #161924;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.16);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            --accent-nvidia: #76b900;
+            --accent-nvidia-dim: rgba(118, 185, 0, 0.15);
+            --accent-blue: #38bdf8;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --max-w: 1240px;
+            --pad-x: 32px;
+            --pad-t: 88px;
+            --pad-b: 48px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Fixed Navigation Header */
+        header.nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(9, 10, 15, 0.75);
+            backdrop-filter: blur(16px);
+        }
+
+        .nav-inner {
+            max-width: var(--max-w);
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 var(--pad-x);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 800;
+            font-size: 14px;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-pill {
+            background: var(--accent-nvidia);
+            color: #000;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 900;
+            font-family: var(--font-mono);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.15s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Screen-bound Layout Rules (design-taste standard) */
+        main > section {
+            min-height: 100vh;
+            padding: var(--pad-t) var(--pad-x) var(--pad-b);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .wrap {
+            max-width: var(--max-w);
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* Hero Screen */
+        .hero-section {
+            background: radial-gradient(circle at 80% 20%, rgba(118, 185, 0, 0.08) 0%, transparent 60%);
+        }
+
+        .hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero-title {
+            font-size: clamp(40px, 6vw, 76px);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            max-width: 1080px;
+        }
+
+        .hero-title span {
+            color: var(--accent-nvidia);
+        }
+
+        .hero-summary {
+            font-size: clamp(18px, 1.8vw, 22px);
+            color: var(--text-secondary);
+            max-width: 820px;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .hero-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-top: 24px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .metric-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .metric-value {
+            font-size: 38px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Section Layouts */
+        .section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 18px;
+        }
+
+        .section-kicker {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--accent-nvidia);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .section-tag {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* Grid Cards */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 280px;
+        }
+
+        .feature-card.highlight {
+            border-color: rgba(118, 185, 0, 0.4);
+            background: linear-gradient(180deg, rgba(118, 185, 0, 0.04) 0%, var(--bg-surface) 100%);
+        }
+
+        .feature-tag {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent-nvidia);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        .feature-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .feature-footer {
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-tertiary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Quotes & Economy section */
+        .quote-box {
+            background: var(--bg-surface-elevated);
+            border-left: 3px solid var(--accent-nvidia);
+            padding: 40px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .quote-text {
+            font-size: clamp(24px, 2.5vw, 36px);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.25;
+            color: var(--text-primary);
+        }
+
+        .quote-author {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        /* Footer */
+        footer.closing {
+            padding: 64px var(--pad-x);
+            max-width: var(--max-w);
+            margin: 0 auto;
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+        }
+
+        @media (max-width: 900px) {
+            .hero-metrics { grid-template-columns: repeat(2, 1fr); }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            main > section { min-height: auto; padding: 64px var(--pad-x); }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="nav">
+        <div class="nav-inner">
+            <a href="#" class="brand">
+                <span class="brand-pill">GTC 26</span>
+                <span>NVIDIA EXECUTIVE BRIEFING</span>
+            </a>
+            <div class="nav-links">
+                <a href="#rubin">VERA RUBIN</a>
+                <a href="#agents">AGENTIC AI</a>
+                <a href="#physical">PHYSICAL AI</a>
+                <a href="#economics">AI FACTORY</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- SCREEN 1: HERO -->
+        <section class="hero-section" id="hero">
+            <div class="wrap">
+                <div class="hero-meta">
+                    <span>Keynote Synthesis</span>
+                    <span>/</span>
+                    <span>March 27, 2026</span>
+                    <span>/</span>
+                    <span>Jensen Huang</span>
+                </div>
+                <h1 class="hero-title">
+                    從晶片供應商到全球<br>
+                    <span>AI 基礎設施操作系統</span>
+                </h1>
+                <p class="hero-summary">
+                    NVIDIA 正式定調「智算工廠」時代的來臨。見證次世代 Vera Rubin 架構硬體躍升、OpenClaw 自主代理協定制定，以及物理世界模型 Cosmos 3 的跨維度落地。
+                </p>
+                <div class="hero-metrics">
+                    <div class="metric-card">
+                        <div class="metric-value">4.0X</div>
+                        <div class="metric-label">Inference Efficiency (Vera CPU)</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">$1.0T</div>
+                        <div class="metric-label">Projected AI Infra Revenue</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">10M+</div>
+                        <div class="metric-label">Active OpenClaw Agents</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value">100%</div>
+                        <div class="metric-label">Tokens / Watt Energy Paradigm</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: VERA RUBIN HARDWARE -->
+        <section id="rubin">
+            <div class="wrap">
+                <div class="section-header">
+                    <div>
+                        <div class="section-kicker">01 / Hardware Architecture</div>
+                        <h2 class="section-title">Vera Rubin：智算工廠的量子級跳躍</h2>
+                    </div>
+                    <div class="section-tag">POST-BLACKWELL GENERATION</div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="feature-card highlight">
+                        <div>
+                            <div class="feature-tag">Silicon Architecture</div>
+                            <h3 class="feature-title">Vera CPU 自研動態指令集</h3>
+                            <p class="feature-desc">
+                                專為自主代理（Agentic AI）龐大的上下文切換與動態決策樹設計。打破傳統馮紐曼瓶頸，提供 4 倍的代理推理並行吞吐量。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>CONTEXT SWITCH ACCELERATION</span>
+                            <span>4X GAIN</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div>
+                            <div class="feature-tag">Interconnect Fabric</div>
+                            <h3 class="feature-title">Rubin Ultra Networking</h3>
+                            <p class="feature-desc">
+                                針對百萬節點規模智算集群的線速通訊優化。將數據傳輸延遲壓縮至奈秒級，使多代理協同計算成為零開銷的單體邏輯運算。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>SCALE: 1,000,000+ NODES</span>
+                            <span>LINE-RATE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: AGENTIC AI & OPENCLAW -->
+        <section id="agents">
+            <div class="wrap">
+                <div class="section-header">
+                    <div>
+                        <div class="section-kicker">02 / Software Ecosystem</div>
+                        <h2 class="section-title">OpenClaw：AI 時代的 Linux 協定革命</h2>
+                    </div>
+                    <div class="section-tag">AUTONOMOUS WORKFLOWS</div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="feature-card">
+                        <div>
+                            <div class="feature-tag">Open Protocol</div>
+                            <h3 class="feature-title">OpenClaw 開源代理協定</h3>
+                            <p class="feature-desc">
+                                定義全自主代理（Agent）通訊、動態任務拆解與自我修正機制的全球開放標準。軟體架構正式從傳統的「請求-響應」轉為以「目標-達成」為核心。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>OPEN STANDARD</span>
+                            <span>GOAL-DRIVEN PARADIGM</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card highlight">
+                        <div>
+                            <div class="feature-tag">Security & Control</div>
+                            <h3 class="feature-title">NemoClaw 企業合規防線</h3>
+                            <p class="feature-desc">
+                                提供企業級隱私邊界、即時行為沙盒與 Token 預算調配控制器。黃仁勳將其定義為企業專屬 AI 代理群的嚴格合規作業系統。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>ENTERPRISE GOVERNANCE</span>
+                            <span>SANDBOXED EXECUTION</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: PHYSICAL AI & ROBOTICS -->
+        <section id="physical">
+            <div class="wrap">
+                <div class="section-header">
+                    <div>
+                        <div class="section-kicker">03 / Embodied Intelligence</div>
+                        <h2 class="section-title">Physical AI：物理定律與世界模型</h2>
+                    </div>
+                    <div class="section-tag">COSMOS 3 & EXPANSION</div>
+                </div>
+
+                <div class="grid-3">
+                    <div class="feature-card">
+                        <div>
+                            <div class="feature-tag">World Foundation Model</div>
+                            <h3 class="feature-title">Cosmos 3 世界模型</h3>
+                            <p class="feature-desc">
+                                整合空間幾何推理與物理力學模擬，使人形機器人與自動化載具具備對真實重力、慣性與摩擦力的本質理解。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>PHYSICS REASONING</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div>
+                            <div class="feature-tag">Open Data Pipeline</div>
+                            <h3 class="feature-title">Open Physical AI Data Factory</h3>
+                            <p class="feature-desc">
+                                開源合成數據與機器人步態訓練管線，將具身智能實體硬體的研發與測試門檻降低逾 80%。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>SYNTHETIC PIPELINE</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card highlight">
+                        <div>
+                            <div class="feature-tag">Orbital Compute</div>
+                            <h3 class="feature-title">Project Space-1 軌道智算</h3>
+                            <p class="feature-desc">
+                                專為低軌衛星打造的航太級 AI 運算節點，將智算工廠從地面資料中心拓展至宇宙空間。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>OFF-PLANET COMPUTE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 5: AI FACTORY ECONOMICS -->
+        <section id="economics">
+            <div class="wrap">
+                <div class="section-header">
+                    <div>
+                        <div class="section-kicker">04 / Macro Paradigm</div>
+                        <h2 class="section-title">智算工廠經濟學：每瓦特 Token 產出比</h2>
+                    </div>
+                    <div class="section-tag">TOKENS PER WATT</div>
+                </div>
+
+                <div class="quote-box">
+                    <p class="quote-text">
+                        "Data center is the new factory. The raw material is electricity, and the product is intelligence."
+                    </p>
+                    <p class="quote-author">—— Jensen Huang, NVIDIA CEO at GTC 2026</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="feature-card">
+                        <div>
+                            <div class="feature-tag">Infrastructure Shift</div>
+                            <h3 class="feature-title">電力即算力基石</h3>
+                            <p class="feature-desc">
+                                運算價值評判標準徹底轉變。未來的競爭力不再是單純的晶片峰值 FLOPs，而是單位能源消耗下生成的有效商務 Token 總量。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>ENERGY EFFICIENCY PARADIGM</span>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div>
+                            <div class="feature-tag">Civilization OS</div>
+                            <h3 class="feature-title">人類文明的第二操作系統</h3>
+                            <p class="feature-desc">
+                                從通訊網絡、製造工業到自動化決策系統，AI 正式從外掛輔助工具進化為全球經濟底層的必然基礎設施。
+                            </p>
+                        </div>
+                        <div class="feature-footer">
+                            <span>INFRASTRUCTURE ERA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="closing">
+        <span>NVIDIA GTC 2026 SYNTHESIS REPORT</span>
+        <span>DESIGNED UNDER TASTE-SKILL V2.5 STANDARDS</span>
+        <span>ZERO-SLOP SPECIFICATION</span>
+    </footer>
+
+</body>
+</html>

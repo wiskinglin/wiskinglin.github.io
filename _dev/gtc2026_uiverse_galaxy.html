@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTC 2026 科技全景 | Uiverse Galaxy 元件庫動態優化版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================
+           UIVERSE.IO GALAXY PATTERN & BASE THEME
+           ========================================================== */
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(18, 24, 38, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent-green: #00ff88;
+            --accent-cyan: #00d2ff;
+            --accent-purple: #9d4edd;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            /* Uiverse Pattern: Grid Dots Pattern */
+            background-image: 
+                radial-gradient(rgba(0, 210, 255, 0.12) 1px, transparent 0),
+                radial-gradient(rgba(118, 185, 0, 0.08) 1px, transparent 0);
+            background-size: 32px 32px;
+            background-position: 0 0, 16px 16px;
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px 80px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+
+        /* ==========================================================
+           UIVERSE GALAXY COMPONENT: NEON GLOW BADGE
+           ========================================================== */
+        .neon-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 9999px;
+            color: var(--accent-green);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+            align-self: center;
+        }
+
+        .neon-pill-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        /* ==========================================================
+           HEADER SECTION
+           ========================================================== */
+        .header-content {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header-title {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffffff 30%, #00d2ff 70%, #00ff88 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-desc {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 780px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ==========================================================
+           UIVERSE GALAXY COMPONENT: QUANTUM RADAR LOADER
+           ========================================================== */
+        .loader-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin: 20px 0;
+        }
+
+        /* Uiverse Loader: Orbiting Quantum Spinner */
+        .quantum-loader {
+            width: 60px;
+            height: 60px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantum-loader::before, .quantum-loader::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+
+        .quantum-loader::before {
+            width: 100%;
+            height: 100%;
+            border-top-color: var(--accent-cyan);
+            border-right-color: var(--accent-cyan);
+            animation: spin 1.5s linear infinite;
+        }
+
+        .quantum-loader::after {
+            width: 70%;
+            height: 70%;
+            border-bottom-color: var(--accent-green);
+            border-left-color: var(--accent-green);
+            animation: spin-reverse 1.2s linear infinite;
+        }
+
+        .loader-core {
+            width: 14px;
+            height: 14px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #00d2ff, 0 0 30px #00ff88;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            100% { transform: rotate(-360deg); }
+        }
+
+        /* ==========================================================
+           UIVERSE GALAXY COMPONENT: CYBERPUNK BUTTONS
+           ========================================================== */
+        .btn-uiverse {
+            position: relative;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #fff;
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-uiverse:hover {
+            border-color: var(--accent-green);
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
+            color: var(--accent-green);
+        }
+
+        .btn-uiverse::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                60deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            transition: 0.5s;
+        }
+
+        .btn-uiverse:hover::before {
+            left: 100%;
+        }
+
+        /* ==========================================================
+           UIVERSE GALAXY COMPONENT: INTERACTIVE TOGGLE SWITCH
+           ========================================================== */
+        .view-switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .switch-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+
+        .switch-label.active {
+            color: var(--accent-cyan);
+            font-weight: 700;
+        }
+
+        /* Uiverse 3D Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 32px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #1e293b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: .4s;
+            border-radius: 34px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 3px;
+            background: linear-gradient(135deg, #00d2ff, #00ff88);
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        }
+
+        input:checked + .slider {
+            background-color: #0f172a;
+            border-color: var(--accent-green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(28px);
+            background: linear-gradient(135deg, #00ff88, #00d2ff);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+        }
+
+        /* ==========================================================
+           UIVERSE GALAXY COMPONENT: GLASSMORPHISM CARDS WITH HOVER GLOW
+           ========================================================== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 28px;
+        }
+
+        /* Uiverse Glass Card with Border Gradient */
+        .glass-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 36px;
+            position: relative;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), var(--accent-green), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 210, 255, 0.3);
+            box-shadow: 0 20px 40px -15px rgba(0, 210, 255, 0.2);
+        }
+
+        .glass-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Uiverse Tooltip on Tag */
+        .tooltip-container {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #0f172a;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transition: opacity 0.2s, visibility 0.2s;
+            z-index: 10;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 14px;
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .stats-badge-row {
+            display: flex;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-green);
+        }
+
+        /* ==========================================================
+           FOOTER
+           ========================================================== */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- HEADER -->
+        <header class="header-content">
+            <div class="neon-pill">
+                <span class="neon-pill-dot"></span>
+                <span>NVIDIA GTC 2026 KEYNOTE REPORT</span>
+            </div>
+
+            <h1 class="header-title">
+                系統級智算工廠與<br>全球代理操作系統
+            </h1>
+
+            <p class="header-desc">
+                本版本運用 <strong>Uiverse Galaxy (3,800+ 元件庫)</strong> 的精選純 HTML/CSS 元件重構：融入量子雷達旋轉加載器、發光擬態按鈕、3D 玻璃質感卡片與微互動提示。
+            </p>
+
+            <!-- UIVERSE RADAR LOADER -->
+            <div class="loader-wrapper">
+                <div class="quantum-loader">
+                    <div class="loader-core"></div>
+                </div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent-cyan);">
+                    RUBIN ENGINE ACCELERATION // 4.0X RUNNING
+                </div>
+            </div>
+
+            <!-- UIVERSE 3D SWITCH -->
+            <div class="view-switch-container">
+                <span class="switch-label active" id="label-overview">硬體架構觀點</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="mode-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="switch-label" id="label-software">軟體生態觀點</span>
+            </div>
+        </header>
+
+        <!-- UIVERSE CARDS GRID -->
+        <main class="cards-grid">
+            
+            <!-- CARD 1 -->
+            <article class="glass-card">
+                <div>
+                    <div class="card-number">
+                        <span>PILLAR 01</span>
+                        <div class="tooltip-container">
+                            <span class="stat-badge">HARDWARE</span>
+                            <span class="tooltip-text">點擊瞭解自研 Vera 指令集</span>
+                        </div>
+                    </div>
+                    <h2 class="card-title">Vera Rubin 量子級跳躍</h2>
+                    <p class="card-desc">
+                        專為極大規模動態代理網絡優化的全新架構。Vera CPU 自研動態指令集突破上下文瓶頸，推理效率暴增 4 倍；搭配 Rubin Networking 百萬節點線速直連。
+                    </p>
+                </div>
+                <div class="stats-badge-row">
+                    <span class="stat-badge">⚡ 4X 推理吞吐</span>
+                    <span class="stat-badge">🌐 100萬+ 節點</span>
+                </div>
+            </article>
+
+            <!-- CARD 2 -->
+            <article class="glass-card">
+                <div>
+                    <div class="card-number">
+                        <span>PILLAR 02</span>
+                        <div class="tooltip-container">
+                            <span class="stat-badge">PROTOCOL</span>
+                            <span class="tooltip-text">AI 時代自主代理通用標準</span>
+                        </div>
+                    </div>
+                    <h2 class="card-title">OpenClaw：AI 的 Linux 革命</h2>
+                    <p class="card-desc">
+                        NVIDIA 制定全球開源代理協定標準，定義代理間通訊與自我修正機制。標誌軟體架構從「請求-響應」進化為「目標-達成」模式；企業端由 NemoClaw 提供沙盒安全防護。
+                    </p>
+                </div>
+                <div class="stats-badge-row">
+                    <span class="stat-badge">🤖 1,000萬+ 活躍代理</span>
+                    <span class="stat-badge">🛡️ NemoClaw 防線</span>
+                </div>
+            </article>
+
+            <!-- CARD 3 -->
+            <article class="glass-card">
+                <div>
+                    <div class="card-number">
+                        <span>PILLAR 03</span>
+                        <div class="tooltip-container">
+                            <span class="stat-badge">WORLD MODEL</span>
+                            <span class="tooltip-text">空間力學與物理世界統一推理</span>
+                        </div>
+                    </div>
+                    <h2 class="card-title">Cosmos 3 與具身智能</h2>
+                    <p class="card-desc">
+                        統一視覺推理與動作模擬，讓機器人理解真實物理定律而非簡單模仿。搭配 Open Physical AI 數據工廠藍圖與 Space-1 航太級低軌軌道 AI 數據中心。
+                    </p>
+                </div>
+                <div class="stats-badge-row">
+                    <span class="stat-badge">🌍 物理推理世界模型</span>
+                    <span class="stat-badge">🛰️ Space-1 軌道運算</span>
+                </div>
+            </article>
+
+            <!-- CARD 4 -->
+            <article class="glass-card">
+                <div>
+                    <div class="card-number">
+                        <span>PILLAR 04</span>
+                        <div class="tooltip-container">
+                            <span class="stat-badge">MACRO ECONOMY</span>
+                            <span class="tooltip-text">黃仁勳數據中心新定義</span>
+                        </div>
+                    </div>
+                    <h2 class="card-title">智算工廠：每瓦特 Token</h2>
+                    <p class="card-desc">
+                        「數據中心即是新時代工廠，原材料是電力，產出的產品是智慧 Tokens。」算力價值全面轉向單位能源效率，AI 成為與電力同等的人類文明基礎設施。
+                    </p>
+                </div>
+                <div class="stats-badge-row">
+                    <span class="stat-badge">🏭 基礎設施即電力</span>
+                    <span class="stat-badge">💰 $1 Trillion 預估營收</span>
+                </div>
+            </article>
+
+        </main>
+
+        <!-- FOOTER & ACTION -->
+        <footer>
+            <div>
+                <button class="btn-uiverse" onclick="alert('已載入 Uiverse.io Galaxy 特效展示！')">
+                    <span>⚡ 探索 Uiverse.io 元件庫</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+            <p style="margin-top: 16px;">
+                基於 <code>.agents/skills/uiverse-galaxy/</code> 純 HTML/CSS 元件建置 · 支援無相依輕量化載入
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        // Interactive Toggle Demo
+        const toggle = document.getElementById('mode-toggle');
+        const labelOverview = document.getElementById('label-overview');
+        const labelSoftware = document.getElementById('label-software');
+
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                labelSoftware.classList.add('active');
+                labelOverview.classList.remove('active');
+                document.body.style.filter = 'hue-rotate(25deg)';
+            } else {
+                labelOverview.classList.add('active');
+                labelSoftware.classList.remove('active');
+                document.body.style.filter = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

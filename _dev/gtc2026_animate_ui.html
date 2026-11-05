@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTC 2026 旗艦報告 | Animate UI 物理動效與流暢互動版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================
+           ANIMATE UI DESIGN SYSTEM TOKENS & SPRINGS
+           Ref: .agents/skills/animate-ui/references/tokens.md & feel.md
+           ========================================================== */
+        :root {
+            --spring-snappy: cubic-bezier(0.2, 0.9, 0.3, 1.25);
+            --spring-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+            --spring-press: cubic-bezier(0.4, 0, 0.2, 1);
+            --duration-quick: 180ms;
+            --duration-medium: 320ms;
+            --duration-slow: 480ms;
+
+            --bg: #030712;
+            --surface-1: #111827;
+            --surface-2: #1f2937;
+            --surface-card: #0f172a;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --text-heading: #f9fafb;
+            --text-body: #9ca3af;
+            --text-muted: #6b7280;
+            --primary: #38bdf8;
+            --nvidia-accent: #76b900;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            background-color: var(--bg);
+            color: var(--text-heading);
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            line-height: 1.5;
+            padding: 48px 24px 100px;
+        }
+
+        .layout-shell {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 56px;
+        }
+
+        /* ==========================================================
+           MICRO-INTERACTIONS: SPRING PRESS BUTTONS & PILL TABS
+           Ref: animate-ui recipes/press.md & recipes/indicator.md
+           ========================================================== */
+        .header-section {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 600;
+            transition: transform var(--duration-quick) var(--spring-snappy);
+        }
+
+        .tag-pill:hover {
+            transform: scale(1.04);
+        }
+
+        .main-heading {
+            font-size: clamp(38px, 5.5vw, 68px);
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        .sub-desc {
+            font-size: 18px;
+            color: var(--text-body);
+            max-width: 720px;
+            line-height: 1.6;
+        }
+
+        /* SLIDING INDICATOR TAB BAR */
+        .tab-bar-container {
+            position: relative;
+            background: var(--surface-1);
+            padding: 6px;
+            border-radius: 14px;
+            border: 1px solid var(--border-subtle);
+            display: inline-flex;
+            gap: 4px;
+            margin-top: 16px;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            height: calc(100% - 12px);
+            width: 140px;
+            background: var(--surface-2);
+            border-radius: 10px;
+            border: 1px solid var(--border-hover);
+            transition: transform var(--duration-medium) var(--spring-smooth), width var(--duration-medium) var(--spring-smooth);
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .tab-button {
+            position: relative;
+            z-index: 1;
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: color var(--duration-quick) ease, transform var(--duration-quick) var(--spring-press);
+        }
+
+        .tab-button:active {
+            transform: scale(0.95);
+        }
+
+        .tab-button.active {
+            color: var(--text-heading);
+        }
+
+        /* ==========================================================
+           METRIC TICKERS (Rolling Spring Numbers)
+           ========================================================== */
+        .metric-banner {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .metric-box {
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 28px;
+            transition: transform var(--duration-medium) var(--spring-smooth), border-color var(--duration-quick) ease;
+            cursor: default;
+        }
+
+        .metric-box:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+        }
+
+        .metric-number {
+            font-size: 44px;
+            font-weight: 900;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--nvidia-accent);
+            letter-spacing: -0.03em;
+        }
+
+        .metric-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-body);
+            margin-top: 6px;
+        }
+
+        /* ==========================================================
+           EXPANDING CARDS RECIPE (Animate UI Disclosure)
+           Ref: animate-ui references/interactions/expanding-card.md
+           ========================================================== */
+        .card-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .expandable-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: border-color var(--duration-quick) ease, box-shadow var(--duration-medium) var(--spring-smooth);
+        }
+
+        .expandable-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .card-header-btn {
+            width: 100%;
+            padding: 32px;
+            background: transparent;
+            border: none;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            color: inherit;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card-badge-num {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--surface-2);
+            color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform var(--duration-quick) var(--spring-snappy);
+        }
+
+        .expandable-card:hover .card-badge-num {
+            transform: scale(1.1) rotate(-4deg);
+        }
+
+        .card-info h3 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .card-info p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Chevron with smooth spring rotation */
+        .expand-chevron {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-body);
+            transition: transform var(--duration-medium) var(--spring-snappy), background var(--duration-quick) ease;
+        }
+
+        .expandable-card.open .expand-chevron {
+            transform: rotate(180deg);
+            background: var(--primary);
+            color: #000;
+        }
+
+        /* Collapsible content animation */
+        .card-drawer-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows var(--duration-medium) var(--spring-smooth);
+            padding: 0 32px;
+        }
+
+        .expandable-card.open .card-drawer-content {
+            grid-template-rows: 1fr;
+            padding-bottom: 32px;
+        }
+
+        .drawer-inner {
+            overflow: hidden;
+            font-size: 15px;
+            color: var(--text-body);
+            line-height: 1.7;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            border-top: 1px solid var(--border-subtle);
+            padding-top: 24px;
+        }
+
+        /* Interactive Detail Drawer (Bottom Sheet) */
+        .sheet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--duration-medium) ease;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .sheet-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .bottom-sheet {
+            background: var(--surface-1);
+            border: 1px solid var(--border-hover);
+            border-radius: 28px 28px 0 0;
+            width: 100%;
+            max-width: 720px;
+            padding: 36px;
+            transform: translateY(100%);
+            transition: transform var(--duration-slow) var(--spring-smooth);
+            box-shadow: 0 -20px 50px rgba(0,0,0,0.6);
+        }
+
+        .sheet-overlay.active .bottom-sheet {
+            transform: translateY(0);
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .sheet-close-btn {
+            background: var(--surface-2);
+            border: none;
+            color: var(--text-heading);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform var(--duration-quick) var(--spring-press);
+        }
+
+        .sheet-close-btn:active {
+            transform: scale(0.94);
+        }
+
+        /* ==========================================================
+           ACCESSIBILITY: PREFERS-REDUCED-MOTION
+           Ref: animate-ui rules.md rule 8
+           ========================================================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metric-banner { grid-template-columns: 1fr; }
+            .card-header-btn { padding: 20px; }
+            .card-drawer-content { padding: 0 20px; }
+            .expandable-card.open .card-drawer-content { padding-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="layout-shell">
+        
+        <!-- HEADER -->
+        <header class="header-section">
+            <div class="tag-pill">
+                <span>✦ ANIMATE UI SPRING ARCHITECTURE</span>
+            </div>
+            <h1 class="main-heading">
+                GTC 2026 旗艦動效報告
+            </h1>
+            <p class="sub-desc">
+                依據 <code>animate-ui</code> 的自然彈簧動效原則（Springs, Overlap, Trigger-anchored origins）建構，支援 60fps 流暢展開抽屜、互動切換與無障礙降級。
+            </p>
+
+            <!-- SLIDING INDICATOR TAB -->
+            <div class="tab-bar-container" id="tab-container">
+                <div class="tab-indicator" id="tab-indicator"></div>
+                <button class="tab-button active" onclick="switchTab(0, this)">全覽視角</button>
+                <button class="tab-button" onclick="switchTab(1, this)">晶片硬體</button>
+                <button class="tab-button" onclick="switchTab(2, this)">代理協定</button>
+            </div>
+        </header>
+
+        <!-- SPRING TICKER METRICS -->
+        <section class="metric-banner">
+            <div class="metric-box">
+                <div class="metric-number" id="num-1">4.0X</div>
+                <div class="metric-title">Vera CPU 代理上下文推理加速</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-number" id="num-2">1,000,000+</div>
+                <div class="metric-title">Rubin Ultra 百萬節點線速直連</div>
+            </div>
+            <div class="metric-box">
+                <div class="metric-number" id="num-3">$1.0T</div>
+                <div class="metric-title">2027 預期 AI 基礎設施產值</div>
+            </div>
+        </section>
+
+        <!-- EXPANDABLE CARDS (Animate UI Disclosure Pattern) -->
+        <section class="card-stack">
+            
+            <!-- ITEM 1 -->
+            <div class="expandable-card open">
+                <button class="card-header-btn" onclick="toggleCard(this)">
+                    <div class="card-header-left">
+                        <div class="card-badge-num">01</div>
+                        <div class="card-info">
+                            <h3>Vera Rubin 架構：智算工廠的硬體躍升</h3>
+                            <p>點擊收合或展開自研動態指令集架構解析</p>
+                        </div>
+                    </div>
+                    <div class="expand-chevron">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </button>
+                <div class="card-drawer-content">
+                    <div class="drawer-inner">
+                        <p>
+                            黃仁勳於主題演講正式確立了從 Blackwell 邁向 Vera Rubin 的新代際。面對 Agentic AI 多步驟、自主修正引發的動態上下文切換，傳統 CPU-GPU 傳輸成為最大瓶頸。
+                        </p>
+                        <p>
+                            <strong>Vera CPU:</strong> 專為多代理任務分支優化的全新指令集，帶來高達 4 倍的代理推理效率。<br>
+                            <strong>Rubin Networking:</strong> 突破性的光電共封裝互聯技術，支援超過百萬個計算節點以線速低延遲協同運算。
+                        </p>
+                        <button class="tag-pill" style="align-self: flex-start; cursor: pointer;" onclick="openSheet('Vera Rubin 硬體深度架構規格')">
+                            深入檢視 Vera Rubin 規格手冊 →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ITEM 2 -->
+            <div class="expandable-card">
+                <button class="card-header-btn" onclick="toggleCard(this)">
+                    <div class="card-header-left">
+                        <div class="card-badge-num">02</div>
+                        <div class="card-info">
+                            <h3>OpenClaw 與 NemoClaw：代理生態的協定革命</h3>
+                            <p>定義自主代理通訊與企業安全防線的開放標準</p>
+                        </div>
+                    </div>
+                    <div class="expand-chevron">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </button>
+                <div class="card-drawer-content">
+                    <div class="drawer-inner">
+                        <p>
+                            被譽為「AI 時代的 Linux」，OpenClaw 框架建立了自主代理之間的通訊、委派、自省與預算調節標準。軟體架構從數十年來的「輸入-響應」走向「目標-達成」典範。
+                        </p>
+                        <p>
+                            在企業側，NemoClaw 負責合規沙盒隔離與權限驗證，避免代理在未授權環境中失控執行，實現企業級可信 AI。
+                        </p>
+                        <button class="tag-pill" style="align-self: flex-start; cursor: pointer;" onclick="openSheet('OpenClaw 開放協定白皮書')">
+                            深入檢視 OpenClaw 協定架構 →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ITEM 3 -->
+            <div class="expandable-card">
+                <button class="card-header-btn" onclick="toggleCard(this)">
+                    <div class="card-header-left">
+                        <div class="card-badge-num">03</div>
+                        <div class="card-info">
+                            <h3>Physical AI 與每瓦特 Token 經濟學</h3>
+                            <p>Cosmos 3 世界模型與數據中心新工廠哲學</p>
+                        </div>
+                    </div>
+                    <div class="expand-chevron">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                    </div>
+                </button>
+                <div class="card-drawer-content">
+                    <div class="drawer-inner">
+                        <p>
+                            Cosmos 3 世界模型整合了三維幾何感知與運動物理學，使人形機器人能理解重力與摩擦力。搭配低軌軌道衛星 Project Space-1，開闢太空算力新邊疆。
+                        </p>
+                        <p>
+                            黃仁勳提出核心論點：「數據中心就是新時代的工廠，輸入的是電力，輸出的是智慧 Token。」算力衡量的真正維度將是單位能源產出的 Token 價值。
+                        </p>
+                        <button class="tag-pill" style="align-self: flex-start; cursor: pointer;" onclick="openSheet('智算工廠能源效益分析')">
+                            深入檢視每瓦特 Token 經濟模型 →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- BOTTOM SHEET COMPONENT (Animate UI Drawer Recipe) -->
+    <div class="sheet-overlay" id="sheet-overlay" onclick="closeSheet(event)">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-header">
+                <h2 id="sheet-title" style="font-size: 22px; font-weight: 800;">規格手冊詳情</h2>
+                <button class="sheet-close-btn" onclick="closeSheet()">關閉</button>
+            </div>
+            <p style="color: var(--text-body); line-height: 1.7; margin-bottom: 20px;">
+                此面板採用 <code>Animate UI</code> 的 Sheet/Drawer 食譜，帶有自然的彈簧物理阻尼（Spring Smooth: mass 1, stiffness 180, damping 24），支援鍵盤 ESC 與背景手勢關閉。
+            </p>
+            <div style="background: var(--surface-2); padding: 20px; border-radius: 12px; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--primary);">
+                STATUS: LIVE_VERIFIED<br>
+                REF: .agents/skills/animate-ui/recipes/sheet.md
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab indicator sliding animation
+        function switchTab(index, btn) {
+            const indicator = document.getElementById('tab-indicator');
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const offset = btn.offsetLeft;
+            const width = btn.offsetWidth;
+            indicator.style.transform = `translateX(${offset - 6}px)`;
+            indicator.style.width = `${width}px`;
+        }
+
+        // Expandable card disclosure toggle
+        function toggleCard(button) {
+            const card = button.closest('.expandable-card');
+            card.classList.toggle('open');
+        }
+
+        // Sheet Drawer Recipe
+        function openSheet(title) {
+            document.getElementById('sheet-title').innerText = title;
+            document.getElementById('sheet-overlay').classList.add('active');
+        }
+
+        function closeSheet() {
+            document.getElementById('sheet-overlay').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeSheet();
+        });
+    </script>
+</body>
+</html>

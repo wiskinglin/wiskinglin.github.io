@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KLIO 全站資產分類與四象限戰略評估儀表板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Noto Sans TC', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            space: {
+              900: '#06080F',
+              800: '#0B0F19',
+              700: '#111827',
+              600: '#1E293B',
+            },
+            q1: '#10B981', // 祖母綠 Emerald
+            q2: '#EC4899', // 霓虹粉 Pink
+            q3: '#F59E0B', // 琥珀黃 Amber
+            q4: '#6B7280', // 冷灰 Slate
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #06080F;
+      color: #E2E8F0;
+      font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+    }
+
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- 頂部導覽列 -->
+  <header class="sticky top-0 z-50 glass-card border-b border-white/10 px-6 py-4">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white font-bold text-lg">
+          K
+        </div>
+        <div>
+          <h1
+            class="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent flex items-center gap-2">
+            KLIO 全站資產分類與四象限戰略評估
+            <span
+              class="text-xs font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v1.0
+              Final</span>
+          </h1>
+          <p class="text-xs text-slate-400">價值 vs 喜好 雙軸矩陣・全站 163 項資產生命週期去留決策</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <a href="wiskingio.md" target="_blank"
+          class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5">
+          <i class="fa-solid fa-file-lines text-indigo-400"></i> 查看盤點總綱 (wiskingio.md)
+        </a>
+        <a href="index.html"
+          class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-medium text-white shadow-md shadow-indigo-600/30 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-house"></i> 回首頁
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主容器 -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 space-y-6">
+
+    <!-- 頂部指標統計卡片 -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div class="glass-card rounded-2xl p-4 flex flex-col justify-between">
+        <span class="text-xs text-slate-400 font-medium">總評估資產</span>
+        <div class="flex items-baseline justify-between mt-2">
+          <span class="text-2xl font-bold font-mono text-white" id="stat-total">163</span>
+          <span class="text-xs text-indigo-400 font-mono">100%</span>
+        </div>
+        <span class="text-[10px] text-slate-500 mt-1">應用 88 + 資訊 75</span>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 border-l-4 border-l-emerald-500 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-emerald-400 font-medium">Q1 核心旗艦</span>
+          <i class="fa-solid fa-crown text-emerald-400/50 text-xs"></i>
+        </div>
+        <div class="flex items-baseline justify-between mt-2">
+          <span class="text-2xl font-bold font-mono text-emerald-400" id="stat-q1">93</span>
+          <span class="text-xs text-emerald-400/70 font-mono" id="stat-q1-pct">57.1%</span>
+        </div>
+        <span class="text-[10px] text-slate-500 mt-1">高價值・高喜好 (主力保留)</span>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 border-l-4 border-l-pink-500 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-pink-400 font-medium">Q2 趣味探索</span>
+          <i class="fa-solid fa-wand-magic-sparkles text-pink-400/50 text-xs"></i>
+        </div>
+        <div class="flex items-baseline justify-between mt-2">
+          <span class="text-2xl font-bold font-mono text-pink-400" id="stat-q2">20</span>
+          <span class="text-xs text-pink-400/70 font-mono" id="stat-q2-pct">12.3%</span>
+        </div>
+        <span class="text-[10px] text-slate-500 mt-1">低價值・高喜好 (微型展示)</span>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 border-l-4 border-l-amber-500 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-amber-400 font-medium">Q3 實用基建</span>
+          <i class="fa-solid fa-cube text-amber-400/50 text-xs"></i>
+        </div>
+        <div class="flex items-baseline justify-between mt-2">
+          <span class="text-2xl font-bold font-mono text-amber-400" id="stat-q3">26</span>
+          <span class="text-xs text-amber-400/70 font-mono" id="stat-q3-pct">16.0%</span>
+        </div>
+        <span class="text-[10px] text-slate-500 mt-1">高價值・低喜好 (靜態典藏)</span>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 border-l-4 border-l-slate-500 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-slate-400 font-medium">Q4 冗餘整理</span>
+          <i class="fa-solid fa-box-archive text-slate-400/50 text-xs"></i>
+        </div>
+        <div class="flex items-baseline justify-between mt-2">
+          <span class="text-2xl font-bold font-mono text-slate-400" id="stat-q4">24</span>
+          <span class="text-xs text-slate-400/70 font-mono" id="stat-q4-pct">14.7%</span>
+        </div>
+        <span class="text-[10px] text-slate-500 mt-1">低價值・低喜好 (封存清理)</span>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 border-l-4 border-l-indigo-500 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-indigo-400 font-medium">保留維護率</span>
+          <i class="fa-solid fa-shield-heart text-indigo-400/50 text-xs"></i>
+        </div>
+        <div class="flex items-baseline justify-between mt-2">
+          <span class="text-2xl font-bold font-mono text-indigo-300" id="stat-keep-rate">69.3%</span>
+          <span class="text-xs text-slate-400 font-mono">113項</span>
+        </div>
+        <span class="text-[10px] text-slate-500 mt-1">主力保留與展示</span>
+      </div>
+    </div>
+
+    <!-- 視覺化散佈圖 + 象限決策導引區 -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- 四象限互動散佈畫布 (7 欄寬) -->
+      <div class="lg:col-span-7 glass-card rounded-3xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></span>
+            <h2 class="font-bold text-sm text-white">四象限動態散佈圖 (Interactive Quadrant Chart)</h2>
+          </div>
+          <span class="text-xs font-mono text-slate-400">X: 價值 (1~10) ✕ Y: 喜好 (1~10)</span>
+        </div>
+
+        <!-- 畫布容器 -->
+        <div
+          class="relative w-full aspect-[4/3] bg-space-900/90 rounded-2xl border border-white/5 overflow-hidden flex items-center justify-center">
+          <canvas id="quadrantCanvas" class="w-full h-full cursor-crosshair"></canvas>
+
+          <!-- 象限浮水印背景標籤 -->
+          <div
+            class="absolute top-3 left-4 text-xs font-bold text-pink-500/25 pointer-events-none select-none tracking-wider">
+            Q2: 趣味探索 (低價值・高喜好)
+          </div>
+          <div
+            class="absolute top-3 right-4 text-xs font-bold text-emerald-500/30 pointer-events-none select-none tracking-wider text-right">
+            Q1: 核心旗艦 (高價值・高喜好) 👑
+          </div>
+          <div
+            class="absolute bottom-3 left-4 text-xs font-bold text-slate-500/25 pointer-events-none select-none tracking-wider">
+            Q4: 冗餘技術債 (低價值・低喜好)
+          </div>
+          <div
+            class="absolute bottom-3 right-4 text-xs font-bold text-amber-500/25 pointer-events-none select-none tracking-wider text-right">
+            Q3: 實用基建 (高價值・低喜好)
+          </div>
+
+          <!-- 浮動 Tooltip 氣泡 -->
+          <div id="canvasTooltip"
+            class="absolute pointer-events-none opacity-0 transition-opacity duration-150 glass-card px-3 py-2 rounded-xl border border-white/20 shadow-2xl text-xs z-30 max-w-xs">
+            <div class="font-bold text-white flex items-center gap-1.5" id="tt-title">名稱</div>
+            <div class="text-[11px] text-slate-300 mt-1 flex items-center gap-2 font-mono">
+              <span id="tt-score" class="text-indigo-400 font-bold">X: 8.5 Y: 9.0</span>
+              <span id="tt-quadrant" class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300">Q1</span>
+              <span id="tt-decision" class="text-amber-300">保留</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1 line-clamp-2" id="tt-reason">說明理由</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] text-slate-500 mt-2 px-1">
+          <span>提示：在圖表上移動滑鼠可查看資產細節；點擊點位可直接定位明細卡片</span>
+          <div class="flex items-center gap-3 font-mono">
+            <span class="flex items-center gap-1"><span
+                class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>Q1 保留</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-pink-400 inline-block"></span>Q2
+              展示</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>Q3
+              典藏</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-400 inline-block"></span>Q4
+              封存</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 四象限定義與戰略方針說明 (5 欄寬) -->
+      <div class="lg:col-span-5 space-y-3">
+        <!-- Q1 卡片 -->
+        <div class="glass-card rounded-2xl p-4 border border-emerald-500/20 bg-emerald-950/10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span
+                class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">Q1</span>
+              <h3 class="font-bold text-sm text-emerald-300">核心旗艦・主力保留維護</h3>
+            </div>
+            <span class="text-xs font-mono font-bold text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10">共 93 項
+              (57.1%)</span>
+          </div>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            全站靈魂與核心競爭力所在。兼具極高實用/技術價值與個人偏好。
+          </p>
+          <div class="text-[11px] text-slate-400 mt-1.5 flex flex-wrap gap-1.5">
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">OrionX 硬體檢測</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">KIPOMO 現金流</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">Summer Park 柯基</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">迴圈工程報告</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">龍蝦與AI代理</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">Design First書籤</span>
+          </div>
+        </div>
+
+        <!-- Q2 卡片 -->
+        <div class="glass-card rounded-2xl p-4 border border-pink-500/20 bg-pink-950/10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span
+                class="w-6 h-6 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold text-xs">Q2</span>
+              <h3 class="font-bold text-sm text-pink-300">趣味探索・微型維護/展示化</h3>
+            </div>
+            <span class="text-xs font-mono font-bold text-pink-400 px-2 py-0.5 rounded-full bg-pink-500/10">共 20 項
+              (12.3%)</span>
+          </div>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            極客浪漫、娛樂放鬆或童趣美學之作。實用生產力較低但富含情緒價值。
+          </p>
+          <div class="text-[11px] text-slate-400 mt-1.5 flex flex-wrap gap-1.5">
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">Sky Fly 空戰</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">PokeSim 寶可夢</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">Neon 霓虹系列</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">ACG Universe</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">動漫生圖Prompt</span>
+          </div>
+        </div>
+
+        <!-- Q3 卡片 -->
+        <div class="glass-card rounded-2xl p-4 border border-amber-500/20 bg-amber-950/10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span
+                class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">Q3</span>
+              <h3 class="font-bold text-sm text-amber-300">實用基建・自動化/靜態典藏</h3>
+            </div>
+            <span class="text-xs font-mono font-bold text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/10">共 26 項
+              (16.0%)</span>
+          </div>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            硬核基礎設施或紮實歷史調研。實用性與專業度高，但排版受限於早期固定格式。
+          </p>
+          <div class="text-[11px] text-slate-400 mt-1.5 flex flex-wrap gap-1.5">
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">螢幕檢測儀</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">MP3轉WAV</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">早期 A4 橫版報告</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">ITW 格式規格書</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">25大主題書籤庫</span>
+          </div>
+        </div>
+
+        <!-- Q4 卡片 -->
+        <div class="glass-card rounded-2xl p-4 border border-slate-500/20 bg-slate-900/30">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span
+                class="w-6 h-6 rounded-lg bg-slate-500/20 text-slate-400 flex items-center justify-center font-bold text-xs">Q4</span>
+              <h3 class="font-bold text-sm text-slate-300">冗餘技術債・批次封存/清理</h3>
+            </div>
+            <span class="text-xs font-mono font-bold text-slate-400 px-2 py-0.5 rounded-full bg-slate-500/10">共 24 項
+              (14.7%)</span>
+          </div>
+          <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+            歷史過渡版本、重複冗餘檔、過期爬蟲或已被後續旗艦完全覆蓋的原型。
+          </p>
+          <div class="text-[11px] text-slate-400 mt-1.5 flex flex-wrap gap-1.5">
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">Ateam_v2 重複檔</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">iTW Editor v1~v3</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">過期新聞爬蟲</span>
+            <span class="px-1.5 py-0.5 bg-white/5 rounded text-slate-300">已畢業的沙盒原型</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 篩選器與控制列 -->
+    <div class="glass-card rounded-2xl p-4 space-y-4">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+
+        <!-- 大類別 Tab 切換 -->
+        <div class="flex items-center p-1 rounded-xl bg-space-900 border border-white/10 w-full md:w-auto"
+          id="type-tabs">
+          <button
+            class="tab-btn flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-medium transition text-white bg-indigo-600 shadow-md shadow-indigo-600/30"
+            data-filter="all">
+            全部資產 (<span id="cnt-all">163</span>)
+          </button>
+          <button
+            class="tab-btn flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white"
+            data-filter="app">
+            <i class="fa-solid fa-shapes mr-1.5 text-indigo-400"></i> 1. 應用程式 (<span id="cnt-app">88</span>)
+          </button>
+          <button
+            class="tab-btn flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white"
+            data-filter="info">
+            <i class="fa-solid fa-book-open mr-1.5 text-pink-400"></i> 2. 資訊類 (文章報告) (<span id="cnt-info">75</span>)
+          </button>
+        </div>
+
+        <!-- 關鍵字搜尋 -->
+        <div class="relative w-full md:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" id="searchInput" placeholder="搜尋名稱、主題、路徑或理由..."
+            class="w-full bg-space-900 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+        </div>
+      </div>
+
+      <!-- 二級過濾器 (象限與決策) -->
+      <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-white/5 text-xs">
+        <span class="text-slate-400 mr-1"><i class="fa-solid fa-filter text-slate-500"></i> 象限篩選:</span>
+        <button class="badge-filter px-2.5 py-1 rounded-lg border border-white/10 text-white bg-white/10 font-medium"
+          data-quadrant="all">全部</button>
+        <button
+          class="badge-filter px-2.5 py-1 rounded-lg border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/10"
+          data-quadrant="Q1">
+          <i class="fa-solid fa-crown text-[10px] mr-1"></i> Q1 核心旗艦 (<span id="cnt-btn-q1">93</span>)
+        </button>
+        <button class="badge-filter px-2.5 py-1 rounded-lg border border-pink-500/20 text-pink-300 hover:bg-pink-500/10"
+          data-quadrant="Q2">
+          <i class="fa-solid fa-wand-magic-sparkles text-[10px] mr-1"></i> Q2 趣味探索 (<span id="cnt-btn-q2">20</span>)
+        </button>
+        <button
+          class="badge-filter px-2.5 py-1 rounded-lg border border-amber-500/20 text-amber-300 hover:bg-amber-500/10"
+          data-quadrant="Q3">
+          <i class="fa-solid fa-cube text-[10px] mr-1"></i> Q3 實用基建 (<span id="cnt-btn-q3">26</span>)
+        </button>
+        <button
+          class="badge-filter px-2.5 py-1 rounded-lg border border-slate-500/20 text-slate-400 hover:bg-slate-500/10"
+          data-quadrant="Q4">
+          <i class="fa-solid fa-box-archive text-[10px] mr-1"></i> Q4 冗餘整理 (<span id="cnt-btn-q4">24</span>)
+        </button>
+
+        <div class="w-px h-4 bg-white/10 mx-1 hidden sm:block"></div>
+
+        <span class="text-slate-400 mr-1"><i class="fa-solid fa-gavel text-slate-500"></i> 去留決策:</span>
+        <button class="decision-filter px-2.5 py-1 rounded-lg border border-white/10 text-white bg-white/10"
+          data-decision="all">全部</button>
+        <button class="decision-filter px-2.5 py-1 rounded-lg border border-white/5 text-slate-400 hover:text-white"
+          data-decision="keep">保留/置頂</button>
+        <button class="decision-filter px-2.5 py-1 rounded-lg border border-white/5 text-slate-400 hover:text-white"
+          data-decision="merge">合併/整編</button>
+        <button class="decision-filter px-2.5 py-1 rounded-lg border border-white/5 text-slate-400 hover:text-white"
+          data-decision="refactor">精簡/重構</button>
+        <button class="decision-filter px-2.5 py-1 rounded-lg border border-white/5 text-slate-400 hover:text-white"
+          data-decision="archive">封存/清理</button>
+      </div>
+    </div>
+
+    <!-- 列表清單區域 -->
+    <div class="space-y-3">
+      <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+        <span>顯示清單：共篩選出 <strong class="text-indigo-400 font-mono text-sm" id="result-count">163</strong> 個項目</span>
+        <span class="font-mono text-[11px] text-slate-500">排序：依價值與喜好加權排序</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="cardsGrid">
+        <!-- 卡片將由 JavaScript 動態生成渲染 -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="glass-card border-t border-white/10 mt-12 py-6 px-6 text-center text-xs text-slate-500 font-mono">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <span>KLIO Framework Asset Portfolio &copy; 2026. Think Smart, Looks Amazing!</span>
+      <span>架構治理建議：保持 Browser-Native & Local-First，執行乾淨封存以消除技術債</span>
+    </div>
+  </footer>
+
+  <!-- 引入全站評估資料庫與儀表板邏輯 -->
+  <script src="scratch_evaluation_data.js"></script>
+  <script>
+    // 內嵌或載入全域評估數據 (163 項)
+    let currentTypeFilter = 'all';
+    let currentQuadrantFilter = 'all';
+    let currentDecisionFilter = 'all';
+    let currentSearchTerm = '';
+
+    // 初始化畫布散佈圖
+    const canvas = document.getElementById('quadrantCanvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('canvasTooltip');
+    let hoveredPoint = null;
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      drawScatterPlot();
+    }
+
+    // 取得當前過濾後的資料集
+    function getFilteredData() {
+      if (!window.portfolioData) return [];
+      return window.portfolioData.filter(item => {
+        // 大類別過濾
+        if (currentTypeFilter !== 'all' && item.type !== currentTypeFilter) return false;
+        // 象限過濾
+        if (currentQuadrantFilter !== 'all' && item.quadrant !== currentQuadrantFilter) return false;
+        // 決策過濾
+        if (currentDecisionFilter !== 'all') {
+          const d = item.decision.toLowerCase();
+          if (currentDecisionFilter === 'keep' && !(d.includes('保留') || d.includes('經典') || d.includes('置頂') || d.includes('熱門') || d.includes('標竿'))) return false;
+          if (currentDecisionFilter === 'merge' && !d.includes('合併')) return false;
+          if (currentDecisionFilter === 'refactor' && !(d.includes('精簡') || d.includes('重構') || d.includes('升級') || d.includes('待'))) return false;
+          if (currentDecisionFilter === 'archive' && !(d.includes('封存') || d.includes('清理') || d.includes('剔除'))) return false;
+        }
+        // 搜尋過濾
+        if (currentSearchTerm) {
+          const t = (item.name + ' ' + item.category + ' ' + item.path + ' ' + item.reason).toLowerCase();
+          if (!t.includes(currentSearchTerm.toLowerCase())) return false;
+        }
+        return true;
+      });
+    }
+
+    // 繪製散佈圖
+    function drawScatterPlot() {
+      if (!canvas.width || !canvas.height) return;
+      const width = canvas.width;
+      const height = canvas.height;
+      const dpr = window.devicePixelRatio || 1;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const pad = 40 * dpr;
+      const plotW = width - pad * 2;
+      const plotH = height - pad * 2;
+
+      // 繪製四個象限背景色
+      const midX = pad + plotW * 0.44; // 坐標 5.5 分界線
+      const midY = pad + plotH * 0.44; // 坐標 5.5 分界線 (Y 反向)
+
+      // Q2 (左上)
+      ctx.fillStyle = 'rgba(236, 72, 153, 0.04)';
+      ctx.fillRect(pad, pad, midX - pad, midY - pad);
+      // Q1 (右上)
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.06)';
+      ctx.fillRect(midX, pad, width - pad - midX, midY - pad);
+      // Q4 (左下)
+      ctx.fillStyle = 'rgba(107, 114, 128, 0.04)';
+      ctx.fillRect(pad, midY, midX - pad, height - pad - midY);
+      // Q3 (右下)
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.04)';
+      ctx.fillRect(midX, midY, width - pad - midX, height - pad - midY);
+
+      // 十字中心軸線
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 1 * dpr;
+      ctx.setLineDash([4 * dpr, 4 * dpr]);
+
+      ctx.beginPath();
+      ctx.moveTo(midX, pad);
+      ctx.lineTo(midX, height - pad);
+      ctx.moveTo(pad, midY);
+      ctx.lineTo(width - pad, midY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 外框
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.strokeRect(pad, pad, plotW, plotH);
+
+      // 坐標點計算函數
+      function toCanvasX(val) {
+        return pad + ((val - 1) / 9) * plotW;
+      }
+      function toCanvasY(val) {
+        return height - pad - ((val - 1) / 9) * plotH;
+      }
+
+      // 繪製資料點
+      const data = getFilteredData();
+      data.forEach(item => {
+        const cx = toCanvasX(item.valueScore);
+        const cy = toCanvasY(item.prefScore);
+
+        ctx.beginPath();
+        let color = '#10B981';
+        if (item.quadrant === 'Q2') color = '#EC4899';
+        if (item.quadrant === 'Q3') color = '#F59E0B';
+        if (item.quadrant === 'Q4') color = '#94A3B8';
+
+        const isHovered = hoveredPoint && hoveredPoint.id === item.id;
+        const radius = (isHovered ? 8 : (item.type === 'app' ? 5 : 4.5)) * dpr;
+
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = isHovered ? '#FFFFFF' : color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = isHovered ? 12 * dpr : 6 * dpr;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        if (isHovered) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2 * dpr;
+          ctx.stroke();
+        }
+      });
+    }
+
+    // 畫布滑鼠互動
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+      const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+      const dpr = window.devicePixelRatio || 1;
+
+      const pad = 40 * dpr;
+      const plotW = canvas.width - pad * 2;
+      const plotH = canvas.height - pad * 2;
+
+      function toCanvasX(val) { return pad + ((val - 1) / 9) * plotW; }
+      function toCanvasY(val) { return canvas.height - pad - ((val - 1) / 9) * plotH; }
+
+      const data = getFilteredData();
+      let found = null;
+      for (let item of data) {
+        const cx = toCanvasX(item.valueScore);
+        const cy = toCanvasY(item.prefScore);
+        const dist = Math.hypot(mouseX - cx, mouseY - cy);
+        if (dist <= 10 * dpr) {
+          found = item;
+          break;
+        }
+      }
+
+      hoveredPoint = found;
+      drawScatterPlot();
+
+      if (found) {
+        tooltip.style.opacity = '1';
+        tooltip.style.left = `${e.clientX - rect.left + 15}px`;
+        tooltip.style.top = `${e.clientY - rect.top - 15}px`;
+
+        document.getElementById('tt-title').innerText = found.name;
+        document.getElementById('tt-score').innerText = `價值: ${found.valueScore} | 喜好: ${found.prefScore}`;
+        document.getElementById('tt-quadrant').innerText = found.quadrant;
+        document.getElementById('tt-decision').innerText = found.decision;
+        document.getElementById('tt-reason').innerText = found.reason;
+      } else {
+        tooltip.style.opacity = '0';
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      hoveredPoint = null;
+      tooltip.style.opacity = '0';
+      drawScatterPlot();
+    });
+
+    canvas.addEventListener('click', () => {
+      if (hoveredPoint) {
+        const targetCard = document.getElementById(`card-${hoveredPoint.id}`);
+        if (targetCard) {
+          targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetCard.classList.add('ring-2', 'ring-indigo-400');
+          setTimeout(() => targetCard.classList.remove('ring-2', 'ring-indigo-400'), 2000);
+        }
+      }
+    });
+
+    // 渲染卡片清單
+    function renderCards() {
+      const grid = document.getElementById('cardsGrid');
+      const data = getFilteredData();
+      document.getElementById('result-count').innerText = data.length;
+
+      grid.innerHTML = '';
+      if (data.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center text-slate-500">
+            <i class="fa-solid fa-folder-open text-3xl mb-3 block"></i>
+            查無符合條件的資產項目
+          </div>
+        `;
+        return;
+      }
+
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.id = `card-${item.id}`;
+        card.className = "glass-card rounded-2xl p-4 flex flex-col justify-between border border-white/5 hover:border-white/20 transition group";
+
+        let qColor = "text-emerald-400 border-emerald-500/30 bg-emerald-500/10";
+        let qIcon = "fa-crown";
+        if (item.quadrant === 'Q2') { qColor = "text-pink-400 border-pink-500/30 bg-pink-500/10"; qIcon = "fa-wand-magic-sparkles"; }
+        if (item.quadrant === 'Q3') { qColor = "text-amber-400 border-amber-500/30 bg-amber-500/10"; qIcon = "fa-cube"; }
+        if (item.quadrant === 'Q4') { qColor = "text-slate-400 border-slate-500/30 bg-slate-500/10"; qIcon = "fa-box-archive"; }
+
+        const isApp = item.type === 'app';
+        const typeIcon = isApp ? 'fa-shapes text-indigo-400' : 'fa-book-open text-pink-400';
+        const typeLabel = isApp ? '應用' : '資訊';
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <span class="text-[11px] font-mono px-2 py-0.5 rounded-full border ${qColor} flex items-center gap-1 font-bold">
+                <i class="fa-solid ${qIcon} text-[10px]"></i> ${item.quadrant}
+              </span>
+              <span class="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                <i class="fa-solid ${typeIcon}"></i> ${typeLabel}・${item.category}
+              </span>
+            </div>
+            
+            <h3 class="font-bold text-sm text-white group-hover:text-indigo-300 transition leading-snug line-clamp-2">
+              ${item.name}
+            </h3>
+            
+            <p class="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">
+              ${item.reason}
+            </p>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-white/5 space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="text-slate-500">指標評分:</span>
+              <div class="flex items-center gap-3">
+                <span class="text-slate-300">價值 <strong class="text-white">${item.valueScore}</strong></span>
+                <span class="text-slate-300">喜好 <strong class="text-white">${item.prefScore}</strong></span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500 text-[11px] truncate max-w-[170px]" title="${item.path}">
+                <i class="fa-regular fa-folder text-[10px] mr-1"></i>${item.path}
+              </span>
+              <span class="font-medium text-xs px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-200">
+                ${item.decision}
+              </span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // 事件監聽綁定
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.className = "tab-btn flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-medium transition text-slate-400 hover:text-white";
+        });
+        btn.className = "tab-btn flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-medium transition text-white bg-indigo-600 shadow-md shadow-indigo-600/30";
+        currentTypeFilter = btn.dataset.filter;
+        renderCards();
+        drawScatterPlot();
+      });
+    });
+
+    document.querySelectorAll('.badge-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.badge-filter').forEach(b => {
+          b.classList.remove('bg-white/10', 'text-white');
+        });
+        btn.classList.add('bg-white/10', 'text-white');
+        currentQuadrantFilter = btn.dataset.quadrant;
+        renderCards();
+        drawScatterPlot();
+      });
+    });
+
+    document.querySelectorAll('.decision-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.decision-filter').forEach(b => {
+          b.classList.remove('bg-white/10', 'text-white');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('bg-white/10', 'text-white');
+        btn.classList.remove('text-slate-400');
+        currentDecisionFilter = btn.dataset.decision;
+        renderCards();
+        drawScatterPlot();
+      });
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      currentSearchTerm = e.target.value.trim();
+      renderCards();
+      drawScatterPlot();
+    });
+
+    // 更新頂部各統計數字 (動態計算)
+    function updateMetrics() {
+      if (!window.portfolioData) return;
+      const total = window.portfolioData.length;
+      const q1Count = window.portfolioData.filter(i => i.quadrant === 'Q1').length;
+      const q2Count = window.portfolioData.filter(i => i.quadrant === 'Q2').length;
+      const q3Count = window.portfolioData.filter(i => i.quadrant === 'Q3').length;
+      const q4Count = window.portfolioData.filter(i => i.quadrant === 'Q4').length;
+
+      const appCount = window.portfolioData.filter(i => i.type === 'app').length;
+      const infoCount = window.portfolioData.filter(i => i.type === 'info').length;
+
+      const keepCount = window.portfolioData.filter(i => {
+        const d = i.decision.toLowerCase();
+        return d.includes('保留') || d.includes('經典') || d.includes('置頂') || d.includes('熱門') || d.includes('標竿');
+      }).length;
+
+      document.getElementById('stat-total').innerText = total;
+      document.getElementById('stat-q1').innerText = q1Count;
+      document.getElementById('stat-q1-pct').innerText = `${((q1Count / total) * 100).toFixed(1)}%`;
+      document.getElementById('stat-q2').innerText = q2Count;
+      document.getElementById('stat-q2-pct').innerText = `${((q2Count / total) * 100).toFixed(1)}%`;
+      document.getElementById('stat-q3').innerText = q3Count;
+      document.getElementById('stat-q3-pct').innerText = `${((q3Count / total) * 100).toFixed(1)}%`;
+      document.getElementById('stat-q4').innerText = q4Count;
+      document.getElementById('stat-q4-pct').innerText = `${((q4Count / total) * 100).toFixed(1)}%`;
+
+      document.getElementById('stat-keep-rate').innerText = `${((keepCount / total) * 100).toFixed(1)}%`;
+
+      document.getElementById('cnt-all').innerText = total;
+      document.getElementById('cnt-app').innerText = appCount;
+      document.getElementById('cnt-info').innerText = infoCount;
+
+      document.getElementById('cnt-btn-q1').innerText = q1Count;
+      document.getElementById('cnt-btn-q2').innerText = q2Count;
+      document.getElementById('cnt-btn-q3').innerText = q3Count;
+      document.getElementById('cnt-btn-q4').innerText = q4Count;
+    }
+
+    // 啟動與視窗縮放處理
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', () => {
+      updateMetrics();
+      resizeCanvas();
+      renderCards();
+    });
+  </script>
+</body>
+
+</html>
