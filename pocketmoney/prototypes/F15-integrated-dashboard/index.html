@@ -316,15 +316,70 @@
     class="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
     <div class="max-w-6xl mx-auto fluid-page-pad">
 
-      <!-- 第一層：品牌標題 + 右側 4 個快速工具按鈕 (永遠單行對齊) -->
+      <!-- 第一層：品牌標題 + 帳本切換器 + 右側工具按鈕 (永遠單行對齊) -->
       <div class="flex items-center justify-between py-2.5 gap-2">
-        <div class="flex items-center gap-2.5 min-w-0">
+        <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <div
             class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
             <i class="fa-solid fa-wallet text-xs"></i>
           </div>
-          <div class="truncate">
+          <div class="truncate shrink-0">
             <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">F15（總覽重構與動態現金流整合原型）</h1>
+          </div>
+
+          <!-- 頂部帳本切換器 (Profile Switcher) -->
+          <div class="relative shrink-0" id="profileSwitcherContainer">
+            <button id="profileSwitcherBtn" onclick="toggleProfileDropdown(event)" type="button"
+              class="h-8 px-2.5 sm:px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 text-fluid-sub font-bold flex items-center gap-1.5 transition shadow-sm active:scale-95">
+              <i id="currentProfileIcon" class="fa-solid fa-house text-indigo-500 text-xs"></i>
+              <span id="currentProfileName" class="truncate max-w-[90px] sm:max-w-[130px]">我的真實帳本</span>
+              <span id="currentProfileBadge" class="hidden text-[10px] px-1.5 py-0.2 rounded font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300">示範</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </button>
+
+            <!-- 雙軌切換下拉選單 (Profile Dropdown Menu) -->
+            <div id="profileDropdownMenu" class="hidden absolute left-0 mt-2 w-80 sm:w-88 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden text-left divide-y divide-slate-100 dark:divide-slate-800 animate-in fade-in duration-100">
+              <!-- 目前選中概要 -->
+              <div class="p-3 bg-slate-50/80 dark:bg-slate-800/60 flex items-center justify-between">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-xs text-slate-400">目前帳本：</span>
+                  <span id="dropdownCurrentProfileName" class="font-extrabold text-xs text-slate-800 dark:text-slate-100 truncate">我的真實帳本</span>
+                </div>
+                <button onclick="openCreateProfileModal(); closeProfileDropdown();" type="button"
+                  class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold flex items-center gap-1">
+                  <i class="fa-solid fa-plus text-[10px]"></i> 新增自訂帳本
+                </button>
+              </div>
+
+              <!-- 真實帳本區塊 -->
+              <div class="p-2 space-y-1">
+                <div class="px-2.5 py-1 flex items-center justify-between text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                  <span>真實帳本</span>
+                </div>
+                <div id="dropdownUserProfilesList" class="space-y-1 max-h-48 overflow-y-auto">
+                  <!-- 動態注入自建帳本項目 -->
+                </div>
+              </div>
+
+              <!-- 展示沙盒 (Demo) 區塊 -->
+              <div class="p-2 space-y-1 bg-amber-50/30 dark:bg-amber-950/20">
+                <div class="px-2.5 py-1 flex items-center justify-between text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                  <span class="flex items-center gap-1">
+                    <i class="fa-solid fa-flask text-[11px]"></i> 展示沙盒
+                  </span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 font-normal">獨立沙盒</span>
+                </div>
+                <div id="dropdownDemoProfilesList" class="space-y-1">
+                  <!-- 動態注入展示沙盒項目 -->
+                </div>
+              </div>
+
+              <!-- 底部安全提示 -->
+              <div class="px-3.5 py-2 bg-slate-50 dark:bg-slate-800/40 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-emerald-500 text-xs shrink-0"></i>
+                <span>各帳本資料完全隔離，沙盒操作不影響真實帳本</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -405,6 +460,32 @@
 
     </div>
   </header>
+
+  <!-- 教學示範沙盒保護橫幅 -->
+  <div id="demoSandboxBanner" class="hidden bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900/60 transition-all">
+    <div class="max-w-6xl mx-auto fluid-page-pad py-2 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2 text-amber-900 dark:text-amber-200 text-fluid-sub">
+        <span class="px-2 py-0.5 rounded-md bg-amber-500 text-white font-bold text-[11px] inline-flex items-center gap-1 shadow-sm">
+          <i class="fa-solid fa-flask-vial"></i> 示範沙盒
+        </span>
+        <span class="font-medium text-xs sm:text-sm">
+          目前為「<span id="demoBannerProfileName" class="font-bold">展示沙盒 (Demo)</span>」，修改僅存於沙盒，不影響真實帳本。
+        </span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button onclick="resetDemoSandbox()" title="還原沙盒資料至初始展示數據" type="button"
+          class="h-7 px-2.5 rounded-lg bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700/80 hover:bg-amber-50 dark:hover:bg-slate-700 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-1 transition shadow-sm active:scale-95">
+          <i class="fa-solid fa-rotate-left text-[11px]"></i>
+          <span>重置沙盒資料</span>
+        </button>
+        <button onclick="switchProfile('default')" title="切換回我的真實帳本" type="button"
+          class="h-7 px-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-1 transition shadow-sm active:scale-95">
+          <i class="fa-solid fa-arrow-right-from-bracket text-[11px]"></i>
+          <span>切換回我的帳本</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== 主內容容器 (等比例縮放網格) ==================== -->
   <main class="max-w-6xl mx-auto fluid-page-pad pt-4">
@@ -1233,6 +1314,125 @@
 
   </main>
 
+  <!-- ==================== 帳本管理彈窗 (Profile Modal) ==================== -->
+  <div id="profileModal" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md p-5 shadow-2xl animate-in fade-in duration-150">
+      
+      <!-- 視圖 1: 新增自訂帳本 -->
+      <div id="profileModalCreateView" class="space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-plus text-sm"></i>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100">新增自訂帳本</h3>
+          </div>
+          <button onclick="closeProfileModal()" type="button" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">帳本名稱</label>
+            <input type="text" id="createProfileNameInput" placeholder="例如：生活投資帳、旅遊基金帳" maxlength="20"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">初始資料</label>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <label class="flex items-center gap-1.5 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer">
+                <input type="radio" name="createProfileTemplate" value="clean" checked class="text-indigo-600">
+                <span class="font-medium">全新純淨歸零</span>
+              </label>
+              <label class="flex items-center gap-1.5 p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 cursor-pointer">
+                <input type="radio" name="createProfileTemplate" value="copy" class="text-indigo-600">
+                <span class="font-medium">複製目前帳本</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition">
+            取消
+          </button>
+          <button type="button" onclick="submitCreateProfile()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm">
+            確認建立
+          </button>
+        </div>
+      </div>
+
+      <!-- 視圖 2: 重新命名帳本 -->
+      <div id="profileModalRenameView" class="hidden space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-pen text-sm"></i>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100">重新命名帳本</h3>
+          </div>
+          <button onclick="closeProfileModal()" type="button" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <input type="hidden" id="renameProfileIdInput">
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">帳本名稱</label>
+            <input type="text" id="renameProfileNameInput" maxlength="20"
+              class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition">
+            取消
+          </button>
+          <button type="button" onclick="submitRenameProfile()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm">
+            儲存變更
+          </button>
+        </div>
+      </div>
+
+      <!-- 視圖 3: 刪除帳本確認 -->
+      <div id="profileModalDeleteView" class="hidden space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
+              <i class="fa-solid fa-trash text-sm"></i>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800 dark:text-slate-100">刪除自訂帳本</h3>
+          </div>
+          <button onclick="closeProfileModal()" type="button" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <input type="hidden" id="deleteProfileIdInput">
+        <div class="space-y-2">
+          <p class="text-xs text-slate-600 dark:text-slate-300">
+            確定要刪除「<span id="deleteProfileTargetName" class="font-bold text-rose-600"></span>」嗎？
+          </p>
+          <p class="text-[11px] text-slate-400">
+            刪除後該帳本的本機儲存資料將被永久移除，且無法復原。
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeProfileModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold transition">
+            取消
+          </button>
+          <button type="button" onclick="submitDeleteProfile()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition shadow-sm">
+            確認刪除
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ==================== 通用彈出表單 Modal ==================== -->
   <div id="appModal" class="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm hidden items-center justify-center p-4">
     <div
@@ -1293,8 +1493,71 @@
   <script>
     // 應用程式版本：與 STORAGE_KEY 分開管理，升版時不需要更動儲存 key
     const APP_VERSION = '0.2.0';
-    const STORAGE_KEY = 'PocketMoney_exp_F15';
+    const PROFILES_META_KEY = 'PocketMoney_profiles_meta_v1';
+    const STORAGE_KEY = 'PocketMoney_tw_finance_v3';
     const BACKUP_STORAGE_KEY_PREFIX = 'PocketMoney_backup_';
+
+    function getDefaultProfilesMeta() {
+      return {
+        currentProfileId: 'default',
+        profiles: [
+          {
+            id: 'default',
+            name: '我的真實帳本',
+            icon: 'fa-house',
+            isDemo: false,
+            createdAt: '2026-11-05T00:00:00.000Z'
+          },
+          {
+            id: 'demo_sandbox',
+            name: '展示沙盒 (Demo)',
+            icon: 'fa-flask',
+            isDemo: true,
+            createdAt: '2026-11-05T00:00:00.000Z'
+          }
+        ]
+      };
+    }
+
+    function getProfilesMeta() {
+      try {
+        const raw = localStorage.getItem(PROFILES_META_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.profiles) && parsed.profiles.length > 0) {
+            if (!parsed.profiles.some(p => p.id === 'default')) {
+              parsed.profiles.unshift({ id: 'default', name: '我的真實帳本', icon: 'fa-house', isDemo: false });
+            }
+            if (!parsed.profiles.some(p => p.id === 'demo_sandbox')) {
+              parsed.profiles.push({ id: 'demo_sandbox', name: '展示沙盒 (Demo)', icon: 'fa-flask', isDemo: true });
+            }
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('[Profile] 讀取 profiles meta 失敗:', e);
+      }
+      const def = getDefaultProfilesMeta();
+      saveProfilesMeta(def);
+      return def;
+    }
+
+    function saveProfilesMeta(meta) {
+      try {
+        localStorage.setItem(PROFILES_META_KEY, JSON.stringify(meta));
+      } catch (e) {
+        console.error('[Profile] 儲存 profiles meta 失敗:', e);
+      }
+    }
+
+    function getProfileStorageKey(profileId) {
+      if (profileId === 'default') return 'PocketMoney_tw_finance_v3';
+      if (profileId === 'demo_sandbox') return 'PocketMoney_profile_demo_sandbox_v3';
+      return `PocketMoney_profile_${profileId}`;
+    }
+
+    let profilesMeta = getProfilesMeta();
+    let currentProfileId = profilesMeta.currentProfileId || 'default';
 
 
     const DEFAULT_STATE = {
@@ -1858,6 +2121,9 @@
       loaded.banks.forEach(b => {
         b.name = b.name || '銀行帳戶';
         b.balance = Number(b.balance) || 0;
+        if (!Array.isArray(b.historyRecords)) {
+          b.historyRecords = [];
+        }
       });
 
       if (!Array.isArray(loaded.cards)) loaded.cards = [];
@@ -1947,36 +2213,47 @@
       showToast('已載入測試資料庫');
     }
 
-    function loadState() {
-      try {
-        let loaded;
-        if (window.__EMBEDDED_STATE__) {
-          loaded = JSON.parse(JSON.stringify(window.__EMBEDDED_STATE__));
-        } else {
-          const raw = readStoredRaw();
-          if (!raw) loaded = JSON.parse(JSON.stringify(DEFAULT_STATE));
-          else {
-            const parsed = JSON.parse(raw);
-            try {
-              if (!localStorage.getItem(BACKUP_STORAGE_KEY_PREFIX + 'v0.1.0')) {
-                localStorage.setItem(BACKUP_STORAGE_KEY_PREFIX + 'v0.1.0', raw);
-              }
-            } catch (e) {
-              console.warn('[PocketMoney] 自動備份失敗:', e);
-            }
-            loaded = {
-              ...DEFAULT_STATE,
-              ...parsed,
-              settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) },
-              inflows: Array.isArray(parsed.inflows) ? parsed.inflows : JSON.parse(JSON.stringify(DEFAULT_STATE.inflows))
-            };
-          }
-        }
-        return normalizeState(loaded);
-      } catch (e) {
-        console.error('[PocketMoney] 讀取本地資料失敗，改用預設值：', e);
+    function loadProfileState(profileId) {
+      const storageKey = getProfileStorageKey(profileId);
+      let raw = localStorage.getItem(storageKey);
+      if (profileId === 'demo_sandbox' && !raw) {
+        const demoData = normalizeState(JSON.parse(JSON.stringify(DEMO_H2_DATA)));
+        localStorage.setItem(storageKey, JSON.stringify(demoData));
+        return demoData;
+      }
+      if (!raw && profileId === 'default') {
+        raw = localStorage.getItem('PocketMoney_exp_F15');
+      }
+      if (!raw) {
         return normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
       }
+      try {
+        const parsed = JSON.parse(raw);
+        try {
+          if (!localStorage.getItem(BACKUP_STORAGE_KEY_PREFIX + 'v0.1.0')) {
+            localStorage.setItem(BACKUP_STORAGE_KEY_PREFIX + 'v0.1.0', raw);
+          }
+        } catch (e) {
+          console.warn('[PocketMoney] 自動備份失敗:', e);
+        }
+        const loaded = {
+          ...DEFAULT_STATE,
+          ...parsed,
+          settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) },
+          inflows: Array.isArray(parsed.inflows) ? parsed.inflows : JSON.parse(JSON.stringify(DEFAULT_STATE.inflows))
+        };
+        return normalizeState(loaded);
+      } catch (e) {
+        console.error('[Profile] 解析帳本資料失敗:', e);
+        return normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
+      }
+    }
+
+    function loadState() {
+      if (window.__EMBEDDED_STATE__) {
+        return normalizeState(JSON.parse(JSON.stringify(window.__EMBEDDED_STATE__)));
+      }
+      return loadProfileState(currentProfileId);
     }
 
     // 申請持久化儲存：降低瀏覽器在空間不足或久未使用時自動清除 localStorage 的機率
@@ -1986,11 +2263,333 @@
 
     function saveState() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        const currentKey = getProfileStorageKey(currentProfileId);
+        localStorage.setItem(currentKey, JSON.stringify(state));
       } catch (e) {
-        console.error(e);
+        console.error('[PocketMoney] 儲存狀態失敗:', e);
       }
     }
+
+    function readStoredRaw() {
+      const currentKey = getProfileStorageKey(currentProfileId);
+      let raw = localStorage.getItem(currentKey);
+      if (!raw && currentProfileId === 'default') {
+        raw = localStorage.getItem('PocketMoney_exp_F15');
+      }
+      return raw;
+    }
+
+    function switchProfile(profileId) {
+      const meta = getProfilesMeta();
+      const target = meta.profiles.find(p => p.id === profileId);
+      if (!target) return;
+
+      saveState();
+
+      currentProfileId = profileId;
+      meta.currentProfileId = profileId;
+      saveProfilesMeta(meta);
+
+      state = loadProfileState(profileId);
+
+      closeProfileDropdown();
+      updateProfileSwitcherUI();
+      renderAll();
+      showToast(`已切換至「${target.name}」`);
+    }
+
+    function resetDemoSandbox() {
+      if (typeof confirm !== 'undefined' && !confirm('確定要重置展示沙盒嗎？沙盒內的所有修改將被清除，還原至初始展示資料。')) {
+        return;
+      }
+      const demoData = normalizeState(JSON.parse(JSON.stringify(DEMO_H2_DATA)));
+      localStorage.setItem(getProfileStorageKey('demo_sandbox'), JSON.stringify(demoData));
+      if (currentProfileId === 'demo_sandbox') {
+        state = demoData;
+        renderAll();
+        showToast('已重置展示沙盒資料');
+      }
+    }
+
+    function updateProfileSwitcherUI() {
+      const meta = getProfilesMeta();
+      const current = meta.profiles.find(p => p.id === currentProfileId) || meta.profiles[0];
+
+      const iconEl = document.getElementById('currentProfileIcon');
+      const nameEl = document.getElementById('currentProfileName');
+      const badgeEl = document.getElementById('currentProfileBadge');
+      const dropNameEl = document.getElementById('dropdownCurrentProfileName');
+
+      if (iconEl) {
+        iconEl.className = `fa-solid ${current.icon || (current.isDemo ? 'fa-flask' : 'fa-house')} ${current.isDemo ? 'text-amber-500' : 'text-indigo-500'} text-xs`;
+      }
+      if (nameEl) nameEl.innerText = current.name;
+      if (dropNameEl) dropNameEl.innerText = current.name;
+      if (badgeEl) {
+        if (current.isDemo) badgeEl.classList.remove('hidden');
+        else badgeEl.classList.add('hidden');
+      }
+
+      const bannerEl = document.getElementById('demoSandboxBanner');
+      const bannerNameEl = document.getElementById('demoBannerProfileName');
+      if (bannerEl) {
+        if (current.isDemo) {
+          bannerEl.classList.remove('hidden');
+          if (bannerNameEl) bannerNameEl.innerText = current.name;
+        } else {
+          bannerEl.classList.add('hidden');
+        }
+      }
+
+      const userListEl = document.getElementById('dropdownUserProfilesList');
+      const demoListEl = document.getElementById('dropdownDemoProfilesList');
+
+      if (userListEl) {
+        const userProfiles = meta.profiles.filter(p => !p.isDemo);
+        userListEl.innerHTML = userProfiles.map(p => {
+          const isSelected = p.id === currentProfileId;
+          const canManage = p.id !== 'default';
+          return `
+            <div class="group flex items-center justify-between p-2 rounded-xl transition ${isSelected ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-900 dark:text-indigo-200 font-bold' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'}">
+              <button type="button" onclick="switchProfile('${p.id}')" class="flex items-center gap-2 min-w-0 flex-1 text-left">
+                <i class="fa-solid ${p.icon || 'fa-house'} text-xs ${isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}"></i>
+                <span class="text-xs truncate">${p.name}</span>
+                ${isSelected ? '<i class="fa-solid fa-check text-[11px] text-indigo-600 dark:text-indigo-400 ml-auto mr-1"></i>' : ''}
+              </button>
+              ${canManage ? `
+                <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 shrink-0 ml-1">
+                  <button type="button" onclick="openRenameProfileModal('${p.id}')" title="重新命名" class="p-1 hover:text-indigo-600 dark:hover:text-indigo-400 text-slate-400 text-xs">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button type="button" onclick="openDeleteProfileModal('${p.id}')" title="刪除帳本" class="p-1 hover:text-rose-600 text-slate-400 text-xs">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      if (demoListEl) {
+        const demoProfiles = meta.profiles.filter(p => p.isDemo);
+        demoListEl.innerHTML = demoProfiles.map(p => {
+          const isSelected = p.id === currentProfileId;
+          return `
+            <div class="flex items-center justify-between p-2 rounded-xl transition ${isSelected ? 'bg-amber-100/60 dark:bg-amber-950/60 text-amber-950 dark:text-amber-200 font-bold' : 'hover:bg-amber-100/30 dark:hover:bg-amber-900/30 text-slate-700 dark:text-slate-300'}">
+              <button type="button" onclick="switchProfile('${p.id}')" class="flex items-center gap-2 min-w-0 flex-1 text-left">
+                <i class="fa-solid ${p.icon || 'fa-flask'} text-xs text-amber-500"></i>
+                <span class="text-xs truncate">${p.name}</span>
+                ${isSelected ? '<i class="fa-solid fa-check text-[11px] text-amber-600 dark:text-amber-400 ml-auto mr-1"></i>' : ''}
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function toggleProfileDropdown(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('profileDropdownMenu');
+      if (menu) {
+        const isClosed = menu.classList.contains('hidden');
+        if (isClosed) {
+          updateProfileSwitcherUI();
+          menu.classList.remove('hidden');
+        } else {
+          menu.classList.add('hidden');
+        }
+      }
+    }
+
+    function closeProfileDropdown() {
+      const menu = document.getElementById('profileDropdownMenu');
+      if (menu) menu.classList.add('hidden');
+    }
+
+    function openCreateProfileModal() {
+      closeProfileDropdown();
+      const modal = document.getElementById('profileModal');
+      const viewCreate = document.getElementById('profileModalCreateView');
+      const viewRename = document.getElementById('profileModalRenameView');
+      const viewDelete = document.getElementById('profileModalDeleteView');
+      if (viewCreate && viewRename && viewDelete) {
+        viewCreate.classList.remove('hidden');
+        viewRename.classList.add('hidden');
+        viewDelete.classList.add('hidden');
+      }
+      const input = document.getElementById('createProfileNameInput');
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 50);
+      }
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function submitCreateProfile() {
+      const input = document.getElementById('createProfileNameInput');
+      const name = input ? input.value.trim() : '';
+      if (!name) return showToast('請輸入帳本名稱', 'warn');
+
+      const meta = getProfilesMeta();
+      const newId = 'prof_' + Date.now();
+      const templateRadio = document.querySelector('input[name="createProfileTemplate"]:checked');
+      const template = templateRadio ? templateRadio.value : 'clean';
+
+      const newProfile = {
+        id: newId,
+        name: name,
+        icon: 'fa-wallet',
+        isDemo: false,
+        createdAt: new Date().toISOString()
+      };
+
+      let newState;
+      if (template === 'copy') {
+        newState = normalizeState(JSON.parse(JSON.stringify(state)));
+      } else {
+        newState = normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
+      }
+
+      localStorage.setItem(getProfileStorageKey(newId), JSON.stringify(newState));
+
+      const demoIdx = meta.profiles.findIndex(p => p.isDemo);
+      if (demoIdx !== -1) {
+        meta.profiles.splice(demoIdx, 0, newProfile);
+      } else {
+        meta.profiles.push(newProfile);
+      }
+      saveProfilesMeta(meta);
+
+      closeProfileModal();
+      switchProfile(newId);
+      showToast(`已建立並切換至「${name}」`);
+    }
+
+    function openRenameProfileModal(profileId) {
+      closeProfileDropdown();
+      const meta = getProfilesMeta();
+      const target = meta.profiles.find(p => p.id === profileId);
+      if (!target || target.isDemo) return;
+
+      const modal = document.getElementById('profileModal');
+      const viewCreate = document.getElementById('profileModalCreateView');
+      const viewRename = document.getElementById('profileModalRenameView');
+      const viewDelete = document.getElementById('profileModalDeleteView');
+      if (viewCreate && viewRename && viewDelete) {
+        viewCreate.classList.add('hidden');
+        viewRename.classList.remove('hidden');
+        viewDelete.classList.add('hidden');
+      }
+      document.getElementById('renameProfileIdInput').value = profileId;
+      const input = document.getElementById('renameProfileNameInput');
+      input.value = target.name;
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => input.focus(), 50);
+      }
+    }
+
+    function submitRenameProfile() {
+      const profileId = document.getElementById('renameProfileIdInput').value;
+      const input = document.getElementById('renameProfileNameInput');
+      const newName = input ? input.value.trim() : '';
+      if (!newName) return showToast('請輸入帳本名稱', 'warn');
+
+      const meta = getProfilesMeta();
+      const target = meta.profiles.find(p => p.id === profileId);
+      if (!target) return;
+
+      target.name = newName;
+      saveProfilesMeta(meta);
+
+      closeProfileModal();
+      updateProfileSwitcherUI();
+      showToast(`已重新命名為「${newName}」`);
+    }
+
+    function openDeleteProfileModal(profileId) {
+      closeProfileDropdown();
+      const meta = getProfilesMeta();
+      const target = meta.profiles.find(p => p.id === profileId);
+      if (!target || target.isDemo || target.id === 'default') {
+        return showToast('預設真實帳本與展示沙盒不可刪除', 'warn');
+      }
+
+      const modal = document.getElementById('profileModal');
+      const viewCreate = document.getElementById('profileModalCreateView');
+      const viewRename = document.getElementById('profileModalRenameView');
+      const viewDelete = document.getElementById('profileModalDeleteView');
+      if (viewCreate && viewRename && viewDelete) {
+        viewCreate.classList.add('hidden');
+        viewRename.classList.add('hidden');
+        viewDelete.classList.remove('hidden');
+      }
+      document.getElementById('deleteProfileIdInput').value = profileId;
+      document.getElementById('deleteProfileTargetName').innerText = target.name;
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function submitDeleteProfile() {
+      const profileId = document.getElementById('deleteProfileIdInput').value;
+      const meta = getProfilesMeta();
+      const target = meta.profiles.find(p => p.id === profileId);
+      if (!target || target.id === 'default' || target.isDemo) return;
+
+      localStorage.removeItem(getProfileStorageKey(profileId));
+      meta.profiles = meta.profiles.filter(p => p.id !== profileId);
+
+      let needSwitch = false;
+      if (currentProfileId === profileId) {
+        currentProfileId = 'default';
+        meta.currentProfileId = 'default';
+        needSwitch = true;
+      }
+      saveProfilesMeta(meta);
+
+      closeProfileModal();
+
+      if (needSwitch) {
+        state = loadProfileState('default');
+        renderAll();
+      }
+      updateProfileSwitcherUI();
+      showToast(`已刪除帳本「${target.name}」`);
+    }
+
+    function closeProfileModal() {
+      const modal = document.getElementById('profileModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    document.addEventListener('click', function (e) {
+      const container = document.getElementById('profileSwitcherContainer');
+      if (container && !container.contains(e.target)) {
+        closeProfileDropdown();
+      }
+    });
+
+    window.openCreateProfileModal = openCreateProfileModal;
+    window.openRenameProfileModal = openRenameProfileModal;
+    window.openDeleteProfileModal = openDeleteProfileModal;
+    window.submitCreateProfile = submitCreateProfile;
+    window.submitRenameProfile = submitRenameProfile;
+    window.submitDeleteProfile = submitDeleteProfile;
+    window.resetDemoSandbox = resetDemoSandbox;
+    window.switchProfile = switchProfile;
+    window.toggleProfileDropdown = toggleProfileDropdown;
+    window.closeProfileDropdown = closeProfileDropdown;
+    window.closeProfileModal = closeProfileModal;
 
     function fmtMoney(num, showSign = false) {
       const n = Number(num) || 0;
@@ -2468,6 +3067,7 @@
     }
 
     function renderAll() {
+      updateProfileSwitcherUI();
       updateViewDateBar();
       const pIcon = document.getElementById('privacyIcon');
       const pText = document.getElementById('privacyText');
@@ -6093,7 +6693,7 @@ function openAppModal(title, htmlContent) {
     }
 
     function resetAllData() {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(getProfileStorageKey(currentProfileId));
       state = normalizeState(JSON.parse(JSON.stringify(DEFAULT_STATE)));
       saveState();
       renderAll();
@@ -6132,6 +6732,7 @@ function openAppModal(title, htmlContent) {
       const verEl = document.getElementById('appVersionLabel');
       if (verEl) verEl.innerText = APP_VERSION;
       if (state.settings.pinCode) lockScreenNow();
+      updateProfileSwitcherUI();
       switchTab('dashboard');
     };
     /* =========================================================================
