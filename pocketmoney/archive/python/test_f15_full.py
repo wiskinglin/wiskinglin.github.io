@@ -13,8 +13,8 @@ if sys.stdout.encoding.lower() != 'utf-8':
     sys.stdout.reconfigure(encoding='utf-8')
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
-HTML_PATH = os.path.join(CURRENT_DIR, "index.html")
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", ".."))
+HTML_PATH = os.path.join(PROJECT_ROOT, "pocketmoney", "prototypes", "F15-integrated-dashboard", "index.html")
 FILE_URL = f"file:///{HTML_PATH.replace(os.sep, '/')}"
 
 def parse_amount(text):
@@ -78,9 +78,9 @@ def run_tests():
         page.wait_for_timeout(400)
 
         title_text = page.title()
-        assert "F15（總覽重構與動態現金流整合原型）" in title_text, f"網頁 <title> 錯誤: {title_text}"
+        assert "PocketMoney" in title_text, f"網頁 <title> 錯誤: {title_text}"
         header_text = page.inner_text("#pageHeaderTitle").strip()
-        assert "F15（總覽重構與動態現金流整合原型）" in header_text, f"頂部大標題錯誤: {header_text}"
+        assert "PocketMoney" in header_text, f"頂部大標題錯誤: {header_text}"
 
         empty_hero = page.inner_text("#kpiMonthMarginHero").strip()
         empty_badge = page.inner_text("#kpiCashflowHealthBadge").strip()
@@ -106,7 +106,7 @@ def run_tests():
         # 2. 載入 test_demo_h2.json (當前月 11 月、過去月 10 月、未來月 12 月)
         # =============================================================
         print("\n--- [狀態 2-A] 載入 test_demo_h2.json (當前月份 11月) ---")
-        h2_path = os.path.join(CURRENT_DIR, "test_demo_h2.json")
+        h2_path = os.path.join(PROJECT_ROOT, "pocketmoney", "prototypes", "F15-integrated-dashboard", "test_demo_h2.json")
         with open(h2_path, 'r', encoding='utf-8') as f:
             h2_data = json.load(f)
 

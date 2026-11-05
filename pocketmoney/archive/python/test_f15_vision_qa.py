@@ -23,7 +23,7 @@ results = {
 
 tabs = ['dashboard', 'banks', 'stocks', 'cards', 'installments', 'bills', 'rules', 'settings']
 expected_titles = {
-    'dashboard': 'F15（總覽重構與動態現金流整合原型）',
+    'dashboard': 'PocketMoney',
     'banks': '銀行餘額',
     'stocks': '台股部位',
     'cards': '信用卡費',
@@ -78,7 +78,7 @@ with sync_playwright() as p:
     # 檢驗全局標題
     page_title = page.title()
     log_assertion('dom_assertions', "Zero State <title> 規範", 
-                  page_title == "F15（總覽重構與動態現金流整合原型）", 
+                  page_title == "PocketMoney", 
                   f"實際: '{page_title}'")
 
     for tab in tabs:

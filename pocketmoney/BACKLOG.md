@@ -17,20 +17,24 @@
 | **F05** | 日期控制與輸入瀏覽分離 | 🟢 已合併 | prototypes/F05-date-controller-flow/ | ADR-012 |
 | **F06** | 外部對帳單與明細分析器 | 🟢 已完成 (Viewer進行中) | analyzer/ | ADR-013 |
 | **F07** | 漸進式功能解鎖 (Progressive Disclosure) | ⏳ 規劃定案 | prototypes/F07-progressive-disclosure/ | ADR-011 |
-| **F08** | Profile 雙軌切換架構 (Demo與多帳本) | ⏳ 規格已備 | prototypes/F08-profile-switch/ | SCENARIOS |
+| **F08** | Profile 雙軌切換架構 (Demo與多帳本) | 🟢 已整合 | prototypes/F08-profile-switch/ | SCENARIOS |
 | **F09** | 初次使用與重設資料全面歸零 | 🟢 已合併 | prototypes/F09-zero-state-reset/ | ADR-015 |
 | **F10** | 證券戶與持股資料模型正規化 | ⏳ 待辦探索 | prototypes/F10-securities-account-model/ | ADR-004、ERD |
-| **F11** | 總覽收支餘裕與防入不敷出決策卡 | 🟡 原型實驗中 | prototypes/F11-cashflow-margin-card/ | ADR-016 |
-| **F12** | 總覽時序長條軸去重視覺瘦身 | 🟡 原型實驗中 | prototypes/F12-dashboard-timeline-cleanup/ | - |
-| **F13** | 單月現金流趨勢圖與資產圖遷移 | 🟡 原型實驗中 | prototypes/F13-monthly-cashflow-trend/ | ADR-016 |
-| **F14** | 三段式時間切換引擎 (存量/防禦/流量) | 🟡 原型實驗中 | prototypes/F14-three-tier-time-engine/ | ADR-016 |
-| **F15** | 總覽重構與三段式時間切換整合原型 | 🟡 原型實驗中 | prototypes/F15-integrated-dashboard/ | ADR-016 |
+| **F11** | 總覽收支餘裕與防入不敷出決策卡 | 🟢 已整合 (F15) | prototypes/F11-cashflow-margin-card/ | ADR-016 |
+| **F12** | 總覽時序長條軸去重視覺瘦身 | 🟢 已整合 (F15) | prototypes/F12-dashboard-timeline-cleanup/ | - |
+| **F13** | 單月現金流趨勢圖與資產圖遷移 | 🟢 已整合 (F15) | prototypes/F13-monthly-cashflow-trend/ | ADR-016 |
+| **F14** | 三段式時間切換引擎 (存量/防禦/流量) | 🟢 已整合 (F15) | prototypes/F14-three-tier-time-engine/ | ADR-016 |
+| **F15** | 總覽重構與三段式時間切換整合原型 | 🟢 已整合 | prototypes/F15-integrated-dashboard/ | ADR-016 |
 
 ---
 
-## 📊 STATUS 儀表板（最後更新：2026-11-03）
+## 📊 STATUS 儀表板（最後更新：2026-11-05）
 
-### 🟢 已完成並合併（Completed & Merged）
+### 🟢 已完成並合併／已整合（Completed, Merged & Integrated）
+- **`F15` — 總覽重構與三段式時間切換整合正式版 [INTEGRATED]**
+  - **交付成果**：正式整合至 [`pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney.html)。八大分頁（總覽、銀行、卡片、固定費用、台股部位、分期付款、收支規則、系統設定）100% 唯讀資料洞察視圖，兩階段每月盤點輸入抽屜（階段一資產盤點、階段二帳單扣款指定與預覽），三段式時序狀態機（過去存量回溯、當月日進度防禦、未來流量推演），全站手機版 RWD（零橫向溢出、觸控友善底部/抽屜控制）。
+- **`F08` — Profile 雙軌切換架構（Demo與多帳本切換器）[INTEGRATED]**
+  - **交付成果**：多帳本切換器（個人、家庭、工作室）、示範資料載入沙盒、獨立 localStorage 隔離命名空間 (`PocketMoney_profiles_meta_v1` 與 `PocketMoney_tw_finance_v3`)，無縫向下相容正式版儲存架構。
 - **F09 — 初次使用與重設資料全面歸零（Zero Initial State & Reset）**
   - **交付成果**：移除 DEFAULT_STATE 中的預設寫死示範數據（台新、中信、永豐、CUBE卡等），所有帳戶、信用卡、收支規則、分期與持股預設皆清空歸零（空陣列）。修復設定頁「完全清空重設」功能，執行時確實清除 localStorage 與記憶體狀態並重新渲染，徹底解決初次開啟與點選重設無法歸零的問題。
 - **`F06-Viewer` — 帳單比對檢驗器（Split-Pane Bill & PDF Verification Viewer）**

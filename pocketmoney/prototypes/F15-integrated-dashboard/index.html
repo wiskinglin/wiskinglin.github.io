@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>F15（總覽重構與動態現金流整合原型）</title>
+  <title>PocketMoney</title>
   <script>
     (function () {
       const savedTheme = localStorage.getItem('PocketMoney_theme') || localStorage.getItem('pocketflow_theme');
@@ -229,9 +229,9 @@
       accent-color: var(--ui-primary);
     }
 
-    /* 頂部導覽列：半透明 + 細線，貼近 UHeader */
+    /* 頂部導覽列：輕量陰影 + 細線，貼近 UHeader */
     html body header.sticky {
-      box-shadow: none;
+      box-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.08);
       border-bottom: 1px solid var(--ui-ring);
     }
 
@@ -314,31 +314,31 @@
   <!-- ==================== 頂部純色不透明固定導覽列 (解決穿透與底部遮擋問題) ==================== -->
   <header
     class="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-sm">
-    <div class="max-w-6xl mx-auto fluid-page-pad">
+    <div class="max-w-6xl mx-auto fluid-page-pad relative">
 
-      <!-- 第一層：品牌標題 + 帳本切換器 + 右側工具按鈕 (永遠單行對齊) -->
-      <div class="flex items-center justify-between py-2.5 gap-2">
-        <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
+      <!-- 第一層：品牌標題 + 帳本切換器 + 右側工具按鈕 (手機版與電腦版皆乾淨不擠壓、不破版) -->
+      <div class="flex items-center justify-between py-2 sm:py-2.5 gap-1.5 sm:gap-2">
+        <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0 shrink">
           <div
-            class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-sm">
             <i class="fa-solid fa-wallet text-xs"></i>
           </div>
           <div class="truncate shrink-0">
-            <h1 id="pageHeaderTitle" class="text-fluid-h3 font-extrabold truncate">F15（總覽重構與動態現金流整合原型）</h1>
+            <h1 id="pageHeaderTitle" class="text-xs sm:text-base font-extrabold truncate max-w-[82px] sm:max-w-none">PocketMoney</h1>
           </div>
 
           <!-- 頂部帳本切換器 (Profile Switcher) -->
-          <div class="relative shrink-0" id="profileSwitcherContainer">
+          <div class="static sm:relative shrink min-w-0" id="profileSwitcherContainer">
             <button id="profileSwitcherBtn" onclick="toggleProfileDropdown(event)" type="button"
-              class="h-8 px-2.5 sm:px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 text-fluid-sub font-bold flex items-center gap-1.5 transition shadow-sm active:scale-95">
-              <i id="currentProfileIcon" class="fa-solid fa-house text-indigo-500 text-xs"></i>
-              <span id="currentProfileName" class="truncate max-w-[90px] sm:max-w-[130px]">我的真實帳本</span>
-              <span id="currentProfileBadge" class="hidden text-[10px] px-1.5 py-0.2 rounded font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300">示範</span>
-              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+              class="h-7 sm:h-8 px-2 sm:px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 text-[11px] sm:text-fluid-sub font-bold flex items-center gap-1 sm:gap-1.5 transition shadow-sm active:scale-95 max-w-[115px] sm:max-w-[170px]">
+              <i id="currentProfileIcon" class="fa-solid fa-house text-indigo-500 text-[10px] sm:text-xs shrink-0"></i>
+              <span id="currentProfileName" class="truncate max-w-[62px] sm:max-w-[110px]">我的真實帳本</span>
+              <span id="currentProfileBadge" class="hidden text-[10px] px-1 py-0.2 rounded font-bold bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 shrink-0">示範</span>
+              <i class="fa-solid fa-chevron-down text-[8px] sm:text-[10px] text-slate-400 shrink-0"></i>
             </button>
 
             <!-- 雙軌切換下拉選單 (Profile Dropdown Menu) -->
-            <div id="profileDropdownMenu" class="hidden absolute left-0 mt-2 w-80 sm:w-88 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden text-left divide-y divide-slate-100 dark:divide-slate-800 animate-in fade-in duration-100">
+            <div id="profileDropdownMenu" class="hidden absolute left-2.5 right-2.5 sm:left-0 sm:right-auto sm:w-80 mt-2 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl z-50 overflow-hidden text-left divide-y divide-slate-100 dark:divide-slate-800 animate-in fade-in duration-100">
               <!-- 目前選中概要 -->
               <div class="p-3 bg-slate-50/80 dark:bg-slate-800/60 flex items-center justify-between">
                 <div class="flex items-center gap-2 min-w-0">
@@ -383,21 +383,23 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-1.5 shrink-0">
+        <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
           <!-- 每月盤點專用輸入流入口 -->
           <button id="btnOpenMonthlyInput" onclick="openMonthlyInputCarousel()"
-            class="h-8 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-fluid-sub font-bold flex items-center gap-1.5 num-nowrap shadow-sm transition">
-            <span>+ 每月盤點輸入</span>
+            class="h-7 sm:h-8 px-2 sm:px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] sm:text-fluid-sub font-bold flex items-center gap-1 num-nowrap shadow-sm transition">
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span class="sm:hidden">盤點</span>
+            <span class="hidden sm:inline">每月盤點</span>
           </button>
           <!-- 隱私遮罩開關 -->
           <button onclick="togglePrivacy()" title="隱藏/顯示金額"
-            class="h-8 px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-fluid-sub font-semibold flex items-center gap-1 num-nowrap transition">
+            class="h-7 w-7 sm:h-8 sm:w-auto sm:px-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs sm:text-fluid-sub font-semibold flex items-center justify-center sm:gap-1 num-nowrap transition">
             <i id="privacyIcon" class="fa-regular fa-eye"></i>
             <span id="privacyText" class="hidden sm:inline">顯示金額</span>
           </button>
           <!-- 深淺色切換 -->
           <button onclick="toggleTheme()" title="切換深淺色"
-            class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
+            class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs transition">
             <i id="themeIcon" class="fa-solid fa-moon text-indigo-600"></i>
           </button>
         </div>
@@ -405,7 +407,7 @@
 
       <!-- 第二層：6 大功能分頁膠囊列 (支援手機左右滑動 & 電腦完整排列，完全避開手機底部系統按鈕) -->
       <nav
-        class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80">
+        class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2 border-t border-slate-100 dark:border-slate-800/80 -mx-2.5 px-2.5 sm:mx-0 sm:px-0 scroll-smooth">
         <!-- 1. 總覽 -->
         <button onclick="switchTab('dashboard')" data-tab="dashboard"
           class="tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 transition shrink-0">
@@ -2624,7 +2626,7 @@
       if (target) target.classList.remove('hidden');
 
       const titles = {
-        dashboard: 'F15（總覽重構與動態現金流整合原型）',
+        dashboard: 'PocketMoney',
         banks: '銀行餘額',
         stocks: '台股部位',
         cards: '信用卡費',
@@ -2640,6 +2642,7 @@
       document.querySelectorAll('.tab-pill-btn').forEach(btn => {
         if (btn.dataset.tab === tabId) {
           btn.className = 'tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-bold flex items-center gap-1.5 bg-indigo-600 text-white shadow-sm transition shrink-0';
+          try { btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); } catch (e) {}
         } else {
           btn.className = 'tab-pill-btn num-nowrap px-3 py-1.5 rounded-xl text-fluid-sub font-semibold flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition shrink-0';
         }
@@ -3642,7 +3645,7 @@
 
     function renderBanksTable(checkups) {
       return `
-        <table class="w-full text-left text-fluid-sub border-collapse">
+        <table class="w-full min-w-[480px] text-left text-fluid-sub border-collapse">
           <thead>
             <tr class="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold">
               <th class="py-2.5 px-3">帳戶</th>
@@ -5587,7 +5590,7 @@ function openAppModal(title, htmlContent) {
       }
 
       container.innerHTML = `
-        <table class="w-full text-left text-fluid-sub">
+        <table class="w-full min-w-[540px] text-left text-fluid-sub">
           <thead>
             <tr class="text-slate-400 border-b border-slate-200/70 dark:border-slate-800 text-xs font-semibold">
               <th class="py-2 px-2">收入項目</th>
@@ -5655,7 +5658,7 @@ function openAppModal(title, htmlContent) {
       }
 
       container.innerHTML = `
-        <table class="w-full text-left text-fluid-sub">
+        <table class="w-full min-w-[580px] text-left text-fluid-sub">
           <thead>
             <tr class="text-slate-400 border-b border-slate-200/70 dark:border-slate-800 text-xs font-semibold">
               <th class="py-2 px-2">信用卡名稱</th>
@@ -5719,7 +5722,7 @@ function openAppModal(title, htmlContent) {
       }
 
       container.innerHTML = `
-        <table class="w-full text-left text-fluid-sub">
+        <table class="w-full min-w-[680px] text-left text-fluid-sub">
           <thead>
             <tr class="text-slate-400 border-b border-slate-200/70 dark:border-slate-800 text-xs font-semibold">
               <th class="py-2 px-2">費用名稱</th>
