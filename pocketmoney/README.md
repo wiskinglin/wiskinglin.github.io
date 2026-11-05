@@ -32,9 +32,8 @@
 - **三大人物模擬巡檢報告**：[`logs/persona-runs/2026-11-02_baseline_run.md`](logs/persona-runs/2026-11-02_baseline_run.md)
 - **Manager 日常使用日誌**：[`logs/usage.md`](logs/usage.md)
 
-### L4：參考研究、v3 基線與歷史封存
+### L4：參考研究與歷史精華
 - **市場競品分析與交接研究**：[`docs/research/market_analysis.md`](docs/research/market_analysis.md)
 - **功能盤點與 UI 視覺指南**：[`docs/research/feature_overview.md`](docs/research/feature_overview.md)
 - **v4.x 擴充提案備忘**：[`schema/proposals/v4x_inflow_and_extensions.md`](schema/proposals/v4x_inflow_and_extensions.md)
-- **v3 正式版基線規格（凍結）**：[`baseline-v3/SDD.md`](baseline-v3/SDD.md)、[`baseline-v3/DEVELOPMENT_PLAN.md`](baseline-v3/DEVELOPMENT_PLAN.md)
-- **早期探索提案與原型封存**：[`archive/PocketMoneyObjects.md`](archive/PocketMoneyObjects.md)、[`archive/SUB_DATABASE_STOCK_FLOW_PROPOSAL.md`](archive/SUB_DATABASE_STOCK_FLOW_PROPOSAL.md)、[`archive/TIMELINE_DATA_PROPOSAL.md`](archive/TIMELINE_DATA_PROPOSAL.md)、[`archive/analysis.md`](archive/analysis.md)、[`archive/mockup_*.html`](archive/)
+- **早期設計構想精華提煉**：[`docs/EARLY_DESIGN_IDEAS.md`](docs/EARLY_DESIGN_IDEAS.md)（歷史探索原型、`baseline-v3/` 與 `archive/` 完整備份請見 Git 標籤 `v0.3.0`）

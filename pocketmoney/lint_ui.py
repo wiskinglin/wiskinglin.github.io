@@ -107,10 +107,10 @@ if __name__ == '__main__':
         target_files = sys.argv[1:]
     else:
         base_dir = os.path.dirname(__file__)
-        target_files = [
-            os.path.join(base_dir, 'pocketmoney.html'),
-            os.path.join(base_dir, 'prototypes', 'F15-integrated-dashboard', 'index.html')
-        ]
+        target_files = [os.path.join(base_dir, 'pocketmoney.html')]
+        f15_proto = os.path.join(base_dir, 'prototypes', 'F15-integrated-dashboard', 'index.html')
+        if os.path.exists(f15_proto):
+            target_files.append(f15_proto)
 
     total_violations = []
     for tf in target_files:

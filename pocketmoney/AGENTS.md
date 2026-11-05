@@ -32,7 +32,7 @@
   - **架構特徵**：以 v3.5 狀態結構為底（相容 `PocketMoney_tw_finance_v3`），已整合 12 個月趨勢圖（Chart.js `ytd` / `rolling12` + `futureZoneTrendPlugin`）、薪資戶設定與一鍵薪資入帳、股票股利入帳、股票賣出平倉損益結算。
 - **既有實驗與對照檔案**（供設計參考與追溯）：
   - [`tools/kipomo.html`](tools/kipomo.html)：線上正式版（v3 基線，含三階段 Onboarding 與 PIN 鎖）。
-  - [`archive/mockup_*.html`](archive/)：早期互動探索原型（已封存至 `archive/` 與 git 歷史紀錄；其 12 個月時序圖表與分頁架構已整併至主力演進雛型 [`pocketmoney.html`](pocketmoney.html)）。
+  - 歷史探索原型與基線規格已瘦身歸檔，完整歷史請見 Git 標籤 `v0.3.0`；核心架構已整併至主力程式 [`pocketmoney.html`](pocketmoney.html)，早期構想精華請參閱 [`docs/EARLY_DESIGN_IDEAS.md`](docs/EARLY_DESIGN_IDEAS.md)。
 
 ---
 
@@ -52,9 +52,8 @@
 | | [`CHANGELOG.md`](CHANGELOG.md) | 已合併回 `pocketmoney.html` 之變更紀錄 | 交付歷史 |
 | **L3 實驗工單** | `prototypes/Fxx-<slug>/` | 每個功能實驗一個資料夾：`brief.md`、`A.html`、`B.html`、`compare.html`、`report.md` | 單次實驗範圍 |
 | | [`prototypes/_template/compare.html`](prototypes/_template/compare.html) | A/B 並排審查板標準模板（支援 PC/手機寬度切換、3 個觀察重點） | 審查板母版 |
-| **L4 參考封存** | `baseline-v3/` | `SDD.md`、`DEVELOPMENT_PLAN.md`（v3 基線規格，凍結供查閱） | 歷史基線 |
+| **L4 參考與歷史** | [`docs/EARLY_DESIGN_IDEAS.md`](docs/EARLY_DESIGN_IDEAS.md) | 早期探索提案精華提煉（原 `archive/` 與 `baseline-v3/` 已封存，完整歷史見 Git 標籤 `v0.3.0`） | 歷史精華 |
 | | `docs/research/` | `market_analysis.md`、`feature_overview.md`（市場調研與前期視覺盤點） | 研究參考 |
-| | `archive/` | 早期探索提案與原型（`PocketMoneyObjects.md`、`SUB_DATABASE_*`、`TIMELINE_*`、`analysis.md`、`mockup_*.html`） | 已封存 |
 
 ---
 
@@ -112,18 +111,18 @@ vMAJOR.MINOR.PATCH (例如 v0.0.2)
 
 ---
 
-## 8. 臨時輔助腳本與自動化測試檔案管理規範 (Scripts Archiving Rules)
+## 8. 臨時輔助腳本與測試檔案清理規範 (Temporary Scripts Cleanup Rules)
 
-為維護專案根目錄與主目錄之純淨性，所有開發與測試輔助腳本必須遵守以下歸檔規則：
+為維護專案根目錄與主目錄之純淨性，所有開發與測試輔助腳本必須遵守以下規範：
 
 1. **目錄乾淨原則**：
    - 專案主目錄（`pocketmoney/`）僅保留主力應用程式（[`pocketmoney.html`](pocketmoney.html)）與核心規格資料夾（`specs/`、`schema/`、`logs/`、`prototypes/`）。
    - 禁止將臨時檢測、轉換或執行腳本散落在專案主目錄或根目錄下。
-2. **測試完成即歸檔**：
-   - 在工作中所撰寫或產生的 Python 輔助腳本（如 DOM 結構檢測 `inspect_*.py`、資料轉換腳本、以及 Playwright E2E 自動化測試腳本 `run_e2e_test.py` 等）。
-   - **於測試完成且測試報告產出存檔至 `logs/` 之後，必須一律將該 `.py` 檔案移動歸檔至 [`pocketmoney/archive/python/`](archive/python/) 資料夾中**。
-3. **歷史追溯與重複利用**：
-   - 歸檔至 `archive/python/` 下的測試腳本仍保留其完整性，若未來需要再次進行迴歸測試（Regression Test）時，可直接自該目錄呼叫或作為撰寫新測試之基準。
+2. **測試完成即清理（不留垃圾檔案）**：
+   - 在工作中所撰寫或產生的臨時 Python 輔助腳本（如 DOM 結構檢測 `inspect_*.py`、資料轉換腳本、以及 Playwright E2E 自動化測試腳本 `run_e2e_test.py` 等）。
+   - **於測試完成且測試報告產出存檔至 `logs/` 之後，必須一律直接刪除臨時腳本，或透過 Git 歷史紀錄進行版本追蹤，嚴禁在工作目錄中建立或殘留封存腳本**。
+3. **歷史追溯**：
+   - 若未來需要再次進行迴歸測試或參考先前的測試邏輯，可直接查閱 Git commit 歷史紀錄或參考 [specs/QA_TEST_PLAN.md](specs/QA_TEST_PLAN.md) 重新產生。
 
 ---
 
