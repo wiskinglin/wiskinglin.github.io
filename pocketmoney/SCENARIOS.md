@@ -2,7 +2,7 @@
 
 > **文件性質**：L1 核心使用者情境與規格定義。
 > **核心定位**：融合真實生活痛點場景（小資族分期、三明治族房貸時間差、台股投資 T+2 交割）、Demo 示範與多帳號切換 (Multi-Profile) 架構、以及完整 User Story Mapping 藍圖。
-> **基準檔案**：[`pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney.html)
+> **基準檔案**：[`pocketmoney.html`](pocketmoney.html)
 
 ---
 

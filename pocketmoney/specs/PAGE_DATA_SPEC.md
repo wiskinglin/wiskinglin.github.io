@@ -2,7 +2,7 @@
 
 > **文件性質**：L1 產品規格與資料庫映射真值來源（Single Source of Truth）。  
 > **制定目的**：本規格書旨在讓 Manager、產品團隊與前後端工程師能夠逐頁逐欄審視「前台每個頁面所呈現的業務資訊內容」與「底層資料庫結構 (`SCHEMA.md` / `ERD.md`) 的資料流對照與計算公式」，正式確立 **ADR-017（全分頁純瀏覽 Insight × 專用輸入流分離 × 三層資料庫生命週期通則）**，並嚴格封堵 20 項產品邏輯打架與 AI Slop 違規，作為專案開發與驗收的唯一權威基準藍圖。  
-> **規範依據**：嚴格遵循 [`DECISIONS.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/DECISIONS.md)（ADR-017）、[`specs/UXD.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/specs/UXD.md)（零 AI Slop 介面鐵律與設計規範）、[`specs/UI_VOCABULARY.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/specs/UI_VOCABULARY.md)（標準文案辭典）、[`schema/SCHEMA.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/schema/SCHEMA.md) 與 [`ERD.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/ERD.md)。
+> **規範依據**：嚴格遵循 [`DECISIONS.md`](../DECISIONS.md)（ADR-017）、[`specs/UXD.md`](UXD.md)（零 AI Slop 介面鐵律與設計規範）、[`specs/UI_VOCABULARY.md`](UI_VOCABULARY.md)（標準文案辭典）、[`schema/SCHEMA.md`](../schema/SCHEMA.md) 與 [`ERD.md`](ERD.md)。
 
 ---
 

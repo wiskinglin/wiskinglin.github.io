@@ -1,12 +1,12 @@
 # F00 功能名稱
 
 - **對應情境**：`S00` — 「使用者心中的真實問題」
-- **基準檔案**：[`pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney.html)
+- **基準檔案**：[`pocketmoney.html`](../../pocketmoney.html)
 - **儲存隔離鍵**：`PocketMoney_exp_F00_A` / `PocketMoney_exp_F00_B`
 - **Flash 上下文包（限讀清單）**：
-  1. [`AGENTS.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/AGENTS.md)
-  2. [`schema/SCHEMA.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/schema/SCHEMA.md)（指定章節）
-  3. [`specs/UXD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md) 第零章（零 AI Slop 鐵律）
+  1. [`AGENTS.md`](../../AGENTS.md)
+  2. [`schema/SCHEMA.md`](../../schema/SCHEMA.md)（指定章節）
+  3. [`specs/UXD.md`](../../specs/UXD.md) 第零章（零 AI Slop 鐵律）
 
 ---
 

@@ -3,12 +3,12 @@
 > **最新複驗狀態（2026-11-04）**：🎉 **12 項缺陷全數修復並通過獨立 QA 複驗！全產品達成 0 Bug / 0 DOM Leak / 0 NaN / 0 Slop 嚴格通過驗收！**  
 > **稽核執行時間**：2026-11-04  
 > **稽核員角色**：獨立 Flash Vision QA Inspector / Adversarial E2E Product Auditor  
-> **依據標準**：[`specs/QA_TEST_PLAN.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/specs/QA_TEST_PLAN.md)、[`AGENTS.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/AGENTS.md) 第 10 節、[`specs/UXD.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/specs/UXD.md)、[`specs/UI_VOCABULARY.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/specs/UI_VOCABULARY.md)  
+> **依據標準**：[`specs/QA_TEST_PLAN.md`](../specs/QA_TEST_PLAN.md)、[`AGENTS.md`](../AGENTS.md) 第 10 節、[`specs/UXD.md`](../specs/UXD.md)、[`specs/UI_VOCABULARY.md`](../specs/UI_VOCABULARY.md)  
 > **受測檔案**：
-> 1. 主力整合原型：[`pocketmoney/prototypes/F15-integrated-dashboard/index.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/F15-integrated-dashboard/index.html)
-> 2. 主力演進雛型：[`pocketmoney/pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney.html)
-> **自動化執行腳本存檔**：[`pocketmoney/archive/python/audit_full_product.py`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/archive/python/audit_full_product.py)  
-> **全頁長截圖存檔**：共 64 張截圖儲存於 [`pocketmoney/logs/e2e_screenshots/audit/`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/)
+> 1. 主力整合原型：[`pocketmoney/prototypes/F15-integrated-dashboard/index.html`](../prototypes/F15-integrated-dashboard/index.html)
+> 2. 主力演進雛型：[`pocketmoney/pocketmoney.html`](../pocketmoney.html)
+> **自動化執行腳本存檔**：[`pocketmoney/archive/python/audit_full_product.py`](../archive/python/audit_full_product.py)  
+> **全頁長截圖存檔**：共 64 張截圖儲存於 [`pocketmoney/logs/e2e_screenshots/audit/`](e2e_screenshots/audit/)
 
 ---
 
@@ -44,8 +44,8 @@
 - **影響範圍**：`#tab-dashboard`（總覽分頁右下角分期小卡）、`#tab-installments`（分期付款分頁主清單）
 - **關聯函式**：`renderInstallments`（約 line 2410）、`renderDashboard`（約 line 1890）
 - **佐證長截圖**：
-  - [`F15_dim1_tab_dashboard_loaded.png`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/F15_dim1_tab_dashboard_loaded.png)
-  - [`F15_dim1_tab_installments_loaded.png`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/F15_dim1_tab_installments_loaded.png)
+  - [`F15_dim1_tab_dashboard_loaded.png`](e2e_screenshots/audit/F15_dim1_tab_dashboard_loaded.png)
+  - [`F15_dim1_tab_installments_loaded.png`](e2e_screenshots/audit/F15_dim1_tab_installments_loaded.png)
 - **重現步驟**：
   1. 啟動 F15 原型，點擊頂部「載入半年展示」或匯入官方情境 DB。
   2. 檢視總覽右下角「分期付款負擔」卡片，或切換至「分期付款」分頁。
@@ -62,8 +62,8 @@
 - **影響範圍**：`#tab-dashboard`（首頁銀行餘額趨勢圖）
 - **關聯函式**：`initTrendChart` / Chart.js options scales
 - **佐證長截圖**：
-  - [`Main_dim1_tab_dashboard_empty.png`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/Main_dim1_tab_dashboard_empty.png)
-  - [`Main_dim2_empty_state_dash.png`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/Main_dim2_empty_state_dash.png)
+  - [`Main_dim1_tab_dashboard_empty.png`](e2e_screenshots/audit/Main_dim1_tab_dashboard_empty.png)
+  - [`Main_dim2_empty_state_dash.png`](e2e_screenshots/audit/Main_dim2_empty_state_dash.png)
 - **重現步驟**：
   1. 清空瀏覽器 localStorage，開啟 `pocketmoney/pocketmoney.html`。
   2. 檢視首頁中間的「銀行餘額趨勢」圖表。
@@ -80,7 +80,7 @@
 - **影響範圍**：`#tab-dashboard`（首頁每月收支時序卡片）
 - **關聯元素**：`#overviewOutflowKPI` 或每月收支時序待扣總額
 - **佐證長截圖**：
-  - [`Main_dim1_tab_dashboard_empty.png`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/Main_dim1_tab_dashboard_empty.png)
+  - [`Main_dim1_tab_dashboard_empty.png`](e2e_screenshots/audit/Main_dim1_tab_dashboard_empty.png)
 - **重現步驟**：
   1. 清空資料啟動 `pocketmoney.html`。
   2. 檢視「每月收支時序」卡片中的「本月預計待扣 (Outflow)」。
@@ -97,7 +97,7 @@
 - **影響範圍**：`#tab-bills`（固定費用分頁）vs `#tab-dashboard`（總覽分頁）
 - **關聯函式**：`renderBills`（約 line 2540）
 - **佐證長截圖**：
-  - [`F15_dim3_temporal_past_3m.png`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/F15_dim3_temporal_past_3m.png)
+  - [`F15_dim3_temporal_past_3m.png`](e2e_screenshots/audit/F15_dim3_temporal_past_3m.png)
 - **重現步驟**：
   1. 載入半年展示資料後，連續點擊頂部時間控制器「前月 (<)」3 次，切換至歷史月份（如 2026/08）。
   2. 總覽分頁左卡顯示：`待扣款項 (已結清) NT$ 0`，下方銀行卡片皆為綠色「已結清」。
@@ -115,7 +115,7 @@
 - **影響範圍**：`#tab-dashboard`（總覽「該月現金流趨勢」折線圖 vs 右卡「預估整月現金流推演」）
 - **關聯函式**：`renderMonthlyCashflowChart`、`calculateMonthlyCashflowData`
 - **佐證長截圖**：
-  - [`F15_dim3_temporal_future_3m.png`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/logs/e2e_screenshots/audit/F15_dim3_temporal_future_3m.png)
+  - [`F15_dim3_temporal_future_3m.png`](e2e_screenshots/audit/F15_dim3_temporal_future_3m.png)
 - **重現步驟**：
   1. 載入展示資料後，連續點擊頂部「次月 (>)」6 次，切換至未來月份（如 2027/02）。
   2. 檢視右卡 KPI：「預估整月現金流推演」大字為 **`NT$ +5,202`**（流入 58,000 - 流出 52,798）。

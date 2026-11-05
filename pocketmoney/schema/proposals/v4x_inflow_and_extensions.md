@@ -1,8 +1,8 @@
-﻿# PocketMoney 資料庫規劃現況分析與後續演進待辦清單 (TODO.md)
+# PocketMoney 資料庫規劃現況分析與後續演進待辦清單 (TODO.md)
 
 - **建立/更新日期**：2026-11-02
 - **文件狀態**：規劃中 (Planning)
-- **基準規格**：[`_dev/PocketMoney/specs/UXD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md)（第四章 4.1 實體關係圖與雙軌快照結構）與 [`_dev/PocketMoney/baseline-v3/SDD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/baseline-v3/SDD.md)
+- **基準規格**：[`specs/UXD.md`](../../specs/UXD.md)（第四章 4.1 實體關係圖與雙軌快照結構）與 [`baseline-v3/SDD.md`](../../baseline-v3/SDD.md)
 - **目標用途**：以 `UXD.md` 的「主實體聚合 + 雙軌快照（Event / Snapshot）」為基線，深入探討現金流入、跨戶調撥、投資連動等模組之自然擴充架構，作為後續重構之規格依據。
 
 ---
@@ -27,7 +27,7 @@
 
 ## 1. 現行架構基線：UXD 4.1 核心模組體系
 
-在 [`UXD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md) 4.1 中，系統架構由四大主模組構成：
+在 [`UXD.md`](../../specs/UXD.md) 4.1 中，系統架構由四大主模組構成：
 1. **`BANK` (銀行帳戶)**：
    - 屬性包含 `balance`、`defaultSalary`、`salaryDay`、`minReserve`、`cashDragWarn`、`cashDragAlert`。
    - 子實體：**`BANK_SNAPSHOT`**（月度/盤點日存量快照）與 **`BANK_EVENT`**（收支異動明細事件，流入為正、流出為負）。

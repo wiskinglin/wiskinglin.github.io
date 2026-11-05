@@ -1,7 +1,16 @@
 # PocketMoney — Agent 運作憲法 (AGENTS.md)
 
 > **本文件是所有 Agent（主 Agent 與 Flash 子 Agent）每次對話必讀的入口指南。**
-> 請勿一次讀取整個資料夾的所有 Markdown，嚴格依照第 4 節「上下文包規則」按需載入。
+> 請勿一次讀取整個資料夾的所有 Markdown，嚴格依照第 5 節「Flash 子 Agent 上下文包規則」按需載入。
+
+---
+
+## 大原則
+
+- 一次只談一件事
+- 最多三個問題
+- 提問前先給建議方案
+- 太複雜的做法不要提，先給最簡單的
 
 ---
 
@@ -18,12 +27,12 @@
 
 ## 2. Main 雛型與原型陣列定位
 
-- **★ Main 主力演進雛型**：[`pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney.html)
+- **★ Main 主力演進雛型**：[`pocketmoney.html`](pocketmoney.html)
   - 這是所有新功能探索（複製為 `A.html` / `B.html`）與定案交付（合併回主檔）的**唯一基準檔**。
   - **架構特徵**：以 v3.5 狀態結構為底（相容 `PocketMoney_tw_finance_v3`），已整合 12 個月趨勢圖（Chart.js `ytd` / `rolling12` + `futureZoneTrendPlugin`）、薪資戶設定與一鍵薪資入帳、股票股利入帳、股票賣出平倉損益結算。
 - **既有實驗與對照檔案**（供設計參考與追溯）：
-  - [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html)：線上正式版（v3 基線，含三階段 Onboarding 與 PIN 鎖）。
-  - [`archive/mockup_*.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/archive/)：早期互動探索原型（已封存至 `archive/` 與 git 歷史紀錄；其 12 個月時序圖表與分頁架構已整併至主力演進雛型 [`pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney.html)）。
+  - [`tools/kipomo.html`](tools/kipomo.html)：線上正式版（v3 基線，含三階段 Onboarding 與 PIN 鎖）。
+  - [`archive/mockup_*.html`](archive/)：早期互動探索原型（已封存至 `archive/` 與 git 歷史紀錄；其 12 個月時序圖表與分頁架構已整併至主力演進雛型 [`pocketmoney.html`](pocketmoney.html)）。
 
 ---
 
@@ -31,36 +40,21 @@
 
 | 層級 | 路徑 | 用途 | 權威性 |
 | :--- | :--- | :--- | :--- |
-| **L0 憲法** | [`AGENTS.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/AGENTS.md) | 角色、紅線、文件地圖、工作流與上下文預算 | 最高 |
-| **L1 真實來源** | [`PRODUCT.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/PRODUCT.md) | 產品定位、核心承諾、目標客群與三大人物、成功指標、不做清單 | 唯一產品定位依據 |
-| | [`SCENARIOS.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/SCENARIOS.md) | 情境庫（人物 × 時間點 × 心裡問題）、Main 支援度（✅/◐/❌）、缺口評分排序 | 功能探索的唯一來源 |
-| | [`schema/SCHEMA.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/schema/SCHEMA.md) | 唯一資料模型與計算公式（涵蓋 Main v3.5 實作結構與 v4 演進目標） | 唯一資料結構依據 |
-| | [`specs/UXD.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UXD.md) | 零 AI Slop 鐵律、使用者流程、視圖規格、行動端 RWD 規範 | 唯一 UI/UX 依據 |
-| | [`specs/PAGE_DATA_SPEC.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/specs/PAGE_DATA_SPEC.md) | 全分頁功能描述、視覺截圖與後台資料庫結構 (`SCHEMA`) 映射規格書 | 唯一頁面資訊與資料對標依據 |
-| | [`specs/UI_VOCABULARY.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/specs/UI_VOCABULARY.md) | 允許出現在畫面上的標準詞彙與禁用詞對照 | 唯一文案依據 |
-| **L2 決策追蹤** | [`DECISIONS.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/DECISIONS.md) | 架構與設計決策紀錄（ADR）：問題、選項、Manager 決定 | 跨版本變更依據 |
-| | [`BACKLOG.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/BACKLOG.md) | 頂端為 **STATUS 儀表板**（待審查、進行中、待決議），下方為統一功能待辦清單 | 唯一進度看板 |
-| | [`CHANGELOG.md`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/CHANGELOG.md) | 已合併回 `pocketmoney.html` 之變更紀錄 | 交付歷史 |
+| **L0 憲法** | [`AGENTS.md`](AGENTS.md) | 角色、紅線、文件地圖、工作流與上下文預算 | 最高 |
+| **L1 真實來源** | [`PRODUCT.md`](PRODUCT.md) | 產品定位、核心承諾、目標客群與三大人物、成功指標、不做清單 | 唯一產品定位依據 |
+| | [`SCENARIOS.md`](SCENARIOS.md) | 情境庫（人物 × 時間點 × 心裡問題）、Main 支援度（✅/◐/❌）、缺口評分排序 | 功能探索的唯一來源 |
+| | [`schema/SCHEMA.md`](schema/SCHEMA.md) | 唯一資料模型與計算公式（涵蓋 Main v3.5 實作結構與 v4 演進目標） | 唯一資料結構依據 |
+| | [`specs/UXD.md`](specs/UXD.md) | 零 AI Slop 鐵律、使用者流程、視圖規格、行動端 RWD 規範 | 唯一 UI/UX 依據 |
+| | [`specs/PAGE_DATA_SPEC.md`](specs/PAGE_DATA_SPEC.md) | 全分頁功能描述、視覺截圖與後台資料庫結構 (`SCHEMA`) 映射規格書 | 唯一頁面資訊與資料對標依據 |
+| | [`specs/UI_VOCABULARY.md`](specs/UI_VOCABULARY.md) | 允許出現在畫面上的標準詞彙與禁用詞對照 | 唯一文案依據 |
+| **L2 決策追蹤** | [`DECISIONS.md`](DECISIONS.md) | 架構與設計決策紀錄（ADR）：問題、選項、Manager 決定 | 跨版本變更依據 |
+| | [`BACKLOG.md`](BACKLOG.md) | 頂端為 **STATUS 儀表板**（待審查、進行中、待決議），下方為統一功能待辦清單 | 唯一進度看板 |
+| | [`CHANGELOG.md`](CHANGELOG.md) | 已合併回 `pocketmoney.html` 之變更紀錄 | 交付歷史 |
 | **L3 實驗工單** | `prototypes/Fxx-<slug>/` | 每個功能實驗一個資料夾：`brief.md`、`A.html`、`B.html`、`compare.html`、`report.md` | 單次實驗範圍 |
-| | [`prototypes/_template/compare.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/prototypes/_template/compare.html) | A/B 並排審查板標準模板（支援 PC/手機寬度切換、3 個觀察重點） | 審查板母版 |
+| | [`prototypes/_template/compare.html`](prototypes/_template/compare.html) | A/B 並排審查板標準模板（支援 PC/手機寬度切換、3 個觀察重點） | 審查板母版 |
 | **L4 參考封存** | `baseline-v3/` | `SDD.md`、`DEVELOPMENT_PLAN.md`（v3 基線規格，凍結供查閱） | 歷史基線 |
 | | `docs/research/` | `market_analysis.md`、`feature_overview.md`（市場調研與前期視覺盤點） | 研究參考 |
 | | `archive/` | 早期探索提案與原型（`PocketMoneyObjects.md`、`SUB_DATABASE_*`、`TIMELINE_*`、`analysis.md`、`mockup_*.html`） | 已封存 |
-
----
-
-## 4. 四條工作循環與規範
-
-1. **① 發現循環（`找情境`）**：
-   - 由 Flash 扮演 3 大人物（初級大人、少子化勇者、高級大人）在 `pocketmoney.html` 走訪每月關鍵日（5/10/15/20/28/30 號）與年度事件，將回答不了或操作卡頓的問題登錄至 `SCENARIOS.md` 並計算缺口分數。
-2. **② 探索循環（`做 Sxx`）**：
-   - 主 Agent 撰寫 `prototypes/Fxx-<slug>/brief.md`，定義方案 A 與方案 B 的設計差異與最多 3 個觀察重點。
-   - Flash 從 `pocketmoney.html` 複製出 `A.html` 與 `B.html` 分別實作，並套用 `_template/compare.html` 產出審查板。
-   - **資料隔離紅線**：實驗檔 `A.html` / `B.html` 必須將 `STORAGE_KEY` 改為 `'PocketMoney_exp_Fxx_A'` / `'PocketMoney_exp_Fxx_B'`（或支援 URL `?persona=junior|family|senior` 載入預置測試資料），**嚴禁直接覆寫正式儲存鍵 `PocketMoney_tw_finance_v3`**。
-3. **③ 定案循環（`Fxx 選 A/B`）**：
-   - 主 Agent 將 Manager 的選擇記錄至 `DECISIONS.md`，並同步更新 `SCHEMA.md`、`UXD.md`、`UI_VOCABULARY.md`。
-4. **④ 交付循環（合併回 Main）**：
-   - Flash 將勝出方案乾淨合併回 `pocketmoney.html`（恢復正式 `STORAGE_KEY`），確認 0 JS Error、通過「視覺影像辨識驗收與數值邏輯守門員 (Vision QA)」且符合零 AI Slop 鐵律，由主 Agent 更新 `BACKLOG.md` 與 `CHANGELOG.md`。
 
 ---
 
@@ -123,11 +117,11 @@ vMAJOR.MINOR.PATCH (例如 v0.0.2)
 為維護專案根目錄與主目錄之純淨性，所有開發與測試輔助腳本必須遵守以下歸檔規則：
 
 1. **目錄乾淨原則**：
-   - 專案主目錄（`pocketmoney/`）僅保留主力應用程式（[`pocketmoney.html`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/pocketmoney.html)）與核心規格資料夾（`specs/`、`schema/`、`logs/`、`prototypes/`）。
+   - 專案主目錄（`pocketmoney/`）僅保留主力應用程式（[`pocketmoney.html`](pocketmoney.html)）與核心規格資料夾（`specs/`、`schema/`、`logs/`、`prototypes/`）。
    - 禁止將臨時檢測、轉換或執行腳本散落在專案主目錄或根目錄下。
 2. **測試完成即歸檔**：
    - 在工作中所撰寫或產生的 Python 輔助腳本（如 DOM 結構檢測 `inspect_*.py`、資料轉換腳本、以及 Playwright E2E 自動化測試腳本 `run_e2e_test.py` 等）。
-   - **於測試完成且測試報告產出存檔至 `logs/` 之後，必須一律將該 `.py` 檔案移動歸檔至 [`pocketmoney/archive/python/`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/archive/python/) 資料夾中**。
+   - **於測試完成且測試報告產出存檔至 `logs/` 之後，必須一律將該 `.py` 檔案移動歸檔至 [`pocketmoney/archive/python/`](archive/python/) 資料夾中**。
 3. **歷史追溯與重複利用**：
    - 歸檔至 `archive/python/` 下的測試腳本仍保留其完整性，若未來需要再次進行迴歸測試（Regression Test）時，可直接自該目錄呼叫或作為撰寫新測試之基準。
 
@@ -148,7 +142,7 @@ vMAJOR.MINOR.PATCH (例如 v0.0.2)
 
 ## 10. 強制視覺影像辨識驗收與數值邏輯守門員規範 (Visual QA & Math Consistency Gate)
 
-> **專案完整地毯式測試標準與 6 大維度執行矩陣**：請嚴格參照 [`specs/QA_TEST_PLAN.md`](file:///c:/Playground26/wiskinglin.github.io/pocketmoney/specs/QA_TEST_PLAN.md)。
+> **專案完整地毯式測試標準與 6 大維度執行矩陣**：請嚴格參照 [`specs/QA_TEST_PLAN.md`](specs/QA_TEST_PLAN.md)。
 
 ### 1. 職責分離鐵律 (Developer Agent vs. Independent QA Agent)
 - **嚴禁球員兼裁判**：負責寫程式碼、重構或修復 Bug 的實作開發 Subagent，與負責驗收把關的 **QA Subagent (`Flash Vision QA Inspector`)** 必須是兩個**完全獨立**的 Subagent。

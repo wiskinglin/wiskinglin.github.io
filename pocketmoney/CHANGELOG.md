@@ -1,6 +1,6 @@
 # PocketMoney 變更紀錄 (CHANGELOG.md)
 
-> 本文件記錄已通過 Manager 驗收並合併至主力雛型 [`pocketmoney.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney.html) 或正式版 [`tools/kipomo.html`](file:///c:/Dev/wiskinglin.github.io/tools/kipomo.html) 的版本歷史。
+> 本文件記錄已通過 Manager 驗收並合併至主力雛型 [`pocketmoney.html`](pocketmoney.html) 或正式版 [`tools/kipomo.html`](tools/kipomo.html) 的版本歷史。
 
 ---
 

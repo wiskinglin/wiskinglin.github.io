@@ -1,6 +1,6 @@
 # PocketMoney 功能盤點與 UI 視覺指南 (Feature Overview)
 
-本文件透過瀏覽器實際預覽與 UI 互動盤點 **PocketMoney** 目前所具備的各項功能與介面設計，涵蓋正式操作版（`tools/kipomo.html`）與視覺趨勢預覽版（`_dev/PocketMoney/mockup_view.html`）。
+本文件透過瀏覽器實際預覽與 UI 互動盤點 **PocketMoney** 目前所具備的各項功能與介面設計，涵蓋正式操作版（`tools/kipomo.html`）與視覺趨勢預覽版（`pocketmoney/mockup_view.html`）。
 
 ---
 
@@ -364,7 +364,7 @@ flowchart TD
 
 ### 5.5 整合版行動端成果落地（mockup_mobile.html）：單頁雙模式流暢切換
 
-根據上述 UX 分析與改善方案，全新設計並實作獨立整合頁面 **`_dev/PocketMoney/mockup_mobile.html`**，實現「**單一頁面、預設瀏覽模式、點擊右上角 `+` 隨時進入輸入模式**」的極致行動體驗。
+根據上述 UX 分析與改善方案，全新設計並實作獨立整合頁面 **`pocketmoney/mockup_mobile.html`**，實現「**單一頁面、預設瀏覽模式、點擊右上角 `+` 隨時進入輸入模式**」的極致行動體驗。
 
 #### 1. 雙模式架構與運作邏輯
 

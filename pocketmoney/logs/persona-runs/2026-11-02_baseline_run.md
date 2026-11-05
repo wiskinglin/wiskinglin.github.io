@@ -1,7 +1,7 @@
 # 三大人物模擬巡檢報告 — Run 001（Baseline: `pocketmoney_view.html`）
 
 - **巡檢日期**：2026-11-02
-- **巡檢目標**：[`pocketmoney_view.html`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/pocketmoney_view.html)（v3.5-dev）
+- **巡檢目標**：[`pocketmoney_view.html`](pocketmoney_view.html)（v3.5-dev）
 - **測試資料集**：`database/scenario_1_junior_installments.json`、`scenario_2_sandwich_mortgage.json`、`scenario_3_stock_investor.json`（原 `dummy_db_*.json` 已更名遷移）
 
 ---

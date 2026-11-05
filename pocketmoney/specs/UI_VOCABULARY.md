@@ -1,7 +1,7 @@
 # PocketMoney 現行 UI 詞彙清冊與 v4 規範對齊表 (UI Vocabulary & Copy Specification)
 
-> - **文件定位**：本文件完整盤點現行前端版本 [`tools/kipomo.html`](file:///c:/Playground26/wiskinglin.github.io/tools/kipomo.html) 介面中出現的**所有**靜態與動態 UI 詞彙（包括按鈕、標題、標籤、輸入提示、狀態徽章、通知 Toast、確認對話框等）。
-> - **規範依據**：嚴格遵循 [`UNIFIED_DESIGN_V4.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UNIFIED_DESIGN_V4.md) **「第零章：文件與 UI 實作鐵律（Zero-Slop UI & Documentation Rules）」**。
+> - **文件定位**：本文件完整盤點現行前端版本 [`tools/kipomo.html`](../../tools/kipomo.html) 介面中出現的**所有**靜態與動態 UI 詞彙（包括按鈕、標題、標籤、輸入提示、狀態徽章、通知 Toast、確認對話框等）。
+> - **規範依據**：嚴格遵循 [`UNIFIED_DESIGN_V4.md`](UNIFIED_DESIGN_V4.md) **「第零章：文件與 UI 實作鐵律（Zero-Slop UI & Documentation Rules）」**。
 > - **核心目的**：
 >   1. 落實 **0.1 強制區分 `【設計邏輯】` 與 `【UI 實際文字】`**，作為 v4 UI 與代碼重構的單一事實來源（Single Source of Truth）。
 >   2. 依據 **0.2 三條「零 AI Slop」鐵律**，全面審查現行 UI 中的「開發版本標籤」、「架構內部術語標題」與「整排教學式副標題」，提供精確的重構對齊建議。
@@ -10,7 +10,7 @@
 
 ## 零、詞彙規範審查準則 (Zero-Slop Copywriting Guidelines)
 
-依據 [`UNIFIED_DESIGN_V4.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UNIFIED_DESIGN_V4.md) 第零章規定，所有收錄之詞彙均標註符合狀態：
+依據 [`UNIFIED_DESIGN_V4.md`](UNIFIED_DESIGN_V4.md) 第零章規定，所有收錄之詞彙均標註符合狀態：
 
 | 規範項目 | 規範標準 | 現行 kipomo.html 檢核重點 |
 | :--- | :--- | :--- |
@@ -272,7 +272,7 @@
 
 ## 八、信用卡費輪播輸入視圖 (Cover Flow 兩階段輸入)
 
-本模組定義卡片輪播輸入模式（[`mockup_input.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup/mockup_input.html)）之精準 UI 詞彙，落實「第一階段輸入總額 ➔ 第二階段逐張翻面確認大額」的兩階段無中斷操作。
+本模組定義卡片輪播輸入模式（[`mockup_input.html`](mockup_input.html)）之精準 UI 詞彙，落實「第一階段輸入總額 ➔ 第二階段逐張翻面確認大額」的兩階段無中斷操作。
 
 ### 12.1 階段進度與導引標記 (Stage Indicators & Progress)
 
@@ -330,7 +330,7 @@
 
 ## 九、銀行餘額智慧滾算與收支事件歸戶輸入視圖 (Cover Flow 兩階段輸入)
 
-本模組定義銀行盤點輸入模式（[`mockup_input.html`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/mockup/mockup_input.html)）之精準 UI 詞彙，落實「月度自動滾算理論餘額 ➔ [推估無誤] 一鍵確認 ➔ 第二階段收支事件歸戶」的核心設計。
+本模組定義銀行盤點輸入模式（[`mockup_input.html`](mockup_input.html)）之精準 UI 詞彙，落實「月度自動滾算理論餘額 ➔ [推估無誤] 一鍵確認 ➔ 第二階段收支事件歸戶」的核心設計。
 
 ### 11.1 階段進度與導引標記 (Bank Stage Indicators)
 
@@ -608,7 +608,7 @@
 
 ## 十三、v4 規範「零 AI Slop」優化對照表 (v4 Zero-Slop Alignment & Refactoring Matrix)
 
-依據 [`UNIFIED_DESIGN_V4.md`](file:///c:/Playground26/wiskinglin.github.io/_dev/PocketMoney/UNIFIED_DESIGN_V4.md) 第零章之要求，全面檢討現行 `tools/kipomo.html` 介面中不符合規範之詞彙，並制定重構修正方案：
+依據 [`UNIFIED_DESIGN_V4.md`](UNIFIED_DESIGN_V4.md) 第零章之要求，全面檢討現行 `tools/kipomo.html` 介面中不符合規範之詞彙，並制定重構修正方案：
 
 | 違規類別 | kipomo.html 現行文字 (Current Copy) | 違規原因分析 | v4 規範推薦文字 (Zero-Slop Exact Copy) | 重構處置措施 |
 | :--- | :--- | :--- | :--- | :--- |

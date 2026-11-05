@@ -194,8 +194,22 @@
        - **每月例行盤點輸入**：由頂部獨立 **`[+ 每月盤點輸入]`** 觸發兩階段卡片輪播輸入流（① 信用卡帳單總額 ➔ 翻面填大額消費；② 銀行餘額理論滾算一鍵確認/修改 ➔ 填收支事件），並支援 F06 對帳單分析器 JSON 增量匯入。
        - **常態規則與資產設定**：統一收斂於 `收支規則 (#tab-rules)`（僅管常態規則模板，不混入當期帳單金額與已入帳按鈕）與 `設定 (#tab-settings)`。
   3. **20 項產品邏輯打架與 AI Slop 清零決議（#01 ~ #20）**：
-     - 完整收錄於 [`docs/dashboard_refactor_notes.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/docs/dashboard_refactor_notes.md) 與 [`docs/product_logic_ux_audit_report.md`](file:///c:/Dev/wiskinglin.github.io/pocketmoney/docs/product_logic_ux_audit_report.md)：
+     - 完整收錄於 [`docs/dashboard_refactor_notes.md`](docs/dashboard_refactor_notes.md) 與 [`docs/product_logic_ux_audit_report.md`](docs/product_logic_ux_audit_report.md)：
        - 拔除所有破壞 `bank.balance` 的舊手動按鈕（`一鍵平帳結算`、`執行扣款入帳`、`標記已扣款`、`已繳/未繳扣款`、`換月重置`、`批次前進一期`、`雙月費用一鍵開關`、`賣出平倉結算`）。
        - 拔除所有寫死個人習慣標籤（如 `固扣結算/卡費結算/發薪結算`、`波段持倉達標`）、正則表達式硬猜（改為明確欄位 `bill.category: 'rigid' | 'utility'` 與雙月奇偶 `activeMonths`、薪資統一收斂至 `inflows`）與寫死假數字 Fallback（`0.015`、`58000`、`8000`）。
        - 整合 **F08 多 Profile 雙軌切換器（自建帳本 ＋ 教學示範沙盒）**，移除頂部「`載入半年展示`」測試按鈕與「`當月防禦 / 過去存量 / 未來流量 / 整月推演 / 月底結算`」等所有 AI Slop 標籤。
 - **影響範圍**：`specs/PAGE_DATA_SPEC.md`、`schema/SCHEMA.md`、`specs/UXD.md`、`lint_ui.py`、`prototypes/F15-integrated-dashboard/index.html`、`pocketmoney.html`。
+
+
+---
+
+### ADR-018：名稱用代號 pocketmoney，對外名稱待定
+- **狀態**：⏳ 對外名稱待定（2026-11-05）
+- **背景**：`PocketMoney` 已有他人使用，需另取對外名稱；備選名稱尚未定案，不宜反覆全域替換造成文件與程式混亂。
+- **決議**：
+  1. 名稱未定前，內部代號（codename）維持 `pocketmoney`。
+  2. 只有對外處才使用新名稱：`<title>`、icon、manifest、App 內顯示的標題。
+  3. 名稱集中為單一來源：JS 放 `APP_NAME` 常數；文件開頭加一行「對外名稱：XXX（內部代號 pocketmoney）」。
+  4. 不更動資料夾名、檔名、localStorage key（`PocketMoney_tw_finance_v3`），避免現有使用者資料遺失與 Git 歷史難以追溯。
+- **執行時機**：對外名稱確定後才動手；此 ADR 當下不改任何程式。
+- **影響範圍**：`pocketmoney.html`（title、頁首標題）、`icons/`、各文件開頭。
