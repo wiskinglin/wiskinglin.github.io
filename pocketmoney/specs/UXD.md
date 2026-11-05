@@ -387,13 +387,13 @@ erDiagram
 
 ---
 
-### 4.3 模擬資料庫檔案清單 (`_dev/PocketMoney/database/`)
+### 4.3 模擬資料庫檔案清單 (`pocketmoney/database/`)
 
-為供前端開發與測試驗證，[`_dev/PocketMoney/database/`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/) 目錄下內建三組涵蓋完整 12 個月（`2025-11` ～ `2026-10`）歷史時序之標準 JSON 資料庫：
+為供前端開發與測試驗證，`pocketmoney/database/` 目錄下內建三組涵蓋完整 12 個月（`2025-11` ～ `2026-10`）歷史時序之標準 JSON 資料庫：
 
-1. **[`database/dummy_db_junior.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_junior.json)**：**初級大人**（`<30` 歲小資族，1 銀行＋1 信用卡＋套房房租與 iPhone 分期＋0050 定期定額）。
-2. **[`database/dummy_db_family.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_family.json)**：**少子化勇者**（`30-40` 歲家庭用戶，3 銀行專戶＋2 家庭卡＋房貸托育雙月水電＋權值股與高股息配置）。
-3. **[`database/dummy_db_senior.json`](file:///c:/Dev/wiskinglin.github.io/_dev/PocketMoney/database/dummy_db_senior.json)**：**高級大人**（`40+` 歲高資產族群，5 大多幣專戶＋3 頂級卡＋豪宅置產與千萬級股債配置）。
+1. **[`scenario_1_junior_installments.json`](../database/scenario_1_junior_installments.json)**：**初級大人**（`<30` 歲小資族，1 銀行＋1 信用卡＋套房房租與 iPhone 分期＋0050 定期定額）。
+2. **[`scenario_2_sandwich_mortgage.json`](../database/scenario_2_sandwich_mortgage.json)**：**少子化勇者**（`30-40` 歲家庭用戶，3 銀行專戶＋2 家庭卡＋房貸托育雙月水電＋權值股與高股息配置）。
+3. **[`scenario_3_stock_investor.json`](../database/scenario_3_stock_investor.json)**：**高級大人**（`40+` 歲高資產族群，5 大多幣專戶＋3 頂級卡＋豪宅置產與千萬級股債配置）。
 
 ---
 

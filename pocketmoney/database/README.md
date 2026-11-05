@@ -1,23 +1,35 @@
-# PocketMoney 情境範例備份檔目錄 (database)
+# 範例資料庫與情境備份檔
 
-本目錄提供完全相容於 [`pocketmoney.html`](../pocketmoney.html) 主程式（`PocketMoneyStateV36` 格式）的標準 JSON 備份檔，嚴格依據 [`SCENARIOS.md`](../SCENARIOS.md) 的三大真實生活痛點情境設計，供使用者隨時匯入體驗與驗收測試。
+本目錄提供相容於 [`pocketmoney.html`](../pocketmoney.html)（`schemaVersion 2` 規範）的標準資料庫備份與展示資料檔，依據真實生活收支情境設計，供匯入體驗與自動化驗證使用。
 
 ---
 
-## 📁 範例備份檔清單
+## 檔案清單
 
-| 檔案名稱 | 核心情境 | 模擬人物與生活痛點 | 核心展示機制 |
+### 1. 標準展示資料庫與內嵌腳本
+
+| 檔案名稱 | 說明 | 格式與相容性 |
+| :--- | :--- | :--- |
+| [`PocketMoney_備份_20261105_142621.json`](./PocketMoney_備份_20261105_142621.json) | 標準展示資料庫備份檔，包含銀行帳戶、固定收支、信用卡分期、雙階段盤點基準日與台股投資部位。 | JSON，`schemaVersion 2` |
+| [`dummy_db_embedded.js`](./dummy_db_embedded.js) | 內嵌展示資料庫腳本，掛載 `window.__EMBEDDED_STATE__` 與 `window.DEMO_H2_DATA`，亦支援 Node.js 模組匯出。 | JavaScript / UMD |
+
+### 2. 情境範例備份檔
+
+| 檔案名稱 | 情境主軸 | 情境說明 | 核心展示機制 |
 | :--- | :--- | :--- | :--- |
-| [`scenario_1_junior_installments.json`](./scenario_1_junior_installments.json) | **情境一：多張卡分期的小資族** | 月薪 42,000 元，多筆大額消費辦理分期（iPhone 16 Pro、MacBook、日立冷氣、運動裝備），每月分期攤提加總破萬。 | • 可自由支配金額 (Safe-to-Spend)<br>• 未來 12 個月分期退坡直方圖<br>• 大額消費註記與單卡負載 |
-| [`scenario_2_sandwich_mortgage.json`](./scenario_2_sandwich_mortgage.json) | **情境二：房貸＋家庭開銷的三明治族** | 雙薪家庭，先生每月 **25 號**發薪，但房貸 **10 號**直接扣款 42,000 元、水電保費卡費 **18 號**扣款。月初餘額吃緊，面臨發薪前跳票危機。 | • 1~31 號收支時序預覽條<br>• 發薪前透支攔截警示<br>• 銀行直扣 vs 信用卡代繳防重複扣款<br>• 玉山備用金跨行調撥支援 |
-| [`scenario_3_stock_investor.json`](./scenario_3_stock_investor.json) | **情境三：台股投資資產管理者** | 顧問月薪 88,000 元，大額資金停泊於永豐高利活存專戶，獨立證券交割戶專用於台股扣款與股利入帳。 | • T+2 交割安全水位防線<br>• 0050/00878 現金股利流入規則<br>• 台股持股未實現損益與持股權重 |
+| [`scenario_1_junior_installments.json`](./scenario_1_junior_installments.json) | 多張卡分期的小資族 | 月薪 42,000 元，多筆大額消費辦理分期，每月分期攤提加總破萬。 | • 可自由支配金額<br>• 未來 12 個月分期退坡直方圖<br>• 大額消費註記與單卡負載 |
+| [`scenario_2_sandwich_mortgage.json`](./scenario_2_sandwich_mortgage.json) | 房貸與家庭開銷的三明治族 | 雙薪家庭，先生每月 25 號發薪，但房貸 10 號扣款 42,000 元、固定費用 18 號扣款。月初餘額吃緊，面臨發薪前透支壓力。 | • 1~31 號收支時序預覽條<br>• 發薪前透支攔截警示<br>• 銀行直扣與信用卡代繳防重複扣款<br>• 備用金跨行調撥支援 |
+| [`scenario_3_stock_investor.json`](./scenario_3_stock_investor.json) | 台股投資資產管理 | 科技顧問月薪 88,000 元，大額資金停泊於高利活存專戶，獨立證券交割戶專用於台股交割扣款與股利入帳。 | • T+2 交割安全水位防線<br>• 現金股利流入規劃<br>• 台股持股未實現損益與權重分析 |
 
 ---
 
-## 🚀 如何在主程式中匯入？
+## 匯入方式
 
-1. 打開 [`pocketmoney.html`](../pocketmoney.html)。
-2. 點擊頂部導航欄右上角的 **「匯入 JSON 備份」** 按鈕（或前往設定分頁的資料庫管理區塊）。
-3. 選擇上方清單中任一 `.json` 檔案。
-4. 系統將於 0.1 秒內完成資料還原與全頁面重繪，立刻呈現該情境之財務水位與分析圖表！
+1. **主程式介面匯入**：
+   - 開啟 [`pocketmoney.html`](../pocketmoney.html)。
+   - 點擊頂部導航列右上角的「匯入 JSON 備份」（或前往設定頁面的資料管理區塊）。
+   - 選擇本目錄下的任何 `.json` 備份檔即可完成資料還原。
 
+2. **內嵌腳本與自動化測試**：
+   - 網頁端引入 `dummy_db_embedded.js` 可由主程式 `window.__EMBEDDED_STATE__` 與 `window.DEMO_H2_DATA` 接軌讀取。
+   - 測試環境可直接透過 Node.js `require('./dummy_db_embedded.js')` 載入標準展示物件。

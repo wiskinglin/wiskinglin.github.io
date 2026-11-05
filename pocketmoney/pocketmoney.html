@@ -1876,11 +1876,12 @@
     }
 
     
-    // [F15] 半年度展示測試資料庫 (2026-08 ~ 2027-01)
-    const DEMO_H2_DATA = {
+    // [F15] 半年度展示測試資料庫 (2026-08 ~ 2027-01)，相容最新設計並支援外部注入
+    const DEMO_H2_DATA = (typeof window !== 'undefined' && window.DEMO_H2_DATA) ? window.DEMO_H2_DATA : {
   "schemaVersion": 2,
   "settings": {
     "privacyMode": false,
+    "pinCode": "",
     "stockMinHoldRatio": 70,
     "securitiesBankIds": [
       "bank_sinopac"
@@ -1898,9 +1899,21 @@
       "salaryAmount": 58000,
       "color": "rose",
       "historyRecords": [
-        { "year": 2026, "month": 8, "balance": 122000 },
-        { "year": 2026, "month": 9, "balance": 130000 },
-        { "year": 2026, "month": 10, "balance": 141000 }
+        {
+          "year": 2026,
+          "month": 8,
+          "balance": 122000
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "balance": 130000
+        },
+        {
+          "year": 2026,
+          "month": 10,
+          "balance": 141000
+        }
       ]
     },
     {
@@ -1911,9 +1924,21 @@
       "isSalaryAccount": false,
       "color": "emerald",
       "historyRecords": [
-        { "year": 2026, "month": 8, "balance": 45000 },
-        { "year": 2026, "month": 9, "balance": 48000 },
-        { "year": 2026, "month": 10, "balance": 50000 }
+        {
+          "year": 2026,
+          "month": 8,
+          "balance": 45000
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "balance": 48000
+        },
+        {
+          "year": 2026,
+          "month": 10,
+          "balance": 50000
+        }
       ]
     },
     {
@@ -1924,9 +1949,21 @@
       "isSalaryAccount": false,
       "color": "amber",
       "historyRecords": [
-        { "year": 2026, "month": 8, "balance": 80000 },
-        { "year": 2026, "month": 9, "balance": 82000 },
-        { "year": 2026, "month": 10, "balance": 85000 }
+        {
+          "year": 2026,
+          "month": 8,
+          "balance": 80000
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "balance": 82000
+        },
+        {
+          "year": 2026,
+          "month": 10,
+          "balance": 85000
+        }
       ]
     }
   ],
@@ -1938,7 +1975,20 @@
       "payDay": 25,
       "bankId": "bank_taishin",
       "receivedThisMonth": false,
-      "activeMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      "activeMonths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
     }
   ],
   "cards": [
@@ -2045,7 +2095,9 @@
       "paidPeriods": 7,
       "startYear": 2026,
       "startMonth": 5,
-      "startYearMonth": "2026-05"
+      "startYearMonth": "2026-05",
+      "title": "MacBook Pro 16\"",
+      "firstPeriodAmount": 3000
     }
   ],
   "bills": [
@@ -2059,7 +2111,20 @@
       "paymentMethod": "bank_direct",
       "bankId": "bank_taishin",
       "status": "unpaid",
-      "activeMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      "activeMonths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
     },
     {
       "id": "bill_power",
@@ -2071,7 +2136,14 @@
       "paymentMethod": "card_auto",
       "cardId": "card_ctbc_linepay",
       "status": "unpaid",
-      "activeMonths": [2, 4, 6, 8, 10, 12]
+      "activeMonths": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12
+      ]
     },
     {
       "id": "bill_hinet",
@@ -2083,7 +2155,20 @@
       "paymentMethod": "card_auto",
       "cardId": "card_ctbc_linepay",
       "status": "unpaid",
-      "activeMonths": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+      "activeMonths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
     }
   ],
   "stocks": [
@@ -2093,7 +2178,8 @@
       "name": "台積電",
       "shares": 200,
       "currentPrice": 1050,
-      "avgCost": 920
+      "avgCost": 920,
+      "symbol": "2330"
     },
     {
       "id": "stock_0050",
@@ -2101,11 +2187,11 @@
       "name": "元大台灣50",
       "shares": 1000,
       "currentPrice": 190,
-      "avgCost": 165
+      "avgCost": 165,
+      "symbol": "0050"
     }
   ]
-}
-;
+};
 
     function normalizeState(loaded) {
       if (!loaded || typeof loaded !== 'object') {
