@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>中年轉型最難的，是放不下太合身的「舊角色」| KLIO. REPORT</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260701_midlife_transition.html';
+        }
+    </script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --accent: #14b8a6;
+            --accent-emerald: #34d399;
+            --accent-cyan: #22d3ee;
+            --accent-glow: rgba(20, 184, 166, 0.15);
+            --accent-emerald-glow: rgba(52, 211, 153, 0.15);
+            --bg-base: #060a09;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(20, 184, 166, 0.1);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14pt !important;
+            line-height: 1.6;
+        }
+
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #0b0d14; z-index: 100; }
+        .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s ease-out; }
+
+        .top-nav {
+            position: fixed; top: 3px; left: 0; width: 100%; z-index: 90;
+            background: rgba(6, 10, 9, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color); padding: 14px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo-text { font-size: 0.75rem; font-weight: 850; color: #fff; letter-spacing: 0.1em; text-transform: uppercase; }
+        .category-tag { font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 0.05em; }
+
+        .tab-nav-container {
+            position: fixed; top: 50px; left: 0; width: 100%;
+            background: rgba(6, 10, 9, 0.95); border-bottom: 1px solid var(--border-color);
+            z-index: 89; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 10px 16px;
+        }
+        .tab-nav-container::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            display: inline-block; padding: 6px 14px; margin-right: 8px;
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color);
+            border-radius: 9999px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .tab-btn.active { color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .article-body { padding: 120px 18px 80px; max-width: 640px; margin: 0 auto; }
+        .date-tag { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 6px; display: block; }
+        h1 { font-size: 1.4rem; font-weight: 950; color: #fff; line-height: 1.35; margin-bottom: 12px; }
+        .intro-text { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+
+        .module-section { display: none; }
+        .module-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .module-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .module-num {
+            font-size: 0.7rem; font-weight: 900; background: var(--accent-glow); color: var(--accent);
+            padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; border: 1px solid rgba(20, 184, 166, 0.3);
+        }
+        .module-num.emerald { background: var(--accent-emerald-glow); color: var(--accent-emerald); border: 1px solid rgba(52, 211, 153, 0.3); }
+        h2 { font-size: 1.2rem; font-weight: 850; color: #fff; line-height: 1.35; }
+        .sub-instructor { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+        .info-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .info-card.highlight { border-color: rgba(20, 184, 166, 0.3); background: linear-gradient(135deg, rgba(20, 184, 166, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%); }
+        .info-card.highlight-emerald { border-color: rgba(52, 211, 153, 0.3); background: linear-gradient(135deg, rgba(52, 211, 153, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%); }
+
+        .card-title { font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .card-title i { color: var(--accent); }
+        .card-desc { font-size: 14pt !important; color: var(--text-muted); line-height: 1.5; }
+
+        .bullet-list { list-style: none; padding: 0; margin-top: 10px; }
+        .bullet-list li { position: relative; padding-left: 14px; font-size: 14pt !important; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+        .bullet-list li::before { content: "•"; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+
+        .text-2xs, .text-xs, .sub-text { font-size: 10pt !important; line-height: 1.4 !important; }
+        .text-sm { font-size: 11pt !important; line-height: 1.4 !important; }
+
+        .nav-actions { display: flex; gap: 10px; margin-top: 32px; }
+        .btn-action {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 14px; background: rgba(255, 255, 255, 0.03); color: #fff;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            font-size: 0.8rem; font-weight: 700; text-decoration: none; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-action.primary { background: var(--accent); border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-glow); }
+        .btn-action.primary-emerald { background: var(--accent-emerald); border-color: var(--accent-emerald); color: #000; }
+
+        .back-home {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 14px; background: #fff; color: #000;
+            border-radius: 12px; font-size: 0.85rem; font-weight: 800; text-decoration: none; margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+
+    <nav class="top-nav">
+        <div class="logo-text">MIDLIFE TRANSITION</div>
+        <div class="category-tag">● 職涯轉型</div>
+    </nav>
+
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 核心觀點</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 轉型實證</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 路徑評估</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 行動指南</button>
+    </div>
+
+    <div class="article-body">
+        <span class="date-tag">Career Transition · 2026-07-01</span>
+        <h1>中年轉型最難的，是放不下太合身的「舊角色」</h1>
+        <p class="intro-text">數位轉型顧問李全興（老查）探討：轉型的瓶頸往往不是找不到新方向，而是無法放下被定義的角色。三個問題，讓人生下半場開始轉向。</p>
+
+        <!-- MODULE 1 -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>核心觀點：舊角色的束縛</h2>
+                <div class="sub-instructor">李全興（老查）· 數位轉型顧問</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-mask-happy"></i>外在定義 → 自我敘事</div>
+                <p class="card-desc">外在評價與成功模式隨時間定型為自我敘事，在原本領域是資產，但在轉型時卻成了想像新選項的限制。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-lock"></i>舊能力的新包裝陷阱</div>
+                <p class="card-desc">人們只敢在舊能力中套用新包裝，而非真正開創全新的可能。轉型必須先思考「想成為什麼樣的人」，而非僅進入職業、技能與收入的評估。</p>
+            </div>
+
+            <div class="info-card highlight-emerald">
+                <div class="card-title"><i class="ph-bold ph-quotes"></i>關鍵觀點</div>
+                <p class="card-desc" style="font-style:italic;">「新角色不需要憑空創造，而是將過去未充分使用的真實面向往前推一步。」</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary" onclick="switchModule(2)">下一單元：轉型實證 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- MODULE 2 -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num">MODULE 2</span>
+                <h2>老查的轉型實證歷程</h2>
+                <div class="sub-instructor">從行動者到框架轉化者</div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-number-circle-one"></i>離場困難</div>
+                <p class="card-desc">離開職場後經歷換場困難，試圖在舊框架中找新位置。過去的頭銜與成就模式成為心理枷鎖。</p>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-number-circle-two"></i>角色重設</div>
+                <p class="card-desc">避開會快速耗損自我的「行動者」定位，將新角色設定為更貼合自身特質的「能將複雜框架轉化為執行步驟的人」。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-number-circle-three"></i>試水溫：大叔出租</div>
+                <p class="card-desc">先後透過與三位朋友對話的「大叔出租」試水溫，驗證新角色的可行性與市場需求。</p>
+            </div>
+
+            <div class="info-card highlight-emerald">
+                <div class="card-title"><i class="ph-bold ph-number-circle-four"></i>專欄落地</div>
+                <p class="card-desc">連續四週撰寫短文發展出「與老查一起讀商業好書」專欄，實證了新角色不需要憑空創造。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(3)">下一單元：路徑評估 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- MODULE 3 -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num emerald">MODULE 3</span>
+                <h2>轉型路徑的前提評估</h2>
+                <div class="sub-instructor">角色設定不是萬能藥</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-person-simple-run"></i>大步跨越</div>
+                <p class="card-desc">適合有財務安全墊、支援系統完善的人。風險較高但加速探索。需要能承受不確定期的心理韌性。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-person-simple-walk"></i>小步移動</div>
+                <p class="card-desc">適合需要同步維持收入的人。以兼職或副業方式漸進探索新角色，降低機會成本的同時累積經驗。</p>
+            </div>
+
+            <div class="info-card highlight-emerald">
+                <div class="card-title"><i class="ph-bold ph-warning"></i>必要前提</div>
+                <p class="card-desc">在財務、家庭照顧或身心嚴重耗竭的急迫壓力下，必須先做好財務與生活規劃，誠實評估自己的探索期長度。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-emerald" onclick="switchModule(4)">下一單元：行動指南 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- MODULE 4 -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num emerald">MODULE 4</span>
+                <h2>三個問題，今天就開始</h2>
+                <div class="sub-instructor">以行動代替空想</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-question"></i>Q1. 辨識舊角色</div>
+                <p class="card-desc">我不想再只被哪一個舊角色定義？找到那個讓你感覺受限的標籤。</p>
+            </div>
+
+            <div class="info-card highlight-emerald">
+                <div class="card-title"><i class="ph-bold ph-magnifying-glass"></i>Q2. 發掘真實面向</div>
+                <p class="card-desc">我過去有哪些真實能力或面向尚未被充分發揮？每個人都有未曾在職場展現的面向。</p>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-play"></i>Q3. 最小行動</div>
+                <p class="card-desc">明天可以做哪一個很小的行動來開啟這個面向？寫一篇文、和一位朋友聊、嘗試一個新身份。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-butterfly"></i>核心結論</div>
+                <p class="card-desc">中年轉型不必等到有完美答案才啟動。狀態往往是行動後才慢慢對焦出來的。以行動代替空想，才是開啟人生下半場的解方。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-home">返回首頁 <i class="ph-bold ph-house-line"></i></a>
+    </div>
+
+    <script>
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        function switchModule(moduleNum) {
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

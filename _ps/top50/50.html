@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#50 Experimental Navigation — 實驗性導航體驗 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Noto+Sans+TC:wght@300;700&display=swap" rel="stylesheet">
+<style>
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Syncopate', 'Noto Sans TC', sans-serif;
+  background-color: #050505; color: #fff;
+  overflow: hidden; /* Canvas controls drag */
+  width: 100vw; height: 100vh;
+}
+
+/* Draggable Canvas Matrix */
+.nav-canvas {
+  position: absolute;
+  width: 300vw; height: 300vh;
+  left: -100vw; top: -100vh; /* Start centered initially via JS, just layout bounds */
+  background-image: radial-gradient(circle at center, rgba(255,255,255,0.05) 2px, transparent 2px);
+  background-size: 50px 50px;
+  cursor: grab;
+  transition: cursor 0.2s;
+}
+.nav-canvas:active { cursor: grabbing; }
+
+/* Interactive nodes in space */
+.node {
+  position: absolute;
+  width: 250px; height: 250px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  transition: transform 0.4s, background 0.4s, border-color 0.4s;
+  pointer-events: auto; text-align: center;
+}
+.node:hover {
+  transform: scale(1.1); background: rgba(255,255,255,0.05); border-color: rgba(255,100,0,0.5);
+}
+.node span { font-size: 0.8rem; letter-spacing: 2px; color: rgba(255,255,255,0.5); margin-bottom: 8px; }
+.node h2 { font-size: 1.5rem; font-weight: 700; text-transform: uppercase; }
+
+/* Coordinates for nodes */
+.n1 { top: 20%; left: 30%; }
+.n2 { top: 60%; left: 15%; }
+.n3 { top: 40%; left: 50%; border-color: rgba(255,100,0,0.8); background: rgba(255,100,0,0.1); }
+.n4 { top: 70%; left: 60%; }
+.n5 { top: 30%; left: 75%; }
+
+/* Style Info Overlay */
+.overlay-info {
+  position: fixed; top: 0; left: 0; right: 0;
+  padding: 40px 60px; pointer-events: none;
+  z-index: 100; display: flex; align-items: flex-start; justify-content: space-between;
+}
+.text-box { max-width: 450px; pointer-events: auto; }
+.text-box h1 { font-size: 1.5rem; margin-bottom: 16px; color: #ff6400; text-transform: uppercase; }
+.text-box p { font-family: 'Noto Sans TC', sans-serif; font-size: 0.9rem; line-height: 1.6; color: #aaa; margin-bottom: 12px; }
+.text-box .cat { font-size: 0.7rem; padding: 4px 10px; background: #222; border-radius: 4px; display: inline-block; margin-bottom: 12px; color: #fff;}
+
+/* Crosshair indicator */
+.crosshair {
+  position: fixed; top: 50%; left: 50%;
+  width: 40px; height: 40px; transform: translate(-50%, -50%);
+  pointer-events: none; opacity: 0.2; z-index: 50;
+}
+.crosshair::before, .crosshair::after { content: ''; position: absolute; background: #fff; }
+.crosshair::before { top: 19px; left: 0; width: 40px; height: 2px; }
+.crosshair::after { left: 19px; top: 0; height: 40px; width: 2px; }
+
+/* Instruction bottom right */
+.drag-hint {
+  position: fixed; bottom: 80px; right: 60px;
+  font-family: inherit; font-size: 0.7rem; letter-spacing: 4px;
+  color: #555; text-transform: uppercase; pointer-events: none;
+}
+
+/* Navigation (C) */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 60px; z-index: 100;
+}
+.bottom-nav a {
+  color: #fff; font-size: 0.75rem; letter-spacing: 2px; text-decoration: none;
+  text-transform: uppercase; opacity: 0.5; transition: opacity 0.3s;
+}
+.bottom-nav a:hover { opacity: 1; }
+
+</style>
+</head>
+<body>
+
+<div class="overlay-info">
+  <div class="text-box">
+    <div class="cat">🧭 實驗性導航體驗</div>
+    <h1>#50 Experimental Nav</h1>
+    <p>徹底放棄傳統的頂部水平導覽列或常見的漢堡選單。改用畫面拖拽、3D 空間漫遊、隱藏式互動熱區或全螢幕環狀滾動來作為探索網站內容的路徑，將尋找資訊的過程轉化為遊戲。</p>
+    <p style="color:#666; font-size: 0.8rem;">適用於：頂尖設計代理商與工作室官網、沉浸式品牌互動體驗頁<br>🌍 台灣、全球</p>
+  </div>
+</div>
+
+<div class="crosshair"></div>
+<div class="drag-hint">DRAG CANVAS TO EXPLORE ✥</div>
+
+<div class="nav-canvas" id="canvas">
+  <a href="#" class="node n1"><span>01</span><h2>Studio</h2></a>
+  <a href="#" class="node n2"><span>02</span><h2>Works</h2></a>
+  <a href="#" class="node n3"><span>00</span><h2>Entrance</h2></a>
+  <a href="#" class="node n4"><span>03</span><h2>Culture</h2></a>
+  <a href="#" class="node n5"><span>04</span><h2>Contact</h2></a>
+</div>
+
+<nav class="bottom-nav">
+  <a href="49.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+</nav>
+
+<script>
+  // Interaction 1: Draggable abstract map navigation
+  const canvas = document.getElementById('canvas');
+  let isDragging = false;
+  let startX, startY;
+  let currentX = -window.innerWidth, currentY = -window.innerHeight; // Start near center
+  
+  canvas.style.transform = `translate(${currentX}px, ${currentY}px)`;
+
+  canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    startX = e.clientX - currentX;
+    startY = e.clientY - currentY;
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if(!isDragging) return;
+    e.preventDefault();
+    currentX = e.clientX - startX;
+    currentY = e.clientY - startY;
+    canvas.style.transform = `translate(${currentX}px, ${currentY}px)`;
+  });
+
+  // Interaction 2: Node Parallax relative to center
+  const nodes = document.querySelectorAll('.node');
+  window.addEventListener('mousemove', (e) => {
+    if(isDragging) return;
+    const mouseX = e.clientX / window.innerWidth - 0.5;
+    const mouseY = e.clientY / window.innerHeight - 0.5;
+    
+    nodes.forEach((node, i) => {
+      const depth = (i % 2 === 0) ? 20 : -20;
+      node.style.marginLeft = `${mouseX * depth}px`;
+      node.style.marginTop = `${mouseY * depth}px`;
+    });
+  });
+</script>
+</body>
+</html>

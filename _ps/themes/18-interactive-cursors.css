@@ -1,0 +1,115 @@
+/* ============================================
+ * Theme: #18 — Interactive Cursors (互動式游標設計)
+ * Category: 3D、空間與沉浸式設計 (3D, Spatial & Immersive)
+ * Source: _docs/WebTop50.md
+ * ============================================ */
+
+:root[data-theme="interactive-cursors"] {
+  /* === Color Tokens === */
+  --theme-primary: #10b981;
+  --theme-bg: #f8fafc;
+  --theme-surface: #ffffff;
+  --theme-text: #111827;
+  --theme-text-secondary: #4b5563;
+  --theme-border: #e2e8f0;
+
+  /* === Typography Tokens === */
+  --font-heading: 'Syne', 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-size-base: 1rem;
+
+  /* === Space Tokens === */
+  --space-unit: 0.5rem;
+  --section-gap: 3rem;
+  --content-padding: 2rem;
+
+  /* === Shape Tokens === */
+  --radius-sm: 10px;
+  --radius-lg: 20px;
+  --border-width: 1px;
+  --shadow-card: 0 4px 6px rgba(0,0,0,0.05);
+
+  /* === Motion Tokens === */
+  --transition-speed: 0.4s;
+  --ease-curve: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* === Style-specific overrides === */
+
+/* Making everything feel reactive to the cursor */
+:root[data-theme="interactive-cursors"] .hero,
+:root[data-theme="interactive-cursors"] .section-card,
+:root[data-theme="interactive-cursors"] .insight-card,
+:root[data-theme="interactive-cursors"] .conclusion-card {
+  cursor: pointer;
+  transition: transform var(--transition-speed) var(--ease-curve),
+              box-shadow var(--transition-speed) var(--ease-curve),
+              background var(--transition-speed);
+}
+
+:root[data-theme="interactive-cursors"] .section-card:hover {
+  transform: scale(1.01) perspective(1000px) rotateX(1deg) rotateY(1deg);
+  box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1);
+  background: #fdfdfd;
+}
+
+:root[data-theme="interactive-cursors"] h1:hover,
+:root[data-theme="interactive-cursors"] .section-title:hover {
+  letter-spacing: 2px;
+  color: var(--theme-primary);
+  transition: all 0.3s;
+}
+
+:root[data-theme="interactive-cursors"] .section-header {
+  border-bottom-style: dashed;
+}
+
+:root[data-theme="interactive-cursors"] .section-num {
+  border-radius: 50%;
+  background: #10b981;
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+:root[data-theme="interactive-cursors"] .section-card:hover .section-num {
+  transform: scale(1.2) rotate(360deg);
+}
+
+:root[data-theme="interactive-cursors"] .insight-card {
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+:root[data-theme="interactive-cursors"] .insight-card:hover {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
+  transform: translateY(-5px);
+}
+
+:root[data-theme="interactive-cursors"] .insight-card h4::before {
+  content: '●';
+  margin-right: 8px;
+  color: #10b981;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+:root[data-theme="interactive-cursors"] .insight-card:hover h4::before {
+  opacity: 1;
+}
+
+:root[data-theme="interactive-cursors"] .callout {
+  border: 1px dashed #10b981;
+  background: none;
+  border-left-width: 4px;
+}
+
+:root[data-theme="interactive-cursors"] .data-table tr:hover {
+  background: rgba(16, 185, 129, 0.05);
+  transform: scale(1.005);
+}
+
+:root[data-theme="interactive-cursors"] .conclusion-card:hover {
+  transform: translateY(-10px);
+  background: #064e3b;
+}

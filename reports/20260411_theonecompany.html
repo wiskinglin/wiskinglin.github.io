@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 輔助微型創業跨國研究報告</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom Configuration & Print Styles -->
+    <style>
+        :root {
+            --page-width: 297mm;
+            --page-height: 210mm;
+            --brand-primary: #1e3a8a; /* blue-900 */
+            --brand-accent: #3b82f6; /* blue-500 */
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f1f5f9; /* slate-100 */
+            color: #1e293b; /* slate-800 */
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---------------------------------
+           A4 Landscape Page Layout Container
+        --------------------------------- */
+        .page {
+            width: var(--page-width);
+            min-height: var(--page-height);
+            margin: 2rem auto;
+            background: white;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.15);
+            border-radius: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3rem 4rem; /* Safe bleed area */
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* ---------------------------------
+           Print Engine Rules
+        --------------------------------- */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+            body {
+                background: white;
+                margin: 0;
+            }
+            .page {
+                margin: 0;
+                box-shadow: none;
+                border-radius: 0;
+                page-break-after: always;
+                break-inside: avoid;
+                width: 297mm;
+                height: 210mm;
+                min-height: 210mm;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* Force print colors & disable animations */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                transition: none !important;
+                animation: none !important;
+            }
+        }
+
+        /* ---------------------------------
+           Edit Mode Visual Feedback
+        --------------------------------- */
+        [contenteditable="true"] {
+            outline: 3px dashed var(--brand-accent);
+            outline-offset: 4px;
+            background-color: rgba(59, 130, 246, 0.03);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        [contenteditable="true"]:focus {
+            outline-style: solid;
+            background-color: rgba(59, 130, 246, 0.06);
+        }
+        [contenteditable="true"] .editable-hint {
+            display: block;
+        }
+        .editable-hint {
+            display: none;
+        }
+
+        /* Custom Gradients & Accents */
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #1e3a8a, #3b82f6);
+        }
+        .bento-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+    </style>
+</head>
+<body class="pb-10">
+
+    <!-- Control Panel (Hidden on Print) -->
+    <div class="no-print fixed top-6 right-6 z-50 flex gap-3 p-3 rounded-2xl bg-white/80 backdrop-blur-md shadow-xl border border-white/40 ring-1 ring-slate-900/5">
+        <button id="editBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
+            ✏️ 編輯內容
+        </button>
+        <button id="saveBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-blue-700 bg-blue-100 rounded-xl hover:bg-blue-200 transition-colors">
+            ⬇️ 儲存網頁
+        </button>
+        <button id="printBtn" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-md shadow-blue-500/30 transition-all">
+            🖨️ 輸出 PDF
+        </button>
+    </div>
+
+    <!-- Main Document Wrapper for Editing -->
+    <div id="document-wrapper">
+
+        <!-- ================= PAGE 1: Hero & Intro ================= -->
+        <section class="page bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white !px-12 !py-12">
+            <!-- Decorative Elements -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none"></div>
+
+            <div class="flex-grow flex flex-col justify-center relative z-10 max-w-5xl">
+                <div class="mb-8 inline-block px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm w-max">
+                    <span class="text-blue-200 font-bold tracking-wider text-sm">2025-2026 TREND REPORT</span>
+                </div>
+                
+                <h1 class="text-6xl font-black leading-tight mb-8 tracking-tight">
+                    全球瀏覽器原生 AI <br>微型創業趨勢與跨國訂閱經濟實戰報告
+                </h1>
+                
+                <div class="w-24 h-1.5 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full mb-10"></div>
+                
+                <div class="bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-md">
+                    <h2 class="text-2xl font-bold text-blue-300 mb-4">核心技術變革：從雲端算力壟斷到邊緣運算民主化</h2>
+                    <p class="text-slate-300 text-lg leading-relaxed mb-4">
+                        在 2025 年的數位經濟景觀中，微型創業（Micro-SaaS）正經歷一場由技術典範轉移驅動的深刻變革。傳統以 API 為中心的軟體服務模式，正受到來自瀏覽器原生 AI 技術的強力挑戰。對於獨立開發者與一人公司而言，這種轉向不僅是技術選擇的改變，更是商業邏輯的重構。
+                    </p>
+                    <p class="text-slate-300 text-lg leading-relaxed">
+                        透過消除對昂貴外部算力（如 OpenAI 或 Anthropic API）的依賴，開發者能夠將軟體的邊際成本壓降至接近於零，從而在全球市場中實現極高毛利且低維護成本的訂閱制商業模式。隨著 WebGPU、WASM 等標準成熟，原本需要數千美元 GPU 伺服器的任務，現在可於用戶本地設備完成，構建出具備「絕對數據隱私」與「極致反應速度」的天然護城河。
+                    </p>
+                </div>
+            </div>
+            <div class="mt-auto pt-6 flex justify-between items-center text-slate-400 text-sm border-t border-white/10">
+                <span>Research & Insights / Micro-SaaS AI</span>
+                <span>Page 01</span>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: Core Tech Logic ================= -->
+        <section class="page">
+            <header class="mb-8">
+                <h2 class="text-4xl font-black text-slate-800 tracking-tight">底層技術邏輯</h2>
+                <p class="text-xl text-slate-500 font-medium mt-2">如何構建不依賴 API 的 AI 應用程式</p>
+            </header>
+
+            <div class="flex-grow flex flex-col gap-6 justify-center">
+                <p class="text-slate-600 leading-relaxed max-w-4xl mb-2 text-lg">
+                    在規劃微型創業產品時，核心在於將 AI 推理轉化為用戶端的「靜態資源」。這種技術架構的成功取決於三個關鍵技術支柱：
+                </p>
+
+                <!-- Bento Grid -->
+                <div class="grid grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-3xl bento-shadow border border-slate-100 flex flex-col h-full">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-4">⚡</div>
+                        <h3 class="text-xl font-bold mb-3 text-slate-800">推理引擎與硬體加速</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed flex-grow">
+                            依賴 <strong>WebGPU</strong> 標準，提供更直接的硬體存取能力。主流推理庫如 Transformers.js v3 與 WebLLM 已能完美支援 Llama 3.2、SmolLM2 等模型。並利用 WASM 作為 CPU 退路確保跨平台穩定性。
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl bento-shadow border border-slate-100 flex flex-col h-full">
+                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-2xl mb-4">🗜️</div>
+                        <h3 class="text-xl font-bold mb-3 text-slate-800">模型量化與壓縮</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed flex-grow">
+                            4-bit 量化技術是實戰關鍵。將 32-bit 浮點數壓縮至 4-bit，模型大小縮減至八分之一，效能損失控制在 1%-5% 內。如 SmolLM2-360M 量化後僅需約 130MB 顯存。
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl bento-shadow border border-slate-100 flex flex-col h-full">
+                        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-4">💾</div>
+                        <h3 class="text-xl font-bold mb-3 text-slate-800">本地數據持久化</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed flex-grow">
+                            利用 <strong>IndexedDB</strong> 解決重複下載問題。設計「一次下載，終身使用」機制，將模型緩存於本地。用戶第二次打開應用程式時，冷啟動時間可從分鐘級降至秒級。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Tech Metrics Table -->
+                <div class="bg-slate-50 rounded-2xl p-1 border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white text-slate-500 text-sm uppercase tracking-wider">
+                                <th class="p-4 font-bold rounded-tl-xl">技術組件</th>
+                                <th class="p-4 font-bold">功能與目的</th>
+                                <th class="p-4 font-bold rounded-tr-xl">關鍵指標 (2025)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm">
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-blue-700">WebGPU</td>
+                                <td class="p-4 text-slate-600">硬件加速推理</td>
+                                <td class="p-4 text-slate-800 font-medium bg-white">相比 WebGL 提升 2-5 倍性能</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-blue-700">WebAssembly</td>
+                                <td class="p-4 text-slate-600">跨平台計算與 CPU 退路</td>
+                                <td class="p-4 text-slate-800 font-medium bg-white">覆蓋超過 95% 的桌面瀏覽器</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-blue-700">IndexedDB</td>
+                                <td class="p-4 text-slate-600">本地大容量存儲 (模型緩存)</td>
+                                <td class="p-4 text-slate-800 font-medium bg-white">單一來源可用空間可達數百 GB</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-blue-700">Transformers.js</td>
+                                <td class="p-4 text-slate-600">JS 封裝的 AI 管道</td>
+                                <td class="p-4 text-slate-800 font-medium bg-white">支持 NLP、語音、影像等全方位任務</td>
+                            </tr>
+                            <tr class="border-t border-slate-100">
+                                <td class="p-4 font-bold text-blue-700">WebNN</td>
+                                <td class="p-4 text-slate-600">原生 NPU 加速接口</td>
+                                <td class="p-4 text-slate-800 font-medium bg-white">2025 年起在 Chrome/Edge 進入穩定階段</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mt-auto pt-6 border-t border-slate-200 flex justify-between text-slate-400 text-sm font-medium">
+                <span>Technical Architecture</span>
+                <span>Page 02</span>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: Moats & Strategy ================= -->
+        <section class="page">
+            <header class="mb-8">
+                <h2 class="text-4xl font-black text-slate-800 tracking-tight">核心障礙與護城河</h2>
+                <p class="text-xl text-slate-500 font-medium mt-2">在缺乏即時雲端算力下的生存策略</p>
+            </header>
+
+            <div class="flex-grow flex flex-col justify-center gap-6">
+                <p class="text-slate-600 text-lg mb-4">
+                    一人公司在挑戰大廠時，不能在「模型參數規模」或「生成速度」上硬碰硬。相反，護城河應建立在三大基石之上：
+                </p>
+
+                <div class="grid grid-cols-2 gap-8">
+                    <!-- Huge Card for Privacy -->
+                    <div class="bg-slate-900 text-white p-8 rounded-3xl bento-shadow relative overflow-hidden flex flex-col justify-center">
+                        <div class="absolute -right-10 -top-10 text-9xl opacity-5">🔒</div>
+                        <h3 class="text-3xl font-black mb-4 text-blue-300">數據主權與絕對隱私</h3>
+                        <p class="text-slate-300 leading-relaxed text-lg mb-6">
+                            在美國、日本與台灣，用戶對數據隱私擔憂日益增加。雲端 AI 要求上傳文件，對金融、法律或心理諮詢是巨大合規風險。
+                        </p>
+                        <div class="bg-white/10 p-4 rounded-2xl border border-white/20 backdrop-blur-sm inline-block">
+                            <span class="text-blue-200 font-bold block mb-1">最強大的付費說服力：</span>
+                            <span class="text-white text-xl">「您的數據永遠不會離開您的電腦」</span>
+                        </div>
+                    </div>
+
+                    <!-- Stack of 2 smaller cards -->
+                    <div class="flex flex-col gap-8">
+                        <div class="bg-blue-50 p-8 rounded-3xl bento-shadow border border-blue-100 flex-grow flex flex-col justify-center">
+                            <h3 class="text-2xl font-bold mb-3 text-blue-900">極致的垂直化與在地化</h3>
+                            <p class="text-blue-800/80 leading-relaxed">
+                                大廠追求通用型 AI (AGI)，在特定文化表現過於「平均」。一人公司應專注垂直領域的「專有小數據」。例如：針對台灣稅務代碼、美國遺產法規或日本商務敬語，結合本地 RAG 技術預置於應用中。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-emerald-50 p-8 rounded-3xl bento-shadow border border-emerald-100 flex-grow flex flex-col justify-center">
+                            <h3 class="text-2xl font-bold mb-3 text-emerald-900">零維護與高毛利</h3>
+                            <p class="text-emerald-800/80 leading-relaxed">
+                                對於採取月費訂閱制的應用而言，其毛利幾乎等於「訂閱收入 - 金流手續費」。這種低邊際成本結構允許一人公司在首月達成損益平衡，無需為用戶使用量增加支付 API 帳單。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-slate-200 flex justify-between text-slate-400 text-sm font-medium">
+                <span>Business Strategy</span>
+                <span>Page 03</span>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 4: Practical Cases (Top) ================= -->
+        <section class="page bg-slate-50">
+            <header class="mb-8">
+                <div class="inline-block bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-sm font-bold tracking-wide mb-3">實戰指南 Part 1</div>
+                <h2 class="text-4xl font-black text-slate-800 tracking-tight">領域實戰提案 (上)</h2>
+            </header>
+
+            <div class="grid grid-cols-3 gap-6 flex-grow">
+                <!-- Case 1 -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 bento-shadow flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex justify-center items-center text-xl">📰</div>
+                        <h3 class="text-xl font-bold text-slate-800">新聞媒體</h3>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-blue-600 text-lg">TruthLens AI</h4>
+                        <p class="text-slate-500 text-sm">偏見分析與深度摘要工具</p>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        本地運行 Llama 3.2-1B，直接抓取 DOM 樹進行實體提取與情感分析，標註情緒化用詞或邏輯謬誤。
+                    </p>
+                    <div class="mt-auto bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-2">在地化痛點</div>
+                        <ul class="text-xs text-slate-600 space-y-1.5">
+                            <li><strong class="text-slate-800">台：</strong>偵測網軍操弄、分析媒體偏向</li>
+                            <li><strong class="text-slate-800">美：</strong>分辨左右翼極化、過濾點擊誘餌</li>
+                            <li><strong class="text-slate-800">日：</strong>針對新聞評論進行情緒分析過濾</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Case 2 -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 bento-shadow flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex justify-center items-center text-xl">💰</div>
+                        <h3 class="text-xl font-bold text-slate-800">投資理財</h3>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-blue-600 text-lg">VaultFinance Local</h4>
+                        <p class="text-slate-500 text-sm">隱私優先的個人資產管理</p>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        純本地儀表板。匯入 CSV/PDF，AI 在瀏覽器解析分類。WASM 運行蒙地卡羅模擬預測增長。
+                    </p>
+                    <div class="mt-auto bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-2">在地化痛點</div>
+                        <ul class="text-xs text-slate-600 space-y-1.5">
+                            <li><strong class="text-slate-800">台：</strong>海外所得稅與二代健保自動試算</li>
+                            <li><strong class="text-slate-800">美：</strong>Tax-Loss Harvesting 自動偵測</li>
+                            <li><strong class="text-slate-800">日：</strong>NISA 與 iDeCo 帳戶自動配置建議</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Case 3 -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 bento-shadow flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-pink-100 text-pink-600 flex justify-center items-center text-xl">🧠</div>
+                        <h3 class="text-xl font-bold text-slate-800">情緒價值測驗</h3>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-blue-600 text-lg">EmoSync AI</h4>
+                        <p class="text-slate-500 text-sm">每日心理狀態追蹤與教練</p>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        本地運行 Whisper 語音轉文字。分析語氣頻譜檢測焦慮。脆弱時刻數據絕不上傳伺服器。
+                    </p>
+                    <div class="mt-auto bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-2">在地化痛點</div>
+                        <ul class="text-xs text-slate-600 space-y-1.5">
+                            <li><strong class="text-slate-800">台：</strong>結合星座與人類圖的神祕學深度解析</li>
+                            <li><strong class="text-slate-800">美：</strong>自我優化工具，強調生產力與韌性</li>
+                            <li><strong class="text-slate-800">日：</strong>解決社會高壓孤獨，AI語氣需謙卑</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-slate-200 flex justify-between text-slate-400 text-sm font-medium">
+                <span>Use Cases & Markets</span>
+                <span>Page 04</span>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 5: Practical Cases (Bottom) ================= -->
+        <section class="page bg-slate-50">
+            <header class="mb-8">
+                <div class="inline-block bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-bold tracking-wide mb-3">實戰指南 Part 2</div>
+                <h2 class="text-4xl font-black text-slate-800 tracking-tight">領域實戰提案 (下)</h2>
+            </header>
+
+            <div class="grid grid-cols-3 gap-6 flex-grow">
+                <!-- Case 4 -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 bento-shadow flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex justify-center items-center text-xl">📝</div>
+                        <h3 class="text-xl font-bold text-slate-800">文書類工具</h3>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-indigo-600 text-lg">StructureNote AI</h4>
+                        <p class="text-slate-500 text-sm">結構化 Markdown 與 AI 輔助</p>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        完全離線 Markdown 編輯器。內建 WebLLM 語法優化與結構分析，建立本地「文獻 RAG 庫」無須聯網。
+                    </p>
+                    <div class="mt-auto bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-2">在地化痛點</div>
+                        <ul class="text-xs text-slate-600 space-y-1.5">
+                            <li><strong class="text-slate-800">台：</strong>繁簡轉換、注音/倉頡優化、學術校對</li>
+                            <li><strong class="text-slate-800">美：</strong>對接 GitHub/Vercel，支持 Vibe Coding</li>
+                            <li><strong class="text-slate-800">日：</strong>高品質「縦書き」預覽與商務信函範本</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Case 5 -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 bento-shadow flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-fuchsia-100 text-fuchsia-600 flex justify-center items-center text-xl">🎨</div>
+                        <h3 class="text-xl font-bold text-slate-800">設計類工具</h3>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-indigo-600 text-lg">VectorFlow AI</h4>
+                        <p class="text-slate-500 text-sm">向量圖生成與 SVG 優化</p>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        不生成像素圖，利用本地小型模型生成 SVG「代碼」。權重極小，瀏覽器端進行數學路徑平滑化。
+                    </p>
+                    <div class="mt-auto bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-2">風格偏好</div>
+                        <ul class="text-xs text-slate-600 space-y-1.5">
+                            <li><strong class="text-slate-800">台：</strong>電商 Banner，鮮豔奪目「台灣美學」</li>
+                            <li><strong class="text-slate-800">美：</strong>SaaS 落地頁，極簡、扁平、高度抽象</li>
+                            <li><strong class="text-slate-800">日：</strong>社群素材，「Kawaii」細線條、粉嫩色</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Case 6 -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 bento-shadow flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex justify-center items-center text-xl">🔒</div>
+                        <h3 class="text-xl font-bold text-slate-800">免安裝通訊軟體</h3>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-bold text-indigo-600 text-lg">GhostMeet</h4>
+                        <p class="text-slate-500 text-sm">絕對隱私的 P2P 視訊</p>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        純 WebRTC P2P 連結。背景模糊、降噪與語音摘要皆於邊緣運算完成，伺服器僅負責信令匹配。
+                    </p>
+                    <div class="mt-auto bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <div class="text-xs font-bold text-slate-400 uppercase mb-2">企業合規價值</div>
+                        <ul class="text-xs text-slate-600 space-y-1.5">
+                            <li><strong class="text-slate-800">台：</strong>遠端醫療/法律，符合個資法本地存證</li>
+                            <li><strong class="text-slate-800">美：</strong>鎖定數位游牧者與隱私極端主義者</li>
+                            <li><strong class="text-slate-800">日：</strong>生成符合企業規範的議事錄，提示禮儀</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-slate-200 flex justify-between text-slate-400 text-sm font-medium">
+                <span>Use Cases & Markets</span>
+                <span>Page 05</span>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 6: Financials ================= -->
+        <section class="page">
+            <header class="mb-8">
+                <h2 class="text-4xl font-black text-slate-800 tracking-tight">首月損益平衡推演</h2>
+                <p class="text-xl text-slate-500 font-medium mt-2">以「VaultFinance Local」為例，展現零邊際成本威力</p>
+            </header>
+
+            <div class="flex-grow flex flex-col gap-8 justify-center">
+                
+                <!-- Timeline Grid -->
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 relative bento-shadow">
+                        <div class="absolute -top-3 left-5 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">第一週</div>
+                        <h4 class="font-bold text-slate-800 mt-2 mb-2">MVP 開發與部署</h4>
+                        <p class="text-sm text-slate-600">使用 Vercel 或 Cloudflare Pages 靜態託管。整合 WebGPU 確保 CSV 解析模型緩存於 IndexedDB。</p>
+                    </div>
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 relative bento-shadow">
+                        <div class="absolute -top-3 left-5 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">第二週</div>
+                        <h4 class="font-bold text-slate-800 mt-2 mb-2">跨國金流與稅務</h4>
+                        <p class="text-sm text-slate-600">使用 Lemon Squeezy (MoR) 自動處理全球 100+ 國銷售稅。實作台美日貨幣自動換算 API。</p>
+                    </div>
+                    <div class="bg-white border-2 border-slate-100 rounded-2xl p-5 relative bento-shadow">
+                        <div class="absolute -top-3 left-5 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">第三週</div>
+                        <h4 class="font-bold text-slate-800 mt-2 mb-2">在地化行銷滲透</h4>
+                        <p class="text-sm text-slate-600">PTT/Dcard (台)、Reddit/Product Hunt (美)、Note.com/X (日) 內容行銷，強調無痕管理。</p>
+                    </div>
+                    <div class="bg-slate-900 border-2 border-slate-900 rounded-2xl p-5 relative bento-shadow">
+                        <div class="absolute -top-3 left-5 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">第四週</div>
+                        <h4 class="font-bold text-white mt-2 mb-2">獲利精算與平衡</h4>
+                        <p class="text-sm text-slate-300">標準訂閱 $19 USD/月。首月約需 <strong class="text-emerald-400">6 名</strong> 用戶即可打平固定成本，<strong class="text-emerald-400">285 名</strong> 可覆蓋期望薪資。</p>
+                    </div>
+                </div>
+
+                <!-- Financial Table -->
+                <div class="bg-white rounded-3xl p-8 border border-slate-200 bento-shadow">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="w-2 h-6 bg-blue-500 rounded-full inline-block"></span>
+                        一人公司基礎設施成本結構
+                    </h3>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-slate-100 text-sm">
+                                <th class="pb-3 font-medium">費用項目</th>
+                                <th class="pb-3 font-medium">成本 (月)</th>
+                                <th class="pb-3 font-medium">說明</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-700">
+                            <tr class="border-b border-slate-50">
+                                <td class="py-4 font-semibold text-slate-800">靜態主機託管</td>
+                                <td class="py-4">$0 - $20</td>
+                                <td class="py-4 text-slate-500">利用 Cloudflare Pages 等邊緣網絡服務</td>
+                            </tr>
+                            <tr class="border-b border-slate-50">
+                                <td class="py-4 font-semibold text-slate-800">AI 模型推論費</td>
+                                <td class="py-4 text-emerald-600 font-bold">$0 (零邊際成本)</td>
+                                <td class="py-4 text-slate-500">100% 用戶瀏覽器硬體運算</td>
+                            </tr>
+                            <tr class="border-b border-slate-50">
+                                <td class="py-4 font-semibold text-slate-800">數據庫維護費</td>
+                                <td class="py-4 text-emerald-600 font-bold">$0</td>
+                                <td class="py-4 text-slate-500">數據存儲於用戶本地 IndexedDB</td>
+                            </tr>
+                            <tr class="border-b border-slate-50">
+                                <td class="py-4 font-semibold text-slate-800">跨國金流服務</td>
+                                <td class="py-4">5% + $0.5 / 筆</td>
+                                <td class="py-4 text-slate-500">Lemon Squeezy 處理全球稅務合規 (MoR)</td>
+                            </tr>
+                            <tr>
+                                <td class="py-4 font-semibold text-slate-800">域名與基礎設施</td>
+                                <td class="py-4">$10 - $15</td>
+                                <td class="py-4 text-slate-500">網域年費攤平後之成本</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-blue-50">
+                                <td class="py-4 px-4 font-black text-blue-900 rounded-l-xl">總固定成本預估</td>
+                                <td class="py-4 px-4 font-black text-blue-700 text-lg">約 $100 USD</td>
+                                <td class="py-4 px-4 text-blue-800 text-sm rounded-r-xl">極低門檻，利於快速實現正向現金流。</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            </div>
+            
+            <div class="mt-auto pt-6 border-t border-slate-200 flex justify-between text-slate-400 text-sm font-medium">
+                <span>Financial Projections</span>
+                <span>Page 06</span>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 7: Conclusion & Cross-Border ================= -->
+        <section class="page">
+            <header class="mb-8">
+                <h2 class="text-4xl font-black text-slate-800 tracking-tight">綜合洞察：跨國市場的文化競爭力</h2>
+                <p class="text-xl text-slate-500 font-medium mt-2">最大的武器不是算力，而是「對在地用戶痛點的共情力」</p>
+            </header>
+
+            <div class="flex-grow flex flex-col justify-between">
+                
+                <div class="grid grid-cols-3 gap-8 mb-10">
+                    <!-- Japan -->
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl">🇯🇵</span>
+                            <h3 class="text-2xl font-bold text-slate-800 border-b-2 border-red-500 pb-1">日本市場</h3>
+                        </div>
+                        <h4 class="font-bold text-slate-700 mb-2">信任與品牌忠誠度</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            軟體 UI 必須極度細緻且無誤，任何翻譯錯誤都會導致信任崩塌。但一旦建立信任，用戶續訂率全球最高。應考慮與 LINE 等在地生態系整合符合消費習慣。
+                        </p>
+                    </div>
+                    
+                    <!-- US -->
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl">🇺🇸</span>
+                            <h3 class="text-2xl font-bold text-slate-800 border-b-2 border-blue-600 pb-1">美國市場</h3>
+                        </div>
+                        <h4 class="font-bold text-slate-700 mb-2">效率與「反巨頭」情緒</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            正處於對大型科技公司監管數據的不信任期。強調「No Cloud, No Trace」能精確擊中重視數位主權的早期採用者。產品應追求極簡的 One-Click 解決方案。
+                        </p>
+                    </div>
+
+                    <!-- Taiwan -->
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span class="text-3xl">🇹🇼</span>
+                            <h3 class="text-2xl font-bold text-slate-800 border-b-2 border-emerald-500 pb-1">台灣市場</h3>
+                        </div>
+                        <h4 class="font-bold text-slate-700 mb-2">高靈活性與情感聯結</h4>
+                        <p class="text-slate-600 text-sm leading-relaxed">
+                            新技術接受度高且社群傳播力強。可透過 Dcard / PTT 建立情感連結。對「高 CP 值」敏感，強調「買一個工具省下無數 API 費用」是極佳行銷切入點。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Final Blockquote -->
+                <div class="bg-gradient-to-r from-blue-900 to-slate-900 rounded-3xl p-10 text-center bento-shadow relative overflow-hidden mt-auto">
+                    <!-- Glow effect -->
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC4wNSkiLz48L3N2Zz4=')] opacity-30"></div>
+                    
+                    <h3 class="text-2xl md:text-3xl font-bold text-white leading-relaxed relative z-10">
+                        「這不僅是一場技術革命，<br>更是一場關於<span class="text-blue-400">商業主權</span>的解放。」
+                    </h3>
+                    <p class="text-blue-200 mt-6 max-w-2xl mx-auto relative z-10 font-medium">
+                        透過 Web AI，創作者終於可以將軟體毛利重新掌握在手中，<br>在全球市場的細分裂縫中，構建穩定且可持續的訂閱帝國。
+                    </p>
+                </div>
+
+            </div>
+            
+            <div class="mt-auto pt-6 flex justify-between text-slate-400 text-sm font-medium">
+                <span>End of Report</span>
+                <span>Page 07</span>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Interactive Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editBtn = document.getElementById('editBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const printBtn = document.getElementById('printBtn');
+            const documentWrapper = document.getElementById('document-wrapper');
+
+            let isEditing = false;
+
+            // 1. Toggle Edit Mode
+            editBtn.addEventListener('click', () => {
+                isEditing = !isEditing;
+                if (isEditing) {
+                    documentWrapper.setAttribute('contenteditable', 'true');
+                    // Change Button Appearance
+                    editBtn.innerHTML = '💾 結束編輯';
+                    editBtn.classList.remove('bg-slate-100', 'text-slate-700');
+                    editBtn.classList.add('bg-blue-100', 'text-blue-700', 'ring-2', 'ring-blue-400');
+                    
+                    // Focus the first heading to indicate editing is active
+                    const firstHeading = documentWrapper.querySelector('h1');
+                    if(firstHeading) firstHeading.focus();
+                } else {
+                    documentWrapper.setAttribute('contenteditable', 'false');
+                    // Revert Button Appearance
+                    editBtn.innerHTML = '✏️ 編輯內容';
+                    editBtn.classList.remove('bg-blue-100', 'text-blue-700', 'ring-2', 'ring-blue-400');
+                    editBtn.classList.add('bg-slate-100', 'text-slate-700');
+                }
+            });
+
+            // 2. Export / Print PDF
+            printBtn.addEventListener('click', () => {
+                // If editing, close edit mode before printing to remove dashed borders
+                if (isEditing) editBtn.click();
+                setTimeout(() => window.print(), 100);
+            });
+
+            // 3. Save as HTML
+            saveBtn.addEventListener('click', () => {
+                // Temporarily disable edit mode to save a clean file
+                const wasEditing = isEditing;
+                if (isEditing) editBtn.click();
+
+                // Get complete HTML
+                const htmlContent = document.documentElement.outerHTML;
+                
+                // Create Blob
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create temporary link and trigger download
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Generate filename with date
+                const date = new Date();
+                const dateString = date.getFullYear() + 
+                                  String(date.getMonth() + 1).padStart(2, '0') + 
+                                  String(date.getDate()).padStart(2, '0');
+                a.download = `Report_${dateString}.html`;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    // Restore edit mode if it was active
+                    if (wasEditing) editBtn.click();
+                }, 0);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>迴圈工程 (Loop Engineering) 的興起：從撰寫提示詞到設計自主寫程式迴圈 | KLIO. REPORT</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Desktop Redirect Script -->
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260616_loop_engineering.html';
+        }
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --accent: #6366f1; /* Indigo for loops */
+            --accent-cyan: #06b6d4; /* Cyan for AI & technology */
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --accent-cyan-glow: rgba(6, 182, 212, 0.15);
+            --bg-base: #05070a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(99, 102, 241, 0.1);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14pt !important;
+            line-height: 1.6;
+        }
+
+        /* 頂部進度條 */
+        .progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #0b0d14;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* 頂部導航列 */
+        .top-nav {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            z-index: 90;
+            background: rgba(5, 7, 10, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #fff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .category-tag {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--accent-cyan);
+            letter-spacing: 0.05em;
+        }
+
+        /* 橫向滾動選單 (Tab Navigation) */
+        .tab-nav-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background: rgba(5, 7, 10, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 89;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 16px;
+        }
+
+        .tab-nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            margin-right: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* 內容容器 */
+        .article-body {
+            padding: 120px 18px 80px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .date-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 950;
+            color: #fff;
+            line-height: 1.35;
+            margin-bottom: 12px;
+        }
+
+        .intro-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* 模組卡片結構 */
+        .module-section {
+            display: none;
+        }
+
+        .module-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .module-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .module-num {
+            font-size: 0.7rem;
+            font-weight: 900;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .module-num.cyan {
+            background: var(--accent-cyan-glow);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        <h2> {
+            font-size: 1.2rem;
+            font-weight: 850;
+            color: #fff;
+            line-height: 1.35;
+        }
+
+        .sub-instructor {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Bento 元素改裝為行動端 Card */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-card.highlight {
+            border-color: rgba(99, 102, 241, 0.3);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .info-card.highlight-cyan {
+            border-color: rgba(6, 182, 212, 0.3);
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--accent-cyan);
+        }
+
+        .card-title.indigo-icon i {
+            color: var(--accent);
+        }
+
+        /* 內文 14pt (與 body 一致) */
+        .card-desc {
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* 列表樣式 */
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 14px;
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        .bullet-list.indigo-bullet li::before {
+            color: var(--accent);
+        }
+
+        /* 小字安全覆蓋，避免破版 */
+        .text-2xs, .text-xs, .sub-text, .legend-text {
+            font-size: 10pt !important;
+            line-height: 1.4 !important;
+        }
+        
+        .text-sm {
+            font-size: 11pt !important;
+            line-height: 1.4 !important;
+        }
+
+        /* 快切導航 */
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 32px;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .btn-action.primary-cyan {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 4px 12px var(--accent-cyan-glow);
+        }
+
+        .back-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: #fff;
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-decoration: none;
+            margin-top: 40px;
+        }
+
+        /* 程式碼樣式 */
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin: 4px 0;
+            overflow-x: auto;
+        }
+        code {
+            font-family: monospace;
+            font-size: 9.5pt !important;
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 頂部進度條 -->
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- 頂部導航 -->
+    <nav class="top-nav">
+        <div class="logo-text">LOOP ENGINEERING</div>
+        <div class="category-tag">● AI 軟體工程</div>
+    </nav>
+
+    <!-- 模組快速導航 Tab 欄 -->
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 概念對照</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 六大組件</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 實施評估</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 技術風險</button>
+        <button class="tab-btn" onclick="switchModule(5)">5. 實踐步驟</button>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="article-body">
+        <span class="date-tag">June 16, 2026</span>
+        <h1>迴圈工程 (Loop Engineering) 的興起：從撰寫提示詞到設計自主寫程式迴圈</h1>
+        <p class="intro-text">解析 2026 頂尖工程師為何不再寫提示詞，而是設計「會自己迭代、自檢、自我修復」的 AI 寫程式迴圈。拆解六大組件與三大風險。</p>
+
+        <!-- ==================== MODULE 1 ==================== -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>概念對照：提示工程 vs 迴圈工程</h2>
+                <div class="sub-instructor">從「給代理一道指令」到「給代理一份工作」</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title indigo-icon"><i class="ph-bold ph-git-branch"></i>迴圈工程的定義</div>
+                <p class="card-desc">把「負責提示 AI 的你」換成一套自動執行、檢驗並迭代的系統。你只設計這套系統一次，之後它就自主運轉。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-arrows-clockwise"></i>概念演進與差異</div>
+                <ul class="bullet-list">
+                    <li><strong>提示工程 (Prompting)：</strong>語言能力導向。單次輸出，手動除錯，人是回饋迴圈。口號是「幫我寫一個函式」。</li>
+                    <li><strong>迴圈工程 (Looping)：</strong>軟體工程導向。系統自跑、自檢、自修。口號是「寫出程式碼、自動測試、修到通過為止」。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary-cyan" onclick="switchModule(2)">下一單元：六大組件 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 2 ==================== -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num cyan">MODULE 2</span>
+                <h2>迴圈工程的六大核心組件</h2>
+                <div class="sub-instructor">支撐自主寫程式的六大技術支柱</div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title indigo-icon"><i class="ph-bold ph-activity"></i>1. 自動化 (Automations)</div>
+                <p class="card-desc">迴圈心跳。定義提示與頻率，讓代理持續重跑（如 <code>/loop</code> 或 <code>/goal</code>），直到指定測試全數通過。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-folder-open"></i>2. 工作樹 (Worktree)</div>
+                <p class="card-desc">環境隔離。透過 <code>git worktree</code> 給每個代理分配獨立的分支與目錄，防止多代理平行運作時產生代碼衝突。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title indigo-icon"><i class="ph-bold ph-book-open"></i>3. 技能 (Skills)</div>
+                <p class="card-desc">經驗固化。透過 <code>SKILL.md</code> 固化專案慣例、除錯歷史、建置和測試命令，避免代理每次重啟都重新熟絡專案。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-plugs"></i>4. 連接器 (Connectors)</div>
+                <p class="card-desc">工具觸達。利用 MCP 協定，讓代理直接存取 Jira/Linear 看板、查詢資料庫、戳 API，並在 Slack 上拋通知。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title indigo-icon"><i class="ph-bold ph-users-three"></i>5. 子代理 (Sub-agents)</div>
+                <p class="card-desc">評估與優化（Evaluator-Optimizer）。引入獨立子代理進行客觀審查，打破原代理「對自己代碼太過寬容」的盲點。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-database"></i>6. 記憶 (Memory)</div>
+                <p class="card-desc">狀態保存。將任務進度（已做/待做）寫入 markdown 或 Linear。對話會結束，但 Git 倉庫永遠保存記憶。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-cyan" onclick="switchModule(3)">下一單元：實施評估 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 3 ==================== -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num cyan">MODULE 3</span>
+                <h2>MVP 零件與實施評估</h2>
+                <div class="sub-instructor">我需要建迴圈嗎？最小可行性評估</div>
+            </div>
+
+            <div class="info-card highlight-cyan">
+                <div class="card-title"><i class="ph-bold ph-wrench"></i>最小可行迴圈的 4 個零件</div>
+                <ul class="bullet-list">
+                    <li><strong>自動化與排程：</strong>遇到明確條件就停的排程執行。</li>
+                    <li><strong>技能 (SKILL.md)：</strong>存放專案脈絡，避免重新摸索。</li>
+                    <li><strong>狀態檔：</strong>以 markdown 檔記錄進度，讓明日「續跑」。</li>
+                    <li><strong>客觀關卡 (Gate)：</strong>自動擋下爛輸出的測試或型別檢查。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-list-checks"></i>實施迴圈的 4 個硬性條件</div>
+                <ul class="bullet-list">
+                    <li><strong>重複性：</strong>這件事至少每週重複發生一次。</li>
+                    <li><strong>驗證可自動化：</strong>擁有「沒有你在場也能判定不及格」的客觀指標（如測試）。</li>
+                    <li><strong>Token 預算足夠：</strong>迴圈會反覆讀取與探索，極燒 Token（單次 5~20 萬）。</li>
+                    <li><strong>資深開發者級工具：</strong>代理具備 logs 檢視與代碼執行環境。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-cyan" onclick="switchModule(4)">下一單元：技術風險 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 4 ==================== -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num">MODULE 4</span>
+                <h2>迴圈不會幫你扛的三個風險</h2>
+                <div class="sub-instructor">隨著迴圈成熟，越尖銳的人為挑戰</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title indigo-icon"><i class="ph-bold ph-warning"></i>1. Ralph Wiggum 迴圈 (無聲失敗)</div>
+                <p class="card-desc">代理在出錯或半成品狀態下，錯誤發出「已完成」信號使迴圈退出，導致無聲失敗並持續燒 token。必須有客觀 Gate 擋下。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title indigo-icon"><i class="ph-bold ph-book-open"></i>2. 理解債 (Comprehension Debt)</div>
+                <p class="card-desc">迴圈交付代碼太快。當你和倉庫裡的真實代碼落差過大，未來除錯代價將極度慘痛。唯一解法：堅持親自閱讀 diff。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title indigo-icon"><i class="ph-bold ph-brain-slash"></i>3. 認知投降 (Cognitive Surrender)</div>
+                <p class="card-desc">自動化跑起來後，開發者容易放棄自主判斷，全盤接收代理拋回的產出。迴圈分不出好壞，但工程師必須分得出。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-cyan" onclick="switchModule(5)">下一單元：實踐步驟 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 5 ==================== -->
+        <div class="module-section" id="module-5">
+            <div class="module-header">
+                <span class="module-num cyan">MODULE 5</span>
+                <h2>迴圈工程師的實踐步驟</h2>
+                <div class="sub-instructor">如何務實、循序漸進地建立你的寫程式迴圈</div>
+            </div>
+
+            <div class="info-card highlight-cyan">
+                <div class="card-title"><i class="ph-bold ph-steps"></i>循序漸進的建置順序</div>
+                <ul class="bullet-list">
+                    <li><strong>第 1 步：穩定單次手動。</strong>先讓單次指令的輸出穩定、可靠。</li>
+                    <li><strong>第 2 步：包裝技能。</strong>寫好 <code>SKILL.md</code>，將探索過的脈絡與地雷規律固化下來。</li>
+                    <li><strong>第 3 步：建立迴圈與自動 Gate。</strong>當有了 100% 可信賴的測試或編譯驗證機制後，才開放給迴圈自動化運行與排程。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-info"></i>結論與思維</div>
+                <p class="card-desc">「建你的迴圈，但要像一個打算『繼續當工程師』的人那樣建，而不是只當那個按下執行鍵的人。」</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(4)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <a href="../index.html" class="back-home">
+            返回首頁 <i class="ph-bold ph-house-line"></i>
+        </a>
+    </div>
+
+    <!-- JS 邏輯 -->
+    <script>
+        // 進度條控制
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        // 模組切換邏輯
+        function switchModule(moduleNum) {
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

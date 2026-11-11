@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>未來 2 年，一半的 PM 將被淘汰？| KLIO. REPORT</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260701_pm_ai_disruption.html';
+        }
+    </script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --accent: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-indigo: #6366f1;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --accent-blue-glow: rgba(59, 130, 246, 0.15);
+            --bg-base: #06050a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(139, 92, 246, 0.1);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14pt !important;
+            line-height: 1.6;
+        }
+
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #0b0d14; z-index: 100; }
+        .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s ease-out; }
+
+        .top-nav {
+            position: fixed; top: 3px; left: 0; width: 100%; z-index: 90;
+            background: rgba(6, 5, 10, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color); padding: 14px 16px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo-text { font-size: 0.75rem; font-weight: 850; color: #fff; letter-spacing: 0.1em; text-transform: uppercase; }
+        .category-tag { font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 0.05em; }
+
+        .tab-nav-container {
+            position: fixed; top: 50px; left: 0; width: 100%;
+            background: rgba(6, 5, 10, 0.95); border-bottom: 1px solid var(--border-color);
+            z-index: 89; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 10px 16px;
+        }
+        .tab-nav-container::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            display: inline-block; padding: 6px 14px; margin-right: 8px;
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color);
+            border-radius: 9999px; cursor: pointer; transition: all 0.2s ease;
+        }
+        .tab-btn.active { color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .article-body { padding: 120px 18px 80px; max-width: 640px; margin: 0 auto; }
+        .date-tag { font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 6px; display: block; }
+        h1 { font-size: 1.4rem; font-weight: 950; color: #fff; line-height: 1.35; margin-bottom: 12px; }
+        .intro-text { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+
+        .module-section { display: none; }
+        .module-section.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .module-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .module-num {
+            font-size: 0.7rem; font-weight: 900; background: var(--accent-glow); color: var(--accent);
+            padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 6px; border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+        .module-num.blue { background: var(--accent-blue-glow); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3); }
+        h2 { font-size: 1.2rem; font-weight: 850; color: #fff; line-height: 1.35; }
+        .sub-instructor { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+        .info-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .info-card.highlight { border-color: rgba(139, 92, 246, 0.3); background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%); }
+        .info-card.highlight-blue { border-color: rgba(59, 130, 246, 0.3); background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%); }
+
+        .card-title { font-size: 0.95rem; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .card-title i { color: var(--accent); }
+        .card-desc { font-size: 14pt !important; color: var(--text-muted); line-height: 1.5; }
+
+        .bullet-list { list-style: none; padding: 0; margin-top: 10px; }
+        .bullet-list li { position: relative; padding-left: 14px; font-size: 14pt !important; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; }
+        .bullet-list li::before { content: "•"; position: absolute; left: 0; color: var(--accent); font-weight: bold; }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .stat-card {
+            background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 12px; padding: 14px; text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
+        .stat-label { font-size: 10pt !important; color: var(--text-muted); margin-top: 4px; }
+
+        .text-2xs, .text-xs, .sub-text { font-size: 10pt !important; line-height: 1.4 !important; }
+        .text-sm { font-size: 11pt !important; line-height: 1.4 !important; }
+
+        .nav-actions { display: flex; gap: 10px; margin-top: 32px; }
+        .btn-action {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 14px; background: rgba(255, 255, 255, 0.03); color: #fff;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-action.primary { background: var(--accent); border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-glow); }
+        .btn-action.primary-blue { background: var(--accent-blue); border-color: var(--accent-blue); }
+
+        .back-home {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 14px; background: #fff; color: #000;
+            border-radius: 12px; font-size: 0.85rem; font-weight: 800; text-decoration: none; margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+
+    <nav class="top-nav">
+        <div class="logo-text">PM × AI DISRUPTION</div>
+        <div class="category-tag">● AI 產業衝擊</div>
+    </nav>
+
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 核心觀點</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 價值遷移</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 企業應用</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 啟示未來</button>
+    </div>
+
+    <div class="article-body">
+        <span class="date-tag">AI Industry Disruption · 2026-07-01</span>
+        <h1>未來 2 年，一半的 PM 將被淘汰？比寫 PRD 更值錢的是「場景想像力」</h1>
+        <p class="intro-text">寓意科技執行長施政源指出：不用 AI 的 PM 將會被淘汰。PM 的價值正從流程管理移轉到「做對的事」與「場景想像力」。</p>
+
+        <!-- 數據總覽 -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-value">2/3</div>
+                <div class="stat-label">PM 人數縮減比例</div>
+            </div>
+            <div class="stat-card" style="border-color: rgba(59, 130, 246, 0.15);">
+                <div class="stat-value" style="color: var(--accent-blue);">3x</div>
+                <div class="stat-label">使用 AI 的速度差距</div>
+            </div>
+            <div class="stat-card" style="border-color: rgba(99, 102, 241, 0.15);">
+                <div class="stat-value" style="color: var(--accent-indigo);">1-2 天</div>
+                <div class="stat-label">PRD 完成時間</div>
+            </div>
+            <div class="stat-card" style="border-color: rgba(168, 85, 247, 0.15);">
+                <div class="stat-value" style="color: #a855f7;">數小時</div>
+                <div class="stat-label">可運作原型產出</div>
+            </div>
+        </div>
+
+        <!-- MODULE 1 -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>核心觀點：PM 角色巨變</h2>
+                <div class="sub-instructor">施政源 · 寓意科技執行長</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-lightning"></i>不用 AI 的 PM 將被淘汰</div>
+                <p class="card-desc">未來兩年內不用 AI 的 PM 將會被淘汰。以往 PM 花大量時間在撰寫 PRD、線稿繪製與甘特圖等流程控制工作，現在大多可被 AI 自動化取代。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-compass"></i>價值轉移方向</div>
+                <p class="card-desc">PM 真正的價值正從「把事做對」的產出與流程管理，移轉到「做對的事」、掌舵以及「勾勒場景的想像力」。</p>
+            </div>
+
+            <div class="info-card highlight-blue">
+                <div class="card-title"><i class="ph-bold ph-quotes"></i>專訪觀點</div>
+                <p class="card-desc" style="font-style:italic;">「AI 能讓個人承擔的範疇變得更大，但也需注意 work-life integration 中自我調節停下來的能力。」</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary" onclick="switchModule(2)">下一單元：價值遷移 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- MODULE 2 -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num">MODULE 2</span>
+                <h2>PM 價值遷移：Before vs After</h2>
+                <div class="sub-instructor">從 Do things right → Do the right things</div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-clipboard-text"></i>Before AI：流程控制</div>
+                <ul class="bullet-list">
+                    <li>撰寫 PRD 產品需求文件</li>
+                    <li>繪製線稿 Wireframe</li>
+                    <li>管理甘特圖排程</li>
+                    <li>1-1.5 個月需求定稿週期</li>
+                    <li>靜態需求確認流程</li>
+                </ul>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-rocket-launch"></i>After AI：場景想像力</div>
+                <ul class="bullet-list">
+                    <li><strong>勾勒使用場景想像力</strong></li>
+                    <li>AI 底稿 → 數小時產出可運作原型</li>
+                    <li>掌舵產品方向決策</li>
+                    <li>1-2 天完成需求定稿</li>
+                    <li>可運作原型即時確認</li>
+                </ul>
+            </div>
+
+            <div class="info-card highlight-blue">
+                <div class="card-title"><i class="ph-bold ph-code"></i>Vibe Coding 部門</div>
+                <p class="card-desc">寓意科技於 2025 年 12 月成立「氛圍編程」部門，打破工程師與 PM 的角色界線。未來標準是「是否能交付對的成果」。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(3)">下一單元：企業應用 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- MODULE 3 -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num blue">MODULE 3</span>
+                <h2>企業 AI 導入實務</h2>
+                <div class="sub-instructor">中南部製造業的 AI 改造</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-database"></i>AI Ready Data 先決條件</div>
+                <p class="card-desc">企業導入 AI 的核心基礎是資料整理。必須將散落各系統的數據彙整至中台，轉化為 AI 讀得懂的格式，才能讓 AI Agent 準確回答庫存與供應鏈風險。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-arrows-left-right"></i>從交付專案到陪跑改造</div>
+                <p class="card-desc">客戶需求已從傳統「交付單一專案」升級為「陪跑進行組織 AI 改造」，成為企業長期的 AI 轉型夥伴。</p>
+            </div>
+
+            <div class="info-card highlight-blue">
+                <div class="card-title"><i class="ph-bold ph-users-three"></i>角色界線模糊化</div>
+                <p class="card-desc">AI 的普及使得工程師、設計師與 PM 的角色界線日益模糊。未來的評估標準是「是否能交付對的成果」，而非傳統的職能分工。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-blue" onclick="switchModule(4)">下一單元：啟示未來 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- MODULE 4 -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num blue">MODULE 4</span>
+                <h2>啟示與未來展望</h2>
+                <div class="sub-instructor">AI 算力即基礎設施的時代</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-target"></i>場景想像力 > PRD 撰寫</div>
+                <p class="card-desc">AI 可以寫 PRD，但無法想像還沒被定義的使用場景。勾勒出「未來可能」的能力是 PM 無可取代的核心價值。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-arrows-out"></i>Cover Range 擴大</div>
+                <p class="card-desc">一個人可以做三個人的事，但需要學會自我調節「何時停下來」。效率暴增的同時，work-life integration 的自我管理比以往更重要。</p>
+            </div>
+
+            <div class="info-card highlight-blue">
+                <div class="card-title"><i class="ph-bold ph-factory"></i>不用 AI 的差距只會越拉越大</div>
+                <p class="card-desc">在 AI 算力即為基礎設施的時代，不使用 AI 的企業其競爭力將與別人的差距越拉越大。PM 不會消失，只是被推向更高維度的系統設計與成果審查。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-rocket"></i>核心結論</div>
+                <p class="card-desc">工作者無需懼怕被取代。AI 是放大個人能力的槓桿，而非替代品。關鍵在於是否能從「執行者」進化為「場景設計者」。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <a href="../index.html" class="back-home">返回首頁 <i class="ph-bold ph-house-line"></i></a>
+    </div>
+
+    <script>
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        function switchModule(moduleNum) {
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

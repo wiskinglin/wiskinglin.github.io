@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【一人公司的終極型態】深度拆解 Designjoy | 趨勢報告</title>
+    <meta name="description" content="不開會、沒員工，Brett Williams 靠「設計訂閱制」年賺六千萬台幣的瘋狂變現術。深度拆解 Designjoy 的單人帝國商業模式。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f7f7f8;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --accent: #ff4747;
+            --card-bg: #ffffff;
+            --radius-large: 24px;
+            --radius-small: 12px;
+            --grid-gap: 24px;
+            --shadow-sm: 0 4px 20px rgba(0,0,0,0.03);
+            --shadow-hover: 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 40px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 60px;
+            align-items: start;
+        }
+
+        /* 雜誌編排風格 (Editorial Style) - 主文章區 */
+        .article-section {
+            background: var(--card-bg);
+            border-radius: var(--radius-large);
+            padding: 60px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            margin-bottom: 24px;
+            color: var(--text-main);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-weight: 300;
+        }
+
+        .gradient-line {
+            height: 4px;
+            width: 80px;
+            background: linear-gradient(90deg, var(--accent), #ff8a00);
+            margin-bottom: 40px;
+            border-radius: 2px;
+        }
+
+        .article-content h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 40px 0 20px;
+            letter-spacing: -0.01em;
+            position: relative;
+        }
+
+        .article-content p {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        .article-content ul {
+            margin-left: 20px;
+            margin-bottom: 24px;
+            font-size: 1.15rem;
+        }
+
+        .article-content li {
+            margin-bottom: 12px;
+        }
+
+        .article-content strong {
+            color: var(--accent);
+        }
+
+        /* 便當盒網格設計 (Bento Grid) - 數據側邊欄 */
+        .bento-sidebar {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--grid-gap);
+            position: sticky;
+            top: 60px;
+        }
+
+        .bento-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-large);
+            padding: 30px 24px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .bento-card.large {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #111 0%, #222 100%);
+            color: white;
+        }
+
+        .bento-card.large .bento-label {
+            color: #aaa;
+        }
+
+        .bento-card.accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .bento-card.accent .bento-label {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .bento-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 8px;
+        }
+
+        .bento-value small {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .bento-label {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* 參考資料 */
+        .references {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid #eee;
+        }
+
+        .references h4 {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #000;
+        }
+
+        .ref-item {
+            display: block;
+            padding: 16px;
+            background: #fcfcfc;
+            border: 1px solid #eee;
+            border-radius: var(--radius-small);
+            margin-bottom: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .ref-item:hover {
+            border-color: var(--accent);
+            background: #fffafa;
+        }
+
+        .ref-title {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .ref-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- 左側主文章 (Editorial Style) -->
+        <main class="article-section">
+            <h1 class="hero-title">【一人公司的終極型態】<br>不開會、沒員工，他靠「設計訂閱制」年賺六千萬台幣的瘋狂變現術！</h1>
+            <p class="hero-subtitle">深度拆解 Designjoy 與創辦人 Brett Williams 的單人帝國商業模式</p>
+            <div class="gradient-line"></div>
+
+            <article class="article-content">
+                <p>如果你是設計師或自由工作者，一定懂那種被客戶無限改稿、開會開到天荒地老的痛苦。但有個叫 Brett Williams 的神人，直接把這些業界的「潛規則」全部踢開。他在 2017 年創辦了 Designjoy，靠著獨創的<strong>「產品化服務」（Productized Service）</strong>，現在每年穩賺超過 200 萬美元（約 6,000 萬台幣）。</p>
+                <p>最狂的是，這間估值驚人的設計公司，從頭到尾都沒有實習生、沒有外包團隊，整間公司只有他自己「一個人」。今天就來為大家深度拆解這個在國內外獨立開發者圈子裡討論度爆表的超狂案例。</p>
+
+                <h3>從「週末斜槓」到「年入兩百萬美金」的單人帝國</h3>
+                <p>時間回到 2017 年，當時 Brett 還在當全職的上班族設計師。他只花了一個週末的 24 小時，就用超陽春的網頁架好 MVP 並直接上線。初期的定價非常親民，每個月只要 449 美元。</p>
+                <p>這樣「斜槓」了三年多，隨著口碑發酵，月經常性收入在 2021 年飆破 6 萬美金，這時他才正式把老闆開除，轉為全職經營。到了今天，他的收費已經徹底走向高端市場：</p>
+                <ul>
+                    <li><strong>標準方案 (Standard)</strong>：每月 4,995 美元。</li>
+                    <li><strong>專業方案 (Pro)</strong>：每月 7,995 美元（可同時進行兩個任務）。</li>
+                    <li><strong>服務範圍</strong>：涵蓋 UI/UX、App 介面、品牌識別與 Webflow 開發。</li>
+                </ul>
+
+                <h3>顛覆常理的「產品化服務」模式</h3>
+                <p>Designjoy 之所以能賺這麼多，關鍵在於把「無形的客製化服務」變成了「有形的標準化產品」：</p>
+                <ul>
+                    <li><strong>無會議政策：</strong>這是最具爭議的堅持。不講電話、不開視訊。所有溝通透過 Trello 進行，省下無效瞎聊，100% 專注產出。</li>
+                    <li><strong>無限次請求，但一次做一件：</strong>完美控管工作量，不會被突來的急件塞爆。</li>
+                    <li><strong>48 小時極速交付：</strong>大多數設計在兩天內交付初稿，是新創公司的救星。</li>
+                    <li><strong>隨時可以暫停：</strong>客戶若無需求，可隨時暫停訂閱，天數保留至未來使用，讓人心甘情願買單。</li>
+                </ul>
+
+                <h3>網路論壇的靈魂拷問：他怎麼可能忙得過來？</h3>
+                <p>一個人同時服務 35 家企業客戶，聽起來不可能。但真相是：<strong>他賣的不只是設計，而是「待機時間」。</strong></p>
+                <p>大老闆或企業內部審核流程慢，常花好幾天才給回饋。因為「一次只處理一個任務」，客戶審核時 Brett 其實在等他們。透過極致流程控管，他平均每天竟然只需要工作大約 <strong>5 小時</strong>。</p>
+
+                <h3>我們能學到的底層邏輯</h3>
+                <p>Brett 證明了「一人公司」不需要無止盡地擴張團隊，而是要極度優化工作流程。把專業技能打包成標準化的「訂閱制產品」，拒絕無效會議，設定絕對明確的服務邊界，這就是現代自由工作者最嚮往的終極變現模式。</p>
+            </article>
+
+            <!-- 參考文獻 -->
+            <section class="references">
+                <h4>參考資料與延伸閱讀</h4>
+                <a href="https://www.designjoy.co/" target="_blank" class="ref-item">
+                    <span class="ref-title">Designjoy 官方網站</span>
+                    <span class="ref-desc">Design as a Subscription 服務條款與方案定價說明</span>
+                </a>
+                <a href="https://www.youtube.com/watch?v=dXKzST0FE-A" target="_blank" class="ref-item">
+                    <span class="ref-title">I Make $1.3M/Year With One Skill (YouTube)</span>
+                    <span class="ref-desc">Brett 親自解析單一技能轉化為年收百萬美元的完整影片</span>
+                </a>
+                <a href="https://blog.startupstash.com/this-guy-makes-2m-per-year-and-keeps-all-the-money-036e5c67343c" target="_blank" class="ref-item">
+                    <span class="ref-title">Startup Stash 深度解析</span>
+                    <span class="ref-desc">探討其零員工、高毛利的商業結構</span>
+                </a>
+            </section>
+        </main>
+
+        <!-- 右側便當盒數據 (Bento Grid) -->
+        <aside class="bento-sidebar">
+            <div class="bento-card large">
+                <div class="bento-value">$2M+ <small>USD</small></div>
+                <div class="bento-label">Annual Revenue (年營收)</div>
+            </div>
+            
+            <div class="bento-card">
+                <div class="bento-value">1</div>
+                <div class="bento-label">Employee</br>(零外包)</div>
+            </div>
+
+            <div class="bento-card accent">
+                <div class="bento-value">0</div>
+                <div class="bento-label">Meetings</br>(不開會)</div>
+            </div>
+
+            <div class="bento-card">
+                <div class="bento-value">48<small>hrs</small></div>
+                <div class="bento-label">Delivery Time</br>(極速交付)</div>
+            </div>
+
+            <div class="bento-card">
+                <div class="bento-value">~35</div>
+                <div class="bento-label">Active Clients</br>(同時服務客戶)</div>
+            </div>
+
+            <div class="bento-card large" style="background: #fdf2f2; border: 1px solid #fee2e2;">
+                <div class="bento-value" style="color: var(--accent);">5<small>hrs</small> / day</div>
+                <div class="bento-label" style="color: #666;">Average Work Time</br>(極致優化工時)</div>
+            </div>
+        </aside>
+
+    </div>
+
+</body>
+</html>

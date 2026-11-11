@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>代理時代：養套殺劇本 | KLIO. REPORT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --accent: #34d399;
+            --bg-base: #0a0a0a;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base); 
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 16px; line-height: 1.8;
+            transition: background 0.8s ease;
+        }
+
+        body.theme-trap { --accent: #fbbf24; --bg-base: #111827; }
+        body.theme-kill { --accent: #ff4747; --bg-base: #0b0000; }
+
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #1a1a1a; z-index: 100; }
+        .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.1s ease-out, background 0.8s ease; }
+
+        .top-nav {
+            position: fixed; top: 3px; left: 0; width: 100%; z-index: 90;
+            background: rgba(10,10,10,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .article-body { padding: 80px 20px 60px; max-width: 640px; margin: 0 auto; }
+
+        .cover { width: calc(100% + 40px); margin: 0 -20px 32px; position: relative; aspect-ratio: 16/9; overflow: hidden; }
+        .cover img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        .cover-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(to top, var(--bg-base), transparent); }
+
+        h1 { font-size: 1.8rem; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 16px; }
+        h2 { font-size: 1.5rem; font-weight: 900; color: #fff; margin: 48px 0 24px; letter-spacing: -0.02em; }
+        h3 { font-size: 1.15rem; font-weight: 700; color: var(--accent); margin: 32px 0 12px; transition: color 0.8s ease; }
+        p { margin-bottom: 1.5rem; color: var(--text-muted); font-size: 1rem; }
+        ul { margin: 0 0 24px 20px; color: var(--text-muted); }
+        li { margin-bottom: 12px; font-size: 0.95rem; }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px 16px; text-align: center;
+            transition: all 0.8s ease;
+        }
+        .stat-num { font-size: 1.8rem; font-weight: 900; color: var(--accent); letter-spacing: -0.02em; transition: color 0.8s ease; }
+        .stat-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px; }
+
+        .trap-btn-container { margin: 40px 0; text-align: center; }
+        .trap-btn {
+            background: linear-gradient(135deg, #ff4747, #ff8a00);
+            color: white; border: none; padding: 20px 32px; font-size: 1.1rem; font-weight: 800;
+            border-radius: 14px; width: 100%; box-shadow: 0 10px 30px rgba(255, 71, 71, 0.3);
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        .trap-btn:disabled { background: #374151; box-shadow: none; opacity: 0.7; }
+
+        .locked-area { opacity: 0.1; filter: blur(20px); pointer-events: none; transition: all 2s ease; }
+        body.is-unlocked .locked-area { opacity: 1; filter: blur(0); pointer-events: auto; }
+
+        .info-card {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 24px; margin-bottom: 20px;
+        }
+        .highlight { color: var(--accent); font-weight: 700; transition: color 0.8s ease; }
+
+        .stage-tag {
+            display: inline-block; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--accent); border: 1px solid var(--accent);
+            padding: 4px 10px; border-radius: 6px; margin-bottom: 12px; transition: all 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+
+    <nav class="top-nav">
+        <div style="font-size:0.8rem;font-weight:700;color:#9ca3af;letter-spacing:0.05em;">KLIO. REPORT</div>
+        <div id="status-indicator" style="font-size:0.7rem; font-weight:900; color:var(--accent); transition: color 0.8s ease;">● NURTURE</div>
+    </nav>
+
+    <div class="article-body">
+        <div class="cover">
+            <img src="../../image/lobster_ai_housing_hero_1776846534131.png" alt="Cover">
+            <div class="cover-fade"></div>
+        </div>
+
+        <span class="stage-tag" id="stageTag">AI Agent Era</span>
+        <h1>龍蝦、AI 與新青安：<br>正在發生的「養套殺」劇本</h1>
+        
+        <p>你以為自己是站在浪潮上的衝浪客，其實我們都只是別人魚塭裡的龍蝦。</p>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-num" id="riskNum">15%</div>
+                <div class="stat-label">System Risk</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="depNum">Low</div>
+                <div class="stat-label">Dependency</div>
+            </div>
+        </div>
+
+        <section class="stage" data-theme="nurture">
+            <h2>一、 「養」：補貼戰</h2>
+            <p>數位巨頭正在燃燒美金，提供你幾近免費的服務。這不是慈善，而是<strong>數位魚塭的建設</strong>。</p>
+            
+            <h3>低利門票</h3>
+            <p>政府端出的 1.775% 利率與 5 年寬限期，本質上就是一種「金融補貼試用」。消弭戒心，讓你習慣高槓桿的生活。</p>
+            
+            <div class="trap-btn-container">
+                <button id="trapButton" class="trap-btn">領取限時補貼 (即將額滿)</button>
+            </div>
+        </section>
+
+        <div class="locked-area" id="lockedContent">
+            <section class="stage" data-theme="trap">
+                <h2>二、 「套」：依賴陷阱</h2>
+                <div class="info-card">
+                    <p>當整間公司的營運自動化都與特定 AI 綁定時，收網就開始了。限制次數、調漲費用，遷移成本高到讓你無法抽身。</p>
+                </div>
+                
+                <h3>流動性陷阱</h3>
+                <p>交屋潮迎來的是 <span class="highlight">銀行法 72-2</span> 的水位限縮。簽了約、付了頭款，貸款成數卻縮水。你被「鎖死」在鋼筋混凝土裡。</p>
+                
+                <div class="info-card" style="border-left: 3px solid var(--accent);">
+                    <p style="margin:0; font-size: 0.9rem;">「所謂自由，在依賴產生的那一刻就已消失。」</p>
+                </div>
+            </section>
+
+            <section class="stage" data-theme="kill">
+                <h2 style="color:#ff4747;">三、 「殺」：生存清算</h2>
+                <p>寬限期的鐘聲敲響，只需繳息的好日子結束。月付額從 2 萬噴發到 10 萬，現金流瞬間崩潰。</p>
+                
+                <div class="info-card">
+                    <p>當你撐不住斷頭出場，資產會以低價重回資本市場，等待下一波龍蝦。這是一場精確的財富重分配。</p>
+                </div>
+
+                <h3>生存指南</h3>
+                <ul>
+                    <li><strong>去中心化依賴：</strong>不押寶單一供應商。</li>
+                    <li><strong>保留現金流邊際：</strong>假設房貸增加 2 倍仍能存活。</li>
+                    <li><strong>掌握底層邏輯：</strong>掌握工具而非被工具掌握。</li>
+                </ul>
+            </section>
+        </div>
+        
+        <div style="height: 100px;"></div>
+    </div>
+
+    <script>
+        const trapBtn = document.getElementById('trapButton');
+        const statusInd = document.getElementById('status-indicator');
+        const riskNum = document.getElementById('riskNum');
+        const depNum = document.getElementById('depNum');
+        const progressBar = document.getElementById('progressBar');
+        let isUnlocked = false;
+
+        trapBtn.addEventListener('click', () => {
+            isUnlocked = true;
+            document.body.classList.add('is-unlocked');
+            trapBtn.textContent = '系統已核准 (鎖定中)';
+            trapBtn.disabled = true;
+            
+            setTimeout(() => {
+                document.querySelectorAll('.stage')[1].scrollIntoView({ behavior: 'smooth' });
+            }, 600);
+        });
+
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const theme = entry.target.getAttribute('data-theme');
+                    if (!isUnlocked && (theme !== 'nurture')) return;
+
+                    document.body.className = '';
+                    document.body.classList.add(`theme-${theme}`);
+                    if (isUnlocked) document.body.classList.add('is-unlocked');
+
+                    if (theme === 'nurture') {
+                        statusInd.textContent = '● NURTURE';
+                        riskNum.textContent = '15%';
+                        depNum.textContent = 'Low';
+                    } else if (theme === 'trap') {
+                        statusInd.textContent = '● TRAP';
+                        riskNum.textContent = '68%';
+                        depNum.textContent = 'High';
+                    } else if (theme === 'kill') {
+                        statusInd.textContent = '● KILL';
+                        riskNum.textContent = '98%';
+                        depNum.textContent = 'CRITICAL';
+                    }
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '-30% 0px -40% 0px' });
+
+        document.querySelectorAll('.stage').forEach(s => observer.observe(s));
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+/* ============================================
+ * Theme: #15 — Layered Depth Design (深度圖層疊加設計)
+ * Category: 3D、空間與沉浸式設計 (3D, Spatial & Immersive)
+ * Source: _docs/WebTop50.md
+ * ============================================ */
+
+:root[data-theme="layered-depth"] {
+  /* === Color Tokens === */
+  --theme-primary: #3b82f6;
+  --theme-bg: #f3f4f6;
+  --theme-surface: #ffffff;
+  --theme-text: #1e293b;
+  --theme-text-secondary: #64748b;
+  --theme-border: #e2e8f0;
+
+  /* === Typography Tokens === */
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-size-base: 1rem;
+
+  /* === Space Tokens === */
+  --space-unit: 0.5rem;
+  --section-gap: 5rem;
+  --content-padding: 3rem;
+
+  /* === Shape Tokens === */
+  --radius-sm: 12px;
+  --radius-lg: 24px;
+  --border-width: 0;
+  --shadow-card: 0 4px 6px rgba(0,0,0,0.02);
+
+  /* === Motion Tokens === */
+  --transition-speed: 0.4s;
+  --ease-curve: ease;
+}
+
+/* === Style-specific overrides === */
+
+:root[data-theme="layered-depth"] body {
+  background: radial-gradient(circle at 10% 20%, #eff6ff 0%, #f3f4f6 100%);
+}
+
+:root[data-theme="layered-depth"] .hero,
+:root[data-theme="layered-depth"] .section-card,
+:root[data-theme="layered-depth"] .conclusion-card {
+  position: relative;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  transition: transform 0.5s var(--ease-curve), box-shadow 0.5s var(--ease-curve);
+  z-index: 10;
+}
+
+:root[data-theme="layered-depth"] .hero::before,
+:root[data-theme="layered-depth"] .section-card::before,
+:root[data-theme="layered-depth"] .conclusion-card::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  right: -40px;
+  bottom: -40px;
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: var(--radius-lg);
+  z-index: -1;
+  transition: transform 0.8s var(--ease-curve);
+}
+
+:root[data-theme="layered-depth"] .section-card:hover {
+  transform: translateY(-20px) scale(1.02);
+  box-shadow: 0 40px 80px rgba(0,0,0,0.1);
+}
+
+:root[data-theme="layered-depth"] .section-card:hover::before {
+  transform: translate(20px, 20px) scale(0.95);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+:root[data-theme="layered-depth"] .section-num {
+  position: absolute;
+  top: -22px;
+  left: 44px;
+  background: #3b82f6;
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+  transform: translateZ(20px);
+}
+
+:root[data-theme="layered-depth"] .insight-card {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+  background: #fff;
+  border: 1px solid #f1f5f9;
+  transition: transform 0.3s;
+}
+
+:root[data-theme="layered-depth"] .insight-card:hover {
+  transform: translate(5px, -5px);
+  box-shadow: -10px 10px 20px rgba(0,0,0,0.05);
+}
+
+:root[data-theme="layered-depth"] .callout {
+  border: none;
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  color: #fff;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(30, 64, 175, 0.2);
+}
+
+:root[data-theme="layered-depth"] .data-table-wrap {
+  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+  border: none;
+}
+
+:root[data-theme="layered-depth"] .data-table th {
+  background: #1e3a8a;
+  border-radius: 12px 12px 0 0;
+}

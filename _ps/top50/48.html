@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#48 Emotionally Aware Modes — 情緒感知模式 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* Reset */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+/* State: Default (Normal Speed) & Calm (Slow & Soft) */
+body {
+  font-family: 'Nunito', 'Noto Sans TC', sans-serif;
+  background-color: #f8fafc;
+  color: #334155;
+  transition: all 2s ease-in-out;
+  padding-bottom: 120px;
+}
+body.calm-mode {
+  background-color: #faf5f0; /* Warm beige */
+  color: #5c5c4e; /* Softer tone */
+}
+
+/* Style Info Header (A) */
+.style-info {
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(10px);
+  padding: 40px 24px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: all 2s ease;
+}
+body.calm-mode .style-info {
+  background: rgba(250, 245, 240, 0.9);
+  border-color: rgba(92, 92, 78, 0.1);
+}
+.style-info-inner { max-width: 1000px; margin: 0 auto; }
+.cat {
+  display: inline-block;
+  background: #e0f2fe; color: #0284c7;
+  padding: 6px 16px; border-radius: 20px; font-size: 0.8rem;
+  font-weight: 700; margin-bottom: 20px; transition: all 2s;
+}
+body.calm-mode .cat {
+  background: #f0ede6; color: #8a8a7c;
+}
+.style-info h1 {
+  font-size: 2.5rem; margin-bottom: 16px; transition: color 2s;
+}
+.info-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;
+}
+.info-card {
+  padding: 20px; border-left: 4px solid #3b82f6; background: rgba(0,0,0,0.02);
+  transition: all 2s;
+}
+body.calm-mode .info-card { border-left-color: #d1c8bb; background: rgba(0,0,0,0.01); }
+.info-card h4 { font-size: 0.85rem; color: #3b82f6; margin-bottom: 8px; transition: color 2s; }
+body.calm-mode .info-card h4 { color: #8a8a7c; }
+
+/* Demo Content (B) */
+.demo-content {
+  max-width: 800px; margin: 60px auto; padding: 0 24px; text-align: center;
+}
+.therapy-sphere {
+  width: 250px; height: 250px; margin: 0 auto 40px;
+  background: radial-gradient(circle at 30% 30%, #93c5fd, #3b82f6);
+  border-radius: 50%;
+  box-shadow: 0 20px 40px rgba(59,130,246,0.3);
+  animation: breathe 4s ease-in-out infinite alternate;
+  transition: all 2s ease;
+}
+body.calm-mode .therapy-sphere {
+  background: radial-gradient(circle at 30% 30%, #e2d8c3, #b8ab94);
+  box-shadow: 0 20px 40px rgba(184,171,148,0.2);
+  animation: breatheCalm 8s ease-in-out infinite alternate; /* Slower breathing */
+}
+
+@keyframes breathe {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  100% { transform: scale(1.05); opacity: 1; box-shadow: 0 30px 60px rgba(59,130,246,0.5); }
+}
+@keyframes breatheCalm {
+  0% { transform: scale(0.98); opacity: 0.7; }
+  100% { transform: scale(1.02); opacity: 0.9; box-shadow: 0 20px 40px rgba(184,171,148,0.3); }
+}
+
+.demo-title { font-size: 2rem; margin-bottom: 12px; }
+.demo-msg { font-size: 1.1rem; color: #64748b; margin-bottom: 40px; line-height: 1.8; transition: color 2s, opacity 2s; }
+body.calm-mode .demo-msg { color: #8a8a7c; }
+
+.form-group { text-align: left; margin-bottom: 24px; max-width: 400px; margin-left: auto; margin-right: auto; }
+.form-input {
+  width: 100%; border: 2px solid #cbd5e1; padding: 16px; border-radius: 12px;
+  font-size: 1rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+.form-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59,130,246,0.2); }
+body.calm-mode .form-input:focus { border-color: #b8ab94; box-shadow: 0 0 0 4px rgba(184,171,148,0.2); }
+
+.btn {
+  background: #3b82f6; color: #fff; border: none; padding: 16px 40px;
+  border-radius: 30px; font-size: 1.1rem; cursor: pointer; transition: all 2s;
+  box-shadow: 0 8px 20px rgba(59,130,246,0.3); font-family: inherit; font-weight: 700;
+}
+body.calm-mode .btn {
+  background: #b8ab94; color: #fff; box-shadow: 0 8px 20px rgba(184,171,148,0.2);
+}
+
+/* Stress Tracker visual */
+#stressTracker {
+  font-size: 0.8rem; color: #94a3b8; display: block; margin-top: 40px;
+}
+
+/* Navigation (C) */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: center; align-items: center; gap: 30px;
+  padding: 16px 24px; z-index: 100;
+  background: rgba(255,255,255,0.9);
+  border-top: 1px solid rgba(0,0,0,0.05);
+  transition: all 2s;
+}
+body.calm-mode .bottom-nav { background: rgba(250, 245, 240, 0.9); border-color: rgba(92, 92, 78, 0.1); }
+.bottom-nav a { text-decoration: none; color: #64748b; font-weight: 700; font-size: .85rem; transition: color 2s; }
+body.calm-mode .bottom-nav a { color: #8a8a7c; }
+.bottom-nav a:hover { color: #3b82f6; }
+body.calm-mode .bottom-nav a:hover { color: #b8ab94; }
+
+</style>
+</head>
+<body>
+
+<header class="style-info">
+  <div class="style-info-inner">
+    <div class="cat">🧘‍♀️ 心理感知系統</div>
+    <h1>#48 — Emotionally Aware Modes</h1>
+    
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>📖 風格定義與視覺特徵</h4>
+        <p>透過細微的語境提示、互動速率或 AI 行為分析，系統能感知使用者的焦慮或操作壓力。隨即自動切換至低對比的溫和色彩、平緩的動畫節奏與鼓勵性的微文案，發揮安撫作用。</p>
+      </div>
+      <div class="info-card">
+        <h4>🏢 適用產業與場景</h4>
+        <p>數位醫療與遠距問診平台、心理健康與減壓應用程式</p>
+      </div>
+      <div class="info-card">
+        <h4>🌍 主要流行地區</h4>
+        <p>美國、全球</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="demo-content">
+  <div class="therapy-sphere" id="sphere"></div>
+  <h2 class="demo-title" id="dTitle">Please verify your medical details</h2>
+  <p class="demo-msg" id="dMsg">We noticed multiple rapid clicks. It can be stressful navigating medical forms. Let's take it one gentle step at a time.</p>
+  
+  <div class="form-group">
+    <input type="text" class="form-input" id="inpField" placeholder="Enter condition details...">
+  </div>
+  <button class="btn" id="sbmBtn">Next Step</button>
+
+  <span id="stressTracker">System monitoring click velocity... (Click fast to trigger calm mode)</span>
+</main>
+
+<nav class="bottom-nav">
+  <a href="47.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="49.html">下一頁 →</a>
+</nav>
+
+<script>
+  // Interaction 1: Clicks velocity tracking to swap modes
+  let clickCount = 0;
+  let calmModeActive = false;
+  
+  document.body.addEventListener('click', () => {
+    if(calmModeActive) return;
+    clickCount++;
+    setTimeout(() => { clickCount = Math.max(0, clickCount - 1); }, 1000);
+    
+    if (clickCount >= 3) {
+      activateCalmMode();
+    }
+  });
+
+  function activateCalmMode() {
+    calmModeActive = true;
+    document.body.classList.add('calm-mode');
+    
+    // Interaction 2: Copy changes dynamically to soothe
+    const dTitle = document.getElementById('dTitle');
+    const dMsg = document.getElementById('dMsg');
+    const sbmBtn = document.getElementById('sbmBtn');
+    
+    dTitle.style.opacity = 0;
+    dMsg.style.opacity = 0;
+    setTimeout(() => {
+      dTitle.innerText = "There is no rush.";
+      dMsg.innerText = "Take a deep breath. We have adapted the interface to reduce glare and slowed animations. You're doing great.";
+      sbmBtn.innerText = "Take your time";
+      dTitle.style.opacity = 1;
+      dMsg.style.opacity = 1;
+    }, 2000);
+  }
+</script>
+</body>
+</html>

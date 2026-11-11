@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orion Unified System Monitor</title>
+    <style>
+        /* ========================================
+         * 1. 全域變數與重置 (基於 BatteryMonitor 風格)
+         * ========================================
+         */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Roboto+Mono:wght@500&display=swap');
+
+        :root {
+            /* 核心配色 (BatteryMonitor) */
+            --bg-color: #1a1b21;
+            --panel-bg: #2a2c36;
+            --panel-bg-darker: #22242b;
+            --border-color: #4a4c5a;
+            
+            /* 文字顏色 */
+            --text-primary: #e1e1e3;
+            --text-secondary: #a9a9b3;
+            
+            /* 狀態色 */
+            --accent-blue: #007bff;
+            --accent-green: #28a745;
+            --accent-orange: #fd7e14;
+            --accent-red: #dc3545;
+            --accent-amber: #ffc107;
+            --accent-grey: #6c757d;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 14px;
+            
+            /* 關鍵：啟用垂直滾動與吸附效果 */
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory; /* Y 軸強制吸附 */
+        }
+
+        /* 標題樣式統一 */
+        h2, h3, h4 {
+            color: #ffffff;
+            font-weight: 500;
+            margin-top: 0;
+        }
+        h2 { font-size: 2em; margin-bottom: 30px; border-left: 5px solid var(--accent-blue); padding-left: 15px; }
+        h3 { margin-bottom: 15px; font-size: 1.3em; }
+
+        /* ========================================
+         * 2. 單頁區塊架構 (Section Layout)
+         * ========================================
+         */
+        section {
+            /* 讓每個區塊至少佔滿一個螢幕，並啟用吸附 */
+            min-height: 100vh;
+            width: 100%;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 內容垂直置中 */
+            align-items: center;
+            scroll-snap-align: start; /* 滾動時吸附到頂部 */
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* 區塊容器限制寬度，模擬原本的 max-width */
+        .section-content {
+            width: 100%;
+            max-width: 1600px;
+            height: 90vh; /* 讓內部佈局有固定高度參考 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ========================================
+         * 3. 通用面板樣式 (Unified Panel Style)
+         * ========================================
+         */
+        .panel, .card {
+            background-color: var(--panel-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ========================================
+         * 4. 特定佈局樣式 (Control Panel Grid)
+         * ========================================
+         */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 24px;
+            width: 100%;
+            height: 100%;
+            align-content: center; /* 垂直置中 */
+        }
+
+        /* Control Panel 內部元件微調 */
+        .control-header { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .row-group { display: flex; gap: 12px; align-items: center; }
+        .full-width { width: 100%; }
+        
+        /* Audio Controls */
+        .mic-main-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 12px; border: none; border-radius: 8px;
+            font-size: 14px; font-weight: 500; cursor: pointer;
+            background-color: var(--accent-grey); color: #e0e6ec;
+            transition: all 0.2s ease; flex-grow: 1;
+        }
+        .mic-main-btn.is-recording { background-color: var(--accent-red); color: #fff; box-shadow: 0 0 10px rgba(211, 47, 47, 0.5); }
+        .mic-visualizer { display: flex; align-items: center; height: 24px; gap: 3px; }
+        .mic-visualizer .bar { width: 4px; height: 6px; background-color: var(--accent-grey); border-radius: 2px; transition: 0.3s; }
+        .is-recording .mic-visualizer .bar { background-color: var(--accent-green); animation: sound-wave 1.2s infinite ease-in-out; }
+        @keyframes sound-wave { 0%, 100% { height: 6px; } 50% { height: 24px; } }
+        .mic-visualizer .bar:nth-child(2) { animation-delay: -1.0s; }
+        .mic-visualizer .bar:nth-child(3) { animation-delay: -0.8s; }
+        .mic-visualizer .bar:nth-child(4) { animation-delay: -1.1s; }
+        .mic-visualizer .bar:nth-child(5) { animation-delay: -0.9s; }
+        
+        /* Volume */
+        .speaker-controls { display: flex; align-items: center; gap: 12px; background: var(--panel-bg-darker); padding: 12px; border-radius: 8px; }
+        .mute-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; }
+        .mute-btn.is-muted { color: var(--accent-red); }
+        input[type="range"] { flex: 1; -webkit-appearance: none; height: 6px; background: var(--border-color); border-radius: 3px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--accent-blue); border-radius: 50%; cursor: pointer; border: 2px solid var(--panel-bg); }
+
+        /* LED */
+        .led-preview { height: 80px; border-radius: 8px; border: 2px solid var(--border-color); background-color: #000; transition: background-color 0.3s ease; margin-bottom: 16px; }
+        .led-preview.is-blinking { animation: blink-anim 0.8s infinite ease-in-out; }
+        @keyframes blink-anim { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .color-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .color-btn { height: 40px; border-radius: 6px; border: 2px solid var(--border-color); cursor: pointer; transition: 0.2s; }
+        .color-btn.is-active { border-color: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.5); }
+        .mode-toggle { display: flex; background: var(--panel-bg-darker); border-radius: 6px; padding: 4px; gap: 4px; }
+        .mode-opt { flex: 1; text-align: center; padding: 6px; font-size: 13px; border-radius: 4px; cursor: pointer; color: var(--text-secondary); }
+        .mode-opt.active { background-color: var(--accent-grey); color: #fff; font-weight: bold; }
+
+        /* Resources */
+        .resource-group { display: flex; justify-content: space-around; padding: 10px 0; }
+        .donut-chart { position: relative; width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(var(--accent-blue) 0% 0%, var(--border-color) 0% 100%); display: flex; align-items: center; justify-content: center; }
+        .donut-inner { width: 80px; height: 80px; background-color: var(--panel-bg); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .donut-value { font-size: 20px; font-weight: bold; }
+        .donut-label { font-size: 12px; color: var(--text-secondary); }
+        .temp-bar-container { margin-top: 10px; }
+        .temp-track { width: 100%; height: 8px; background: var(--border-color); border-radius: 4px; overflow: hidden; }
+        .temp-fill { height: 100%; width: 45%; background: linear-gradient(90deg, var(--accent-green), var(--accent-amber)); transition: width 1s ease; }
+        
+        /* Control Panel Battery Status Module (補回遺漏) */
+        .status-module { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--panel-bg-darker); border-radius: 8px; margin-bottom: 12px; }
+        .battery-icon { width: 50px; height: 24px; border: 2px solid var(--text-secondary); border-radius: 4px; position: relative; padding: 2px; display: flex; }
+        .battery-icon::after { content: ''; position: absolute; right: -6px; top: 6px; width: 4px; height: 8px; background: var(--text-secondary); border-radius: 0 2px 2px 0; }
+        .battery-level { width: 80%; height: 100%; background-color: var(--accent-green); border-radius: 1px; transition: width 0.5s ease; }
+        .module-info h4 { margin: 0; font-size: 20px; font-family: 'Roboto Mono', monospace; letter-spacing: -0.5px; }
+        .module-info p { margin: 0; font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+
+        /* Ports */
+        .port-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .port-item { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; background: var(--panel-bg-darker); border-radius: 8px; border: 1px solid transparent; transition: 0.2s; }
+        .port-item svg { width: 24px; height: 24px; color: var(--text-secondary); }
+        .port-item.connected { border-color: var(--accent-green); background: rgba(40, 167, 69, 0.1); }
+        .port-item.connected svg { color: var(--accent-green); }
+        .port-item.active-red { border-color: var(--accent-red); background: rgba(220, 53, 69, 0.1); }
+        .port-item.active-red svg { color: var(--accent-red); }
+
+        /* Wireless */
+        .wireless-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border-color); }
+        .wireless-item:last-child { border-bottom: none; }
+        .w-info { display: flex; align-items: center; gap: 12px; }
+        .toggle-switch { position: relative; width: 40px; height: 22px; -webkit-appearance: none; background: var(--accent-grey); border-radius: 11px; cursor: pointer; transition: 0.3s; outline: none; }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch:checked { background: var(--accent-blue); }
+        .toggle-switch:checked::after { left: 20px; }
+
+        /* ========================================
+         * 5. 特定佈局樣式 (Battery & USB Workbench)
+         * ========================================
+         */
+        .workbench-container {
+            display: grid;
+            grid-template-columns: 3fr 4fr 3fr;
+            grid-template-rows: 1fr;
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            /* padding 已由 section 提供，這裡移除 */
+        }
+
+        /* 中間欄彈性佈局 */
+        .middle-column { display: flex; flex-direction: column; gap: 20px; height: 100%; min-height: 0; }
+        .middle-column .panel-live-metrics { flex-grow: 0; flex-shrink: 0; height: auto; }
+        .middle-column .panel-log { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+
+        /* Battery Specifics */
+        .test-card { background-color: var(--panel-bg-darker); border-radius: 10px; padding: 20px; border: 1px solid var(--border-color); }
+        .test-card + .test-card { margin-top: 20px; }
+        .test-timer { font-family: 'Courier New', monospace; font-size: 1.4em; font-weight: 700; color: var(--accent-orange); }
+        .status-check { background-color: var(--bg-color); border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-primary { padding: 12px; font-size: 1.1em; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; width: 100%; background-color: var(--accent-green); color: #ffffff; }
+        .btn-primary[disabled] { background-color: #444; color: #888; cursor: not-allowed; }
+        
+        .status-dashboard { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background-color: var(--bg-color); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .status-item { text-align: center; }
+        .status-led-dot { width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-blue); border: 3px solid rgba(255,255,255,0.1); margin: 0 auto; }
+        
+        .info-list { list-style: none; padding: 0; margin: 0; }
+        .info-list li { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--panel-bg-darker); }
+        .info-list .key { color: var(--text-secondary); }
+        .info-list .value { color: var(--text-primary); font-weight: 700; }
+        .info-list .design-value { font-size: 0.9em; color: var(--text-secondary); font-weight: 400; margin-left: 8px; }
+        
+        
+		 /* 隱藏卷軸樣式 (Log List) */
+        .log-list-container { 
+            flex-grow: 1; 
+            height: 100%; 
+            overflow-y: auto; 
+            background-color: var(--panel-bg-darker); 
+            border-radius: 8px; 
+            padding: 10px;
+            /* Firefox */
+            scrollbar-width: none; 
+            /* IE/Edge */
+            -ms-overflow-style: none;
+        }
+        /* Chrome/Safari/Webkit */
+        .log-list-container::-webkit-scrollbar {
+            display: none;
+        }
+		
+		
+        .log-item { background-color: var(--panel-bg); border-radius: 6px; padding: 15px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+
+        /* USB Specifics */
+        .drive-card { background-color: var(--panel-bg-darker); border-radius: 10px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 20px; }
+        .state-in-progress { border: 2px solid var(--accent-blue); box-shadow: 0 0 10px rgba(0, 123, 255, 0.2); }
+        .state-not-detected { border: 2px dashed var(--accent-grey); color: var(--accent-grey); text-align: center; padding: 40px 20px; }
+        .speed-display { display: flex; justify-content: space-around; margin: 15px 0; padding: 10px 0; background-color: var(--bg-color); border-radius: 8px; }
+        .speed-value { font-size: 2em; font-weight: 700; line-height: 1.2; }
+        .progress-bar-container { width: 100%; background-color: var(--border-color); border-radius: 5px; height: 20px; margin-bottom: 15px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--accent-blue); color: white; text-align: center; font-size: 12px; line-height: 20px; }
+        .chart-placeholder { background-color: var(--panel-bg-darker); border-radius: 8px; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); border: 1px dashed var(--border-color); }
+        .btn-secondary { background-color: var(--accent-grey); color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+
+        /* 隱藏元素工具 */
+        .hidden { display: none !important; }
+        hr { border: 0; border-top: 1px solid var(--border-color); width: 100%; margin: 20px 0; }
+        .info-scroll-content { overflow-y: auto; flex-grow: 1; padding-right: 5px; /* Firefox */ scrollbar-width: none; 
+            /* IE/Edge */
+            -ms-overflow-style: none;}
+		.info-scroll-content::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =======================================================
+         SECTION 1: Control Panel (最上方)
+         ======================================================= -->
+    <section id="section-control">
+        <!-- <h2 style="align-self: flex-start; margin-left: max(5%, calc((100% - 1600px) / 2));">Control Panel</h2> <!---->
+        <div class="section-content">
+            <div class="dashboard-grid">
+                
+                <!-- Card 1: Audio & LED -->
+                <div class="card">
+                    <div class="control-header">
+                        <h3>🎙️ 音訊與燈光控制</h3>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div class="row-group" style="margin-bottom: 12px;">
+                            <button class="mic-main-btn" id="mic-btn">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/><path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/></svg>
+                                <span id="mic-text">開始錄音</span>
+                            </button>
+                            <div class="mic-visualizer" id="mic-vis">
+                                <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                            </div>
+                        </div>
+
+                        <div class="speaker-controls" id="speaker-group">
+                            <button class="mute-btn" id="mute-btn">
+                                <svg id="icon-vol-on" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/><path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/><path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.489 3.489 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/></svg>
+                                <svg id="icon-vol-off" class="hidden" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 0 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z"/></svg>
+                            </button>
+                            <input type="range" id="vol-slider" min="0" max="100" value="60">
+                        </div>
+                    </div>
+                    <hr>
+                    <div>
+                        <div class="row-group" style="justify-content: space-between; margin-bottom: 10px;">
+                            <span style="font-weight: 500;">LED 狀態</span>
+                            <div class="mode-toggle">
+                                <div class="mode-opt active" id="mode-solid">恆亮</div>
+                                <div class="mode-opt" id="mode-blink">閃爍</div>
+                            </div>
+                        </div>
+                        <div class="led-preview" id="led-display"></div>
+                        <div class="color-grid">
+                            <div class="color-btn" data-c="#FF0000" style="background:#FF0000"></div>
+                            <div class="color-btn" data-c="#00FF00" style="background:#00FF00"></div>
+                            <div class="color-btn" data-c="#0000FF" style="background:#0000FF"></div>
+                            <div class="color-btn" data-c="#FFFF00" style="background:#FFFF00"></div>
+                            <div class="color-btn" data-c="#FF00FF" style="background:#FF00FF"></div>
+                            <div class="color-btn" data-c="#00FFFF" style="background:#00FFFF"></div>
+                            <div class="color-btn" data-c="#FFFFFF" style="background:#FFFFFF"></div>
+                            <div class="color-btn is-active" data-c="#000000" style="background:var(--panel-bg-darker); border-style:dashed; display: grid; place-items:center; color: #999; font-size: 10px;">OFF</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: System Status -->
+                <div class="card">
+                    <div class="control-header">
+                        <h3>⚡ 系統狀態與電源</h3>
+                    </div>
+                    <div class="resource-group">
+                        <div class="donut-chart" id="cpu-chart">
+                            <div class="donut-inner">
+                                <span class="donut-value" id="cpu-val">12%</span>
+                                <span class="donut-label">CPU</span>
+                            </div>
+                        </div>
+                        <div class="donut-chart" id="ram-chart">
+                            <div class="donut-inner">
+                                <span class="donut-value" id="ram-val">45%</span>
+                                <span class="donut-label">RAM</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="temp-bar-container">
+                        <div class="row-group" style="justify-content: space-between; margin-bottom: 5px; font-size: 13px;">
+                            <span>Core 溫度</span>
+                            <span id="temp-val">42°C</span>
+                        </div>
+                        <div class="temp-track">
+                            <div class="temp-fill" id="temp-bar" style="width: 42%"></div>
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- [補回] Battery Status Module for Control Panel -->
+                    <div class="status-module">
+                        <div class="battery-icon">
+                            <div class="battery-level" id="cp-bat-level" style="width: 80%"></div>
+                        </div>
+                        <div class="module-info">
+                            <h4 id="cp-bat-text">80%</h4>
+                            <p id="cp-bat-status">放電中 (3h 20m)</p>
+                        </div>
+                    </div>
+
+                    <div class="status-module" style="margin-top:10px;">
+                        <svg width="24" height="24" fill="var(--accent-blue)" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                        <div style="margin-left: 10px;">
+                            <h4 id="rtc-time" style="margin:0; font-family:'Roboto Mono'">--:--:--</h4>
+                            <span style="font-size:12px; color:var(--text-secondary)">RTC Time (UTC+8)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Connections -->
+                <div class="card">
+                    <div class="control-header">
+                        <h3>📡 連接與周邊</h3>
+                    </div>
+                    <div>
+                        <p style="color:var(--text-secondary); margin-bottom:10px; font-size:13px;">物理連接埠 (I/O)</p>
+                        <div class="port-grid">
+                            <div class="port-item connected">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
+                                <span>Cam 1</span>
+                            </div>
+                            <div class="port-item connected">
+                                <svg fill="currentColor" viewBox="0 0 16 16"><path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/><path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
+                                <span>Cam 2</span>
+                            </div>
+							<div class="port-item connected">
+								<svg fill="currentColor" viewBox="0 0 16 16"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/></svg>
+								<span>Charge</span>
+							</div>
+							<div class="port-item">
+								<svg fill="currentColor" viewBox="0 0 16 16"><path d="M7.5 1v7h1V1h-1z"/><path d="M3 8.812a4.999 4.999 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812z"/></svg>
+								<span>Power Button</span>
+							</div>
+							<div class="port-item connected">
+								<svg fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 7.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-1z"/><path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2zm0 1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/></svg>
+								<span>USB-A</span>
+							</div>
+							<div class="port-item">
+								<svg fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 3.5a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-1zM0 6h16v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6z"/></svg>
+								<span>USB-A</span>
+							</div>
+							<div class="port-item connected">
+								<svg fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2z"/><path d="M3.5 6.5A.5.5 0 0 1 4 7v2a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5V7a.5.5 0 0 1 .5-.5h1z"/></svg>
+								<span>HDMI</span>
+							</div>
+							<div class="port-item error">
+								<svg fill="currentColor" viewBox="0 0 16 16"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>
+								<span>USB-C</span>
+							</div>
+						</div>
+                    </div>
+                    <hr>
+                    <div>
+                        <p style="color:var(--text-secondary); margin-bottom:10px; font-size:13px;">無線網路 (Wireless)</p>
+                        <div class="wireless-item">
+                            <div class="w-info">
+                                <svg width="24" height="24" fill="#fff" viewBox="0 0 16 16"><path d="M15.384 6.115a.485.485 0 0 0-.047-.736A12.444 12.444 0 0 0 8 3C5.259 3 2.723 3.882.663 5.379a.485.485 0 0 0-.048.736.518.518 0 0 0 .668.05A11.448 11.448 0 0 1 8 4c2.507 0 4.816.804 6.695 2.165a.518.518 0 0 0 .668-.05z"/><path d="M13.369 8.039a.487.487 0 0 0-.04-.7c-1.444-1.061-3.19-1.648-4.996-1.648-1.778 0-3.496.582-4.945 1.634a.487.487 0 0 0-.04.7c.19.216.495.24.698.072A7.474 7.474 0 0 1 8 6.63c1.608 0 3.13.487 4.416 1.335a.488.488 0 0 0 .698-.072z"/><path d="M11.466 9.948a.489.489 0 0 0-.029-.709 5.466 5.466 0 0 0-3.436-1.208 5.466 5.466 0 0 0-3.426 1.195.489.489 0 0 0-.028.709c.186.205.49.227.685.084A4.476 4.476 0 0 1 8 9.027c1.107 0 2.145.32 3.026.902.195.144.498.12.684-.084zM9.495 11.85a.49.49 0 0 0-.014-.716 3.465 3.465 0 0 0-2.963 0 .49.49 0 0 0-.014.716c.178.19.476.206.66.078A2.475 2.475 0 0 1 8 11.543c.434 0 .84.125 1.186.409.185.127.483.112.66-.078z"/></svg>
+                                <div>
+                                    <div style="font-weight:500">Wi-Fi 6</div>
+                                    <span style="font-size:12px; color:var(--text-secondary)">Connected: Office_5G</span>
+                                </div>
+                            </div>
+                            <input type="checkbox" class="toggle-switch" checked>
+                        </div>
+                        <div class="wireless-item">
+                            <div class="w-info">
+                                <svg width="24" height="24" fill="#fff" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.5 1.5A.5.5 0 0 1 9 2v4.5h4.354a.5.5 0 0 1 .354.854l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 .354-.854H6.5V2a.5.5 0 0 1 .5-.5z" transform="rotate(45 8 8)"/></svg>
+                                <div>
+                                    <div style="font-weight:500">Bluetooth</div>
+                                    <span style="font-size:12px; color:var(--text-secondary)">Ready to pair</span>
+                                </div>
+                            </div>
+                            <input type="checkbox" class="toggle-switch">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- =======================================================
+         SECTION 2: Battery Monitor (往下滑)
+         ======================================================= -->
+    <section id="section-battery">
+        <!--<h2 style="align-self: flex-start; margin-left: max(5%, calc((100% - 1600px) / 2));">Battery Monitor</h2>-->
+        <div class="section-content">
+            <div class="workbench-container">
+                
+                <!-- 左欄：控制 -->
+                <div class="panel panel-controls">
+                    <h3>充放電測試</h3>
+                    <div class="test-card">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <h4 style="margin:0">🔋 系統使用時間</h4>
+                            <div class="test-timer">00:00:00</div>
+                        </div>
+                        <p style="color:var(--text-secondary); font-size:0.9em; margin:10px 0;">自動測試 100% 至 0% 的完整放電時間。</p>
+                        <div class="status-check">
+                            <span class="key" style="color:var(--text-secondary)">目前電量: </span>
+                            <span class="value" style="font-weight:700">65 %</span>
+                        </div>
+                        <button class="btn-primary" disabled>開始放電測試</button>
+                    </div>
+
+                    <div class="test-card">
+                        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                            <h4 style="margin:0">⚡️ 系統充電時間</h4>
+                            <div class="test-timer">00:00:00</div>
+                        </div>
+                        <p style="color:var(--text-secondary); font-size:0.9em; margin:10px 0;">自動測試 0% 至 100% 的完整充電時間。</p>
+                        <div class="status-check">
+                            <span class="key" style="color:var(--text-secondary)">目前電量: </span>
+                            <span class="value" style="font-weight:700">65 %</span>
+                        </div>
+                        <button class="btn-primary" disabled>開始充電測試</button>
+                    </div>
+                </div>
+
+                <!-- 中欄：即時圖表與日誌 -->
+                <div class="middle-column">
+                    <div class="panel panel-live-metrics">
+                        <h3>電池動態與負載</h3>
+                        <div class="status-dashboard">
+                            <div class="status-item">
+                                <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">LED 狀態</div>
+                                <div class="status-led-dot"></div>
+                            </div>
+                            <div class="status-item">
+                                <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">充電器</div>
+                                <div style="font-weight:700">已連接</div>
+                            </div>
+                            <div class="status-item">
+                                <div style="font-size:0.85em; color:var(--text-secondary); margin-bottom:5px;">狀態</div>
+                                <div style="font-weight:700; color:var(--accent-blue)">充電中</div>
+                            </div>
+                        </div>
+                        <ul class="info-list">
+                            <li><span class="key">目前電量 (SoC)</span><span class="value" style="color:var(--accent-blue); font-size:1.2em;">65 %</span></li>
+                            <li><span class="key">電壓 (Voltage)</span><span class="value">11.3V <span style="font-size:0.8em; color:var(--text-secondary); font-weight:400">(8.1V/12.6V)</span></span></li>
+                            <!-- [補回] Current -->
+                            <li>
+                                <span class="key">電流 (Current)</span>
+                                <div>
+                                    <span class="value">-5A ~ 1.7A</span>
+                                    <span class="design-value">(-5A/+1.7A)</span>
+                                </div>
+                            </li>
+                            <li><span class="key">即時功耗</span><span class="value">19.21 W</span></li>
+                            <li><span class="key">溫度 (Temp)</span><span class="value" style="color:var(--accent-orange)">28.5 °C</span></li>
+                        </ul>
+                    </div>
+
+                    <div class="panel panel-log">
+                        <h3>測試日誌</h3>
+                        <div class="log-list-container">
+                            <div class="log-item">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                    <h4 style="margin:0; font-size:1.1em;">🔋 放電測試 (100% → 0%)</h4>
+                                    <span style="font-size:0.9em; color:var(--text-secondary)">2025-11-05 18:10</span>
+                                </div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                                    <div><span style="display:block; font-size:0.8em; color:var(--text-secondary)">開始</span><span style="font-weight:700">14:55</span></div>
+                                    <div><span style="display:block; font-size:0.8em; color:var(--text-secondary)">結束</span><span style="font-weight:700">18:10</span></div>
+                                    <div><span style="display:block; font-size:0.8em; color:var(--text-secondary)">耗時</span><span style="font-weight:700; color:var(--accent-green)">03:14:55</span></div>
+                                </div>
+                            </div>
+                            <div class="log-item">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                    <h4 style="margin:0; font-size:1.1em;">⚡️ 充電測試 (0% → 100%)</h4>
+                                    <span style="font-size:0.9em; color:var(--text-secondary)">2025-11-06 13:30</span>
+                                </div>
+                                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                                    <div><span style="display:block; font-size:0.8em; color:var(--text-secondary)">開始</span><span style="font-weight:700">11:45</span></div>
+                                    <div><span style="display:block; font-size:0.8em; color:var(--text-secondary)">結束</span><span style="font-weight:700">13:30</span></div>
+                                    <div><span style="display:block; font-size:0.8em; color:var(--text-secondary)">耗時</span><span style="font-weight:700; color:var(--accent-green)">01:45:13</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右欄：資訊 -->
+                <div class="panel panel-static-info">
+                    <h3>電池製造資訊</h3>
+                    <div class="info-scroll-content">
+                        <ul class="info-list">
+                            <li><span class="key">電池型號</span><span class="value">MD-BAT03</span></li>
+                            <li><span class="key">製造商</span><span class="value">FUCO</span></li>
+                            <!-- [補回] FW, SN, Design Cap, End Voltage -->
+                            <li><span class="key">電池韌體版本</span><span class="value">v1.0.8</span></li>
+                            <li><span class="key">PIC韌體版本</span><span class="value">v011</span></li>
+                            <li><span class="key">序號 (S/N)</span><span class="value">SN-A8492-B4</span></li>
+                            <li><span class="key">設計容量</span><span class="value">5000 mAh</span></li>
+                            <li><span class="key">終止電壓</span><span class="value">8.1V</span></li>
+                        </ul>
+                        <div style="margin-top:20px;">
+                            <h4 style="font-size:0.9em; color:var(--text-secondary); text-transform:uppercase; border-bottom:1px solid var(--border-color); padding-bottom:5px;">健康度</h4>
+                            <ul class="info-list">
+                                <li><span class="key">剩餘容量</span><span class="value">3152 mAh</span></li>
+                                <!-- [補回] Actual Full Charge -->
+                                <li><span class="key">實際滿電</span><span class="value">4850 mAh</span></li>
+                                <li><span class="key">健康度 (SoH)</span><span class="value" style="color:var(--accent-green); font-size:1.2em;">97 %</span></li>
+                                <li><span class="key">循環次數</span><span class="value">12</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- =======================================================
+         SECTION 3: USB Monitor (最下方)
+         ======================================================= -->
+    <section id="section-usb">
+        <!--<h2 style="align-self: flex-start; margin-left: max(5%, calc((100% - 1600px) / 2));">USB Storage Monitor</h2>-->
+        <div class="section-content">
+            <div class="workbench-container">
+                
+                <!-- 左欄：隨身碟狀態 -->
+                <div class="panel">
+                    <h3>隨身碟測試監控</h3>
+                    <div class="drive-card state-in-progress">
+                        <h4 style="margin:0 0 5px 0;">E: - 隨身碟 1 (測試中)</h4>
+                        <p style="color:var(--text-secondary); font-size:0.85em; margin-bottom:15px;">SanDisk Ultra Fit 128 GB</p>
+                        
+                        <div style="color:var(--accent-blue); font-weight:500; margin-bottom:10px;">⏳ 讀寫測試進行中</div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 85%;">85%</div>
+                        </div>
+
+                        <div class="speed-display">
+                            <div style="text-align:center; flex:1;">
+                                <div class="speed-value" style="color:var(--accent-blue);">185</div>
+                                <div style="font-size:0.8em; color:var(--text-secondary);">MB/s (Read)</div>
+                            </div>
+                            <div style="text-align:center; flex:1;">
+                                <div class="speed-value" style="color:var(--accent-blue);">45</div>
+                                <div style="font-size:0.8em; color:var(--text-secondary);">MB/s (Write)</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:15px; display:flex;">
+                            <button class="btn-secondary" style="width:100%;">取消測試</button>
+                        </div>
+                    </div>
+
+                    <div class="drive-card state-not-detected">
+                        <div style="font-size:2em; margin-bottom:10px;">🔌</div>
+                        <h4 style="color:var(--accent-grey); margin:0;">F: - 隨身碟 2</h4>
+                        <p style="margin:5px 0 0 0; font-size:0.9em;">未偵測到裝置</p>
+                    </div>
+                </div>
+
+                <!-- 中欄：速度圖表 -->
+                <div class="middle-column">
+                    <div class="panel panel-live-metrics">
+                        <h3>整體測試總覽</h3>
+                        <div class="chart-placeholder" style="height: 250px;">
+                            [ 讀寫速度即時趨勢圖表 ]
+                        </div>
+                    </div>
+                    <div class="panel panel-log">
+                        <h3>系統日誌</h3>
+                        <div class="log-list-container">
+                            <div class="log-item">隨身碟 E: 已連接並自動啟動測試。</div>
+                            <div class="log-item">E: 讀取速度達到峰值 190.5 MB/s。</div>
+                            <div class="log-item">隨身碟 F: 已移除。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右欄：測試結果 -->
+                <div class="panel">
+                    <h3>測試結果 (Drive F)</h3>
+                    <div class="info-scroll-content">
+                        <div style="margin-bottom:20px;">
+                            <div style="color:var(--accent-green); font-weight:500; margin-bottom:10px;">✅ 最終效能結果</div>
+                            <div class="speed-display">
+                                <div style="text-align:center; flex:1;">
+                                    <div class="speed-value" style="color:var(--accent-green);">190.2</div>
+                                    <div style="font-size:0.8em; color:var(--text-secondary);">MB/s Read</div>
+                                </div>
+                                <div style="text-align:center; flex:1;">
+                                    <div class="speed-value" style="color:var(--accent-green);">44.8</div>
+                                    <div style="font-size:0.8em; color:var(--text-secondary);">MB/s Write</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4 style="font-size:0.9em; color:var(--text-secondary); text-transform:uppercase; border-bottom:1px solid var(--border-color); padding-bottom:5px;">裝置詳情</h4>
+                        <ul class="info-list">
+                            <li><span class="key">製造商</span><span class="value">Kingston</span></li>
+                            <li><span class="key">型號</span><span class="value">DT-G4</span></li>
+                            <li><span class="key">容量</span><span class="value">64 GB</span></li>
+                            <li><span class="key">格式</span><span class="value">exFAT</span></li>
+                            <!-- [補回] SN, Min/Max Speed -->
+                            <li><span class="key">序號 (S/N)</span><span class="value">SN-K7839-D</span></li>
+                            <li><span class="key">最低讀取</span><span class="value">160 MB/s</span></li>
+                            <li><span class="key">最高寫入</span><span class="value">50 MB/s</span></li>
+                        </ul>
+
+                        <div style="margin-top:20px; display:flex; gap:10px;">
+                            <button class="btn-secondary" style="flex:1;">重新測試</button>
+                            <button class="btn-secondary" style="flex:1; background-color:var(--accent-green);">匯出報告</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- =======================================================
+         Combined JavaScript Logic
+         ======================================================= -->
+    <script>
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => document.querySelectorAll(s);
+
+        /* --- 1. Audio Logic (Control Panel) --- */
+        const micBtn = $('#mic-btn');
+        const micText = $('#mic-text');
+        let isRecording = false;
+        if(micBtn) {
+            micBtn.addEventListener('click', () => {
+                isRecording = !isRecording;
+                micBtn.classList.toggle('is-recording', isRecording);
+                micBtn.closest('.row-group').classList.toggle('is-recording', isRecording);
+                micText.textContent = isRecording ? '停止錄音...' : '開始錄音';
+            });
+        }
+
+        const muteBtn = $('#mute-btn');
+        const volSlider = $('#vol-slider');
+        const iconVolOn = $('#icon-vol-on');
+        const iconVolOff = $('#icon-vol-off');
+        if(muteBtn) {
+            muteBtn.addEventListener('click', () => {
+                const isMuted = muteBtn.classList.toggle('is-muted');
+                iconVolOn.classList.toggle('hidden', isMuted);
+                iconVolOff.classList.toggle('hidden', !isMuted);
+                volSlider.disabled = isMuted;
+                volSlider.style.opacity = isMuted ? '0.5' : '1';
+            });
+            volSlider.addEventListener('input', (e) => {
+                const val = e.target.value;
+                e.target.style.background = `linear-gradient(to right, #007bff ${val}%, #4a4c5a ${val}%)`;
+            });
+            volSlider.dispatchEvent(new Event('input')); // init
+        }
+
+        /* --- 2. LED Logic (Control Panel) --- */
+        const ledDisplay = $('#led-display');
+        const colorBtns = $$('.color-btn');
+        const modeOpts = $$('.mode-opt');
+        let curColor = '#000000';
+        let curMode = 'solid';
+
+        function updateLed() {
+            if(!ledDisplay) return;
+            ledDisplay.style.backgroundColor = curColor;
+            ledDisplay.classList.toggle('is-blinking', curMode === 'blink' && curColor !== '#000000');
+        }
+
+        colorBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                colorBtns.forEach(b => b.classList.remove('is-active'));
+                btn.classList.add('is-active');
+                curColor = btn.dataset.c;
+                updateLed();
+            });
+        });
+
+        modeOpts.forEach(opt => {
+            opt.addEventListener('click', () => {
+                modeOpts.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                curMode = opt.id === 'mode-solid' ? 'solid' : 'blink';
+                updateLed();
+            });
+        });
+
+        /* --- 3. System Simulation & RTC --- */
+        function updateSystemStats() {
+            // CPU
+            const cpu = Math.floor(Math.random() * 30) + 10; 
+            const cpuVal = $('#cpu-val');
+            const cpuChart = $('#cpu-chart');
+            if(cpuVal) cpuVal.textContent = cpu + '%';
+            if(cpuChart) cpuChart.style.background = `conic-gradient(var(--accent-blue) 0% ${cpu}%, var(--border-color) ${cpu}% 100%)`;
+            
+            // RAM
+            const ram = Math.floor(Math.random() * 10) + 40; 
+            const ramVal = $('#ram-val');
+            const ramChart = $('#ram-chart');
+            if(ramVal) ramVal.textContent = ram + '%';
+            if(ramChart) ramChart.style.background = `conic-gradient(var(--accent-green) 0% ${ram}%, var(--border-color) ${ram}% 100%)`;
+
+            // Temp
+            const tempVal = $('#temp-val');
+            const tempBar = $('#temp-bar');
+            const temp = 40 + Math.floor(Math.random() * 5);
+            if(tempVal) tempVal.textContent = temp + '°C';
+            if(tempBar) tempBar.style.width = temp + '%';
+        }
+
+        function updateRTC() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
+            const rtc = $('#rtc-time');
+            if(rtc) rtc.textContent = timeStr;
+        }
+
+        setInterval(updateSystemStats, 2000);
+        setInterval(updateRTC, 1000);
+        updateRTC();
+        updateSystemStats();
+
+        /* --- 4. Scroll Helper (Optional for smooth anchor jumps) --- */
+        // 瀏覽器原生的 scroll-behavior: smooth 已經處理了大部分平滑捲動
+    </script>
+</body>
+</html>

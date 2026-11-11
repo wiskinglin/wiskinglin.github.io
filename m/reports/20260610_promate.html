@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>豐藝 (6189) & 勁豐 (6577) 雙軌協同與利基價值鏈分析報告 | KLIO. REPORT</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Desktop Redirect Script -->
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260610_promate.html';
+        }
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --bg-base: #050505;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14pt !important;
+            line-height: 1.6;
+        }
+
+        /* 頂部進度條 */
+        .progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #1a1a1a;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* 頂部導航列 */
+        .top-nav {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            z-index: 90;
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #fff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .category-tag {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        /* 橫向滾動選單 (Tab Navigation) */
+        .tab-nav-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background: rgba(5, 5, 5, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 89;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 16px;
+        }
+
+        .tab-nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            margin-right: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* 內容容器 */
+        .article-body {
+            padding: 120px 18px 80px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .date-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 950;
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .intro-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* 模組卡片結構 */
+        .module-section {
+            display: none;
+        }
+
+        .module-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .module-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .module-num {
+            font-size: 0.7rem;
+            font-weight: 900;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .sub-instructor {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Bento 元素改裝為行動端 Card */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-card.highlight {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--accent);
+        }
+
+        .card-desc {
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* 列表樣式 */
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 14px;
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* 警告與高亮區 */
+        .alert-box {
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: #f3f4f6;
+            line-height: 1.5;
+        }
+
+        /* 快切導航 */
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 32px;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .back-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: #fff;
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-decoration: none;
+            margin-top: 40px;
+        }
+
+        /* 表格優化 */
+        .mobile-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin-top: 8px;
+        }
+        .mobile-table th {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+        }
+        .mobile-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Sliders & Outputs for Sandbox */
+        .slider-group {
+            margin-bottom: 16px;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .mobile-range {
+            width: 100%;
+            height: 6px;
+            background: #222;
+            border-radius: 4px;
+            outline: none;
+            accent-color: #3b82f6;
+        }
+        .output-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 頂部進度條 -->
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- 頂部導航 -->
+    <nav class="top-nav">
+        <div class="logo-text">PROMATE SOLUTION</div>
+        <div class="category-tag">● 深度報告</div>
+    </nav>
+
+    <!-- 模組快速導航 Tab 欄 -->
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 財務剖析</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 協同價值</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 業務組合</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 競爭環境</button>
+        <button class="tab-btn" onclick="switchModule(5)">5. 沙盤推演</button>
+        <button class="tab-btn" onclick="switchModule(6)">6. 策略未來</button>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="article-body">
+        <span class="date-tag">June 10, 2026</span>
+        <h1>豐藝 (6189) & 勁豐 (6577)<br>雙軌協同價值鏈分析報告</h1>
+        <p class="intro-text">解構通路母公司與高毛利利基型子公司之間的垂直整合綜效、動態財務預測與營運模擬。</p>
+
+        <!-- ==================== MODULE 1 ==================== -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>財務剖析：景氣與防禦對比</h2>
+                <div class="sub-instructor">豐藝集團財務軌跡研究</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-chart-line-up"></i>豐藝 (6189) 通路代理</div>
+                <p class="card-desc">主要代理友達、聯陽等品牌，深具景氣敏感性。在 2024 年達 EPS 6.46 元歷史高點後，於 2025 年經歷深度去庫存，毛利波動於 7-9% 區間，景氣反彈時具高度爆發力。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-shield"></i>勁豐 (6577) 利基製造</div>
+                <p class="card-desc">專攻醫療觸控與工控顯示系統，產品生命週期長達 5-7 年，毛利率高達 24-34% 區間，具極強的防禦與穩健特質。</p>
+            </div>
+
+            <!-- 數據表格 -->
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-table"></i>歷史 EPS 與毛利率對照</div>
+                <table class="mobile-table text-slate-350">
+                    <thead>
+                        <tr>
+                            <th>季度</th>
+                            <th>6189 EPS</th>
+                            <th>6189 毛利率</th>
+                            <th>6577 EPS</th>
+                            <th>6577 毛利率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background:rgba(59,130,246,0.1)">
+                            <td>2026 Q1</td>
+                            <td>1.00</td>
+                            <td>9.16%</td>
+                            <td>1.67</td>
+                            <td>34.56%</td>
+                        </tr>
+                        <tr>
+                            <td>2025 Q4</td>
+                            <td>0.91</td>
+                            <td>8.70%</td>
+                            <td>2.05</td>
+                            <td>34.56%</td>
+                        </tr>
+                        <tr style="background:rgba(239,68,68,0.1)">
+                            <td>2025 Q2</td>
+                            <td>-0.49</td>
+                            <td>9.31%</td>
+                            <td>0.50</td>
+                            <td>34.00%</td>
+                        </tr>
+                        <tr>
+                            <td>2024 全年</td>
+                            <td>6.46</td>
+                            <td>7.30%</td>
+                            <td>6.63</td>
+                            <td>34.00%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 財務軌跡圖表 -->
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-chart-bar"></i>動態財務曲線</div>
+                <div class="flex gap-2 mb-3">
+                    <button id="m-btn-rev" onclick="updateMChart('revenue')" class="btn-action primary" style="padding:6px; font-size:10pt;">營收規模</button>
+                    <button id="m-btn-marg" onclick="updateMChart('margin')" class="btn-action" style="padding:6px; font-size:10pt;">毛利/EPS</button>
+                </div>
+                <div style="position:relative; height:220px; width:100%;">
+                    <canvas id="mobileFinancialChart"></canvas>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary" onclick="switchModule(2)">下一單元：協同價值 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 2 ==================== -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num">MODULE 2</span>
+                <h2>雙軌協同價值鏈與商業模式</h2>
+                <div class="sub-instructor">垂直整合與利潤內部化機制</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-circles-three-relation"></i>母子協同三大優勢</div>
+                <ul class="bullet-list">
+                    <li><strong>採購議價與避險：</strong>共享大宗採購規模，在面板与 IC 缺料期維持子公司穩定供貨。</li>
+                    <li><strong>利潤內部化：</strong>將母公司代理之低利潤面板（毛利 7-9%），經勁豐光學貼合加值，轉換為毛利 >34% 的醫療顯示終端。</li>
+                    <li><strong>資金融通與據點：</strong>利用母公司的流動資金與全球配銷網絡，提供子公司高效率物流支援。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-grid-four"></i>商業模式畫布 (BMC) 焦點</div>
+                <ul class="bullet-list">
+                    <li><strong>關鍵夥伴：</strong>半導體大廠（茂達、聯陽）、面板龍頭。</li>
+                    <li><strong>核心能耐：</strong>FDA醫療安規認證、防爆/強光抗干擾無塵室貼合、客製化韌體。</li>
+                    <li><strong>客戶細分：</strong>生物分析檢驗儀、加護病房監護儀、強光戶外加油站/售票機。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(3)">下一單元：業務組合 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 3 ==================== -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num">MODULE 3</span>
+                <h2>業務組合與 BCG 矩陣</h2>
+                <div class="sub-instructor">產品線佔比與成長性分析</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-star"></i>BCG 產品定位</div>
+                <ul class="bullet-list">
+                    <li><strong>明星事業 (Stars)：</strong>醫療用顯示器（勁豐佔比達 53.5%）。高成長、高認證壁壘、極高毛利率。</li>
+                    <li><strong>金牛事業 (Cash Cows)：</strong>豐藝 IC 與面板代理。營收基底龐大，週轉高，為集團穩定挹注營業現金流。</li>
+                    <li><strong>問題事業 (Question Marks)：</strong>智慧綠能與充電樁系統。市場高速成長，面臨激烈競逐，積極 Design-in 中。</li>
+                    <li><strong>落水狗事業 (Dogs)：</strong>大宗標準型消費性面板。紅海割喉，集團正限縮接單並朝工控升級。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-chart-pie"></i>勁豐 (6577) 營收結構佔比</div>
+                <ul class="bullet-list">
+                    <li>醫療用觸控顯示器：<strong>53.50%</strong></li>
+                    <li>嵌入式控制系統：<strong>28.15%</strong></li>
+                    <li>特殊應用顯示模組：<strong>9.79%</strong></li>
+                    <li>其他產品與服務：<strong>8.55%</strong></li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(4)">下一單元：競爭環境 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 4 ==================== -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num">MODULE 4</span>
+                <h2>競爭環境：SWOT 與 PESTEL</h2>
+                <div class="sub-instructor">地緣政治風險與宏觀評估</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-info"></i>SWOT 核心戰略</div>
+                <ul class="bullet-list">
+                    <li><strong>S 優勢：</strong>母子垂直整合效益佳；醫療客戶黏著度極高。</li>
+                    <li><strong>W 劣勢：</strong>母公司易受消費景氣波動；子公司美洲營收集中度達 87%。</li>
+                    <li><strong>O 機會：</strong>全球高齡化社會；歐美加油站與零售基建更新標案。</li>
+                    <li><strong>T 威脅：</strong>同業代理壓制；上游材料通膨與匯率波動。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-globe"></i>PESTEL 宏觀解讀</div>
+                <ul class="bullet-list">
+                    <li><strong>政治與法律：</strong>出貨標案具政治選舉週期；醫材認證 FDA、CE MDR 需數年，築起高度競爭護城河。</li>
+                    <li><strong>社會與技術：</strong>高齡化帶來顯示板塊長線支撐；光學無塵室貼合阻絕普通同業。</li>
+                    <li><strong>經濟與環境：</strong>易受台幣/美金匯差影響；部署鈣鈦礦農電共生與智慧能源以迎合 ESG。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(5)">下一單元：沙盤推演 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 5 ==================== -->
+        <div class="module-section" id="module-5">
+            <div class="module-header">
+                <span class="module-num">MODULE 5</span>
+                <h2>營運沙盤推演模擬器</h2>
+                <div class="sub-instructor">參數動態計算與預估</div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-sliders-horizontal"></i>環境參數控制</div>
+                
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>PC/NB 電子復甦度</span>
+                        <span id="m-val-pc" class="font-bold text-sky-400">50%</span>
+                    </div>
+                    <input oninput="runMSimulation()" id="m-slider-pc" type="range" min="0" max="100" value="50" class="mobile-range">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>醫療系統需求能見度</span>
+                        <span id="m-val-med" class="font-bold text-emerald-400">60%</span>
+                    </div>
+                    <input oninput="runMSimulation()" id="m-slider-med" type="range" min="0" max="100" value="60" class="mobile-range">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>零組件成本變動</span>
+                        <span id="m-val-cost" class="font-bold text-red-400">0%</span>
+                    </div>
+                    <input oninput="runMSimulation()" id="m-slider-cost" type="range" min="-30" max="30" value="0" class="mobile-range">
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <div style="flex:1;">
+                        <span style="font-size:0.65rem; color:#888;">6189 股價</span>
+                        <input oninput="runMSimulation()" id="m-price-6189" type="number" value="75.0" style="width:100%; padding:6px; background:#111; border:1px solid #333; color:#fff; border-radius:6px; font-size:0.75rem;">
+                    </div>
+                    <div style="flex:1;">
+                        <span style="font-size:0.65rem; color:#888;">6577 股價</span>
+                        <input oninput="runMSimulation()" id="m-price-6577" type="number" value="110.0" style="width:100%; padding:6px; background:#111; border:1px solid #333; color:#fff; border-radius:6px; font-size:0.75rem;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模擬輸出 -->
+            <div class="output-card" style="border-left: 4px solid #3b82f6;">
+                <span style="font-size:0.75rem; color:#888;">豐藝 (6189) 預估毛利 / EPS</span>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px;">
+                    <span id="m-out-gm-6189" style="font-size:1.2rem; font-weight:bold; color:#3b82f6;">8.50%</span>
+                    <span id="m-out-eps-6189" style="font-size:1.1rem; color:#fff;">NT$ 5.4</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#aaa; margin-top:4px;">
+                    <span>預估股息: NT$ <span id="m-out-div-6189">4.05</span></span>
+                    <span>預估殖利率: <span id="m-out-yield-6189">5.40%</span></span>
+                </div>
+            </div>
+
+            <div class="output-card" style="border-left: 4px solid #10b981;">
+                <span style="font-size:0.75rem; color:#888;">勁豐 (6577) 預估毛利 / EPS</span>
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px;">
+                    <span id="m-out-gm-6577" style="font-size:1.2rem; font-weight:bold; color:#10b981;">24.50%</span>
+                    <span id="m-out-eps-6577" style="font-size:1.1rem; color:#fff;">NT$ 7.8</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#aaa; margin-top:4px;">
+                    <span>預估股息: NT$ <span id="m-out-div-6577">5.85</span></span>
+                    <span>預估殖利率: <span id="m-out-yield-6577">5.32%</span></span>
+                </div>
+            </div>
+
+            <!-- 合併結論 -->
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-calculator"></i>合併績效與 AI 預測</div>
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#ccc; margin-bottom:8px;">
+                    <span>合併營收: <strong id="m-out-consol-rev">332.2 億</strong></span>
+                    <span>綜合毛利: <strong id="m-out-consol-gm" style="color:#10b981;">9.38%</strong></span>
+                </div>
+                <p id="m-dynamic-verdict" class="card-desc" style="font-size:0.75rem; padding:10px; background:rgba(255,255,255,0.02); border-radius:8px;">
+                    加載中...
+                </p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(4)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(6)">下一單元：策略未來 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 6 ==================== -->
+        <div class="module-section" id="module-6">
+            <div class="module-header">
+                <span class="module-num">MODULE 6</span>
+                <h2>策略轉型與未來藍圖</h2>
+                <div class="sub-instructor">未來策略三大引擎</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-rocket-launch"></i>未來策略三大引擎</div>
+                <ul class="bullet-list">
+                    <li><strong>1. 代理量轉質：</strong>豐藝降低消費性 PC 比重，轉攻車用與工控高速傳輸 IC 代理權。</li>
+                    <li><strong>2. 醫療分散集中風險：</strong>勁豐擴大歐美以外（如日本、東南亞）的醫療布局，分散美洲高達 87% 的比重集中風險。</li>
+                    <li><strong>3. 智慧綠能第二曲線：</strong>攜手佈局鈣鈦礦農電共生與智慧能源系統，開拓高成長市場。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-arrow-left-right"></i>雙軌商業模式對照</div>
+                <p class="card-desc">
+                    <strong>豐藝（通路加值）：</strong>提供原廠經銷渠道，向客戶提供 FAE 工程 Design-in 服務賺取通路價差。<br>
+                    <strong>勁豐（系統整合）：</strong>客製化醫療安規顯示模組與嵌入式控制系統，收取 NRE 技術研發費與硬體高毛利利基利潤。
+                </p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(5)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <a href="../index.html" class="back-home">
+            返回首頁 <i class="ph-bold ph-house-line"></i>
+        </a>
+    </div>
+
+    <!-- JS 邏輯 -->
+    <script>
+        let isMEditing = false;
+        let mobileChart = null;
+        let mActiveChartType = 'revenue';
+
+        // 進度條控制
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        // 模組切換邏輯
+        function switchModule(moduleNum) {
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (moduleNum === 1) {
+                setTimeout(initMobileChart, 50);
+            }
+        }
+
+        // 行動端財務圖表控制
+        const mFinancialData = {
+            years: ['2021', '2022', '2023', '2024(估)', '2025(預)'],
+            rev6189: [278.4, 312.5, 290.1, 321.4, 305.5],
+            gm6189: [8.8, 8.2, 8.1, 8.6, 8.4],
+            eps6189: [5.2, 5.8, 4.9, 5.5, 5.1],
+            rev6577: [16.5, 21.3, 19.8, 18.5, 19.5],
+            gm6577: [23.1, 25.4, 26.8, 28.5, 29.2],
+            eps6577: [5.4, 7.2, 8.1, 7.5, 8.2]
+        };
+
+        function updateMChart(type) {
+            mActiveChartType = type;
+            const btnRev = document.getElementById('m-btn-rev');
+            const btnMarg = document.getElementById('m-btn-marg');
+            if (type === 'revenue') {
+                btnRev.className = "btn-action primary";
+                btnMarg.className = "btn-action";
+            } else {
+                btnRev.className = "btn-action";
+                btnMarg.className = "btn-action primary";
+            }
+            initMobileChart();
+        }
+
+        function initMobileChart() {
+            const ctx = document.getElementById('mobileFinancialChart').getContext('2d');
+            if (mobileChart) {
+                mobileChart.destroy();
+            }
+
+            Chart.defaults.color = '#9ca3af';
+            Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+            if (mActiveChartType === 'revenue') {
+                mobileChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: mFinancialData.years,
+                        datasets: [
+                            {
+                                label: '6189 營收 (億)',
+                                data: mFinancialData.rev6189,
+                                backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                                yAxisID: 'yL'
+                            },
+                            {
+                                label: '6577 營收 (億)',
+                                data: mFinancialData.rev6577,
+                                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                                yAxisID: 'yR'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, labels: { boxWidth: 10, font: { size: 9 } } } },
+                        scales: {
+                            yL: { type: 'linear', position: 'left', min: 0, max: 400 },
+                            yR: { type: 'linear', position: 'right', min: 0, max: 40, grid: { drawOnChartArea: false } }
+                        }
+                    }
+                });
+            } else {
+                mobileChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: mFinancialData.years,
+                        datasets: [
+                            {
+                                label: '6189 毛利率',
+                                data: mFinancialData.gm6189,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                yAxisID: 'yL'
+                            },
+                            {
+                                label: '6577 毛利率',
+                                data: mFinancialData.gm6577,
+                                borderColor: '#10b981',
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                yAxisID: 'yL'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: true, labels: { boxWidth: 10, font: { size: 9 } } } },
+                        scales: {
+                            yL: { type: 'linear', position: 'left', min: 0, max: 40 }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 行動端沙盤推演計算
+        function runMSimulation() {
+            const pcRecovery = parseFloat(document.getElementById('m-slider-pc').value);
+            const medDemand = parseFloat(document.getElementById('m-slider-med').value);
+            const costChange = parseFloat(document.getElementById('m-slider-cost').value);
+            const price6189 = parseFloat(document.getElementById('m-price-6189').value) || 75.0;
+            const price6577 = parseFloat(document.getElementById('m-price-6577').value) || 110.0;
+
+            document.getElementById('m-val-pc').innerText = `${pcRecovery}% (${getPCRecoveryLabel(pcRecovery)})`;
+            document.getElementById('m-val-med').innerText = `${medDemand}% (${getMedLabel(medDemand)})`;
+            document.getElementById('m-val-cost').innerText = `${costChange > 0 ? '+' : ''}${costChange}%`;
+
+            const base6189Rev = 280.0;
+            const base6577Rev = 18.0;
+
+            const factor6189 = 0.75 + (0.65 * (pcRecovery / 100));
+            const costVolEffect = costChange > 0 ? (1 - (costChange * 0.003)) : 1.0;
+            const sim6189Rev = base6189Rev * factor6189 * costVolEffect;
+            const sim6577Rev = base6577Rev * (0.65 + (0.45 * (medDemand / 100)) + 0.12);
+
+            const costCompress6189 = costChange * 0.12;
+            let sim6189GM = 8.3 - costCompress6189;
+            sim6189GM = Math.max(6.5, Math.min(10.5, sim6189GM));
+
+            const medMixBenefit = (medDemand - 50) * 0.08;
+            const costCompress6577 = costChange * 0.15;
+            let sim6577GM = 27.5 + medMixBenefit - costCompress6577;
+            sim6577GM = Math.max(22.0, Math.min(34.5, sim6577GM));
+
+            const netMargin6189 = 3.6 + (sim6189GM - 8.3) * 0.45;
+            const netProfit6189 = sim6189Rev * (netMargin6189 / 100);
+            const sim6189EPS = Math.max(2.0, (netProfit6189 / 1.9)).toFixed(2);
+
+            const netMargin6577 = 11.0 + (sim6577GM - 27.5) * 0.6;
+            const netProfit6577 = sim6577Rev * (netMargin6577 / 100);
+            const sim6577EPS = Math.max(3.0, (netProfit6577 / 0.38)).toFixed(2);
+
+            const payoutRatio = 0.75;
+            const div6189 = (sim6189EPS * payoutRatio).toFixed(2);
+            const div6577 = (sim6577EPS * payoutRatio).toFixed(2);
+
+            const yield6189 = ((div6189 / price6189) * 100).toFixed(2);
+            const yield6577 = ((div6577 / price6577) * 100).toFixed(2);
+
+            const totalRev = sim6189Rev + sim6577Rev;
+            const totalGrossProfit = (sim6189Rev * (sim6189GM / 100)) + (sim6577Rev * (sim6577GM / 100));
+            const consolGM = ((totalGrossProfit / totalRev) * 100).toFixed(2);
+
+            document.getElementById('m-out-gm-6189').innerText = `${sim6189GM.toFixed(2)}%`;
+            document.getElementById('m-out-eps-6189').innerText = `NT$ ${sim6189EPS}`;
+            document.getElementById('m-out-div-6189').innerText = div6189;
+            document.getElementById('m-out-yield-6189').innerText = `${yield6189}%`;
+
+            document.getElementById('m-out-gm-6577').innerText = `${sim6577GM.toFixed(2)}%`;
+            document.getElementById('m-out-eps-6577').innerText = `NT$ ${sim6577EPS}`;
+            document.getElementById('m-out-div-6577').innerText = div6577;
+            document.getElementById('m-out-yield-6577').innerText = `${yield6577}%`;
+
+            document.getElementById('m-out-consol-rev').innerText = `${(totalRev).toFixed(1)} 億`;
+            document.getElementById('m-out-consol-gm').innerText = `${consolGM}%`;
+
+            const stabilityIndicator = document.getElementById('m-out-consol-stability');
+            let stabilityText = "優異防守力";
+            let stabilityColor = "#10b981";
+            
+            if (medDemand < 40 && pcRecovery < 40) {
+                stabilityText = "高度景氣衝擊";
+                stabilityColor = "#ef4444";
+            } else if (medDemand >= 70 && pcRecovery < 40) {
+                stabilityText = "醫療強韌護體";
+                stabilityColor = "#10b981";
+            } else if (medDemand < 40 && pcRecovery >= 70) {
+                stabilityText = "通路景氣狂飆";
+                stabilityColor = "#3b82f6";
+            } else if (costChange > 15) {
+                stabilityText = "受累成本壓縮";
+                stabilityColor = "#f59e0b";
+            }
+            stabilityIndicator.innerText = stabilityText;
+            stabilityIndicator.style.color = stabilityColor;
+
+            let verdict = "";
+            if (costChange > 15) {
+                verdict = "【預警：高物料衝擊】此時原物料漲幅劇烈。母子均面臨毛利下修壓力。勁豐受創略低於豐藝。建議觀察定價傳導力。";
+            } else if (pcRecovery >= 70 && medDemand >= 70) {
+                verdict = "【最優情境】雙軌動能爆發！PC電子重回主升段，勁豐醫療顯示手握滿單，為高毛利與高預估股息之黃金組合。";
+            } else if (pcRecovery < 30 && medDemand >= 75) {
+                verdict = "【特徵情境：醫療強防禦】PC景氣修正本業萎縮，但勁豐醫療爆發，高毛利比重拉高，展現認證壁壘之強大防護力。";
+            } else {
+                verdict = "目前設定下，豐藝通路端維持 7-9% 常態利差；勁豐則靠歐美穩定訂單，撐起 25% 以上的高水準毛利，攻守兼備。";
+            }
+            document.getElementById('m-dynamic-verdict').innerText = verdict;
+        }
+
+        function getPCRecoveryLabel(val) {
+            if (val >= 75) return "高速爆發";
+            if (val >= 50) return "中度復甦";
+            if (val >= 25) return "盤整修正";
+            return "深度去庫存";
+        }
+        function getMedLabel(val) {
+            if (val >= 75) return "強力擴產";
+            if (val >= 50) return "穩健成長";
+            if (val >= 25) return "平緩停滯";
+            return "預算緊縮";
+        }
+
+        // 初始化
+        window.onload = function() {
+            initMobileChart();
+            runMSimulation();
+        }
+    </script>
+</body>
+
+</html>

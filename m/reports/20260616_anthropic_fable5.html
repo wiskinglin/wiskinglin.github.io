@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>美國出口管制首例：Anthropic Fable 5 下架風波與全球主權 AI 變局 | KLIO. REPORT</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Desktop Redirect Script -->
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260616_anthropic_fable5.html';
+        }
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --accent: #ef4444; /* Red accent for warnings / restrictions */
+            --accent-cyan: #06b6d4; /* Cyan accent for tech */
+            --accent-glow: rgba(239, 68, 68, 0.15);
+            --accent-cyan-glow: rgba(6, 182, 212, 0.15);
+            --bg-base: #05070a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14pt !important;
+            line-height: 1.6;
+        }
+
+        /* 頂部進度條 */
+        .progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #0f121d;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* 頂部導航列 */
+        .top-nav {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            z-index: 90;
+            background: rgba(5, 7, 10, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #fff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .category-tag {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        /* 橫向滾動選單 (Tab Navigation) */
+        .tab-nav-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background: rgba(5, 7, 10, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 89;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 16px;
+        }
+
+        .tab-nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            margin-right: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* 內容容器 */
+        .article-body {
+            padding: 120px 18px 80px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .date-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 950;
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .intro-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* 模組卡片結構 */
+        .module-section {
+            display: none;
+        }
+
+        .module-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .module-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .module-num {
+            font-size: 0.7rem;
+            font-weight: 900;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .module-num.cyan {
+            background: var(--accent-cyan-glow);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        <h2> {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .sub-instructor {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Bento 元素改裝為行動端 Card */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-card.highlight {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .info-card.highlight-cyan {
+            border-color: rgba(6, 182, 212, 0.3);
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--accent-cyan);
+        }
+
+        .card-title.red-icon i {
+            color: var(--accent);
+        }
+
+        .card-desc {
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* 列表樣式 */
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 14px;
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-weight: bold;
+        }
+
+        .bullet-list.red-bullet li::before {
+            color: var(--accent);
+        }
+
+        /* 快切導航 */
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 32px;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .btn-action.primary-cyan {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 4px 12px var(--accent-cyan-glow);
+        }
+
+        .back-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: #fff;
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-decoration: none;
+            margin-top: 40px;
+        }
+
+        /* 表格優化 */
+        .mobile-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin-top: 8px;
+        }
+        .mobile-table th {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+        }
+        .mobile-table td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 頂部進度條 -->
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- 頂部導航 -->
+    <nav class="top-nav">
+        <div class="logo-text">FABLE 5 EXPORT CONTROL</div>
+        <div class="category-tag">● 國安管制</div>
+    </nav>
+
+    <!-- 模組快速導航 Tab 欄 -->
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 導火下架</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 股東告密</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 安全爭議</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 中美角力</button>
+        <button class="tab-btn" onclick="switchModule(5)">5. 研發衝擊</button>
+        <button class="tab-btn" onclick="switchModule(6)">6. 台灣戰略</button>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="article-body">
+        <span class="date-tag">June 16, 2026</span>
+        <h1>美國出口管制首例：<br>Anthropic Fable 5 下架風波與全球主權 AI 變局</h1>
+        <p class="intro-text">解構白宮以防止「越獄」為由直接施加國籍出口管制令、亞馬遜通報漏洞內幕、智譜 GLM-5.2 開源突圍，以及對台灣主權 AI 的長遠啟示。</p>
+
+        <!-- ==================== MODULE 1 ==================== -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>首例 AI 出口管制與下架事件</h2>
+                <div class="sub-instructor">美國商務部緊急限制國籍與存取權</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title red-icon"><i class="ph-bold ph-clock"></i>90 分鐘下架通牒</div>
+                <p class="card-desc">2026年6月12日美東下午，美國商務部以國家安全為由，發公文要求 Anthropic 暫停所有外國國民對 Fable 5 與 Mythos 5 的存取。由於無法即時辨識線上國籍，Anthropic 被迫於 90 分鐘內將 Fable 5 全面下架。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-shield-warning"></i>越獄漏洞疑慮</div>
+                <ul class="bullet-list red-bullet">
+                    <li>白宮核心擔憂使用者能透過「越獄（Jailbreak）」繞過模型防禦。</li>
+                    <li>官員指控模型被繞過後可用以識別網路安全漏洞，提供大量輔助網攻的資訊。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary-cyan" onclick="switchModule(2)">下一單元：股東告密 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 2 ==================== -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num cyan">MODULE 2</span>
+                <h2>最大股東亞馬遜向政府「告密」</h2>
+                <div class="sub-instructor">大股東、被投資方與雲端安全的商業糾葛</div>
+            </div>
+
+            <div class="info-card highlight-cyan">
+                <div class="card-title"><i class="ph-bold ph-user-alert"></i>安迪．賈西（Andy Jassy）的示警</div>
+                <p class="card-desc">亞馬遜執行長親自聯繫美國政府高層，通報其研究人員已透過提示詞，成功誘使 Fable 5 吐出可以用來協助網路攻擊的資訊，成為本次出口管制禁令的直接關鍵引信。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-handshake"></i>商業利益與雲端房東</div>
+                <ul class="bullet-list">
+                    <li>亞馬遜是 Anthropic 主要股東與最大雲端主辦方。</li>
+                    <li>業界高度關注此舉是否與亞馬遜同步擴大對 OpenAI 的投資、進而導致多方利益衝突有關。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-cyan" onclick="switchModule(3)">下一單元：安全爭議 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 3 ==================== -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num cyan">MODULE 3</span>
+                <h2>修補分歧與防禦導向式提示辯論</h2>
+                <div class="sub-instructor">Dario Amodei 的抗拒與 DOP 概念</div>
+            </div>
+
+            <div class="info-card highlight-cyan">
+                <div class="card-title"><i class="ph-bold ph-scales"></i>執行長拒絕妥協引爆禁令</div>
+                <p class="card-desc">創投家 David Sacks 透露，商務部原希望 Anthropic 修補安全防禦，但執行長 Dario Amodei 判定該威脅為特定情境下的極限狀況而非普遍性越獄而拒絕下架，迫使政府祭出強硬出口禁令。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-shield-check"></i>資安專家 Katie Moussouris 的聲援</div>
+                <ul class="bullet-list">
+                    <li>聲稱該功能為「防禦導向式提示 (Defense Oriented Prompting)」，是防禦者測試自身安全性所需。</li>
+                    <li>限制此功能反倒削弱了資安防禦者提升系統安全防護的能力。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-cyan" onclick="switchModule(4)">下一單元：中美角力 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 4 ==================== -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num">MODULE 4</span>
+                <h2>中美 AI 角力與開源陣營突圍</h2>
+                <div class="sub-instructor">防堵模型蒸餾與中國智譜 GLM-5.2 的高調回應</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title red-icon"><i class="ph-bold ph-shield-slash"></i>防止模型蒸餾（Distillation）</div>
+                <p class="card-desc">美國安全局處擔憂與中國相關的團體已取得 Fable 5 的 API 存取權，極可能透過頻繁調用來蒸餾數據，進而完美複製出 Mythos 級前沿模型的底層能力。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-git-fork"></i>智譜 GLM-5.2 宣佈開源反擊</div>
+                <ul class="bullet-list">
+                    <li>中國智譜於 6 月 13 日高調開源最強模型 GLM-5.2，並將 API 對外國開放。</li>
+                    <li>公告直言：「前沿智能不應被少數規則隨時收回。它應是開放、可用、可建構的，服務每一位開發者。」藉此吸引去美化生態系的開發者。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-cyan" onclick="switchModule(5)">下一單元：研發衝擊 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 5 ==================== -->
+        <div class="module-section" id="module-5">
+            <div class="module-header">
+                <span class="module-num cyan">MODULE 5</span>
+                <h2>研發中斷與盟國受限衝擊</h2>
+                <div class="sub-instructor">核心員工與英國、加拿大存取被切斷</div>
+            </div>
+
+            <div class="info-card highlight-cyan">
+                <div class="card-title"><i class="ph-bold ph-users-three"></i>人才研發體系受阻</div>
+                <p class="card-desc">因禁令以國籍為依據，Anthropic 內部核心外籍員工（如 Andrej Karpathy 等）無法接觸前沿權重。此舉在矽谷引發人事管理大混亂，嚴重阻礙下一代模型的協作與測試。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-lock"></i>傳統盟國亦同受限制</div>
+                <ul class="bullet-list">
+                    <li>英國、加拿大等傳統美方盟國的研究機構也無法正常存取 Fable 5。</li>
+                    <li>前沿 AI 兩巨頭的競爭格局：與川普新政權關係緊密的 OpenAI 趁機以 GPT-5.5 搶占 Anthropic 受阻的海外失土。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(4)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary-cyan" onclick="switchModule(6)">下一單元：台灣戰略 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 6 ==================== -->
+        <div class="module-section" id="module-6">
+            <div class="module-header">
+                <span class="module-num cyan">MODULE 6</span>
+                <h2>台灣主權 AI 佈局與戰略思考</h2>
+                <div class="sub-instructor">台大資工教授洪士灝的警示與底氣</div>
+            </div>
+
+            <div class="info-card highlight-cyan">
+                <div class="card-title"><i class="ph-bold ph-chart-line-up"></i>跳脫硬體競賽，以務實需求定義主權</div>
+                <p class="card-desc">台大教授洪士灝指出，美單邊命令顯示隨時可中斷他國的 AI 供應鏈。台灣應將此視為契機，理性建立「以台灣關鍵產業需求定義主權 AI」的共識。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-cpu"></i>布局人才與晶片強項</div>
+                <ul class="bullet-list">
+                    <li>反對隨波逐流盲目買硬體算力，而應將算力資源布局在最核心的本土人才培育。</li>
+                    <li>發揮台灣特有的晶片設計（IC Design）強項，構建自主掌握的 AI 核心，才是台灣真正的主權與底氣。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(5)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <a href="../index.html" class="back-home">
+            返回首頁 <i class="ph-bold ph-house-line"></i>
+        </a>
+    </div>
+
+    <!-- JS 邏輯 -->
+    <script>
+        // 進度條控制
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        // 模組切換邏輯
+        function switchModule(moduleNum) {
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>

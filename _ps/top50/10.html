@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>#10 Data-Dense Clean UI — 高資訊密度潔淨介面 | Top 50 UX/UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#fafafa;--surface:#fff;--surface2:#f5f5f5;
+  --border:#e5e5e5;--border-hover:#ccc;
+  --text:#1a1a1a;--text-muted:#666;--text-dim:#999;
+  --accent:#e60012;--accent-light:#fff0f0;
+  --tag-blue:#0066cc;--tag-green:#00875a;--tag-orange:#ff8800;
+  --badge-sale:#e60012;--badge-new:#0066cc;
+  --star:#ffb100;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;
+  padding-bottom:80px;font-size:14px;
+}
+
+/* Style Info — data-dense approach: compact with clear hierarchy */
+.style-info{
+  max-width:1100px;margin:0 auto;
+  padding:48px 20px 32px;
+}
+.style-info .breadcrumb{
+  font-size:.7rem;color:var(--text-dim);margin-bottom:12px;
+}
+.style-info .breadcrumb a{color:var(--tag-blue);text-decoration:none}
+.style-info h1{
+  font-size:clamp(1.2rem,3vw,1.6rem);font-weight:700;
+  margin-bottom:2px;
+}
+.style-info .subtitle{
+  font-size:.85rem;color:var(--text-muted);margin-bottom:16px;
+}
+.info-compact{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;
+}
+.info-row{
+  display:flex;padding:10px 16px;
+  border-bottom:1px solid var(--border);
+  font-size:.82rem;
+}
+.info-row:last-child{border-bottom:none}
+.info-row .key{
+  width:160px;flex-shrink:0;font-weight:600;color:var(--text-muted);
+}
+.info-row .val{color:var(--text-muted);line-height:1.7}
+
+/* Demo — e-commerce product list (Rakuten/Yahoo style) */
+.demo{max-width:1100px;margin:0 auto;padding:0 20px}
+
+/* Filter bar */
+.filter-bar{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:12px 0;border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+.filter-bar .label{font-size:.75rem;font-weight:600;color:var(--text-muted)}
+.filter-btn{
+  padding:4px 12px;border:1px solid var(--border);border-radius:14px;
+  background:var(--surface);font-size:.72rem;color:var(--text-muted);
+  cursor:pointer;transition:all .2s;font-family:inherit;
+}
+.filter-btn:hover,.filter-btn.active{
+  border-color:var(--accent);color:var(--accent);background:var(--accent-light);
+}
+.sort-select{
+  margin-left:auto;padding:4px 8px;border:1px solid var(--border);
+  border-radius:4px;font-size:.72rem;font-family:inherit;
+  color:var(--text-muted);background:var(--surface);
+}
+.result-count{
+  font-size:.72rem;color:var(--text-dim);
+}
+
+/* Product grid */
+.product-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:12px;margin-bottom:32px;
+}
+.product-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;overflow:hidden;
+  transition:border-color .2s,box-shadow .2s;
+  cursor:pointer;position:relative;
+}
+.product-card:hover{
+  border-color:var(--border-hover);
+  box-shadow:0 2px 12px rgba(0,0,0,.06);
+}
+.product-img{
+  width:100%;aspect-ratio:1;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.product-img .placeholder{
+  font-size:2.5rem;opacity:.4;
+}
+.product-badge{
+  position:absolute;top:6px;left:6px;
+  padding:2px 8px;border-radius:3px;
+  font-size:.6rem;font-weight:700;color:#fff;
+}
+.product-badge.sale{background:var(--badge-sale)}
+.product-badge.new{background:var(--badge-new)}
+.product-badge.limited{background:#333}
+
+/* Product info — dense layout */
+.product-info{padding:10px 12px 12px}
+.product-info .brand{
+  font-size:.65rem;color:var(--text-dim);
+  text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;
+}
+.product-info .name{
+  font-size:.8rem;font-weight:500;line-height:1.4;
+  margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;
+  -webkit-box-orient:vertical;overflow:hidden;
+}
+.product-info .price-row{
+  display:flex;align-items:baseline;gap:6px;margin-bottom:4px;
+}
+.product-info .price{
+  font-size:1rem;font-weight:700;color:var(--accent);
+}
+.product-info .original-price{
+  font-size:.72rem;color:var(--text-dim);text-decoration:line-through;
+}
+.product-info .discount{
+  font-size:.65rem;font-weight:700;color:var(--accent);
+  background:var(--accent-light);padding:1px 5px;border-radius:3px;
+}
+
+/* Rating & meta */
+.product-meta{
+  display:flex;align-items:center;gap:6px;
+  font-size:.68rem;color:var(--text-dim);
+}
+.stars{color:var(--star);letter-spacing:-.02em}
+.product-meta .reviews{color:var(--tag-blue)}
+
+/* Tags */
+.product-tags{
+  display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;
+}
+.product-tag{
+  font-size:.58rem;padding:1px 6px;border-radius:3px;
+  border:1px solid var(--border);color:var(--text-dim);
+}
+.product-tag.free-ship{border-color:var(--tag-green);color:var(--tag-green)}
+.product-tag.points{border-color:var(--tag-orange);color:var(--tag-orange)}
+
+/* Accordion for detailed specs */
+.accordion{margin-bottom:32px}
+.accordion-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;background:var(--surface);
+  border:1px solid var(--border);border-radius:6px;
+  cursor:pointer;font-size:.82rem;font-weight:600;
+  transition:background .2s;margin-bottom:4px;
+}
+.accordion-header:hover{background:var(--surface2)}
+.accordion-header .arrow{
+  transition:transform .3s;font-size:.7rem;
+}
+.accordion-header.open .arrow{transform:rotate(180deg)}
+.accordion-body{
+  max-height:0;overflow:hidden;transition:max-height .4s ease;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:0 0 6px 6px;margin-top:-5px;
+}
+.accordion-body.open{max-height:500px}
+.accordion-inner{padding:16px;font-size:.8rem;color:var(--text-muted);line-height:1.8}
+
+/* Hover detail popup */
+.product-card .hover-detail{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(255,255,255,.95);backdrop-filter:blur(6px);
+  padding:10px 12px;transform:translateY(100%);
+  transition:transform .3s ease;border-top:1px solid var(--border);
+  font-size:.72rem;color:var(--text-muted);line-height:1.6;
+}
+.product-card:hover .hover-detail{transform:translateY(0)}
+
+@media(max-width:768px){
+  .product-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .style-info{padding:36px 12px 24px}
+  .demo{padding:0 12px}
+  .filter-bar{gap:4px}
+  .info-row .key{width:110px}
+  .info-row{flex-direction:column;gap:2px}
+  .info-row .key{width:auto}
+}
+
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(250,250,250,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:center;align-items:center;gap:16px;
+  padding:12px 24px;z-index:100;
+}
+.bottom-nav a{text-decoration:none;color:var(--text-muted);font-size:.82rem;padding:8px 20px;border-radius:8px;transition:color .3s,background .3s}
+.bottom-nav a:hover{color:var(--accent);background:var(--accent-light)}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.style-info{animation:fadeIn .5s ease}
+.demo{animation:fadeIn .5s ease .15s both}
+</style>
+</head>
+<body>
+
+<header class="style-info">
+  <div class="breadcrumb">
+    <a href="index.html">Top 50</a> › <a href="#">極簡與結構化設計</a> › #10
+  </div>
+  <h1>#10 — Data-Dense Clean UI</h1>
+  <p class="subtitle">高資訊密度潔淨介面</p>
+  <div class="info-compact">
+    <div class="info-row">
+      <span class="key">📖 風格定義與視覺特徵</span>
+      <span class="val">在妥協於特定亞洲市場（如日本）對詳細資訊、免責聲明的高度信任偏好下，透過懸停微互動、手風琴摺疊選單與清晰的項目符號，將龐大的「文字雪崩」進行視覺淨化與模組化梳理。</span>
+    </div>
+    <div class="info-row">
+      <span class="key">🏢 適用產業與場景</span>
+      <span class="val">綜合型電商平台（如樂天、Yahoo!）、大型入口網站</span>
+    </div>
+    <div class="info-row">
+      <span class="key">🌍 主要流行地區</span>
+      <span class="val">日本、台灣</span>
+    </div>
+    <div class="info-row">
+      <span class="key">📂 所屬分類</span>
+      <span class="val">極簡與結構化設計（Minimalism & Structured Design）</span>
+    </div>
+  </div>
+</header>
+
+<main class="demo">
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <span class="label">篩選：</span>
+    <button class="filter-btn active" onclick="filterClick(this)">全部</button>
+    <button class="filter-btn" onclick="filterClick(this)">限時特價</button>
+    <button class="filter-btn" onclick="filterClick(this)">免運費</button>
+    <button class="filter-btn" onclick="filterClick(this)">高評價</button>
+    <button class="filter-btn" onclick="filterClick(this)">新品上架</button>
+    <select class="sort-select">
+      <option>排序：推薦度</option>
+      <option>價格低→高</option>
+      <option>價格高→低</option>
+      <option>評價最高</option>
+      <option>最新上架</option>
+    </select>
+    <span class="result-count">共 2,847 件商品</span>
+  </div>
+
+  <!-- Product grid -->
+  <div class="product-grid">
+    <!-- Product 1 -->
+    <div class="product-card">
+      <div class="product-img">
+        <span class="placeholder">🎧</span>
+        <span class="product-badge sale">-30%</span>
+      </div>
+      <div class="product-info">
+        <div class="brand">SONY</div>
+        <div class="name">WH-1000XM5 無線降噪耳罩式耳機 銀色</div>
+        <div class="price-row">
+          <span class="price">¥29,700</span>
+          <span class="original-price">¥42,900</span>
+          <span class="discount">-30%</span>
+        </div>
+        <div class="product-meta">
+          <span class="stars">★★★★★</span>
+          <span class="reviews">(3,847)</span>
+          <span>・已售 12K+</span>
+        </div>
+        <div class="product-tags">
+          <span class="product-tag free-ship">✓ 免運</span>
+          <span class="product-tag points">10x 點數</span>
+          <span class="product-tag">24hr 出貨</span>
+        </div>
+      </div>
+      <div class="hover-detail">
+        <strong>規格摘要：</strong>30mm 驅動單元 / 30hr 續航 / LDAC / 自適應音效 / 多點連線 / 270g<br>
+        <strong>保固：</strong>原廠一年保固 ✓ 附收納盒
+      </div>
+    </div>
+
+    <!-- Product 2 -->
+    <div class="product-card">
+      <div class="product-img">
+        <span class="placeholder">📱</span>
+        <span class="product-badge new">NEW</span>
+      </div>
+      <div class="product-info">
+        <div class="brand">APPLE</div>
+        <div class="name">iPhone 16 Pro Max 256GB 沙漠鈦金色</div>
+        <div class="price-row">
+          <span class="price">¥189,800</span>
+        </div>
+        <div class="product-meta">
+          <span class="stars">★★★★☆</span>
+          <span class="reviews">(1,204)</span>
+          <span>・已售 5K+</span>
+        </div>
+        <div class="product-tags">
+          <span class="product-tag free-ship">✓ 免運</span>
+          <span class="product-tag">分期 0 利率</span>
+        </div>
+      </div>
+      <div class="hover-detail">
+        <strong>規格摘要：</strong>A18 Pro 晶片 / 6.9" OLED / 48MP 四鏡頭 / 鈦金屬中框 / eSIM<br>
+        <strong>保固：</strong>AppleCare+ 可加購
+      </div>
+    </div>
+
+    <!-- Product 3 -->
+    <div class="product-card">
+      <div class="product-img">
+        <span class="placeholder">⌨️</span>
+        <span class="product-badge limited">限定</span>
+      </div>
+      <div class="product-info">
+        <div class="brand">HHKB</div>
+        <div class="name">Professional HYBRID Type-S 雪白 日語配列</div>
+        <div class="price-row">
+          <span class="price">¥36,850</span>
+        </div>
+        <div class="product-meta">
+          <span class="stars">★★★★★</span>
+          <span class="reviews">(892)</span>
+          <span>・庫存剩 3</span>
+        </div>
+        <div class="product-tags">
+          <span class="product-tag free-ship">✓ 免運</span>
+          <span class="product-tag points">5x 點數</span>
+          <span class="product-tag">靜電容軸</span>
+        </div>
+      </div>
+      <div class="hover-detail">
+        <strong>規格摘要：</strong>靜電容量無接點式 / Bluetooth 4.2 / USB-C / 540g / 英語配列<br>
+        <strong>附屬品：</strong>USB-C 纜線 / 鍵帽拔取器
+      </div>
+    </div>
+
+    <!-- Product 4 -->
+    <div class="product-card">
+      <div class="product-img">
+        <span class="placeholder">🖥️</span>
+        <span class="product-badge sale">-15%</span>
+      </div>
+      <div class="product-info">
+        <div class="brand">DELL</div>
+        <div class="name">U2723QE 27" 4K USB-C IPS 廣色域顯示器</div>
+        <div class="price-row">
+          <span class="price">¥52,800</span>
+          <span class="original-price">¥62,480</span>
+          <span class="discount">-15%</span>
+        </div>
+        <div class="product-meta">
+          <span class="stars">★★★★☆</span>
+          <span class="reviews">(567)</span>
+          <span>・已售 2K+</span>
+        </div>
+        <div class="product-tags">
+          <span class="product-tag free-ship">✓ 免運</span>
+          <span class="product-tag">3 年保固</span>
+        </div>
+      </div>
+      <div class="hover-detail">
+        <strong>規格摘要：</strong>3840×2160 / 60Hz / USB-C 90W PD / DCI-P3 98% / VESA DisplayHDR 400<br>
+        <strong>重量：</strong>6.64kg（含支架）
+      </div>
+    </div>
+
+    <!-- Product 5 -->
+    <div class="product-card">
+      <div class="product-img">
+        <span class="placeholder">🎮</span>
+      </div>
+      <div class="product-info">
+        <div class="brand">NINTENDO</div>
+        <div class="name">Nintendo Switch 2 Joy-Con 組合包</div>
+        <div class="price-row">
+          <span class="price">¥49,980</span>
+        </div>
+        <div class="product-meta">
+          <span class="stars">★★★★★</span>
+          <span class="reviews">(4,201)</span>
+          <span>・已售 28K+</span>
+        </div>
+        <div class="product-tags">
+          <span class="product-tag free-ship">✓ 免運</span>
+          <span class="product-tag points">20x 點數</span>
+        </div>
+      </div>
+      <div class="hover-detail">
+        <strong>規格摘要：</strong>8" LCD / NVIDIA T239 / 256GB / USB-C / 磁吸 Joy-Con<br>
+        <strong>附屬品：</strong>Joy-Con ×2 / Dock / HDMI 纜線
+      </div>
+    </div>
+
+    <!-- Product 6 -->
+    <div class="product-card">
+      <div class="product-img">
+        <span class="placeholder">☕</span>
+        <span class="product-badge sale">-20%</span>
+      </div>
+      <div class="product-info">
+        <div class="brand">BALMUDA</div>
+        <div class="name">The Brew 自動手沖咖啡機 K06A-BK</div>
+        <div class="price-row">
+          <span class="price">¥47,520</span>
+          <span class="original-price">¥59,400</span>
+          <span class="discount">-20%</span>
+        </div>
+        <div class="product-meta">
+          <span class="stars">★★★★☆</span>
+          <span class="reviews">(312)</span>
+          <span>・已售 800+</span>
+        </div>
+        <div class="product-tags">
+          <span class="product-tag free-ship">✓ 免運</span>
+          <span class="product-tag">24hr 出貨</span>
+        </div>
+      </div>
+      <div class="hover-detail">
+        <strong>規格摘要：</strong>獨家旁注式注水 / 不鏽鋼壺身 / 3 杯份量 / 1450W<br>
+        <strong>保固：</strong>原廠一年保固
+      </div>
+    </div>
+  </div>
+
+  <!-- Accordion -->
+  <div class="accordion">
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>📋 購物須知與免責聲明</span>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-inner">
+        <p>• 所有價格均含消費稅（10%），部分商品享減稅稅率（8%）。</p>
+        <p>• 跨境運費依配送地區另計，結帳時自動計算。</p>
+        <p>• 商品圖片僅供參考，實際顏色可能因螢幕設定而異。</p>
+        <p>• 限時特價商品不適用於其他優惠券折扣疊加使用。</p>
+        <p>• 退換貨須於收貨後 7 日內申請，並保持商品原包裝完整。</p>
+      </div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>🚚 配送與退貨政策</span>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-inner">
+        <p>• 標準配送：3-5 個工作日（日本國內）。</p>
+        <p>• 24hr 出貨標示商品：工作日 14:00 前下單當日出貨。</p>
+        <p>• 國際配送支援：台灣、韓國、東南亞地區。</p>
+        <p>• 退貨運費由買家負擔，瑕疵品除外。</p>
+      </div>
+    </div>
+
+    <div class="accordion-header" onclick="toggleAccordion(this)">
+      <span>💎 點數回饋規則</span>
+      <span class="arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      <div class="accordion-inner">
+        <p>• 基本回饋：消費金額的 1%（每 100 日圓 = 1 點）。</p>
+        <p>• 高倍點數商品：回饋率 5x ~ 20x，活動期間自動適用。</p>
+        <p>• 點數有效期：最後獲得或使用日起 12 個月。</p>
+        <p>• 1 點 = ¥1，可於下次消費時折抵。</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="09.html">← 上一頁</a>
+  <a href="index.html">🏠 回首頁</a>
+  <a href="11.html">下一頁 →</a>
+</nav>
+
+<script>
+// Filter button toggle
+function filterClick(btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Accordion toggle
+function toggleAccordion(header){
+  const body=header.nextElementSibling;
+  const isOpen=body.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.accordion-body').forEach(b=>b.classList.remove('open'));
+  document.querySelectorAll('.accordion-header').forEach(h=>h.classList.remove('open'));
+  // Toggle current
+  if(!isOpen){
+    body.classList.add('open');
+    header.classList.add('open');
+  }
+}
+
+// Scroll-triggered card stagger animation
+const cardObs=new IntersectionObserver((entries)=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>{
+        e.target.style.opacity='1';
+        e.target.style.transform='translateY(0)';
+      },i*80);
+      cardObs.unobserve(e.target);
+    }
+  });
+},{threshold:0.1});
+
+document.querySelectorAll('.product-card').forEach(card=>{
+  card.style.opacity='0';
+  card.style.transform='translateY(16px)';
+  card.style.transition='opacity .4s ease,transform .4s ease';
+  cardObs.observe(card);
+});
+</script>
+</body>
+</html>

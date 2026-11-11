@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>NVIDIA RTX Spark 處理器革命：Computex 2026 對市場的衝擊 | KLIO. REPORT</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Desktop Redirect Script -->
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.href = '../../reports/20260611_nvidia_pc_cpu.html';
+        }
+    </script>
+
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --accent: #76b900;
+            --accent-glow: rgba(118, 185, 0, 0.15);
+            --bg-base: #0b0f19;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: var(--bg-base);
+            color: #d1d5db;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+            font-size: 14pt !important;
+            line-height: 1.6;
+        }
+
+        /* 頂部進度條 */
+        .progress-track {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #111422;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* 頂部導航列 */
+        .top-nav {
+            position: fixed;
+            top: 3px;
+            left: 0;
+            width: 100%;
+            z-index: 90;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: #fff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .category-tag {
+            font-size: 0.65rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: 0.05em;
+        }
+
+        /* 橫向滾動選單 (Tab Navigation) */
+        .tab-nav-container {
+            position: fixed;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background: rgba(11, 15, 25, 0.95);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 89;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 16px;
+        }
+
+        .tab-nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            margin-right: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* 內容容器 */
+        .article-body {
+            padding: 120px 18px 80px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .date-tag {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 950;
+            color: #fff;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+
+        .intro-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* 模組卡片結構 */
+        .module-section {
+            display: none;
+        }
+
+        .module-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .module-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .module-num {
+            font-size: 0.7rem;
+            font-weight: 900;
+            background: var(--accent-glow);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+            border: 1px solid rgba(118, 185, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 850;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .sub-instructor {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Bento 元素改裝為行動端 Card */
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .info-card.highlight {
+            border-color: rgba(118, 185, 0, 0.3);
+            background: linear-gradient(135deg, rgba(118, 185, 0, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--accent);
+        }
+
+        .card-desc {
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* 列表樣式 */
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 14px;
+            font-size: 14pt !important;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* 警告與高亮區 */
+        .alert-box {
+            background: rgba(118, 185, 0, 0.05);
+            border: 1px solid rgba(118, 185, 0, 0.2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: #f3f4f6;
+            line-height: 1.5;
+        }
+
+        /* 快切導航 */
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 32px;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .back-home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: #fff;
+            color: #000;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-decoration: none;
+            margin-top: 40px;
+        }
+
+        /* 表格優化 */
+        .mobile-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10pt;
+            margin-top: 8px;
+        }
+        .mobile-table th {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+        }
+        .mobile-table td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid var(--border-color);
+        }
+        
+        .code-inline {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 頂部進度條 -->
+    <div class="progress-track">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- 頂部導航 -->
+    <nav class="top-nav">
+        <div class="logo-text">NVIDIA CHIP REVOLUTION</div>
+        <div class="category-tag">● 深度報告</div>
+    </nav>
+
+    <!-- 模組快速導航 Tab 欄 -->
+    <div class="tab-nav-container" id="tabContainer">
+        <button class="tab-btn active" onclick="switchModule(1)">1. 晶片願景</button>
+        <button class="tab-btn" onclick="switchModule(2)">2. 架構規格</button>
+        <button class="tab-btn" onclick="switchModule(3)">3. 遊戲與技術</button>
+        <button class="tab-btn" onclick="switchModule(4)">4. 專業應用</button>
+        <button class="tab-btn" onclick="switchModule(5)">5. 硬體生態</button>
+        <button class="tab-btn" onclick="switchModule(6)">6. 市場變局</button>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="article-body">
+        <span class="date-tag">June 11, 2026</span>
+        <h1>NVIDIA RTX Spark 處理器革命：<br>Computex 2026 對市場的衝擊</h1>
+        <p class="intro-text">深度解析 NVIDIA 首款與聯發科聯名 PC 晶片 RTX Spark (N1X) 的架構技術、本地端 AI 算力、硬派 3A 遊戲效能與商業版圖移轉影響。</p>
+
+        <!-- ==================== MODULE 1 ==================== -->
+        <div class="module-section active" id="module-1">
+            <div class="module-header">
+                <span class="module-num">MODULE 1</span>
+                <h2>本地端 AI 代理算力大未來</h2>
+                <div class="sub-instructor">設計理念與三巨頭聯名預告</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-sparkle"></i>微軟、NVIDIA、Arm 聯合大預告</div>
+                <p class="card-desc">Computex 2026 前夕，三巨頭發布了罕見聯合預告「A new era of PC (一個新的 PC 世代即將來臨)」，並標註 GTC 演講地點的 GPS 座標。這宣告了 NVIDIA 首款 PC 晶片 RTX Spark 的問世，將為消費端電腦帶來巨大變革。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-cpu"></i>擺脫 NPU 算力瓶頸</div>
+                <ul class="bullet-list">
+                    <li>現行 Windows Copilot+ PC 的 40+ TOPS 算力在本地運行 120B 大模型時顯得不足。</li>
+                    <li>NVIDIA 直接整合 Grace CPU、Blackwell GPU，提供高達 <strong>1 PetaFLOP</strong> (FP4) 本地 AI 算力。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action primary" onclick="switchModule(2)">下一單元：架構規格 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 2 ==================== -->
+        <div class="module-section" id="module-2">
+            <div class="module-header">
+                <span class="module-num">MODULE 2</span>
+                <h2>RTX Spark 處理器核心架構</h2>
+                <div class="sub-instructor">規格解析與 AI 效能指標</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-matrix"></i>RTX Spark 處理器核心規格</div>
+                <table class="mobile-table text-slate-300">
+                    <thead>
+                        <tr>
+                            <th>規格</th>
+                            <th>Spark (N1X 高階版)</th>
+                            <th>對手對標 (M5 Pro 等)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>製程</td>
+                            <td>台積電 3nm</td>
+                            <td>3nm 級</td>
+                        </tr>
+                        <tr>
+                            <td>CPU</td>
+                            <td>20核 Grace (Arm v9.2)</td>
+                            <td>多核 Arm 架構</td>
+                        </tr>
+                        <tr>
+                            <td>GPU</td>
+                            <td>6144 CUDA (Blackwell)</td>
+                            <td>等同 RTX 5070 筆電版</td>
+                        </tr>
+                        <tr>
+                            <td>記憶體</td>
+                            <td>128GB LPDDR5x / 600GB/s</td>
+                            <td>128GB (Ryzen Max+)</td>
+                        </tr>
+                        <tr>
+                            <td>AI 算力</td>
+                            <td style="color:var(--accent); font-weight:bold;">1 PetaFLOP (FP4)</td>
+                            <td>低於 100 TOPS (純 NPU)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-activity"></i>本機 AI 實測成果</div>
+                <ul class="bullet-list">
+                    <li><strong>Llama.cpp 高效推論：</strong> 達到 90 Token/s 的本機高運算速度。</li>
+                    <li><strong>生圖生影效能：</strong> 文字生圖與圖片生影（Flux 1.dev + SVD 1.1）速度比 M5 Pro 晶片快將近 10 倍。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(1)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(3)">下一單元：遊戲與技術 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 3 ==================== -->
+        <div class="module-section" id="module-3">
+            <div class="module-header">
+                <span class="module-num">MODULE 3</span>
+                <h2>遊戲表現與 DLSS 4.5 技術</h2>
+                <div class="sub-instructor">動態多幀生成與反作弊相容挑戰</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-game-controller"></i>3A 遊戲 1440p 實測</div>
+                <ul class="bullet-list">
+                    <li><strong>心靈殺手 2：</strong> 在 1440p 解析度下，開啟光追與 DLSS 4.5 達到 95 - 105 fps。</li>
+                    <li><strong>印第安納瓊斯：古老之圈：</strong> 可穩定運作於 110 - 120 fps。</li>
+                    <li>效能表現等同於行動端 RTX 5070 等級，徹底打破 ARM 無法進行重度遊戲的成見。</li>
+                </ul>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-arrows-merge"></i>DLSS 4.5 與 AI 技術</div>
+                <p class="card-desc">採用全新 DLSS 4.5 技術，內建第二代 Transformer 模型，參數量提升 20%，能實現更精細的光線重建，多幀生成技術使幀率最高提升達 6 倍。同時開箱即支援 Reflex 與 ACE NPC 語音生成對齊。</p>
+            </div>
+
+            <div class="alert-box">
+                <strong>⚠️ 防作弊軟體相容性：</strong> 雖然 Easy Anti-Cheat 等目前已開箱支援 ARM 64 原生版，但部分核心層反作弊軟體仍受轉譯層限制，相容性仍需持續克服。
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(2)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(4)">下一單元：專業應用 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 4 ==================== -->
+        <div class="module-section" id="module-4">
+            <div class="module-header">
+                <span class="module-num">MODULE 4</span>
+                <h2>專業應用程式底層優化</h2>
+                <div class="sub-instructor">創意軟體與渲染引擎的 100% 加速</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-bezier-curve"></i>Adobe CC / Blender / Unreal Engine</div>
+                <ul class="bullet-list">
+                    <li><strong>Adobe CC (Photoshop / Premiere)：</strong> 重新編寫內部管線，最耗時的「場景剪輯偵測」速度提升 2 倍，且能流暢回放 3 軌 4K60 fps 10-bit 4:2:2 影片。</li>
+                    <li><strong>Blender 5.3 & UE 5.6：</strong> 利用 128GB 超大統一記憶體優勢，輕鬆載入 90GB 以上極大型 3D 渲染場景，並針對 ARM Neon 指令集重寫優化。</li>
+                </ul>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(3)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(5)">下一單元：硬體生態 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 5 ==================== -->
+        <div class="module-section" id="module-5">
+            <div class="module-header">
+                <span class="module-num">MODULE 5</span>
+                <h2>硬體合作夥伴與 OEM 生態系</h2>
+                <div class="sub-instructor">首波預計秋季上市的機型規劃</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-devices"></i>六大 OEM 品牌大廠</div>
+                <p class="card-desc">預計於 2026 年秋季陸續推出搭載本處理器的電競筆電、迷你主機與工作站：</p>
+                <div class="space-y-3 mt-3">
+                    <div style="padding-left:12px; border-left:2px solid var(--accent);">
+                        <strong>微軟 (Microsoft) Surface Laptop Ultra</strong>
+                        <p style="font-size:10pt; color:var(--text-muted);">首款且唯一的實機展示機種，與系統深度適配，允許 GPU 記憶體留存達 80%。</p>
+                    </div>
+                    <div style="padding-left:12px; border-left:2px solid var(--accent);">
+                        <strong>華碩 (ASUS) & 宏碁 (Acer) & 微星 (MSI)</strong>
+                        <p style="font-size:10pt; color:var(--text-muted);">主打 Max-Q 輕薄設計（厚度僅 1.4 公分）的電競筆電與迷你主機。</p>
+                    </div>
+                    <div style="padding-left:12px; border-left:2px solid var(--accent);">
+                        <strong>聯想 (Lenovo) & Dell & HP</strong>
+                        <p style="font-size:10pt; color:var(--text-muted);">推出商務創作者機種，兼具長續航力與企業級本地 AI 安全防護。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(4)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+                <button class="btn-action primary" onclick="switchModule(6)">下一單元：市場變局 <i class="ph-bold ph-caret-right"></i></button>
+            </div>
+        </div>
+
+        <!-- ==================== MODULE 6 ==================== -->
+        <div class="module-section" id="module-6">
+            <div class="module-header">
+                <span class="module-num">MODULE 6</span>
+                <h2>消費級 CPU 市場板塊遷移</h2>
+                <div class="sub-instructor">x86 陣營與 ARM 陣營的終極對抗</div>
+            </div>
+
+            <div class="info-card highlight">
+                <div class="card-title"><i class="ph-bold ph-chart-line-up"></i>市場板塊大遷移</div>
+                <p class="card-desc">以往由 Intel 與 AMD 這對 x86 雙雄絕對主導的 PC 市場將被打破。未來將呈現 x86 陣營（Intel、AMD）與 ARM 架構陣營（Qualcomm、NVIDIA、Apple）五雄並立的多頭競爭格局，產品選擇的多元化將大幅提升消費者的選擇空間，更正式宣告 ARM 架構在 PC 市場的強勢崛起。</p>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title"><i class="ph-bold ph-warning"></i>首批旗艦機種的限制與疑慮</div>
+                <p class="card-desc">全速運轉時風扇噪音仍然偏大；其不插電時的效能一致性、以及實際日常續航力，均有待今年秋季正式上市後由第三方媒體進行實測與驗證。</p>
+            </div>
+
+            <div class="nav-actions">
+                <button class="btn-action" onclick="switchModule(5)"><i class="ph-bold ph-caret-left"></i> 上一單元</button>
+            </div>
+        </div>
+
+        <!-- 返回按鈕 -->
+        <a href="../index.html" class="back-home">
+            返回首頁 <i class="ph-bold ph-house-line"></i>
+        </a>
+    </div>
+
+    <!-- JS 邏輯 -->
+    <script>
+        // 進度條控制
+        const progressBar = document.getElementById('progressBar');
+        window.addEventListener('scroll', () => {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            progressBar.style.width = pct + '%';
+        });
+
+        // 模組切換邏輯
+        function switchModule(moduleNum) {
+            const sections = document.querySelectorAll('.module-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+            document.getElementById(`module-${moduleNum}`).classList.add('active');
+
+            const tabContainer = document.getElementById('tabContainer');
+            const btns = tabContainer.querySelectorAll('.tab-btn');
+            btns.forEach((btn, index) => {
+                if (index === (moduleNum - 1)) {
+                    btn.classList.add('active');
+                    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>

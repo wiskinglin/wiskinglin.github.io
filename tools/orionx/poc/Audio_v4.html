@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音訊控制 UI 設計 (錄音/回放 - 更新版)</title>
+    <style>
+        /* --- 基本樣式與排版 (暗色模式) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #1a2533; 
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            color: #f0f4f8; 
+        }
+
+        .audio-controls-container {
+            background-color: #2a384a; 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); 
+            padding: 24px;
+            width: 380px;
+            border: 1px solid #3b4b5f; 
+        }
+
+        .control-section {
+            margin-bottom: 24px;
+        }
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff; 
+            margin-top: 0;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #4a5b70; 
+            padding-bottom: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* --- 1. 麥克風 (輸入) --- */
+        .mic-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .mic-main-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+            flex-grow: 1; 
+        }
+        .mic-main-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .mic-reset-btn {
+            background-color: #4a5b70;
+            color: #f0f4f8;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 10px;
+            display: grid;
+            place-items: center;
+            transition: background-color 0.2s ease;
+        }
+        .mic-reset-btn:hover {
+            background-color: #5c6e7d;
+        }
+        .mic-reset-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* 麥克風 - 狀態：準備 (Ready) */
+        .mic-main-btn {
+            background-color: #4a5b70;
+            color: #e0e6ec;
+        }
+        .mic-main-btn:hover {
+            background-color: #5c6e7d;
+        }
+
+        /* 麥克風 - 狀態：錄製中 (is-recording) */
+        .mic-main-btn.is-recording {
+            background-color: #d32f2f;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(211, 47, 47, 0.5);
+        }
+        .mic-main-btn.is-recording:hover {
+            background-color: #e57373;
+        }
+
+        /* 麥克風 - 狀態：待播放/播放中 (is-readytoplay / is-playing) */
+        .mic-main-btn.is-readytoplay,
+        .mic-main-btn.is-playing {
+            background-color: #2979ff;
+            color: #ffffff;
+        }
+        .mic-main-btn.is-readytoplay:hover,
+        .mic-main-btn.is-playing:hover {
+            background-color: #4c9aff;
+        }
+
+        /* 聲波視覺化 */
+        .mic-visualizer {
+            display: flex;
+            align-items: center;
+            height: 30px;
+            gap: 3px;
+        }
+        .mic-visualizer .bar {
+            width: 5px;
+            height: 6px;
+            background-color: #5c6e7d; 
+            border-radius: 2px;
+            transition: background-color 0.3s;
+        }
+        
+        .mic-group.is-recording .mic-visualizer .bar {
+            background-color: #4caf50; 
+            animation: sound-wave 1.2s infinite ease-in-out;
+            animation-play-state: running; 
+        }
+
+        /* 聲波動畫 */
+        .mic-visualizer .bar:nth-child(2) { animation-delay: -1.0s; }
+        .mic-visualizer .bar:nth-child(3) { animation-delay: -0.8s; }
+        .mic-visualizer .bar:nth-child(4) { animation-delay: -1.1s; }
+        .mic-visualizer .bar:nth-child(5) { animation-delay: -0.9s; }
+
+        @keyframes sound-wave {
+            0%, 100% { height: 6px; }
+            50% { height: 28px; }
+        }
+
+        /* 回放進度條 */
+        .playback-progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #4a5b70;
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .playback-progress-bar .progress {
+            width: 0%;
+            height: 100%;
+            background-color: #2979ff;
+            border-radius: 2px;
+            transition: width 0.1s linear; 
+        }
+        .mic-group.is-playing .playback-progress-bar .progress {
+            transition: width 3s linear; 
+            width: 100%;
+        }
+
+        /* [新] 錄音提示 */
+        .recording-prompt {
+            color: #fdd835; /* 提示性黃色 */
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+            transition: opacity 0.2s ease;
+        }
+
+        /* --- 2. 喇叭 (輸出) - [已修改] --- */
+        .mute-toggle-btn { background: none; border: none; padding: 6px; cursor: pointer; border-radius: 50%; display: grid; place-items: center; transition: background-color 0.2s ease; }
+        .mute-toggle-btn:hover { background-color: #3b4b5f; }
+        .mute-toggle-btn svg { width: 24px; height: 24px; color: #b0bec5; }
+        .speaker-group.is-muted .mute-toggle-btn svg { color: #f44336; }
+
+        /* [修改] +/- 按鈕已移除 */
+
+        /* [修改] 滑桿佔滿剩餘空間 */
+        input[type="range"] {
+            flex: 1; 
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #4a5b70; 
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: #2979ff; border-radius: 50%; border: 2px solid #2a384a; box-shadow: 0 1px 3px rgba(0,0,0,0.4); transition: transform 0.1s ease; }
+        input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; background: #2979ff; border-radius: 50%; border: 2px solid #2a384a; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+        .speaker-group.is-muted input[type="range"] { opacity: 0.5; pointer-events: none; cursor: not-allowed; }
+
+        /* --- 輔助 class --- */
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="audio-controls-container">
+
+        <div class="control-section">
+            <h3>🎙️ 輸入 (麥克風)</h3>
+            
+            <div class="control-group mic-group" id="mic-group">
+                <div class="mic-controls">
+                    <button class="mic-main-btn" id="mic-main-btn">
+                        <svg class="icon-mic" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/><path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/></svg>
+                        <svg class="icon-stop hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6A1.5 1.5 0 0 1 11 12.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/></svg>
+                        <svg class="icon-play hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M10.804 8 5 4.633v6.734L10.804 8zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm15 0a7 7 0 1 0-14 0 7 7 0 0 0 14 0z"/></svg>
+                        <svg class="icon-pause hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5zm5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5z"/></svg>
+                        <span id="mic-btn-text">錄音</span>
+                    </button>
+                    
+                    <button class="mic-reset-btn hidden" id="mic-reset-btn" aria-label="清除錄音">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                    </button>
+
+                    <div class="mic-visualizer" id="mic-visualizer">
+                        <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="recording-prompt hidden" id="recording-prompt"></div>
+
+            <div class="playback-progress-bar hidden" id="playback-progress">
+                <div class="progress" id="playback-progress-inner"></div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <h3>🔊 輸出 (喇叭)</h3>
+            <div class="control-group speaker-group" id="speaker-group">
+                <button class="mute-toggle-btn" id="speaker-mute" aria-label="將喇叭靜音" aria-pressed="false">
+                    <svg class="icon-volume-on" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z"/><path d="M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z"/><path d="M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.489 3.489 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z"/></svg>
+                    <svg class="icon-volume-off hidden" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 0 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z"/></svg>
+                </button>
+                
+                <input type="range" id="volume-slider" min="0" max="100" value="60" step="20" aria-label="音量控制">
+                
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 輔助函式 ---
+        const $ = (selector) => document.querySelector(selector);
+        
+        // --- 麥克風錄製/回放控制 ---
+        const micGroup = $('#mic-group');
+        const mainBtn = $('#mic-main-btn');
+        const resetBtn = $('#mic-reset-btn');
+        const btnText = $('#mic-btn-text');
+        
+        // 圖示
+        const iconMic = $('.icon-mic');
+        const iconStop = $('.icon-stop');
+        const iconPlay = $('.icon-play');
+        const iconPause = $('.icon-pause');
+        
+        // 進度條
+        const progressBar = $('#playback-progress');
+        const progressInner = $('#playback-progress-inner');
+
+        // [新] 錄音提示
+        const promptEl = $('#recording-prompt');
+        
+        let micState = 'ready'; // 'ready', 'recording', 'readytoplay', 'playing'
+        let playbackTimer = null; 
+        
+        // 狀態管理函式
+        function setMicState(newState) {
+            micState = newState;
+            
+            // 移除所有狀態 class
+            micGroup.classList.remove('is-recording', 'is-readytoplay', 'is-playing');
+            mainBtn.classList.remove('is-recording', 'is-readytoplay', 'is-playing');
+            
+            // 隱藏所有圖示和次要元件
+            [iconMic, iconStop, iconPlay, iconPause, resetBtn, progressBar, promptEl].forEach(el => el.classList.add('hidden'));
+
+            // 重置播放進度
+            clearTimeout(playbackTimer);
+            progressInner.style.transition = 'none'; 
+            progressInner.style.width = '0%'; 
+            
+            switch (newState) {
+                case 'ready':
+                    iconMic.classList.remove('hidden');
+                    btnText.textContent = '錄音';
+                    break;
+                    
+                case 'recording':
+                    micGroup.classList.add('is-recording');
+                    mainBtn.classList.add('is-recording');
+                    iconStop.classList.remove('hidden');
+                    btnText.textContent = '停止錄音';
+                    
+                    // [新] 產生並顯示錄音提示
+                    const now = new Date();
+                    const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true };
+                    // 使用 'zh-TW' (台灣) 格式 e.g., "2025/11/10 上午11:22"
+                    const timeString = now.toLocaleString('zh-TW', options); 
+                    promptEl.textContent = `請試著念出：${timeString}`;
+                    promptEl.classList.remove('hidden');
+                    break;
+                    
+                case 'readytoplay':
+                    micGroup.classList.add('is-readytoplay');
+                    mainBtn.classList.add('is-readytoplay');
+                    iconPlay.classList.remove('hidden');
+                    btnText.textContent = '回放';
+                    resetBtn.classList.remove('hidden'); 
+                    progressBar.classList.remove('hidden'); 
+                    break;
+                    
+                case 'playing':
+                    micGroup.classList.add('is-playing');
+                    mainBtn.classList.add('is-playing');
+                    iconPause.classList.remove('hidden');
+                    btnText.textContent = '播放中...';
+                    resetBtn.classList.remove('hidden'); 
+                    progressBar.classList.remove('hidden'); 
+                    
+                    // 模擬播放
+                    void progressInner.offsetWidth; 
+                    progressInner.style.transition = 'width 3s linear';
+                    progressInner.style.width = '100%';
+                    
+                    playbackTimer = setTimeout(() => {
+                        setMicState('readytoplay'); 
+                    }, 3000);
+                    break;
+            }
+        }
+
+        // 主按鈕點擊事件
+        mainBtn.addEventListener('click', () => {
+            switch (micState) {
+                case 'ready': setMicState('recording'); break;
+                case 'recording': setMicState('readytoplay'); break;
+                case 'readytoplay': setMicState('playing'); break;
+                case 'playing': setMicState('readytoplay'); break;
+            }
+        });
+        
+        // 重設按鈕點擊事件
+        resetBtn.addEventListener('click', () => {
+            setMicState('ready');
+        });
+
+        // --- 喇叭控制 (已修改) ---
+        const speakerGroup = $('#speaker-group');
+        const speakerMute = $('#speaker-mute');
+        const iconVolumeOn = $('.icon-volume-on');
+        const iconVolumeOff = $('.icon-volume-off');
+        const slider = $('#volume-slider');
+        
+        let volumeBeforeMute = slider.value; // [修改] 會讀取到預設的 "60"
+
+        speakerMute.addEventListener('click', () => {
+            const isMuted = speakerMute.getAttribute('pressed') === 'true';
+            speakerMute.setAttribute('pressed', !isMuted);
+            speakerGroup.classList.toggle('is-muted', !isMuted);
+            
+            slider.disabled = !isMuted;
+            // [修改] 移除 volDown/volUp 的 disabled
+            
+            if (!isMuted) {
+                iconVolumeOn.classList.add('hidden');
+                iconVolumeOff.classList.remove('hidden');
+                volumeBeforeMute = slider.value; 
+                slider.value = 0; 
+                speakerMute.setAttribute('aria-label', '取消喇叭靜音');
+            } else {
+                iconVolumeOn.classList.remove('hidden');
+                iconVolumeOff.classList.add('hidden');
+                slider.value = volumeBeforeMute; 
+                speakerMute.setAttribute('aria-label', '將喇叭靜音');
+            }
+            slider.dispatchEvent(new Event('input')); 
+        });
+
+        // [修改] 移除 volDown 和 volUp 的事件監聽
+
+        slider.addEventListener('input', (e) => {
+            const value = e.target.value;
+            const percent = (value / e.target.max) * 100;
+            e.target.style.background = `linear-gradient(to right, #2979ff ${percent}%, #4a5b70 ${percent}%)`;
+            
+            if (value == 0) {
+                if (speakerMute.getAttribute('pressed') === 'false') {
+                    // [修改] 如果拖到 0，下次取消靜音時至少回到 20%
+                    volumeBeforeMute = 20; 
+                    speakerMute.click(); 
+                }
+            } else {
+                 if (speakerMute.getAttribute('pressed') === 'true') {
+                    speakerMute.click(); 
+                 }
+                 volumeBeforeMute = value; 
+            }
+        });
+        
+        // 頁面載入時，先執行一次
+        slider.dispatchEvent(new Event('input'));
+        setMicState('ready'); 
+
+    </script>
+</body>
+</html>
