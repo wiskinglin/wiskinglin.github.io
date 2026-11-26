@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>靈感書籤 Bookmarks — KLIO.</title>
+  <meta name="description" content="KLIO 策展靈感書籤：匯集 Design First、ACG Universe 與 Tech ROCKS 精選資源。">
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/klio-design.css?v=20261125">
+  <script src="../assets/js/klio-shell.js?v=20261125" data-klio-shell data-base="../" data-active="bookmarks"></script>
+  <style>
+    .klio-bm-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 20px;
+      border-radius: var(--klio-radius-md);
+      border: 1px solid var(--klio-border);
+      background: var(--klio-bg-elevated);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .klio-bm-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--klio-border-strong);
+      box-shadow: var(--klio-shadow-sm);
+    }
+    .klio-bm-main-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .klio-bm-main-link:hover .klio-card-title {
+      color: var(--klio-accent);
+    }
+    .klio-bm-social {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .klio-bm-chip {
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--klio-border);
+      font-family: var(--klio-font-mono);
+      font-size: 0.72rem;
+      color: var(--klio-text-secondary);
+      text-decoration: none;
+    }
+    .klio-bm-chip:hover {
+      border-color: var(--klio-accent);
+      color: var(--klio-accent);
+    }
+  </style>
+</head>
+
+<body>
+  <main class="klio-container">
+    <section class="klio-page-hero">
+      <h1 class="klio-page-title">靈感書籤</h1>
+      <p class="klio-page-subtitle" id="klio-bm-subtitle">策展精選 Design First、ACG Universe 與 Tech ROCKS 品牌與網站資源。</p>
+    </section>
+
+    <section class="klio-controls-bar" aria-label="書籤分類與搜尋">
+      <div class="klio-tabs" id="klio-bm-tabs" role="tablist"></div>
+      <div class="klio-search-group">
+        <input id="klio-bm-search" class="klio-input" type="search" placeholder="搜尋品牌、分類或關鍵字...">
+      </div>
+    </section>
+
+    <div id="klio-bm-meta" style="margin-bottom:16px;font-size:0.85rem;color:var(--klio-text-muted);"></div>
+    <section id="klio-bm-grid" class="klio-grid" aria-live="polite"></section>
+  </main>
+
+  <script src="../assets/js/klio-bookmarks-data.js"></script>
+  <script>
+    (function () {
+      var items = window.KLIO_BOOKMARKS || [];
+      var categories = window.KLIO_BOOKMARK_CATEGORIES || [];
+
+      document.getElementById('klio-bm-subtitle').textContent =
+        '策展精選 Design First、ACG Universe 與 Tech ROCKS，共收錄 ' + items.length + ' 個品牌與實用資源。';
+
+      var params = new URLSearchParams(window.location.search);
+      var initial = params.get('cat');
+      var valid = categories.map(function (c) { return c.id; });
+      var activeCat = valid.indexOf(initial) !== -1 ? initial : 'all';
+      var query = '';
+
+      var tabsEl = document.getElementById('klio-bm-tabs');
+      var gridEl = document.getElementById('klio-bm-grid');
+      var metaEl = document.getElementById('klio-bm-meta');
+      var searchEl = document.getElementById('klio-bm-search');
+
+      function badgeClass(cat) {
+        if (cat === 'df') return 'klio-badge--life';
+        if (cat === 'acg') return 'klio-badge--business';
+        return 'klio-badge--tech';
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function renderTabs() {
+        tabsEl.innerHTML = categories.map(function (c) {
+          var count = c.id === 'all' ? items.length : items.filter(function (x) { return x.category === c.id; }).length;
+          var cls = 'klio-tab-btn' + (activeCat === c.id ? ' is-active' : '');
+          return '<button type="button" class="' + cls + '" data-cat="' + c.id + '"><span>' + c.label + '</span><span class="klio-tab-count">' + count + '</span></button>';
+        }).join('');
+
+        var btns = tabsEl.querySelectorAll('.klio-tab-btn');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].addEventListener('click', function () {
+            activeCat = this.getAttribute('data-cat');
+            var url = new URL(window.location.href);
+            if (activeCat === 'all') url.searchParams.delete('cat');
+            else url.searchParams.set('cat', activeCat);
+            window.history.replaceState({}, '', url.toString());
+            renderTabs();
+            renderGrid();
+          });
+        }
+      }
+
+      function renderGrid() {
+        var q = query.trim().toLowerCase();
+        var list = items.filter(function (x) {
+          if (activeCat !== 'all' && x.category !== activeCat) return false;
+          if (!q) return true;
+          return (
+            x.title.toLowerCase().indexOf(q) !== -1 ||
+            x.desc.toLowerCase().indexOf(q) !== -1 ||
+            (x.subtag || '').toLowerCase().indexOf(q) !== -1 ||
+            x.url.toLowerCase().indexOf(q) !== -1
+          );
+        });
+
+        metaEl.textContent = '顯示 ' + list.length + ' 筆資源（共 ' + items.length + ' 筆）';
+
+        if (list.length === 0) {
+          gridEl.style.display = 'block';
+          gridEl.innerHTML = '<div class="klio-empty-state">找不到符合條件的書籤資源。</div>';
+          return;
+        }
+
+        gridEl.style.display = 'grid';
+        gridEl.innerHTML = list.map(function (x) {
+          var sub = x.subtag || x.url.replace(/^https?:\/\//, '').split('/')[0];
+          var socialHtml = '';
+          if (x.links && x.links.length > 0) {
+            socialHtml = '<div class="klio-bm-social">' + x.links.map(function (l) {
+              return '<a class="klio-bm-chip" href="' + escapeHtml(l.url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(l.label) + '</a>';
+            }).join('') + '</div>';
+          }
+          return (
+            '<article class="klio-bm-card">' +
+              '<a class="klio-bm-main-link" href="' + escapeHtml(x.url) + '" target="_blank" rel="noopener noreferrer">' +
+                '<div class="klio-card-meta">' +
+                  '<span class="klio-badge ' + badgeClass(x.category) + '">' + escapeHtml(x.categoryLabel) + '</span>' +
+                  '<span class="klio-date">' + escapeHtml(sub) + '</span>' +
+                '</div>' +
+                '<h2 class="klio-card-title" style="margin-top:12px;">' + escapeHtml(x.title) + '</h2>' +
+                '<p class="klio-card-desc" style="margin-top:8px;-webkit-line-clamp:4;">' + escapeHtml(x.desc) + '</p>' +
+              '</a>' +
+              '<div class="klio-card-footer">' +
+                (socialHtml || '<span>精選網站</span>') +
+                '<a href="' + escapeHtml(x.url) + '" target="_blank" rel="noopener noreferrer" style="color:var(--klio-accent);text-decoration:none;font-weight:600;">前往 -&gt;</a>' +
+              '</div>' +
+            '</article>'
+          );
+        }).join('');
+      }
+
+      searchEl.addEventListener('input', function () {
+        query = this.value;
+        renderGrid();
+      });
+
+      renderTabs();
+      renderGrid();
+    })();
+  </script>
+</body>
+
+</html>

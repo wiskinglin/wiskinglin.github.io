@@ -1,404 +1,189 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【深度報告】2026 年主流 AI 應用分析報告：功能優化與訂閱門檻建議</title>
-    <meta name="description" content="2026 年最新 AI 工具市場觀察：從 ChatGPT 到 Cursor，深度解析訂閱價值、功能演進與跨平台整合策略。">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        :root {
-            --bg-deep: #050505;
-            --accent-glow: rgba(99, 102, 241, 0.15);
-            --border-glass: rgba(255, 255, 255, 0.08);
-        }
-
-        body {
-            background-color: var(--bg-deep);
-            color: #e5e7eb;
-            overflow-x: hidden;
-        }
-
-        /* 漸層背景裝飾 */
-        .glow-bg {
-            position: fixed;
-            top: -10%;
-            right: -10%;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(80px);
-        }
-
-        .glow-bg-2 {
-            position: fixed;
-            bottom: -10%;
-            left: -10%;
-            width: 50vw;
-            height: 50vw;
-            background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(80px);
-        }
-
-        /* 毛玻璃卡片 */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass);
-            border-radius: 24px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.04);
-            transform: translateY(-4px);
-        }
-
-        /* 表格自定義樣式 */
-        .ai-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-        }
-
-        .ai-table th {
-            text-align: left;
-            padding: 16px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: #9ca3af;
-        }
-
-        .ai-table td {
-            padding: 20px 16px;
-            background: rgba(255, 255, 255, 0.01);
-            border-top: 1px solid var(--border-glass);
-            border-bottom: 1px solid var(--border-glass);
-        }
-
-        .ai-table tr td:first-child {
-            border-left: 1px solid var(--border-glass);
-            border-top-left-radius: 12px;
-            border-bottom-left-radius: 12px;
-        }
-
-        .ai-table tr td:last-child {
-            border-right: 1px solid var(--border-glass);
-            border-top-right-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-
-        /* 進度條 */
-        #progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(to right, #6366f1, #10b981);
-            z-index: 100;
-            width: 0%;
-            transition: width 0.1s ease;
-        }
-
-        .text-gradient-purple {
-            background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .nav-link {
-            position: relative;
-            color: #9ca3af;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link:hover {
-            color: #fff;
-        }
-
-        .nav-link.active {
-            color: #fff;
-        }
-
-        .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: #6366f1;
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI 工具選型解析：訂閱門檻、硬體成本與預算配置 | KLIO.</title>
+<meta content="剖析 AI 工具市場格局，比較通用對話、開發輔助與影音生成的定價結構，拆解雲端訂閱與本地硬體成本，提供務實的選型與預算建議。" name="description"/>
+<link href="../icons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="../assets/css/klio-design.css?v=20261125" rel="stylesheet"/>
+<script data-active="reports" data-base="../" data-klio-shell="" src="../assets/js/klio-shell.js?v=20261125"></script>
 </head>
-<body class="antialiased">
-    <div id="progress-bar"></div>
-    <div class="glow-bg"></div>
-    <div class="glow-bg-2"></div>
+<body>
+<main class="klio-article-page">
+<nav aria-label="麵包屑導覽" class="klio-breadcrumb">
+<a href="../index.html">觀察筆記</a>
+<span aria-hidden="true">/</span>
+<a href="../index.html?cat=business">商業與市場</a>
+<span aria-hidden="true">/</span>
+<span class="klio-date">2026-04-23</span>
+</nav>
+<header class="klio-article-header">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+<span class="klio-badge klio-badge--business">商業與市場</span>
+<span class="klio-date">2026-04-23</span>
+</div>
+<h1 class="klio-article-title">AI 工具選型解析：訂閱門檻、硬體成本與預算配置</h1>
+<p class="klio-article-summary">拆解通用對話、程式開發與影音生成工具的真實帳單，算清雲端訂閱與本地硬體的五年成本。這份筆記幫你按任務需求與隱私邊界，配出不浪費的 AI 工具預算。</p>
+</header>
+<article class="klio-prose">
+<section id="context">
+<h2>01. 核心脈絡：訂閱疊加通膨與真實成本結構</h2>
+<p>2026 年的 AI 工具市場已過了單點嘗鮮期，進入訂閱疊加通膨的階段。你只要同時訂閱通用對話、程式開發與影音生成服務，每月固定支出就會超過 120 美元（約新台幣 3,800 元）。面對功能重疊的眾多工具，別急著刷卡，先確認手上的任務屬性、資料隱私邊界與預算上限。抓準這三條線，你才知道錢該花在雲端月費、按量計費的應用程式介面（API），還是買斷制本地硬體。</p>
+</section>
+<section id="mechanisms">
+<h2>02. 底層機制：對話、開發與創作工具的計價邏輯</h2>
+<h3>綜合對話與邏輯推理：從單一萬能走向任務分工</h3>
+<p>2026 年的通用型對話模型已經走出各自擅長的戰場。你不需要同時付費給兩家同質性高的服務，重複訂閱只會墊高固定開銷。現在各家真正拉開差距的地方有三項：長上下文的注意力維持度、即時檢索的引用準確性，以及既有辦公軟體的串接深度。</p>
+<h3>開發者工作流：IDE 整合、本地推論與超額計費</h3>
+<p>挑選整合開發環境（IDE）與部署工具，不能只看程式碼庫的理解深度，還得盯緊隱性超額計費。帳面月費只是入場門檻，額度用完後的降速機制與加購單價，才是打亂開發節奏的主因。實際檢視三種常見的開發與部署環境，帳單會長這樣：</p>
+<ul>
+<li><strong>Cursor Pro（參考月費：$20/月）</strong>：主打對話與代理編輯，能為中大型專案建立索引並跨檔案重構。你得留意「快速請求（Fast Requests）」的月度配額，一旦開啟重度代理（Agent）模式連續自動修錯，配額在兩週內就會見底。切換到排隊模式或加購額度後，實際月帳單會來到 40 至 60 美元之間。</li>
+<li><strong>Ollama Local（軟體免費，自備硬體）</strong>：把模型權重留在地端執行，可直接避開雲端 API 費率波動與程式碼外洩風險。不過硬體門檻很現實，一張 RTX 3060（12 GB 顯示記憶體，VRAM）只能順跑 70 億至 140 億（7B–14B）參數的 4-bit 量化模型，僅夠應付自動補全與短文摘要。如果想做複雜架構設計或長上下文代理任務，你必須升級更高階的顯示記憶體或統一記憶體配置。</li>
+<li><strong>Vercel Pro（參考月費：$20/席/月）</strong>：前端與全端 AI 應用的主力部署平台，能直接串接主流 AI 軟體開發套件（SDK）。團隊估算預算時，務必把超額計費算進去，包含無伺服器函式（Serverless Function）執行時數、邊緣請求（Edge Requests）與頻寬流量。一旦應用遇到爬蟲或高併發異常流量，最終帳單就會遠高於基礎席位費。</li>
+</ul>
+<h3>影像與影音生成：抽卡重試率與商用授權</h3>
+<p>創作類 AI 工具的真實成本，全看「抽卡」重試率。一個鏡頭得生成 8 至 12 次才堪用，基礎方案的月度點數撐不過幾天就會歸零。導入商業專案前，也別忘了先核對高解析度匯出門檻與企業商用授權條款。</p>
+<h3>影片生成工具：動態連貫性與點數消耗</h3>
+<ul>
+<li><strong>Luma Dream Machine（約 $30/月）</strong>：光影連貫性與基礎物理動態穩定，適合商品展示與概念短片，但對複雜多人互動的控制力仍有限。</li>
+<li><strong>Runway Gen-3 Alpha（約 $15/月起）</strong>：內建動態筆刷（Motion Brush）與鏡頭路徑控制，適合講究精準運鏡的剪輯師。若要高解析度匯出或移除浮水印，就得升級至高階方案。</li>
+<li><strong>Kling AI 可靈（約 $15/月）</strong>：單段生成時間長且畫面寫實，人物肢體動作自然。導入商業案前，記得先確認跨區金流與授權條款。</li>
+</ul>
+<h3>圖像與視覺放大：商業美感與階段性訂閱</h3>
+<ul>
+<li><strong>Midjourney（$10–$30/月）</strong>：商業級美感與光影構成穩定，升級到標準方案以上才有充裕的不排隊出圖額度。年營收達門檻的企業，須依規定購買 Pro 以上商用方案。</li>
+<li><strong>Leonardo.ai（約 $12/月）</strong>：強項在於遊戲資產風格一致性與即時畫布微調，適合獨立遊戲與使用者介面（UI）概念設計。</li>
+<li><strong>Magnific AI（約 $39/月）</strong>：專注於細節重繪與高解析放大，單價偏高，只在大型印刷或精修專案期間按月啟用，結案就退訂。</li>
+</ul>
+</section>
+<section id="comparison">
+<h2>03. 關鍵對比：主流對話服務與部署架構矩陣</h2>
+<p>決定選雲端訂閱還是買卡自建，關鍵看每日詞元（Token）吞吐量與資料合規要求。下方兩張表分別整理五款主流對話服務的定位差異，以及五種本地硬體與雲端 API 部署方案的規格成本。把規格與限制攤開對照，就能直接刪掉不合適的選項。</p>
+<h3>綜合對話與推理服務比較</h3>
+<div class="klio-table-wrap"><table>
+<thead>
+<tr>
+<th>服務名稱</th>
+<th>參考月費 (USD)</th>
+<th>核心優勢</th>
+<th>2026 關鍵演進</th>
+<th>實務限制與適用對象</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT Plus</td>
+<td>$20</td>
+<td>多模態整合（語音、視覺與影音）</td>
+<td>高階推理與影音生成工作流整合</td>
+<td>高峰時段高階模型仍有訊息額度上限；適合跨媒體創作者與通才型用戶</td>
+</tr>
+<tr>
+<td>Claude Pro</td>
+<td>$20</td>
+<td>長文寫作語感與程式架構邏輯</td>
+<td>Artifacts 互動預覽與專案上下文管理</td>
+<td>長對話後單次提問會倍數消耗額度；適合工程師、編輯與分析師</td>
+</tr>
+<tr>
+<td>Gemini Advanced</td>
+<td>$19.99</td>
+<td>Google Workspace 完整整合</td>
+<td>超長上下文視窗處理整份檔案庫</td>
+<td>脫離 Google 生態系後優勢減弱；適合重度依賴 Drive 與 Gmail 的團隊</td>
+</tr>
+<tr>
+<td>Perplexity Pro</td>
+<td>$20</td>
+<td>即時聯網搜尋與可追溯引用</td>
+<td>多步驟深度檢索（Pro Search）</td>
+<td>創意寫作與複雜重構較弱；適合研究員、法務與盡職調查人員</td>
+</tr>
+<tr>
+<td>DeepSeek（網頁版 / API）</td>
+<td>網頁免費 / API 按量計費</td>
+<td>高性價比數理與邏輯推理</td>
+<td>思考鏈推理（R1 系列）與低廉 Token 單價</td>
+<td>免費網頁版資料駐留與隱私條款須審慎評估；高敏感專案建議改用本地部署</td>
+</tr>
+</tbody>
+</table></div>
+<h3>本地端與雲端 API 部署成本對比</h3>
+<div class="klio-table-wrap"><table>
+<thead>
+<tr>
+<th>部署方案</th>
+<th>記憶體 / VRAM 規格</th>
+<th>可流暢運行模型量級 (4-bit 量化)</th>
+<th>參考硬體或月費成本</th>
+<th>實務限制與適用場景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>入門本地獨顯（如 RTX 4060 Ti 16GB）</td>
+<td>16 GB VRAM</td>
+<td>7B–14B 稠密模型（每秒 35–60 詞元，tok/s）</td>
+<td>顯卡約 NT$15,000（整機約 NT$38,000）</td>
+<td>無法載入 32B 以上高階推理模型；適合離線筆記整理、局部代碼補全</td>
+</tr>
+<tr>
+<td>高階單卡（如 RTX 4090 / 5090 級）</td>
+<td>24–32 GB VRAM</td>
+<td>32B 稠密模型或中小型混合專家模型（MoE，約 40–80 tok/s）</td>
+<td>顯卡約 NT$60,000–75,000（高功耗需搭 850W+ 電供）</td>
+<td>滿載功耗達 450W–575W，須計入電費與散熱噪音；適合個人重度開發與本地生圖</td>
+</tr>
+<tr>
+<td>高記憶體統一架構（如 Mac Studio 64–128GB）</td>
+<td>64–128 GB 統一記憶體</td>
+<td>70B 稠密模型或大型 MoE（約 15–35 tok/s）</td>
+<td>主機約 NT$70,000–130,000</td>
+<td>低待機功耗且靜音，但預填（Prefill）長上下文速度慢於高階 NVIDIA 獨顯</td>
+</tr>
+<tr>
+<td>雲端訂閱制（Pro / Plus 單一帳號）</td>
+<td>雲端旗艦叢集（無本地門檻）</td>
+<td>全尺寸旗艦模型（如 GPT-5 / Claude 4.7 等級）</td>
+<td>$20/月（約 NT$640/月）</td>
+<td>受限於網頁版對話頻率上限，且輸入資料須遵守雲端廠商隱私政策</td>
+</tr>
+<tr>
+<td>雲端按量 API（高階 + 輕量模型混用）</td>
+<td>雲端彈性算力</td>
+<td>依任務動態路由（輕量分類用低價模型、核心推理用旗艦）</td>
+<td>依用量 $5–$80/月不等</td>
+<td>須自行處理金鑰安全、費率上限告警（Rate Limit）與供應商斷線備援</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>以純經濟帳計算，若僅為個人日常使用，一張 7 萬元的高階顯示卡相當於近 9 年的 20 美元雲端訂閱費。本地部署的真正回報，在於確保資料零出境合規，並讓高頻自動化腳本不受速率限制。</blockquote>
+</section>
+<section id="action">
+<h2>04. 適用邊界、限制與選型行動建議</h2>
+<p>本地部署與雲端方案各有明確的實務邊界。高階顯示卡滿載功耗達 450 W 至 575 W，你得額外計入電費、電源升級與散熱噪音。高記憶體統一架構省電又靜音，但長上下文的預填速度仍追不上高階獨立顯卡。雲端按量 API 雖然彈性，團隊得自己扛起金鑰安全、費率上限告警與斷線備援；若是機密代碼、醫療與金融等要求資料零出境的場域，本地架構是唯一解法。</p>
+<p>日常管預算只有一個原則：先定任務，再買工具。每季固定盤點一次所有付費帳號，過去 30 天開啟不到 3 次的服務直接退訂。你可以直接照下方的決策樹配出自己的工具組合：</p>
+<pre><code>[起點] 評估專案對「資料零出境」是否為強制要求？
+  ├── 是（機密代碼 / 醫療 / 金融內部資料）
+  │     └── 選用本地架構：16GB VRAM 跑 14B 輔助編碼，或 64GB+ 統一記憶體跑 70B 內網知識庫
+  └── 否（一般商業開發 / 內容創作 / 個人效率）
+        ├── 月預算 ≤ $20（極簡組）
+        │     └── 僅保留 1 席旗艦訂閱（開發偏重選 Claude Pro；多媒體整合選 ChatGPT Plus）
+        ├── 月預算 $40–$60（獨立開發與創作者組）
+        │     └── 1 席通用推理 ($20) + 1 席專用工作流（Cursor Pro $20 或影像生成 $15–$30）
+        └── 月預算 $60+（高頻自動化與小型團隊）
+              └── 放棄盲目疊加網頁訂閱，改採「API 路由分流」：80% 常規任務交給低價輕量模型，20% 關鍵決策才呼叫旗艦模型</code></pre>
+</section>
+</article>
+<nav aria-label="文章導覽" class="klio-article-nav"><a class="klio-article-nav-card" href="./20260508_github_ecosystem.html"><span class="klio-article-nav-label">&lt;- 較新一篇</span><span class="klio-article-nav-title">GitHub 生態系觀察：從指令到自主代理</span></a><a class="klio-article-nav-card" href="./20260422_lobster_ai.html" style="text-align:right;"><span class="klio-article-nav-label">較舊一篇 -&gt;</span><span class="klio-article-nav-title">龍蝦、AI 代理與新青安：低利補貼背後的結構風險</span></a></nav>
+</main>
+<script>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 px-8 py-6 bg-black/20 backdrop-blur-md border-b border-white/5">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <a href="../index.html" class="font-black text-2xl tracking-tighter">KLIO.</a>
-                <span class="w-[1px] h-6 bg-white/10"></span>
-                <span class="text-xs font-bold tracking-widest text-gray-500 uppercase">AI Strategy Report 2026</span>
-            </div>
-            <div class="flex gap-8 items-center">
-                <a href="#general" class="text-sm font-medium hover:text-white transition-colors">通用模型</a>
-                <a href="#developer" class="text-sm font-medium hover:text-white transition-colors">開發工具</a>
-                <a href="#creative" class="text-sm font-medium hover:text-white transition-colors">影像與創作</a>
-                <a href="../index.html" class="bg-white text-black px-5 py-2 rounded-full text-xs font-bold hover:bg-gray-200 transition-all">返回首頁</a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto px-8 pt-40 pb-32">
-        <!-- Hero Section -->
-        <header class="mb-24 text-center">
-            <div class="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold tracking-[0.2em] uppercase mb-8">
-                Market Analysis April 2026
-            </div>
-            <h1 class="text-6xl md:text-7xl font-black mb-8 leading-tight">
-                2026 年主流 AI 應用分析：<br>
-                <span class="text-gradient-purple">功能優化與訂閱門檻建議</span>
-            </h1>
-            <p class="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                目前 AI 市場已高度細分，定價策略穩定。2026 年的核心競爭力在於模型迭代速度與工作流的深度整合，而非單純的參數規模。
-            </p>
-        </header>
-
-        <!-- Section 1: General AI -->
-        <section id="general" class="mb-32">
-            <div class="flex items-center gap-6 mb-12">
-                <h2 class="text-3xl font-black">01. 綜合對話與邏輯推理</h2>
-                <div class="h-[1px] flex-1 bg-white/10"></div>
-            </div>
-            
-            <div class="glass-card p-8 overflow-x-auto">
-                <table class="ai-table">
-                    <thead>
-                        <tr>
-                            <th>服務名稱</th>
-                            <th>月費</th>
-                            <th>核心價值</th>
-                            <th>2026 優化</th>
-                            <th>建議對象</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="font-bold text-white text-lg">ChatGPT Plus</td>
-                            <td class="text-indigo-400 font-semibold">$20</td>
-                            <td class="text-sm">萬能助手 (語音/影片)</td>
-                            <td class="text-sm">GPT-5 + Sora 整合</td>
-                            <td class="text-sm text-gray-400">最新技術追逐者</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold text-white text-lg">Claude Pro</td>
-                            <td class="text-indigo-400 font-semibold">$20</td>
-                            <td class="text-sm">長文寫作與程式邏輯</td>
-                            <td class="text-sm">Artifacts 預覽優化</td>
-                            <td class="text-sm text-gray-400">專業寫作者/工程師</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold text-white text-lg">Gemini Advanced</td>
-                            <td class="text-indigo-400 font-semibold">$19.99</td>
-                            <td class="text-sm">Google 生態系深度整合</td>
-                            <td class="text-sm">超大上下文視窗</td>
-                            <td class="text-sm text-gray-400">Google 辦公重度用戶</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold text-white text-lg">Perplexity Pro</td>
-                            <td class="text-indigo-400 font-semibold">$20</td>
-                            <td class="text-sm">精確引用的研究報告</td>
-                            <td class="text-sm">Pro Search 深入挖掘</td>
-                            <td class="text-sm text-gray-400">研究員/分析師</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold text-white text-lg">DeepSeek Pro</td>
-                            <td class="text-indigo-400 font-semibold">$10<span class="text-[10px] text-gray-500 ml-1">(Est.)</span></td>
-                            <td class="text-sm">頂尖推理能力 (數理)</td>
-                            <td class="text-sm">R1 深度思考模式</td>
-                            <td class="text-sm text-gray-400">預算有限的極客</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Section 2: Developers -->
-        <section id="developer" class="mb-32">
-            <div class="flex items-center gap-6 mb-12">
-                <h2 class="text-3xl font-black">02. 開發者工具與環境</h2>
-                <div class="h-[1px] flex-1 bg-white/10"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Cursor -->
-                <div class="glass-card p-8 group">
-                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:bg-blue-500/20 transition-colors">
-                        <span class="text-blue-400 font-bold">C</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-4">Cursor Pro</h3>
-                    <p class="text-sm text-gray-400 mb-6 leading-relaxed">
-                        以「對話驅動開發」取代傳統 IDE。2026 年已能精準理解全代碼庫，適合快速開發 Web 應用。
-                    </p>
-                    <div class="pt-6 border-t border-white/5">
-                        <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Subscription: $20/mo</span>
-                    </div>
-                </div>
-
-                <!-- Ollama -->
-                <div class="glass-card p-8 group">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
-                        <span class="text-emerald-400 font-bold">O</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-4">Ollama Local</h3>
-                    <p class="text-sm text-gray-400 mb-6 leading-relaxed">
-                        100% 本地運行，解決隱私與 API 成本。RTX 3060 級別顯卡即可流暢運行頂尖推理模型。
-                    </p>
-                    <div class="pt-6 border-t border-white/5">
-                        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Subscription: FREE</span>
-                    </div>
-                </div>
-
-                <!-- Vercel -->
-                <div class="glass-card p-8 group">
-                    <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6 group-hover:bg-white/20 transition-colors">
-                        <span class="text-white font-bold">V</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-4">Vercel Pro</h3>
-                    <p class="text-sm text-gray-400 mb-6 leading-relaxed">
-                        前端 CI/CD 標配。與各類 AI SDK 完美契合，適合部署無伺服器架構與 Edge Functions。
-                    </p>
-                    <div class="pt-6 border-t border-white/5">
-                        <span class="text-[10px] font-bold text-white uppercase tracking-widest">Subscription: $20/mo</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Section 3: Creative -->
-        <section id="creative" class="mb-32">
-            <div class="flex items-center gap-6 mb-12">
-                <h2 class="text-3xl font-black">03. 影像、影片與創作</h2>
-                <div class="h-[1px] flex-1 bg-white/10"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Video AI -->
-                <div class="glass-card p-10">
-                    <h3 class="text-2xl font-bold mb-8 flex items-center gap-4">
-                        <span class="w-2 h-8 bg-purple-500 rounded-full"></span>
-                        影片生成 (Video Gen)
-                    </h3>
-                    <ul class="space-y-6">
-                        <li class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-white">Luma Dream Machine</h4>
-                                <p class="text-xs text-gray-500 mt-1">穩定光影與物理邏輯</p>
-                            </div>
-                            <span class="text-xs font-mono text-gray-400">$30/mo</span>
-                        </li>
-                        <li class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-white">Runway Gen-3 Alpha</h4>
-                                <p class="text-xs text-gray-500 mt-1">極致控制力 (Motion Brush)</p>
-                            </div>
-                            <span class="text-xs font-mono text-gray-400">$15/mo</span>
-                        </li>
-                        <li class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-white">Kling AI (可靈)</h4>
-                                <p class="text-xs text-gray-500 mt-1">超長時長與真實質感</p>
-                            </div>
-                            <span class="text-xs font-mono text-gray-400">~$15/mo</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Image & Art -->
-                <div class="glass-card p-10">
-                    <h3 class="text-2xl font-bold mb-8 flex items-center gap-4">
-                        <span class="w-2 h-8 bg-cyan-500 rounded-full"></span>
-                        圖像與視覺藝術
-                    </h3>
-                    <ul class="space-y-6">
-                        <li class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-white">Midjourney</h4>
-                                <p class="text-xs text-gray-500 mt-1">頂級藝術感與商業畫質</p>
-                            </div>
-                            <span class="text-xs font-mono text-gray-400">$10-$30/mo</span>
-                        </li>
-                        <li class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-white">Leonardo.ai</h4>
-                                <p class="text-xs text-gray-500 mt-1">遊戲資產與即時塗鴉</p>
-                            </div>
-                            <span class="text-xs font-mono text-gray-400">$12/mo</span>
-                        </li>
-                        <li class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-bold text-white">Magnific AI</h4>
-                                <p class="text-xs text-gray-500 mt-1">幻覺式細節放大</p>
-                            </div>
-                            <span class="text-xs font-mono text-gray-400">$39/mo</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Conclusion -->
-        <footer class="mt-40 border-t border-white/5 pt-20">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div class="col-span-2">
-                    <h2 class="text-4xl font-black mb-8">2026 訂閱決策邏輯</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="p-6 rounded-2xl bg-white/5 border border-white/5">
-                            <h4 class="font-bold text-indigo-400 mb-2">生態系優先</h4>
-                            <p class="text-sm text-gray-400 leading-relaxed">重度 Google 用戶選 Gemini，Microsoft 用戶選 Copilot。這是 2026 年提升辦公效率的最短路徑。</p>
-                        </div>
-                        <div class="p-6 rounded-2xl bg-white/5 border border-white/5">
-                            <h4 class="font-bold text-emerald-400 mb-2">極致推理需求</h4>
-                            <p class="text-sm text-gray-400 leading-relaxed">對於程式開發與數學建模，DeepSeek R1 與 Claude 3.5+ 仍是目前的黃金準則。</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-8 rounded-3xl bg-indigo-600/10 border border-indigo-500/20 flex flex-col justify-between">
-                    <p class="text-sm italic text-indigo-200/70">
-                        「我們正在從『連結經濟』邁向『解答經濟』。AI 不再是搜尋引擎的替代品，而是決策的共同參與者。」
-                    </p>
-                    <div class="mt-8">
-                        <span class="text-xs font-bold text-indigo-400">KLIO STRATEGY TEAM</span>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </main>
-
-    <script>
         // Progress bar logic
         window.addEventListener('scroll', () => {
             const h = document.documentElement;
@@ -426,6 +211,7 @@
                 }
             });
         });
-    </script>
+    
+</script>
 </body>
 </html>

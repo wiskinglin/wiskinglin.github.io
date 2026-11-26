@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工具箱 Tools — KLIO.</title>
+  <meta name="description" content="KLIO 實用網頁工具箱：隱私優先 PDF、本地 AI 去背、證件照、色彩與硬體檢測工具。">
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/css/klio-design.css?v=20261125">
+  <script src="../assets/js/klio-shell.js?v=20261125" data-klio-shell data-base="../" data-active="tools"></script>
+</head>
+
+<body>
+  <main class="klio-container">
+    <section class="klio-page-hero">
+      <h1 class="klio-page-title">實用工具箱</h1>
+      <p class="klio-page-subtitle">隱私優先、瀏覽器原生執行的線上小工具與實驗專案。</p>
+    </section>
+
+    <section class="klio-controls-bar" aria-label="工具分類與搜尋">
+      <div class="klio-tabs" id="klio-tools-tabs" role="tablist"></div>
+      <div class="klio-search-group">
+        <input id="klio-tools-search" class="klio-input" type="search" placeholder="搜尋工具名稱或功能...">
+      </div>
+    </section>
+
+    <section id="klio-tools-grid" class="klio-grid" aria-live="polite"></section>
+  </main>
+
+  <script>
+    (function () {
+      var CATEGORIES = [
+        { id: 'all', label: '全部工具' },
+        { id: 'productivity', label: '金融與生產力' },
+        { id: 'media', label: '影像與設計' },
+        { id: 'lab', label: '硬體與實驗室' }
+      ];
+
+      var TOOLS = [
+        {
+          name: 'Privacy-First PDF 編輯器',
+          href: './pdf.html',
+          category: 'productivity',
+          categoryLabel: '金融與生產力',
+          badgeClass: 'klio-badge--business',
+          tag: '純本地運算',
+          desc: '檔案不離線不上傳雲端，直接在瀏覽器完成 PDF 合併、分割、旋轉與頁面調整。'
+        },
+        {
+          name: 'CALCUKLIO 科學計算機',
+          href: './calculator.html',
+          category: 'productivity',
+          categoryLabel: '金融與生產力',
+          badgeClass: 'klio-badge--business',
+          tag: 'PWA',
+          desc: '支援鍵盤輸入、歷史算式與流暢觸控體驗的現代化線上計算機。'
+        },
+        {
+          name: '本地端 AI 秒速去背 (RMBG)',
+          href: './rmbg.html',
+          category: 'media',
+          categoryLabel: '影像與設計',
+          badgeClass: 'klio-badge--tech',
+          tag: 'WebGPU / WASM',
+          desc: '運用瀏覽器本地 AI 模型進行人像與物件去背，無需上傳圖片即可匯出透明 PNG。'
+        },
+        {
+          name: '兩吋證件照拍攝與排版器',
+          href: './photo.html',
+          category: 'media',
+          categoryLabel: '影像與設計',
+          badgeClass: 'klio-badge--tech',
+          tag: 'Camera / Print',
+          desc: '快速拍攝、裁切標準兩吋證件照並自動排版成 4x6 相紙尺寸方便沖印。'
+        },
+        {
+          name: 'KLIO COLOR 色彩工具',
+          href: './color.html',
+          category: 'media',
+          categoryLabel: '影像與設計',
+          badgeClass: 'klio-badge--tech',
+          tag: 'PWA / 色票',
+          desc: '色碼轉換、對比度檢視與設計師日常調色輔助工具。'
+        },
+        {
+          name: '螢幕色彩測試工具 (Screen Test)',
+          href: './screentest.html',
+          category: 'lab',
+          categoryLabel: '硬體與實驗室',
+          badgeClass: 'klio-badge--life',
+          tag: 'Display QA',
+          desc: '全螢幕純色、灰階、漸層與壞點檢測工具，適用於新螢幕或顯示器驗機。'
+        },
+        {
+          name: 'Sky Fly 飛行小遊戲',
+          href: './fly.html',
+          category: 'lab',
+          categoryLabel: '硬體與實驗室',
+          badgeClass: 'klio-badge--life',
+          tag: 'Canvas Game',
+          desc: '輕量級瀏覽器街機飛行避障小遊戲。'
+        },
+        {
+          name: '互動電子書閱讀頁《非理性效應》',
+          href: './ebook.html',
+          category: 'lab',
+          categoryLabel: '硬體與實驗室',
+          badgeClass: 'klio-badge--life',
+          tag: 'Reader PWA',
+          desc: '針對長篇投資行為心理學內容設計的沉浸式網頁電子書閱讀器。'
+        }
+      ];
+
+      var activeCat = 'all';
+      var query = '';
+      var tabsEl = document.getElementById('klio-tools-tabs');
+      var gridEl = document.getElementById('klio-tools-grid');
+      var searchEl = document.getElementById('klio-tools-search');
+
+      function renderTabs() {
+        tabsEl.innerHTML = CATEGORIES.map(function (c) {
+          var count = c.id === 'all' ? TOOLS.length : TOOLS.filter(function (t) { return t.category === c.id; }).length;
+          var cls = 'klio-tab-btn' + (activeCat === c.id ? ' is-active' : '');
+          return '<button type="button" class="' + cls + '" data-cat="' + c.id + '"><span>' + c.label + '</span><span class="klio-tab-count">' + count + '</span></button>';
+        }).join('');
+
+        var btns = tabsEl.querySelectorAll('.klio-tab-btn');
+        for (var i = 0; i < btns.length; i++) {
+          btns[i].addEventListener('click', function () {
+            activeCat = this.getAttribute('data-cat');
+            renderTabs();
+            renderGrid();
+          });
+        }
+      }
+
+      function renderGrid() {
+        var q = query.trim().toLowerCase();
+        var list = TOOLS.filter(function (t) {
+          if (activeCat !== 'all' && t.category !== activeCat) return false;
+          if (!q) return true;
+          return t.name.toLowerCase().indexOf(q) !== -1 || t.desc.toLowerCase().indexOf(q) !== -1 || t.tag.toLowerCase().indexOf(q) !== -1;
+        });
+
+        if (list.length === 0) {
+          gridEl.style.display = 'block';
+          gridEl.innerHTML = '<div class="klio-empty-state">找不到符合條件的工具。</div>';
+          return;
+        }
+
+        gridEl.style.display = 'grid';
+        gridEl.innerHTML = list.map(function (t) {
+          return (
+            '<a class="klio-card" href="' + t.href + '">' +
+              '<div>' +
+                '<div class="klio-card-meta">' +
+                  '<span class="klio-badge ' + t.badgeClass + '">' + t.categoryLabel + '</span>' +
+                  '<span class="klio-date">' + t.tag + '</span>' +
+                '</div>' +
+                '<h2 class="klio-card-title" style="margin-top:12px;">' + t.name + '</h2>' +
+                '<p class="klio-card-desc" style="margin-top:8px;">' + t.desc + '</p>' +
+              '</div>' +
+              '<div class="klio-card-footer">' +
+                '<span>開啟工具</span>' +
+                '<span aria-hidden="true">-&gt;</span>' +
+              '</div>' +
+            '</a>'
+          );
+        }).join('');
+      }
+
+      searchEl.addEventListener('input', function () {
+        query = this.value;
+        renderGrid();
+      });
+
+      renderTabs();
+      renderGrid();
+    })();
+  </script>
+</body>
+
+</html>

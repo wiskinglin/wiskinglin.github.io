@@ -1,610 +1,167 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣汽車產業五十年演進史</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            900: '#0c4a6e',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        /* 核心橫式 A4 容器規範 */
-        :root {
-            --a4-width: 297mm;
-            --a4-height: 210mm;
-        }
-
-        body {
-            background-color: #f1f5f9;
-            color: #1e293b;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .page-landscape {
-            width: var(--a4-width);
-            min-height: var(--a4-height);
-            margin: 2rem auto;
-            background: #ffffff;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0px 15px rgba(0, 0, 0, 0.05);
-            padding: 16mm 20mm; /* 安全出血與內距 */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            border-radius: 4px; /* 螢幕預覽用，列印時會忽略 */
-        }
-
-        /* 裝飾線 */
-        .deco-line {
-            height: 4px;
-            background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, transparent 100%);
-            border-radius: 2px;
-            margin: 1rem 0 2rem 0;
-            width: 100%;
-        }
-
-        /* 編輯模式視覺防呆 */
-        [contenteditable="true"] {
-            transition: all 0.3s ease;
-        }
-        .is-editing [contenteditable="true"]:hover {
-            outline: 2px dashed #94a3b8;
-            outline-offset: 4px;
-            cursor: text;
-        }
-        .is-editing [contenteditable="true"]:focus {
-            outline: 3px dashed #0ea5e9;
-            outline-offset: 4px;
-            background-color: rgba(14, 165, 233, 0.03);
-            border-radius: 8px;
-        }
-
-        /* 列印引擎強制對應 */
-        @media print {
-            @page {
-                size: A4 landscape;
-                margin: 0;
-            }
-            body {
-                background: white;
-                margin: 0;
-            }
-            .page-landscape {
-                margin: 0;
-                box-shadow: none;
-                border-radius: 0;
-                width: 297mm;
-                height: 210mm; /* 列印時鎖定高度防溢出 */
-                page-break-after: always;
-                break-inside: avoid;
-            }
-            .no-print {
-                display: none !important;
-            }
-            /* 強制背景顏色列印 */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                transition: none !important;
-                animation: none !important;
-            }
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>台灣車市的動力轉折：從關稅保護到純電供應鏈重組 | KLIO.</title>
+<meta content="面對油耗法規與電動化政策，台灣車市正經歷從純油、油電到純電的結構轉折。本文解析本土品牌演進、價格競爭與三電供應鏈的戰略佈局。" name="description"/>
+<link href="../icons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="../assets/css/klio-design.css?v=20261125" rel="stylesheet"/>
+<script data-active="reports" data-base="../" data-klio-shell="" src="../assets/js/klio-shell.js?v=20261125"></script>
 </head>
 <body>
+<main class="klio-article-page">
+<nav aria-label="麵包屑導覽" class="klio-breadcrumb">
+<a href="../index.html">觀察筆記</a>
+<span aria-hidden="true">/</span>
+<a href="../index.html?cat=business">商業與市場</a>
+<span aria-hidden="true">/</span>
+<span class="klio-date">2026-03-19</span>
+</nav>
+<header class="klio-article-header">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+<span class="klio-badge klio-badge--business">商業與市場</span>
+<span class="klio-date">2026-03-19</span>
+</div>
+<h1 class="klio-article-title">台灣車市的動力轉折：從關稅保護到純電供應鏈重組</h1>
+<p class="klio-article-summary">油耗法規與電動化政策逼著台灣車廠改寫產品線，市場正從純油跨入油電與純電並行的過渡期。這份筆記記錄本土品牌的轉型代價、平價油電的價格戰，以及台灣三電供應鏈如何從代工走向底層輸出。</p>
+</header>
+<article class="klio-prose">
+<section>
+<h2>核心脈絡：關稅保護退場與減碳法規的雙重壓力</h2>
+<p>台灣汽車產業從 1980 年代起，靠著高關稅與配額保護建立本土組裝體系。2002 年加入世界貿易組織（WTO）後關稅逐年調降，進口車市占率一路攀升，國產車廠被迫從產能導向轉為品質競爭。環保規範收緊後，單靠傳統內燃機產品線已撐不住既有獲利。</p>
+<p>環境部導入的「整車廠車輛車型耗能標準」（CAFE）採總量油耗平均值管控，直接壓縮大排氣量燃油車的銷售空間。車廠得加快導入輕油電（MHEV）、油電混合（HEV）與插電式混合動力（PHEV），才能稀釋整體碳排配額。</p>
+<p>政府也訂出 2030 年的階段性門檻：電動汽車須占新車銷售 30%，國產電動車要拿下其中一半市占，市區客運巴士則全面電動化。在市場規模有限、法規墊高的夾擊下，傳統合資品牌得決定何時把產線轉向純電。本土新興平台則要證明自己能跨出內需、切入全球供應鏈，重新分配整車與三電零組件的利潤。</p>
+</section>
 
-    <!-- 控制面板 (Control Panel) -->
-    <div class="no-print fixed top-6 right-6 z-50 flex gap-3 p-3 bg-white/70 backdrop-blur-md border border-white/40 shadow-xl shadow-gray-200/50 rounded-2xl">
-        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-brand-600 transition-colors shadow-sm">
-            <span id="edit-icon">✏️</span> <span id="edit-text">編輯內容</span>
-        </button>
-        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-green-600 transition-colors shadow-sm">
-            ⬇️ 儲存網頁
-        </button>
-        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-brand-600 rounded-xl hover:bg-brand-700 transition-colors shadow-md shadow-brand-500/30">
-            🖨️ 輸出 PDF
-        </button>
-    </div>
+<section>
+<h2>底層機制：品牌演進、油電過渡與三電供應鏈重組</h2>
 
-    <!-- 主要內容容器 -->
-    <main id="document-wrapper" class="document-wrapper">
+<h3>自主品牌與合資體系的歷史分流</h3>
+<p>台灣自主造車的成敗，始終卡在技術自主權與規模經濟。裕隆汽車在 1986 年推出首款自行設計的「飛羚 101」，當時已具備低風阻車身與電子語音警示。但動力總成受制於日產（Nissan）授權，加上經銷體系沒站穩，裕隆在 1992 年暫停乘用車自主品牌。缺乏核心動力技術與穩定通路，單靠外型與組裝很難扛住長期研發風險。</p>
+<p>中華汽車避開乘用車正面戰場，鎖定台灣地形與中小企業載重需求，在 1988 年與 2000 年陸續推出威利與菱利商用車。菱利搭載華擎自主研發引擎並衍生多種軸距，穩居輕型商用車主力且外銷美國與中東。搭配得利卡與 Zinger 兩款車型，中華汽車穩穩守住中大型商旅市場。</p>
+<p>2009 年創立的納智捷（Luxgen）走另一條路，結合台灣資通訊（ICT）資源與宏達電（HTC）開發 Think+ 車載系統，初期靠 U6 與 M7 打開銷量。但產量規模太小，難以攤提引擎與變速箱的研發成本，最後在環保法規收緊下轉向純電路線。</p>
+<p>國產合資體系則靠母廠技術移轉築起製造門檻。和泰與國瑞汽車導入豐田精實生產（TPS），讓 Altis 長期領先市場並具備外銷中東的品質。裕隆日產以 Cefiro 強化隔音與配備做在地化改款。福特六和與台灣本田則分別以 Focus 的歐系底盤與 CR-V 的都會休旅定位，撐起台灣市場的多元格局。</p>
 
-        <!-- Page 1: 封面與總覽 -->
-        <section class="page-landscape">
-            <header class="mb-8">
-                <div class="inline-block px-4 py-1.5 mb-4 text-sm font-bold tracking-wider text-brand-700 bg-brand-50 rounded-full border border-brand-100">1980 - 2030 INDUSTRY EVOLUTION</div>
-                <h1 contenteditable="true" class="text-6xl font-black text-slate-900 leading-tight tracking-tight mb-2">
-                    台灣汽車產業五十年演進史
-                </h1>
-                <h2 contenteditable="true" class="text-3xl font-semibold text-slate-500 mb-6">從燃油代工到純電自主的轉型之路</h2>
-                <div class="deco-line"></div>
-            </header>
+<h3>油電過渡期的技術壁壘與價格破壞</h3>
+<p>電池成本還高、公共充電樁還沒普及時，混合動力成了車廠兼顧法規與銷量的首選。和泰與國瑞手握豐田油電混合系統（THS）專利，從 Camry Hybrid 起步克服高壓電池組裝難題。技術成熟後，他們再把油電系統下放給 Altis 與 Corolla Cross Hybrid。2023 年 Corolla Cross 全年登錄達 37,412 台，加上政府減稅縮小油電與純油的價差，混合動力就此成為市場主流。</p>
+<p>為了繞開豐田的專利壁壘，福特、裕隆日產與現代汽車紛紛導入 48V 輕油電（MHEV）系統。這套架構改裝成本較低，能換來約 10% 至 15% 的油耗改善，剛好幫傳統燃油車過關 CAFE 檢驗。進口 PHEV 車款則受限於高昂售價，長期停留在小眾市場。</p>
+<p>這個局面在 2022 年被打破，中華汽車引進 MG 品牌，國產 HS PHEV 以低於新台幣 120 萬元上市。這款車提供 72 公里純電續航，直接擊穿過往 PHEV 的價格門檻。銷量衝高後隨即引發大量進口零件組裝、擠壓本土採購的爭議，促使經濟部在 2024 年實施「國產車在地化自製率新規」，展現平價綠能車與本土供應鏈之間的政策拉鋸。</p>
 
-            <div class="flex-grow flex flex-col justify-center">
-                <h3 contenteditable="true" class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    <span class="w-2 h-6 bg-brand-500 rounded-full inline-block"></span> 時代背景與台灣產業概論
-                </h3>
-                
-                <!-- Bento Box 總覽網格 -->
-                <div class="grid grid-cols-3 gap-6">
-                    <!-- 卡片 1 -->
-                    <div class="p-8 bg-gray-50 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <div class="text-4xl mb-4">🛡️</div>
-                            <h4 contenteditable="true" class="text-lg font-bold text-slate-800 mb-3">貿易保護與開放衝擊</h4>
-                            <p contenteditable="true" class="text-slate-600 leading-relaxed text-sm">
-                                1980年代實施高關稅與配額保護，成功扶植本土組裝與零組件供應鏈。2002年加入WTO後關稅驟降，進口車市占攀升，迫使車廠從「產能導向」轉向「市場與品質導向」。
-                            </p>
-                        </div>
-                    </div>
-                    <!-- 卡片 2 -->
-                    <div class="p-8 bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 flex flex-col justify-between relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-50 rounded-full opacity-50"></div>
-                        <div class="relative">
-                            <div class="text-4xl mb-4">🌱</div>
-                            <h4 contenteditable="true" class="text-lg font-bold text-slate-800 mb-3">環保法規推演 (CAFE)</h4>
-                            <p contenteditable="true" class="text-slate-600 leading-relaxed text-sm">
-                                環境部導入「整車廠車輛車型耗能標準」(CAFE)，總量油耗平均值管控宣判大排氣量純油車死刑。迫使車廠加速導入輕油電(MHEV)、油電(HEV)與插電混合動力(PHEV)以稀釋碳排配額。
-                            </p>
-                        </div>
-                    </div>
-                    <!-- 卡片 3 -->
-                    <div class="p-8 bg-slate-800 text-white rounded-2xl shadow-xl flex flex-col justify-between">
-                        <div>
-                            <div class="text-4xl mb-4">⚡</div>
-                            <h4 contenteditable="true" class="text-lg font-bold text-white mb-3">2030 國家級電動化戰略</h4>
-                            <p contenteditable="true" class="text-slate-300 leading-relaxed text-sm mb-4">
-                                政府明確訂定階段目標：要求電動汽車佔新車銷售比重達 30%，並期望本土國產電動車能拿下其中 50% 市占。市區客運巴士更將於2030全面電動化。
-                            </p>
-                        </div>
-                        <div class="flex gap-4 border-t border-slate-700 pt-4 mt-auto">
-                            <div>
-                                <div class="text-2xl font-black text-brand-400">30%</div>
-                                <div class="text-xs text-slate-400">電車銷售佔比</div>
-                            </div>
-                            <div>
-                                <div class="text-2xl font-black text-brand-400">50%</div>
-                                <div class="text-xs text-slate-400">國產電車市佔期許</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <footer class="text-right text-sm font-semibold text-slate-400 mt-4 border-t border-slate-100 pt-4">
-                01 / 台灣汽車產業演進史
-            </footer>
-        </section>
+<h3>純電平台興起與台灣三電供應鏈重組</h3>
+<p>電動車架構走向模組化與軟體定義後，台灣企業開始嘗試從傳統組裝轉向底層系統輸出。鴻海與裕隆合資成立鴻華先進，推動 MIH 電動車開放平台來壓低造車門檻。旗下的 Model T 電動巴士已經投入客運營運，展現底盤、三電與車聯網的整合能力。</p>
+<p>納智捷則用 Model C 平台推出百萬內純電休旅 n7，累計接單近萬張並支援空中下載（OTA）遠端更新。這台車成了檢驗本土純電供應鏈量產穩定度的指標。</p>
+<p>中華汽車採取商用與乘用雙線推進，一邊深耕物流推出大電池與快充規格的 E300 商用電動車。乘用車市場則交由國產 MG4，直接切入平價純電級距。台灣過去累積的製造經驗，正順勢接軌這波新世代車型需求。</p>
+<p>往更上游走，台灣的半導體與電池技術正在補齊全球電動車供應鏈的缺口。輝能科技在桃園建置固態電池產線，靠高能量密度與 12 分鐘快充技術拿到賓士（Mercedes-Benz）投資。台積電與富田電機則分別在先進輔助駕駛（ADAS）車用晶片與動力馬達領域，成為全球車廠的關鍵供應商。</p>
+</section>
 
-        <!-- Page 2: 純燃油汽車時代 -->
-        <section class="page-landscape">
-            <header class="mb-6">
-                <div class="inline-block px-3 py-1 mb-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-md">1980 - 2010s</div>
-                <h2 contenteditable="true" class="text-3xl font-black text-slate-900">純燃油汽車 (ICE) 時代：從代工萌芽到自主品牌的挑戰</h2>
-                <div class="deco-line mb-0 mt-4"></div>
-            </header>
+<section>
+<h2>關鍵對比：品牌純電佈局與動力市占演進</h2>
 
-            <div class="flex-grow grid grid-cols-2 gap-8 items-stretch">
-                <!-- 左半部 -->
-                <div class="flex flex-col gap-6">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-md flex-1">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 contenteditable="true" class="text-xl font-bold text-slate-800">裕隆汽車：飛羚的輝煌與折戟</h4>
-                            <span class="px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full">自主先驅</span>
-                        </div>
-                        <p contenteditable="true" class="text-slate-600 text-sm leading-relaxed">
-                            1986年推出台灣首輛自行設計的「飛羚101」，創極低風阻並首創電子語音警告。然而，缺乏「動力總成自主權」，引擎技術受制於日產(Nissan)牽制；加上國內經銷體系崩解，最終於1992年暫棄乘用車自主品牌，改掛Nissan換取母廠技術。這揭示了缺乏核心技術與強勢通路的脆弱性。
-                        </p>
-                    </div>
+<h3>各車廠與品牌純電戰略佈局矩陣</h3>
+<div class="klio-table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">車廠 / 品牌</th>
+<th scope="col">代表車型 / 技術平台</th>
+<th scope="col">核心發展策略與市場定位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>鴻華先進 (Foxtron)</td>
+<td>MIH 開放平台、Model T（電動巴士）</td>
+<td>採取企業對企業（B2B）商業模式，提供模組化造車平台，並對接政府市區客運電動化政策。</td>
+</tr>
+<tr>
+<td>納智捷 (Luxgen)</td>
+<td>n7（基於 Model C 平台）</td>
+<td>採取企業對消費者（B2C）模式，以高性價比、百萬級距國產純電休旅推進品牌轉型。</td>
+</tr>
+<tr>
+<td>中華汽車 (CMC)</td>
+<td>E300（原 e-Veryca）、MG4</td>
+<td>穩固輕型商用物流純電市場份額，並以 MG4 切入平價乘用純電級距。</td>
+</tr>
+<tr>
+<td>和泰 / 國瑞 (Toyota)</td>
+<td>bZ4X（進口）、國產化評估中</td>
+<td>現階段以油電混合車型維持市占優勢，同時評估導入國產純電動車（BEV）組裝時程。</td>
+</tr>
+</tbody>
+</table></div>
 
-                    <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-md flex-1">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 contenteditable="true" class="text-xl font-bold text-slate-800">中華汽車：商用車霸主的在地化深耕</h4>
-                            <span class="px-3 py-1 bg-orange-50 text-orange-600 text-xs font-bold rounded-full">利基突破</span>
-                        </div>
-                        <p contenteditable="true" class="text-slate-600 text-sm leading-relaxed">
-                            針對台灣崎嶇地形與中小企業高承載需求，推出自主設計「威利」(1988)與「菱利」(2000)。菱利搭載華擎自主研發引擎，衍生多種軸距稱霸內需，並逆向外銷美國中東。得利卡與Zinger車系則掌握中大型商旅版圖。證明了針對在地環境深度客製化是抵禦外敵的最佳戰略。
-                        </p>
-                    </div>
-                </div>
+<h3>台灣汽車動力板塊市占演進與 2030 預測</h3>
+<p>彙整政府政策目標、拓墣產業研究院與波士頓顧問公司（BCG）的研究，台灣新車動力結構將在 2030 年前完成世代交替。純燃油車（ICE）會讓出主導地位，混合動力與純電動車（BEV）則將分食八成以上的市場。</p>
+<div class="klio-table-wrap"><table>
+<thead>
+<tr>
+<th scope="col">動力技術類別</th>
+<th scope="col">2010 年代概估</th>
+<th scope="col">2020 年代中期</th>
+<th scope="col">2030 年目標預測</th>
+<th scope="col">市場驅動力與未來發展核心</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>純燃油車 (ICE)</td>
+<td>&gt; 95%</td>
+<td>60% - 70%</td>
+<td>&lt; 25%</td>
+<td>受 CAFE 法規與碳排成本限制，將退縮至特定工程商用或性能利基市場。</td>
+</tr>
+<tr>
+<td>混合動力 (HEV / PHEV)</td>
+<td>&lt; 5%</td>
+<td>20% - 30%</td>
+<td>約 40%</td>
+<td>具備無里程焦慮優勢，預期成為各車廠符合油耗法規的主力銷售車型。</td>
+</tr>
+<tr>
+<td>純電動車 (BEV)</td>
+<td>近乎 0%</td>
+<td>5% - 10%</td>
+<td>&gt; 30%</td>
+<td>受惠於電池成本下降、平價國產車型增加、充電設施擴充與政策強制推進。</td>
+</tr>
+</tbody>
+</table></div>
+</section>
 
-                <!-- 右半部 -->
-                <div class="flex flex-col gap-6">
-                    <div class="bg-brand-50 p-6 rounded-2xl border border-brand-100 shadow-md flex-1">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 contenteditable="true" class="text-xl font-bold text-brand-900">納智捷 (Luxgen)：智慧車的誕生與挑戰</h4>
-                            <span class="px-3 py-1 bg-brand-200 text-brand-800 text-xs font-bold rounded-full">ICT 融合</span>
-                        </div>
-                        <p contenteditable="true" class="text-brand-800 text-sm leading-relaxed">
-                            2009年創立，結合台灣ICT優勢主打「智慧車」，與HTC合作Think+系統，避開百年內燃機壁壘。雖初期U6/M7取得佳績，但缺乏規模經濟攤提研發，引擎油耗與變速箱匹配遇瓶頸，難以應付嚴苛環保法規，陷入純燃油時代尾聲的銷售低谷，卻也埋下破釜沉舟轉型純電的伏筆。
-                        </p>
-                    </div>
+<section>
+<h2>適用邊界、結構限制與結論行動</h2>
+<p>台灣電動化轉型還有三道跨不過的結構門檻，決定了這場變革的實際步調：</p>
+<ul>
+<li><strong>規模經濟門檻：</strong>台灣每年新車市場約 40 萬至 45 萬輛，純電車款如果不透過開放平台外銷或共用零組件，單一品牌很難攤提三電與軟體研發成本。</li>
+<li><strong>政策與供應鏈拉鋸：</strong>2024 年國產車在地化自製率新規，拉高了引進海外平價車款的合規成本與時間，車廠只能重新調整採購與認證節奏。</li>
+<li><strong>充電基建進度：</strong>集合式住宅裝設充電樁的難度與電網負載配置，將直接決定未來幾年油電與純電的消長速度。</li>
+</ul>
+<p>接下來的產業節奏有三個觀察重點：</p>
+<ul>
+<li><strong>整車廠的過渡窗口：</strong>2025 至 2028 年是油電與純電並行的關鍵期，車廠得靠 HEV 維持現金流，同時完成純電產線與售後維修體系的技術轉移。</li>
+<li><strong>供應鏈的護城河：</strong>本土業者應避開與中國大陸廠商打價格戰，把資源押在車用晶片、高階馬達與次世代電池材料等高門檻環節。</li>
+<li><strong>龍頭定價基準重塑：</strong>和泰與國瑞一旦啟動國產純電車組裝，就會改寫台灣平價電動車的價格錨點，產業界得提前因應這波產能與通路變局。</li>
+</ul>
 
-                    <div class="bg-slate-800 p-6 rounded-2xl shadow-xl text-white flex-1">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 contenteditable="true" class="text-xl font-bold">國產合資品牌的造車工藝昇華</h4>
-                            <span class="px-3 py-1 bg-slate-600 text-slate-200 text-xs font-bold rounded-full">品質巔峰</span>
-                        </div>
-                        <ul contenteditable="true" class="text-slate-300 text-sm leading-relaxed space-y-2 list-disc list-inside">
-                            <li><strong>和泰/國瑞：</strong> 導入豐田TPS精實生產，Altis蟬聯20多年銷售冠軍，品質超越母廠並成功外銷中東。</li>
-                            <li><strong>裕隆日產：</strong> Cefiro深度在地化「奢華化」改造，搭載V6引擎與重金NVH工程，掀起豪華房車熱潮。</li>
-                            <li><strong>福特六和 / 台灣本田：</strong> 引入歐洲底盤基因(Focus)與都會SUV標準(CR-V)，豐富市場多元性。</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <footer class="text-right text-sm font-semibold text-slate-400 mt-4 border-t border-slate-100 pt-4">
-                02 / 純燃油汽車 (ICE) 時代
-            </footer>
-        </section>
-
-        <!-- Page 3: 油電過渡期 -->
-        <section class="page-landscape">
-            <header class="mb-6">
-                <div class="inline-block px-3 py-1 mb-2 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-md">2010 - 2020s</div>
-                <h2 contenteditable="true" class="text-3xl font-black text-slate-900">油電混合動力 (HEV/PHEV) 的過渡：國產化的綠能轉型</h2>
-                <div class="deco-line mb-0 mt-4" style="background: linear-gradient(90deg, #10b981 0%, #34d399 50%, transparent 100%);"></div>
-            </header>
-
-            <div class="flex-grow flex gap-8">
-                <!-- 左側：和泰 -->
-                <div class="w-1/2 flex flex-col justify-center">
-                    <div class="mb-6">
-                        <h3 contenteditable="true" class="text-2xl font-bold text-slate-800 mb-2">消除里程焦慮的最佳橋樑</h3>
-                        <p contenteditable="true" class="text-slate-600 text-sm">
-                            因電池成本與充電樁匱乏，結合內燃機與馬達的混合動力成為符合法規且無痛轉型的商業過渡方案。
-                        </p>
-                    </div>
-                    
-                    <div class="bg-white p-8 rounded-2xl shadow-xl shadow-slate-200 border border-slate-100">
-                        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-2xl mb-4">🏆</div>
-                        <h4 contenteditable="true" class="text-xl font-bold text-slate-800 mb-3">和泰/國瑞：油電先驅的技術制霸</h4>
-                        <p contenteditable="true" class="text-slate-600 text-sm leading-relaxed mb-4">
-                            憑藉豐田THS專利優勢，大膽將油電技術導入台灣國產化。從Camry Hybrid起步，克服高壓電池組裝難題，並向下紮根至Altis與Corolla Cross Hybrid。
-                        </p>
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <div class="font-bold text-slate-800 mb-1">Corolla Cross 歷史紀錄</div>
-                            <div class="text-emerald-600 text-2xl font-black">37,412 <span class="text-sm font-normal text-slate-500">台 (2023年登錄量)</span></div>
-                            <p contenteditable="true" class="text-xs text-slate-500 mt-2">透過免關稅優勢拉平油電與純油車價差，完成規模最大的消費者綠能教育。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 右側：MHEV 與 MG -->
-                <div class="w-1/2 flex flex-col justify-center gap-6">
-                    <!-- 上方 -->
-                    <div class="bg-white p-6 rounded-2xl border-l-4 border-slate-400 shadow-sm">
-                        <h4 contenteditable="true" class="text-lg font-bold text-slate-800 mb-2">輕油電 (MHEV) 的續命策略</h4>
-                        <p contenteditable="true" class="text-slate-600 text-sm leading-relaxed">
-                            為避開豐田專利壁壘，福特、裕日產與現代大量導入48V輕油電。透過低廉改裝成本換取10-15%油耗改善，成為傳統燃油車在CAFE法規夾擊下的重要續命符。進口PHEV則因高售價淪為小眾。
-                        </p>
-                    </div>
-
-                    <!-- 下方 -->
-                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-2xl shadow-lg text-white">
-                        <div class="flex justify-between items-start mb-3">
-                            <h4 contenteditable="true" class="text-lg font-bold text-white">國產 PHEV 的破壞性創新</h4>
-                            <span class="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded">價格破壞者</span>
-                        </div>
-                        <h5 contenteditable="true" class="text-xl font-bold text-brand-400 mb-2">中華 MG 的市場衝擊與政策反撲</h5>
-                        <p contenteditable="true" class="text-slate-300 text-sm leading-relaxed mb-4">
-                            2022年引進MG品牌，其HS PHEV以不到120萬震撼定價國產上市，提供72km純電續航與強悍動力，徹底顛覆PHEV昂貴印象。
-                        </p>
-                        <div class="border-t border-slate-600 pt-3 text-xs text-slate-400">
-                            <strong class="text-white">深層影響：</strong> 爆發熱銷引發「大量中國零件CKD組裝」掏空本土疑慮，促使經濟部於2024年強勢祭出「國產車在地化自製率新規」，凸顯綠能技術引進與本土產業鍊保護的政策矛盾。
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <footer class="text-right text-sm font-semibold text-slate-400 mt-4 border-t border-slate-100 pt-4">
-                03 / 油電混合動力 (HEV/PHEV) 的過渡
-            </footer>
-        </section>
-
-        <!-- Page 4: 純電車革命與表格 -->
-        <section class="page-landscape">
-            <header class="mb-4">
-                <div class="inline-block px-3 py-1 mb-2 text-xs font-bold text-blue-600 bg-blue-50 rounded-md">2020 - 2030s</div>
-                <h2 contenteditable="true" class="text-3xl font-black text-slate-900">純電動車 (BEV) 的革命與未來：台灣的電車元年</h2>
-                <div class="deco-line mb-0 mt-4" style="background: linear-gradient(90deg, #3b82f6 0%, #93c5fd 50%, transparent 100%);"></div>
-            </header>
-
-            <div class="flex flex-col flex-grow gap-6">
-                <!-- 三大本土戰略卡片 -->
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="bg-white p-5 rounded-2xl shadow border border-slate-100">
-                        <h4 contenteditable="true" class="text-lg font-bold text-brand-700 mb-2">鴻海與 MIH：軟體定義汽車</h4>
-                        <p contenteditable="true" class="text-slate-600 text-sm leading-relaxed">
-                            合資成立「鴻華先進」，推動MIH開放平台打破百年封閉供應鏈。Model T電動巴士已商轉，展現掌握從底盤、三電系統到車聯網軟體架構的底層核心實力。
-                        </p>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow border border-slate-100">
-                        <h4 contenteditable="true" class="text-lg font-bold text-brand-700 mb-2">納智捷 n7：品牌重生涅槃</h4>
-                        <p contenteditable="true" class="text-slate-600 text-sm leading-relaxed">
-                            基於Model C平台，打出「百萬有找」切中平價休旅渴望，獲近萬訂單。導入OTA與智慧座艙，其妥善率將是本土純電供應鏈量產實力的關鍵試金石。
-                        </p>
-                    </div>
-                    <div class="bg-white p-5 rounded-2xl shadow border border-slate-100">
-                        <h4 contenteditable="true" class="text-lg font-bold text-brand-700 mb-2">中華 CMC：商用純電先行者</h4>
-                        <p contenteditable="true" class="text-slate-600 text-sm leading-relaxed">
-                            耕耘商用電車十餘年，E300搭載大電池與快充解決物流里程焦慮。乘用市場則佈局國產MG4，展現靈活務實的雙線切入策略。
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 數據表格 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mt-2">
-                    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                        <h3 contenteditable="true" class="text-md font-bold text-slate-800">各車廠/品牌純電戰略佈局矩陣</h3>
-                    </div>
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left font-bold text-slate-700 w-1/4">車廠/品牌</th>
-                                <th scope="col" class="px-6 py-3 text-left font-bold text-slate-700 w-1/4">代表車型 / 技術平台</th>
-                                <th scope="col" class="px-6 py-3 text-left font-bold text-slate-700 w-1/2">核心發展策略與市場定位</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td contenteditable="true" class="px-6 py-3 font-semibold text-slate-800">鴻華先進 (Foxtron)</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600">MIH開放平台, Model T (電動巴士)</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600">採取B2B商業模式，提供模組化造車平台，全力支援政府客運電動化政策。</td>
-                            </tr>
-                            <tr class="bg-slate-50">
-                                <td contenteditable="true" class="px-6 py-3 font-semibold text-slate-800">納智捷 (Luxgen)</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600">n7 (基於 Model C 平台)</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600">採取B2C模式，主打高性價比、百萬級距國產純電休旅，推動品牌全面轉型。</td>
-                            </tr>
-                            <tr>
-                                <td contenteditable="true" class="px-6 py-3 font-semibold text-slate-800">中華汽車 (CMC)</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600">E300 (原e-Veryca), MG4</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600">穩固輕型商用物流純電霸主地位；以MG4切入平價運動型乘用電車市場。</td>
-                            </tr>
-                            <tr class="bg-slate-50">
-                                <td contenteditable="true" class="px-6 py-3 font-semibold text-slate-800">和泰/國瑞 (Toyota)</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600">bZ4X (進口), 積極評估國產</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600 text-brand-700 font-medium">現階段維持油電優勢，同步積極評估導入國產BEV組裝，一旦啟動必將引發板塊地震。</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <footer class="text-right text-sm font-semibold text-slate-400 mt-4 border-t border-slate-100 pt-4">
-                04 / 純電動車 (BEV) 的革命與未來
-            </footer>
-        </section>
-
-        <!-- Page 5: 總結展望與市占預測 -->
-        <section class="page-landscape">
-            <header class="mb-4">
-                <div class="inline-block px-3 py-1 mb-2 text-xs font-bold text-indigo-600 bg-indigo-50 rounded-md">Outlook 2030</div>
-                <h2 contenteditable="true" class="text-3xl font-black text-slate-900">總結與展望：重組全球新能源版圖</h2>
-                <div class="deco-line mb-0 mt-4" style="background: linear-gradient(90deg, #4f46e5 0%, #818cf8 50%, transparent 100%);"></div>
-            </header>
-
-            <div class="flex flex-col flex-grow gap-6">
-                <!-- 供應鏈定位 -->
-                <div class="bg-indigo-900 text-white p-6 rounded-2xl shadow-xl flex gap-8 items-center">
-                    <div class="w-1/3">
-                        <h3 contenteditable="true" class="text-2xl font-black text-indigo-300 mb-2">矽盾與電池心臟</h3>
-                        <p contenteditable="true" class="text-indigo-100 text-sm">技術軸心轉移完美契合台灣ICT強項。台灣正從「被動代工者」蛻變為全球新能源體系中不可或缺的「底層技術與高階零組件輸出島」。</p>
-                    </div>
-                    <div class="w-2/3 grid grid-cols-2 gap-4">
-                        <div class="bg-indigo-800/50 p-4 rounded-xl border border-indigo-700">
-                            <h4 contenteditable="true" class="font-bold text-indigo-200 mb-1">🔋 次世代固態電池 (輝能)</h4>
-                            <p contenteditable="true" class="text-xs text-indigo-100">桃園超級工廠量產，高能量密度與12分鐘超快充，獲Mercedes-Benz投資，打破日韓中寡佔。</p>
-                        </div>
-                        <div class="bg-indigo-800/50 p-4 rounded-xl border border-indigo-700">
-                            <h4 contenteditable="true" class="font-bold text-indigo-200 mb-1">💻 車用晶片與馬達 (台積電/富田)</h4>
-                            <p contenteditable="true" class="text-xs text-indigo-100">ADAS與智慧座艙對高階MCU/AI晶片需求爆發，台灣晶圓產能成為全球車廠高度依賴的戰略重鎮。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2030 動力板塊市占率預測表 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="px-6 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                        <h3 contenteditable="true" class="text-md font-bold text-slate-800">台灣汽車動力板塊市占演進與 2030 預測</h3>
-                        <span class="text-xs text-slate-500">資料來源：政策目標、拓墣產業研究院、BCG</span>
-                    </div>
-                    <table class="min-w-full divide-y divide-gray-200 text-sm">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th scope="col" class="px-6 py-2 text-left font-bold text-slate-700 w-1/5">動力技術類別</th>
-                                <th scope="col" class="px-4 py-2 text-center font-bold text-slate-700 w-1/6">2010s 概估</th>
-                                <th scope="col" class="px-4 py-2 text-center font-bold text-slate-700 w-1/6">2020s 中期</th>
-                                <th scope="col" class="px-4 py-2 text-center font-bold text-brand-600 w-1/6">2030 目標預測</th>
-                                <th scope="col" class="px-6 py-2 text-left font-bold text-slate-700 w-auto">市場驅動力與未來發展核心</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <tr>
-                                <td contenteditable="true" class="px-6 py-3 font-semibold text-slate-800">純燃油車 (ICE)</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center text-slate-500">> 95%</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center text-slate-500">60% - 70%</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center font-bold text-red-500">< 25%</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600 text-xs">受CAFE法規與排碳成本壓制，將萎縮至特殊工程商用或極端性能利基市場。</td>
-                            </tr>
-                            <tr class="bg-slate-50">
-                                <td contenteditable="true" class="px-6 py-3 font-semibold text-slate-800">混合動力 (HEV/PHEV)</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center text-slate-500">< 5%</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center text-slate-500">20% - 30%</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center font-bold text-emerald-600">約 40%</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600 text-xs">消除里程焦慮的最佳過渡方案，預期成為各車廠符合法規的銷售主力（和泰為大贏家）。</td>
-                            </tr>
-                            <tr>
-                                <td contenteditable="true" class="px-6 py-3 font-semibold text-slate-800">純電動車 (BEV)</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center text-slate-500">近乎 0%</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center text-slate-500">5% - 10%</td>
-                                <td contenteditable="true" class="px-4 py-3 text-center font-black text-brand-600">> 30%</td>
-                                <td contenteditable="true" class="px-6 py-3 text-slate-600 text-xs">電池成本下降、國產平價化普及、充電設施完備，加上政府強制性政策強勢推動。</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <footer class="text-right text-sm font-semibold text-slate-400 mt-4 border-t border-slate-100 pt-4 flex justify-between">
-                <span>CPTPP 潛在的關稅調降將是下一波市場開放考驗</span>
-                <span>05 / 總結與展望 (邁向 2030)</span>
-            </footer>
-        </section>
-
-        <!-- Page 6: 參考文獻 -->
-        <section class="page-landscape">
-            <header class="mb-6">
-                <h2 class="text-2xl font-black text-slate-400">參考資料與引證文獻</h2>
-                <div class="deco-line mb-0 mt-4 bg-slate-200" style="background: #e2e8f0;"></div>
-            </header>
-
-            <div class="flex-grow flex flex-col columns-2 gap-8 text-xs text-slate-500 leading-relaxed">
-                <div class="grid grid-cols-2 gap-x-8 gap-y-4">
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">國際經貿發展里程碑</strong>
-                        國際經貿服務網 (2026). WTO 入會相關影響.
-                    </article>
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">全球市場趨勢預測</strong>
-                        BCG：新能源汽車至2030年將佔50%汽車市場 - 科技產業資訊室 (iKnow).
-                    </article>
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">國家電動化政策</strong>
-                        自由財經 (2026). 2030電動車佔比3成經濟部目標50％國產.
-                    </article>
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">大眾運輸電動化</strong>
-                        交通部運輸研究所 (2026). 電動大客車示範計畫退場後之因應策略初探.
-                    </article>
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">品牌歷史回顧</strong>
-                        Mobile01論壇/維基百科. 裕隆飛羚101/102歷史、中華Veryca、三菱Delica發展紀實.
-                    </article>
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">市場銷售紀錄</strong>
-                        Carstuff (2026). 和泰汽車連續22年稱霸台灣車市，COROLLA CROSS單一車款冠軍.
-                    </article>
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">PHEV 價格與自製率</strong>
-                        Yahoo 汽機車 (2026). MG HS與HS PHEV售價調整與國產自製率風波探討.
-                    </article>
-                    <article class="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                        <strong class="text-slate-700 block mb-1">供應鏈與平台發展</strong>
-                        鴻海科技集團新聞稿 / 今周刊 (2024). MODEL T 交付營運、輝能科技2030次世代電池供應商願景.
-                    </article>
-                </div>
-            </div>
-
-            <footer class="text-center text-sm font-semibold text-slate-300 mt-4 border-t border-slate-100 pt-4">
-                End of Document
-            </footer>
-        </section>
-
-    </main>
-
-    <!-- 互動邏輯腳本 -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btnEdit = document.getElementById('btn-edit');
-            const btnSave = document.getElementById('btn-save');
-            const btnPrint = document.getElementById('btn-print');
-            const docWrapper = document.getElementById('document-wrapper');
-            const editIcon = document.getElementById('edit-icon');
-            const editText = document.getElementById('edit-text');
-            
-            let isEditing = false;
-
-            // 1. 編輯模式切換
-            btnEdit.addEventListener('click', () => {
-                isEditing = !isEditing;
-                
-                if (isEditing) {
-                    document.body.classList.add('is-editing');
-                    editIcon.textContent = '💾';
-                    editText.textContent = '結束編輯';
-                    btnEdit.classList.add('bg-brand-50', 'text-brand-700', 'border-brand-300');
-                    btnEdit.classList.remove('text-gray-700');
-                } else {
-                    document.body.classList.remove('is-editing');
-                    editIcon.textContent = '✏️';
-                    editText.textContent = '編輯內容';
-                    btnEdit.classList.remove('bg-brand-50', 'text-brand-700', 'border-brand-300');
-                    btnEdit.classList.add('text-gray-700');
-                    
-                    // 清除游標選取狀態
-                    window.getSelection().removeAllRanges();
-                }
-            });
-
-            // 2. 輸出 PDF (呼叫瀏覽器列印)
-            btnPrint.addEventListener('click', () => {
-                // 確保列印前退出編輯模式
-                if (isEditing) {
-                    btnEdit.click(); 
-                }
-                setTimeout(() => {
-                    window.print();
-                }, 100);
-            });
-
-            // 3. 儲存網頁 (匯出 HTML)
-            btnSave.addEventListener('click', () => {
-                // 如果在編輯模式，先結束編輯以確保標籤狀態乾淨
-                if (isEditing) {
-                    btnEdit.click();
-                }
-
-                // 準備 HTML 內容
-                const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-                
-                // 建立下載連結
-                const downloadLink = document.createElement("a");
-                const url = URL.createObjectURL(blob);
-                
-                // 生成日期檔名
-                const today = new Date();
-                const yyyy = today.getFullYear();
-                const mm = String(today.getMonth() + 1).padStart(2, '0');
-                const dd = String(today.getDate()).padStart(2, '0');
-                const filename = `Taiwan_Auto_Industry_Report_${yyyy}${mm}${dd}.html`;
-
-                downloadLink.href = url;
-                downloadLink.download = filename;
-                
-                // 觸發下載
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                URL.revokeObjectURL(url);
-            });
-        });
-    </script>
+<h3>參考資料與資料來源</h3>
+<ul>
+<li><strong>國際經貿發展里程碑：</strong>國際經貿服務網（2026）。WTO 入會相關影響。</li>
+<li><strong>全球市場趨勢預測：</strong>科技產業資訊室 iKnow。BCG：新能源汽車至 2030 年將佔 50% 汽車市場。</li>
+<li><strong>國家電動化政策：</strong>自由財經（2026）。2030 電動車佔比 3 成，經濟部目標 50％ 國產。</li>
+<li><strong>大眾運輸電動化：</strong>交通部運輸研究所（2026）。電動大客車示範計畫退場後之因應策略初探。</li>
+<li><strong>品牌歷史回顧：</strong>Mobile01 論壇 / 維基百科。裕隆飛羚 101/102 歷史、中華 Veryca、三菱 Delica 發展紀實。</li>
+<li><strong>市場銷售紀錄：</strong>Carstuff（2026）。和泰汽車連續 22 年稱霸台灣車市，Corolla Cross 單一車款冠軍。</li>
+<li><strong>PHEV 價格與自製率：</strong>Yahoo 汽機車（2026）。MG HS 與 HS PHEV 售價調整與國產自製率風波探討。</li>
+<li><strong>供應鏈與平台發展：</strong>鴻海科技集團新聞稿 / 今周刊（2024）。Model T 交付營運、輝能科技 2030 次世代電池供應商願景。</li>
+</ul>
+</section>
+</article>
+<nav aria-label="文章導覽" class="klio-article-nav"><a class="klio-article-nav-card" href="./20260319_market.html"><span class="klio-article-nav-label">&lt;- 較新一篇</span><span class="klio-article-nav-title">資本市場脈動</span></a><a class="klio-article-nav-card" href="./20260319_ai.html" style="text-align:right;"><span class="klio-article-nav-label">較舊一篇 -&gt;</span><span class="klio-article-nav-title">OpenClaw &amp; LLM</span></a></nav>
+</main>
 </body>
 </html>

@@ -1,303 +1,121 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>【深度報告】2026 GitHub AI 生態系觀察：從系統指令到自主代理</title>
-    <meta name="description" content="深入解析 2026 年最具影響力的 GitHub 開源倉庫，涵蓋 AI 安全、自主研究代理、高效能模型與開發者工具。">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style>
-        :root {
-            --bg-deep: #020205;
-            --accent-glow: rgba(56, 189, 248, 0.15);
-            --border-glass: rgba(255, 255, 255, 0.08);
-        }
-
-        body {
-            background-color: var(--bg-deep);
-            color: #e5e7eb;
-            overflow-x: hidden;
-        }
-
-        /* 漸層背景裝飾 */
-        .glow-bg {
-            position: fixed;
-            top: -10%;
-            right: -10%;
-            width: 70vw;
-            height: 70vw;
-            background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(100px);
-        }
-
-        .glow-bg-2 {
-            position: fixed;
-            bottom: -10%;
-            left: -10%;
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(100px);
-        }
-
-        /* 毛玻璃卡片 */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-glass);
-            border-radius: 28px;
-            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-
-        .glass-card:hover {
-            border-color: rgba(56, 189, 248, 0.2);
-            background: rgba(255, 255, 255, 0.04);
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
-            transform: translateY(-6px);
-        }
-
-        /* 進度條 */
-        #progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 4px;
-            background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
-            z-index: 100;
-            width: 0%;
-            transition: width 0.1s ease;
-        }
-
-        .text-gradient {
-            background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 50%, #818cf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .repo-badge {
-            font-family: 'Inter', sans-serif;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 4px 12px;
-            border-radius: 99px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            color: #94a3b8;
-            transition: all 0.3s ease;
-        }
-
-        .repo-badge:hover {
-            background: rgba(56, 189, 248, 0.1);
-            border-color: rgba(56, 189, 248, 0.3);
-            color: #38bdf8;
-        }
-
-        code {
-            font-family: 'Inter', monospace;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #7dd3fc;
-        }
-
-        pre {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            overflow-x: auto;
-            margin: 20px 0;
-        }
-
-        h2 {
-            position: relative;
-            display: inline-block;
-        }
-
-        h2::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 40px;
-            height: 4px;
-            background: #38bdf8;
-            border-radius: 2px;
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GitHub 生態演進：從提示詞審計到自主代理架構 | KLIO.</title>
+<meta content="解析 2026 年 GitHub 開源生態轉向，涵蓋系統提示詞審計、多代理協作與邊緣輕量模型，並評估硬體門檻與資安部署邊界。" name="description"/>
+<link href="../icons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="../assets/css/klio-design.css?v=20261125" rel="stylesheet"/>
+<script data-active="reports" data-base="../" data-klio-shell="" src="../assets/js/klio-shell.js?v=20261125"></script>
 </head>
-<body class="antialiased">
-    <div id="progress-bar"></div>
-    <div class="glow-bg"></div>
-    <div class="glow-bg-2"></div>
+<body>
+<main class="klio-article-page">
+<nav aria-label="麵包屑導覽" class="klio-breadcrumb">
+<a href="../index.html">觀察筆記</a>
+<span aria-hidden="true">/</span>
+<a href="../index.html?cat=tech">科技與 AI</a>
+<span aria-hidden="true">/</span>
+<span class="klio-date">2026-05-08</span>
+</nav>
+<header class="klio-article-header">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+<span class="klio-badge klio-badge--tech">科技與 AI</span>
+<span class="klio-date">2026-05-08</span>
+</div>
+<h1 class="klio-article-title">GitHub 生態演進：從提示詞審計到自主代理架構</h1>
+<p class="klio-article-summary">記錄 2026 年 GitHub 開源生態的實務轉向：開發重心正從單一模型微調，移往系統提示詞審計、多代理協作與邊緣輕量模型，同時檢視本地部署的硬體門檻與資安邊界。</p>
+</header>
+<article class="klio-prose">
+<section id="context">
+<h2>01. 核心脈絡：從單一模型微調轉向代理與邊緣架構</h2>
+<p>2026 年的 GitHub 開源圈出現新重心。開發者減少微調單一模型，轉而投入提示詞審計、多代理協作與邊緣輕量模型。這讓雲端黑盒裡的決策邏輯走向公開，也讓本地自動化開發得以落地。只是工具一旦取得終端機與檔案權限，授權合規與執行層資安就得優先處理。</p>
+</section>
+<section id="mechanisms">
+<h2>02. 底層機制：提示詞審計、多代理分工與混合專家推論</h2>
+<h3>系統提示詞逆向審計：asgeirtj/system_prompts_leaks</h3>
+<p>工程師過去評估商用大型語言模型（LLM）的行為邊界，只能靠反覆試錯與黑盒測試。社群整理的 <a href="https://github.com/asgeirtj/system_prompts_leaks" target="_blank">asgeirtj/system_prompts_leaks</a> 倉庫，讓開發者能直接檢視主流模型的底層對齊邏輯。專案內收錄了 <code>GPT-5.5 Thinking</code>、<code>Claude 4.7</code> 與 <code>Gemini 3.1</code> 的系統提示詞樣本。從中能清楚看見原廠如何規範工具呼叫格式（Tool-Use Schema）、分配推理步長（Reasoning Budget），以及劃定拒答紅線。</p>
+<blockquote>看懂原廠的系統提示詞結構，設計提示詞（Prompt）時就能對齊模型慣用格式，不再盲目試錯。</blockquote>
+<p>這類資料庫能幫團隊建立可預測的指令基準，省下不少試錯時間。但參考這份資料時要留意時效性，因為雲端模型的系統提示詞常隨熱更新調整。公開倉庫只記錄了某個時間點的靜態切片，不能當作模型行為永遠不變的保證。</p>
+<h3>多代理狀態機協作：Feynman 與 Open Design</h3>
+<p>遇到跨步驟的研究任務，單靠一個對話視窗很難維持品質。2026 年的新開源框架改用狀態機與角色分工，把檢索、撰寫與驗證拆給不同代理執行。例如 <a href="https://github.com/getcompanion-ai/feynman" target="_blank">getcompanion-ai/feynman</a> 串接了 AlphaXiv 論文庫與網頁爬蟲，能自動比對論文理論與程式碼實作。</p>
+<p>它將任務拆給研究、撰寫與驗證三個角色，在終端機裡交叉查證並附上行內引用（Inline Citations）。實務使用時務必設好步驟上限（Max Steps），才不會讓代理迴圈燒光應用程式介面（API）額度。</p>
+<p>在前端領域，<a href="https://github.com/nexu-io/open-design" target="_blank">nexu-io/open-design</a> 打造了本地優先的設計生成沙盒。它內建超過 70 套設計系統代幣（Design Tokens），讓編碼代理（Coding Agents）能在本機直接渲染網頁、簡報與互動原型。這省去工程師手動對齊設計規範的來回溝通，但生成結果仍得人工檢查無障礙對比度與跨裝置排版。</p>
+<h3>混合專家與邊緣量化：MOSS-TTS-Nano 與 Wan 2.2 Video</h3>
+<p>混合專家架構（MoE）與低位元量化技術成熟後，語音與影音生成不再受限於資料中心級的圖形處理器（GPU）。消費級電腦與顯卡現在也能接手這類任務。以 <a href="https://github.com/OpenMOSS/MOSS-TTS-Nano" target="_blank">OpenMOSS/MOSS-TTS-Nano</a> 為例，它只有 0.1B（1 億）參數，在一般中央處理器（CPU）上就能合成 48 kHz 立體聲語音。低記憶體佔用讓它能直接放進離線助理或邊緣物聯網（IoT）裝置，擺脫對雲端 API 的依賴。</p>
+<p>視覺生成也有類似進展，<a href="https://github.com/Wan-Video/Wan2.2" target="_blank">Wan-Video/Wan2.2</a> 把 MoE 架構搬進影片生成，每次推論只啟動部分專家參數。這種稀疏激活設計兼顧了畫面連貫性與運算效率，讓 RTX 4090（24 GB 顯示記憶體，VRAM）等家用顯卡也能在本地跑起來。如果想在顯存更小的機器上生成高解析度或長片段，就得搭配序列卸載（CPU Offloading）與量化權重。代價是整體生成時間會跟著拉長。</p>
+</section>
+<section id="comparison">
+<h2>03. 專案評估矩陣：硬體門檻、授權條款與整合難度</h2>
+<p>評估開源專案能不能進生產環境，GitHub 星標（Star）數只能反映社群熱度，不能當作選型依據。決定能否穩定落地的關鍵，是本地硬體門檻、授權協議（License）與維護成本。導入前先依下表核對根目錄的 <code>LICENSE</code> 檔案與權重附加條款，確認商用與微調的合規邊界。</p>
+<div class="klio-table-wrap"><table>
+<thead>
+<tr>
+<th>專案名稱</th>
+<th>核心定位</th>
+<th>硬體與算力門檻</th>
+<th>授權與商用檢視重點</th>
+<th>維護與整合難度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>system_prompts_leaks</td>
+<td>主流模型系統提示詞研究資料庫</td>
+<td>零硬體門檻（純文字資料）</td>
+<td>屬逆向與社群收集性質，僅供研究與防禦參考，不可直接複製廠商專有品牌規範用於商業產品</td>
+<td>低（靜態閱讀與對照）</td>
+</tr>
+<tr>
+<td>Feynman</td>
+<td>多代理自主科研與報告生成</td>
+<td>輕量 CPU 即可，但重度依賴外部 LLM API 金鑰與穩定網路</td>
+<td>程式框架多採標準開源授權，須同步確認所串接之外部搜尋 API 與模型商的商用條款</td>
+<td>中（須調校代理迴圈上限與引用過濾）</td>
+</tr>
+<tr>
+<td>Open Design</td>
+<td>本地設計系統與 Agent 沙盒</td>
+<td>一般開發筆電（16 GB RAM 以上），需搭配 Coding Agent API</td>
+<td>須區分「框架代碼授權」與內建設計系統範本的商標／字型版權邊界</td>
+<td>低至中（CLI 與本地預覽環境整合）</td>
+</tr>
+<tr>
+<td>MOSS-TTS-Nano</td>
+<td>超輕量 0.1B 本地語音合成</td>
+<td>消費級多核 CPU 即可即時推論（約 1–2 GB RAM）</td>
+<td>商業部署前應核對模型權重是否採 Apache-2.0／MIT 或附帶特定營收／用途限制</td>
+<td>低（適合包裝為本地微服務）</td>
+</tr>
+<tr>
+<td>Wan 2.2 Video</td>
+<td>MoE 架構開源影片生成模型</td>
+<td>建議 24 GB VRAM 以上（如 RTX 4090），低於 16 GB 須重度量化且生成耗時大幅拉長</td>
+<td>大模型常見代碼與權重採雙軌授權，商業接案須確認是否允許衍生微調與商業輸出</td>
+<td>高（Python 環境、CUDA 版本與顯存調優門檻高）</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section id="boundaries">
+<h2>04. 適用邊界與資安防線：落地前的三項必要檢核</h2>
+<p>開源工具取得終端機與檔案系統權限後，導入風險就從內容出錯升級為系統級資安事件。部分標榜本地執行的框架，核心推理仍會呼叫外部模型 API，團隊得同步檢視資料流向與環境隔離。部署上線前，務必先完成以下三項檢查：</p>
+<h3>1. 隔離間接提示詞注入與越權執行</h3>
+<p>像 Feynman 這類會自動抓取外部網頁與 PDF 文件的代理，常成為間接提示詞注入（Indirect Prompt Injection）的目標。網頁裡藏著的惡意指令，可能誘導代理偷讀敏感檔案，或執行非預期的本地 Shell 指令。只要代理具備檔案寫入或終端機權限，就該放進無特權 Docker 容器或隔離沙盒裡運行。同時要鎖死對外網路白名單，避免資料外洩。</p>
+<h3>2. 驗證模型序列化格式與供應鏈依賴</h3>
+<p>安裝開源工具前，先看過安裝腳本與依賴清單，不要直接貼上來源不明的一鍵指令。Python 常見的 <code>.pt</code> 與 <code>.pkl</code> 模型權重檔，存在 Pickle 反序列化執行任意代碼的風險。下載本地模型時，優先選擇 <code>safetensors</code> 格式比較安全。同時記得用 <code>requirements.txt</code> 或 <code>package-lock.json</code> 鎖定套件的雜湊版本，守住供應鏈底線。</p>
+<h3>3. 劃定混合架構下的資料出境邊界</h3>
+<p>不少號稱本地優先的代理框架，其實只在本機做任務調度，核心推理仍會透過外部 API 送上雲端。一旦把內部原始碼、客戶資料或未公開財報交給這類代理，機密就會順著請求外傳給第三方。如果專案涉及敏感資料，務必將推論端點切換到內網自建模型。團隊在導入初期也該建立流量監控與端點白名單，確保連線不越界。</p>
+</section>
+</article>
+<nav aria-label="文章導覽" class="klio-article-nav"><a class="klio-article-nav-card" href="./20260512_zipcar.html"><span class="klio-article-nav-label">&lt;- 較新一篇</span><span class="klio-article-nav-title">Zipcar 個案深度分析：商業模式淬鍊與畫布</span></a><a class="klio-article-nav-card" href="./20260423_ai_analysis.html" style="text-align:right;"><span class="klio-article-nav-label">較舊一篇 -&gt;</span><span class="klio-article-nav-title">2026 主流 AI 應用分析：訂閱門檻、硬體成本與選型策略</span></a></nav>
+</main>
+<script>
 
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 px-6 py-6 lg:px-12 bg-black/10 backdrop-blur-xl border-b border-white/5">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <a href="../index.html" class="font-black text-2xl tracking-tighter text-white">ANTIGRAVITY<span class="text-sky-400">.</span></a>
-                <span class="hidden md:block w-[1px] h-6 bg-white/10"></span>
-                <span class="hidden md:block text-[10px] font-bold tracking-[0.3em] text-gray-500 uppercase">GitHub Ecosystem Deep Dive</span>
-            </div>
-            <div class="flex gap-6 items-center">
-                <a href="../index.html" class="group flex items-center gap-2 bg-white/5 hover:bg-white text-white hover:text-black px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-500 border border-white/10 hover:border-white">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                    BACK TO HOME
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-5xl mx-auto px-6 lg:px-0 pt-44 pb-32">
-        <!-- Hero -->
-        <header class="mb-32">
-            <div class="flex items-center gap-3 mb-8">
-                <span class="w-12 h-[1px] bg-sky-500"></span>
-                <span class="text-[10px] font-black tracking-[0.4em] text-sky-400 uppercase">May 2026 Analysis</span>
-            </div>
-            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-12 leading-[1.05] tracking-tight">
-                GitHub 生態系觀察：<br>
-                <span class="text-gradient">從指令到自主代理</span>
-            </h1>
-            <div class="mb-12 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                <img src="../image/github_ecosystem_2026.png" alt="GitHub Ecosystem 2026" class="w-full h-auto object-cover max-h-[500px]">
-            </div>
-            <p class="text-lg md:text-xl text-gray-400 max-w-2xl leading-relaxed font-light">
-                我們正處於 AI 開源發展的分水嶺。從揭開大模型「DNA」的系統指令洩露，到能夠完全自主執行科研與設計的代理架構，GitHub 正在定義下一代的軟體開發範式。
-            </p>
-        </header>
-
-        <!-- Content Grid -->
-        <div class="space-y-24">
-            <!-- Section 1 -->
-            <section id="transparency">
-                <div class="flex flex-col md:flex-row gap-12 items-start">
-                    <div class="md:w-1/3">
-                        <h2 class="text-3xl font-black mb-6 text-white uppercase tracking-tighter">AI 指令透明化</h2>
-                        <p class="text-sm text-gray-500 leading-relaxed mb-6">
-                            理解模型的行為邊界不再是黑盒測試，而是透過社群驅動的「洩露」與研究，揭示廠商的對齊策略。
-                        </p>
-                        <a href="https://github.com/asgeirtj/system_prompts_leaks" target="_blank" class="repo-badge">asgeirtj/system_prompts_leaks</a>
-                    </div>
-                    <div class="md:w-2/3 glass-card p-10">
-                        <h3 class="text-xl font-bold mb-6 text-sky-300">揭開大模型的「數位遺傳」</h3>
-                        <p class="text-gray-300 leading-relaxed mb-6">
-                            該倉庫收集了包括 <code>GPT-5.5 Thinking</code>、<code>Claude 4.7</code> 與 <code>Gemini 3.1</code> 在內的主流模型系統提示詞。透過研究這些指令，開發者可以觀察到廠商如何定義「安全性」、「推理步長」以及「對齊偏好」。
-                        </p>
-                        <div class="bg-black/40 p-6 rounded-2xl border border-white/5 italic text-sm text-gray-400">
-                            「理解這些指令是提示工程（Prompt Engineering）從『玄學』邁向『科學』的關鍵一步。」
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 2 -->
-            <section id="agents">
-                <div class="flex flex-col md:flex-row-reverse gap-12 items-start">
-                    <div class="md:w-1/3">
-                        <h2 class="text-3xl font-black mb-6 text-white uppercase tracking-tighter">自主代理架構</h2>
-                        <p class="text-sm text-gray-500 leading-relaxed mb-6">
-                            從單純的聊天機器人演進為具備 Researcher、Writer、Verifier 等多重人格的複雜協作系統。
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <a href="https://github.com/getcompanion-ai/feynman" target="_blank" class="repo-badge">getcompanion-ai/feynman</a>
-                            <a href="https://github.com/nexu-io/open-design" target="_blank" class="repo-badge">nexu-io/open-design</a>
-                        </div>
-                    </div>
-                    <div class="md:w-2/3 glass-card p-10 border-l-4 border-l-purple-500">
-                        <h3 class="text-xl font-bold mb-6 text-purple-300">Feynman: 全自動科研助理</h3>
-                        <p class="text-gray-300 leading-relaxed mb-8">
-                            Feynman 透過 AlphaXiv 搜尋與網頁爬蟲，實現了「論文到代碼」的自動審計。其核心在於<b>多代理協作（Multi-Agent Orchestration）</b>，能夠在終端機中完成深度的技術調研並產出附帶 inline citations 的專業報告。
-                        </p>
-                        
-                        <h3 class="text-xl font-bold mb-6 text-pink-300">Open Design: 讓 AI 掌握美學</h3>
-                        <p class="text-gray-300 leading-relaxed">
-                            這是一個「本地優先」的 Claude Design 替代方案。它內建了 70+ 套品牌級設計系統，支持 Coding Agents 在本地沙盒中直接生成網頁、簡報甚至影片原型，實現了從代碼到視覺的無縫跨越。
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 3 -->
-            <section id="efficiency">
-                <div class="flex flex-col md:flex-row gap-12 items-start">
-                    <div class="md:w-1/3">
-                        <h2 class="text-3xl font-black mb-6 text-white uppercase tracking-tighter">高效能模型革命</h2>
-                        <p class="text-sm text-gray-500 leading-relaxed mb-6">
-                            MoE（混合專家模型）與量化技術的進步，讓原本需要伺服器等級的算力，現在在消費級顯卡上也能流暢運行。
-                        </p>
-                        <div class="flex flex-wrap gap-2">
-                            <a href="https://github.com/OpenMOSS/MOSS-TTS-Nano" target="_blank" class="repo-badge">OpenMOSS/MOSS-TTS-Nano</a>
-                            <a href="https://github.com/Wan-Video/Wan2.2" target="_blank" class="repo-badge">Wan-Video/Wan2.2</a>
-                        </div>
-                    </div>
-                    <div class="md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="glass-card p-8 bg-sky-500/5">
-                            <div class="text-sky-400 font-black text-xs mb-4 uppercase tracking-widest">Efficiency Focus</div>
-                            <h4 class="text-lg font-bold mb-4">MOSS-TTS-Nano</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                僅 0.1B 參數，卻能在普通 CPU 上實現 48kHz 高保真立體聲輸出。這是本地化邊緣運算的極致體現。
-                            </p>
-                        </div>
-                        <div class="glass-card p-8 bg-indigo-500/5">
-                            <div class="text-indigo-400 font-black text-xs mb-4 uppercase tracking-widest">Architecture Focus</div>
-                            <h4 class="text-lg font-bold mb-4">Wan 2.2 Video</h4>
-                            <p class="text-xs text-gray-400 leading-relaxed">
-                                採用 MoE 架構，優化了影片生成的運動完整性與電影級美學，且支持在 RTX 4090 等家用顯卡運行。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- Footer -->
-        <footer class="mt-48 pt-20 border-t border-white/5">
-            <div class="flex flex-col md:flex-row justify-between items-start gap-12">
-                <div class="max-w-md">
-                    <h4 class="text-2xl font-black text-white mb-6">展望未來</h4>
-                    <p class="text-gray-400 leading-relaxed text-sm">
-                        開源社群正在迅速填補閉源模型留下的空白。從 Agent 技能的標準化（如 <code>anthropics/skills</code>）到本地化記憶引擎的實作，我們正見證一個更開放、更透明且更強大的 AI 時代。
-                    </p>
-                </div>
-                <div class="glass-card p-8 md:w-80">
-                    <p class="text-[10px] font-bold text-sky-400 mb-4 uppercase tracking-widest">Report Signature</p>
-                    <p class="text-sm italic text-gray-300 font-light leading-relaxed">
-                        "Software is eating the world, but AI Agents are rewriting the software."
-                    </p>
-                    <div class="mt-8 pt-6 border-t border-white/5 flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center text-[10px] font-bold text-sky-400">AG</div>
-                        <div>
-                            <p class="text-xs font-bold text-white leading-none">Antigravity AI</p>
-                            <p class="text-[9px] text-gray-500 mt-1 uppercase">Tech Lead Analyst</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-24 text-center">
-                <p class="text-[9px] font-bold text-gray-700 tracking-[0.5em] uppercase">© 2026 KLIO AI LABS . ALL RIGHTS RESERVED</p>
-            </div>
-        </footer>
-    </main>
-
-    <script>
         window.addEventListener('scroll', () => {
             const h = document.documentElement;
             const scrollPercent = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
@@ -320,6 +138,7 @@
             section.style.transition = 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)';
             observer.observe(section);
         });
-    </script>
+    
+</script>
 </body>
 </html>

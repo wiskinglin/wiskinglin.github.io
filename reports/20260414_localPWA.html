@@ -1,559 +1,150 @@
 <!DOCTYPE html>
+
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transformers.js PWA 深度研究報告</title>
-    
-    <!-- 引入 Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 引入 Google Fonts: Inter & Noto Sans TC -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
-
-    <!-- Tailwind 自定義配置 -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-                    },
-                    colors: {
-                        tech: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                        }
-                    },
-                    boxShadow: {
-                        'soft': '0 20px 40px -15px rgba(0, 0, 0, 0.05)',
-                        'float': '0 25px 50px -12px rgba(100, 116, 133, 0.15)',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- 核心排版與列印 CSS -->
-    <style>
-        /* 基礎全域設定 */
-        body {
-            background-color: #f1f5f9;
-            -webkit-font-smoothing: antialiased;
-            color: #334155;
-        }
-
-        /* A4 橫式頁面容器 */
-        .a4-page {
-            width: 297mm;
-            min-height: 210mm;
-            margin: 2rem auto;
-            background-color: #ffffff;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-            border-radius: 1rem;
-            /* 橫向滿版佈局核心：使內部區塊可彈性延展 */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 15mm; 
-            overflow: hidden;
-            position: relative;
-            /* 斷頁防護 */
-            page-break-after: always;
-            break-inside: avoid;
-        }
-
-        /* 裝飾性微型元素 */
-        .gradient-divider {
-            height: 2px;
-            background: linear-gradient(90deg, #3b82f6 0%, rgba(59,130,246,0) 100%);
-            width: 100px;
-            margin: 1.5rem 0;
-            border-radius: 99px;
-        }
-
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        /* 編輯模式視覺反饋 (防呆) */
-        [contenteditable="true"] {
-            outline: 3px dashed rgba(59, 130, 246, 0.6);
-            outline-offset: 4px;
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-            background-color: rgba(59, 130, 246, 0.02);
-            cursor: text;
-        }
-        [contenteditable="true"]:hover {
-            outline-color: rgba(59, 130, 246, 1);
-            background-color: rgba(59, 130, 246, 0.05);
-        }
-
-        /* 列印引擎強制對應規範 */
-        @media print {
-            body { background-color: #ffffff; }
-            @page {
-                size: A4 landscape;
-                margin: 0;
-            }
-            .a4-page {
-                margin: 0;
-                box-shadow: none;
-                border-radius: 0;
-                width: 297mm;
-                height: 210mm;
-                /* 強制避免斷頁 */
-                page-break-after: always;
-                page-break-inside: avoid;
-            }
-            /* 強制背景色與陰影無損輸出 */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                /* 停用動畫 */
-                transition: none !important;
-                animation: none !important;
-            }
-            /* 列印時隱藏控制面板 */
-            .no-print { display: none !important; }
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>瀏覽器離線推論架構：網頁端 AI 技術與商業解析 | KLIO.</title>
+<meta content="剖析瀏覽器結合 WebGPU 與 PWA 的離線推論架構，從雙層快取、算力調優到白盒防禦，拆解端側 AI 的技術邏輯與商業邊界。" name="description"/>
+<link href="../icons/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="../assets/css/klio-design.css?v=20261125" rel="stylesheet"/>
+<script data-active="reports" data-base="../" data-klio-shell="" src="../assets/js/klio-shell.js?v=20261125"></script>
 </head>
-<body class="font-sans pb-20">
+<body>
+<main class="klio-article-page">
+<nav aria-label="麵包屑導覽" class="klio-breadcrumb">
+<a href="../index.html">觀察筆記</a>
+<span aria-hidden="true">/</span>
+<a href="../index.html?cat=tech">科技與 AI</a>
+<span aria-hidden="true">/</span>
+<span class="klio-date">2026-04-14</span>
+</nav>
+<header class="klio-article-header">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+<span class="klio-badge klio-badge--tech">科技與 AI</span>
+<span class="klio-date">2026-04-14</span>
+</div>
+<h1 class="klio-article-title">瀏覽器離線推論架構：網頁端 AI 技術與商業解析</h1>
+<p class="klio-article-summary">整理瀏覽器結合 WebGPU 與漸進式網頁應用（PWA）的離線推論架構，記錄雙層快取、算力調優、白盒防禦與端側 AI 的商業邊界。</p>
+</header>
+<article class="klio-prose">
+<h2>核心脈絡與關鍵問題：為何將 AI 推論遷回瀏覽器</h2>
+<p>WebAssembly（網頁組譯語言）與 WebGPU 標準成熟後，大型語言模型與多模態推論開始走向使用者終端。開發團隊結合 Hugging Face 的 Transformers.js 生態與漸進式網頁應用（PWA）架構，就能在瀏覽器沙盒內直接跑神經網路推論。算力移到使用者裝置後，產品可離線運作，也省下持續性的雲端應用程式介面（API）權杖支出。</p>
+<p>端側執行直接回應三個實務問題。拿掉網路往返延遲後，即時語音、影像去背與互動輔助都能在本地完成。敏感文本、醫療紀錄與商業合約全程留在本地裝置，能直接符合資料合規規範。開發者也不必再替免費用戶支付伺服器圖形處理器（GPU）租金，產品毛利結構因此改寫。</p>
+<p>把數 GB 的模型權重放進瀏覽器，會立刻撞上三道限制。第一是儲存與記憶體上限，傳統網頁快取讀取大型二進制檔時，常觸發 V8 JavaScript 引擎記憶體溢位。第二是前端算力有限，系統得靠計算著色器、低位元量化與記憶體池化才能維持穩定幀率。第三是權重檔直接暴露在客戶端白盒環境，團隊必須在效能、隱私與防盜保護之間取捨。</p>
 
-    <!-- 控制面板 Control Panel -->
-    <div id="control-panel" class="no-print fixed top-6 right-8 glass-panel shadow-float rounded-2xl p-2 z-50 flex gap-2 transition-all duration-300">
-        <button id="btn-edit" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-tech-50 rounded-xl transition-colors">
-            ✏️ <span id="edit-text">編輯內容</span>
-        </button>
-        <button id="btn-save" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-gray-700 bg-white hover:bg-tech-50 rounded-xl transition-colors">
-            ⬇️ 儲存網頁
-        </button>
-        <button id="btn-print" class="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-tech-600 hover:bg-tech-800 rounded-xl transition-colors shadow-lg shadow-tech-500/30">
-            🖨️ 輸出 PDF
-        </button>
-    </div>
+<h2>底層機制與因果拆解：從雙層快取到推論調優</h2>
+<p>想在瀏覽器跑動數億至數十億參數的模型，得同時處理儲存輸入輸出（I/O）、GPU 排程與資料前處理。只靠預設網頁 API 會拖慢載入速度，甚至讓分頁崩潰。實作上必須把三層瓶頸拆開，各自對應合適的瀏覽器標準。</p>
 
-    <!-- 主文件容器 Document Wrapper -->
-    <div id="document-wrapper" class="w-full">
+<h3>1. 雙層快取架構與背景下載機制</h3>
+<p>瀏覽器原生的 Cache API 專為小型超文本傳輸協定（HTTP）靜態資源設計，整包塞入數 GB 模型會讓磁碟空間膨脹。它每次讀取都得把完整物件載入記憶體，常會觸發 V8 引擎溢位崩潰。IndexedDB 雖然能用上高達 80% 的磁碟配額，但讀寫數 GB 單一檔案時，交易序列化與反序列化會拖慢啟動速度。</p>
+<p>要繞過大型檔案的存取瓶頸，主儲存層應該改用 Origin Private File System（OPFS，來源私有檔案系統）。OPFS 支援位元組級的就地讀寫，省下序列化成本；在 Web Worker 內搭配同步存取控制（AccessHandle），I/O 速度比 IndexedDB 快上數倍。分工上，我會把詮釋資料（Metadata）與分詞器設定放進 IndexedDB，模型權重直接寫入 OPFS，兼顧檢索彈性與讀取速度。</p>
+<p>模型初次下載時，可以串接 Background Fetch（背景擷取）與 Persistent Storage（持久儲存）兩項 PWA 能力。Background Fetch 把數 GB 的下載任務交給作業系統接管，使用者關掉分頁也能在背景續傳。再搭配 Persistent Storage 權限與 Promise 寫入鎖，就能避免瀏覽器在空間吃緊時清掉快取，也防止多執行緒同時寫入毀損檔案。</p>
 
-        <!-- 第 1 頁：封面 Hero 滿版 -->
-        <section class="a4-page bg-slate-900 text-white relative">
-            <!-- 背景裝飾 -->
-            <div class="absolute top-0 right-0 w-3/4 h-full bg-gradient-to-l from-tech-800/40 to-transparent pointer-events-none"></div>
-            <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-tech-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 pointer-events-none"></div>
+<h3>2. WebGPU 計算著色器與模型壓縮</h3>
+<p>運算層面上，Transformers.js v4 導入以 C++ 重寫的 WebGPU 執行階段與 WebGPU 著色語言（WGSL）計算著色器。它把最耗時的矩陣乘法拆給 GPU 數萬個執行緒並行處理。面對長文本推論的記憶體瓶頸，支援 DeepSeek-v3 的多頭潛在注意力（MLA）能壓縮鍵值快取（KV Cache）空間。混合專家（MoE）架構則靠稀疏門控網路，每次只啟動部分參數，減輕終端裝置的視訊記憶體（VRAM）負擔。</p>
+<p>受限於終端裝置的記憶體頻寬，模型部署前得先做 q8 或 q4 低位元量化，縮減權重體積與搬運時間。JavaScript 執行階段則預先配置並重複利用 <code>Float32Array</code> 記憶體池，避開頻繁建立臨時張量引發的 V8 垃圾回收（GC）停頓。想再拉高生成速度，前端可同時載入小型草稿模型與目標大模型，靠推測解碼（Speculative Decoding）猜測並批量驗證輸出。</p>
 
-            <div class="flex-1 flex flex-col justify-center relative z-10 w-4/5">
-                <span class="inline-block px-4 py-1.5 mb-6 text-sm font-bold tracking-wider text-tech-100 bg-tech-800/80 rounded-full backdrop-blur-sm border border-tech-500/30 w-max">
-                    2026 前瞻技術研究報告
-                </span>
-                <h1 class="text-5xl font-black leading-tight mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white to-tech-100">
-                    基於 Transformers.js 與 PWA 的<br>離線 Web AI 架構與前瞻應用
-                </h1>
-                <p class="text-xl text-slate-300 leading-relaxed font-light mt-4 w-5/6">
-                    隨著 WebAssembly 與 WebGPU 標準成熟，大型語言模型正經歷從雲端向邊緣客戶端遷移的典範轉移。本報告深度剖析結合 Hugging Face 生態與 PWA 架構，實現「零延遲、高隱私、免伺服器成本」的下一代基礎設施。
-                </p>
-            </div>
+<h3>3. 前端資料預處理與多模態管線</h3>
+<p>多模態應用不只跑文字推論，前端還得負責資料編譯與前處理。處理圖文混合輸入時，系統會在本地把影像張量與文字 Token 交錯拼接。接著透過內建的 Jinja Chat Template，把結構化對話陣列轉成特定模型要求的提示詞格式。這讓不同模型家族在離線狀態下，也能維持一致的指令遵循能力。</p>
+<p>語音管線方面，前端先用 WebAudio API 把麥克風輸入重取樣為 16 kHz，並即時計算音量包絡線來執行語音端點偵測（VAD）。系統先在本地切掉無聲片段，才把有效音訊送進 Whisper 等辨識模型。這道前置過濾省下無效推論，直接降低筆電與手機的耗電和發熱。</p>
 
-            <div class="grid grid-cols-3 gap-6 mt-12 relative z-10">
-                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <div class="text-3xl mb-2">⚡</div>
-                    <h3 class="text-lg font-bold text-white mb-1">零延遲推論</h3>
-                    <p class="text-sm text-slate-400">消弭網路傳輸瓶頸，毫秒級回應使用者意圖</p>
-                </div>
-                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <div class="text-3xl mb-2">🔒</div>
-                    <h3 class="text-lg font-bold text-white mb-1">極致數據隱私</h3>
-                    <p class="text-sm text-slate-400">敏感數據永不離端，完美符合高規格合規要求</p>
-                </div>
-                <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/10">
-                    <div class="text-3xl mb-2">💰</div>
-                    <h3 class="text-lg font-bold text-white mb-1">重塑成本結構</h3>
-                    <p class="text-sm text-slate-400">轉嫁算力至終端，徹底消除雲端 API Token 費用</p>
-                </div>
-            </div>
-        </section>
+<h2>關鍵技術對比與商業應用矩陣</h2>
+<p>導入端側 AI 時，技術選型必須對齊檔案體積、I/O 特性與商業模式。只要選錯瀏覽器快取介面，推論引擎調校得再好，模型一樣會在載入階段撐爆記憶體。以下整理三種瀏覽器儲存機制的工程特性，作為雙層快取架構的選型對照。</p>
 
-        <!-- 第 2 頁：底層架構 - 存儲機制 (Bento Box) -->
-        <section class="a4-page">
-            <header>
-                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Chapter 1</div>
-                <h2 class="text-3xl font-bold text-slate-800">底層架構：大容量模型檔存儲對比</h2>
-                <div class="gradient-divider"></div>
-                <p class="text-slate-600 mb-6">動輒數 GB 的 AI 模型對傳統存儲機制提出極端挑戰。以下為主流客戶端存儲方案優劣分析：</p>
-            </header>
+<div class="klio-table-wrap">
+<table>
+<thead>
+<tr>
+<th>儲存機制</th>
+<th>適用資料型態</th>
+<th>I/O 與記憶體開銷</th>
+<th>大容量模型風險</th>
+<th>雙層架構建議角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cache API</td>
+<td>小型靜態資源與網頁資產</td>
+<td>需將完整物件載入記憶體，無就地讀寫能力</td>
+<td>極易導致磁碟空間膨脹與 V8 記憶體溢位崩潰</td>
+<td>僅快取前端程式碼與 UI 資產，排除模型權重</td>
+</tr>
+<tr>
+<td>IndexedDB</td>
+<td>結構化設定與鍵值對資料</td>
+<td>受限於交易序列化與反序列化開銷</td>
+<td>讀取數 GB 單一檔案時延遲明顯，影響冷啟動</td>
+<td>存放模型詮釋資料、分詞器設定與對話紀錄</td>
+</tr>
+<tr>
+<td>OPFS</td>
+<td>巨量二進制模型權重檔</td>
+<td>支援位元組級就地讀寫，零序列化成本</td>
+<td>須於 Web Worker 內搭配寫入鎖以防檔案損壞</td>
+<td>作為主儲存層承載數 GB 量化模型權重</td>
+</tr>
+</tbody>
+</table>
+</div>
 
-            <div class="flex-1 grid grid-cols-3 gap-6">
-                <!-- Cache API -->
-                <div class="bg-red-50 p-6 rounded-2xl border border-red-100 flex flex-col">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold">1</div>
-                        <h3 class="text-xl font-bold text-slate-800">Cache API</h3>
-                    </div>
-                    <div class="mb-4">
-                        <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md">適用: 靜態資源</span>
-                    </div>
-                    <p class="text-sm text-slate-700 leading-relaxed flex-1">
-                        設計用於 HTTP 請求快取。處理大容量模型時，整體存入會導致嚴重的磁碟膨脹 (Disk Bloat)，且每次讀取需將完整物件載入記憶體，極易觸發 V8 引擎 OOM 崩潰。
-                    </p>
-                </div>
+<p>底層儲存與推論管線穩定後，開發者就能跳脫傳統軟體即服務（SaaS）按 Token 轉售算力的定價框架。把基礎推論移到終端執行，團隊可以針對高隱私需求或算力分擔設計差異化方案。這裡整理出四種端側推論的商業落地模式與限制條件。</p>
 
-                <!-- IndexedDB -->
-                <div class="bg-amber-50 p-6 rounded-2xl border border-amber-100 flex flex-col">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 font-bold">2</div>
-                        <h3 class="text-xl font-bold text-slate-800">IndexedDB</h3>
-                    </div>
-                    <div class="mb-4">
-                        <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-md">適用: 結構化資料</span>
-                    </div>
-                    <p class="text-sm text-slate-700 leading-relaxed flex-1">
-                        基於 LevelDB/SQLite 的 NoSQL 資料庫。支援高達磁碟空間 80% 的配額，但處理數 GB 單一檔案時，其交易序列化與反序列化過程仍會產生不可忽視的效能開銷。
-                    </p>
-                </div>
+<div class="klio-table-wrap">
+<table>
+<thead>
+<tr>
+<th>應用／變現模式</th>
+<th>核心技術組合</th>
+<th>代表應用場景</th>
+<th>關鍵商業價值與邊界條件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>純離線合規工具</td>
+<td>1B 量化 LLM、Voyager WASM、Whisper</td>
+<td>合約違約金抽取、本地筆記 RAG、醫療 SOAP 摘要與董事會錄音轉錄</td>
+<td>資料全程不離端，適合金融與醫療合規採購，可收取高隱私認證溢價</td>
+</tr>
+<tr>
+<td>零延遲創意與感測</td>
+<td>RMBG-2.0、Kokoro TTS、MediaPipe</td>
+<td>瀏覽器即時去背、離線 Podcast 語音合成、網頁體感控制與視障路況導航</td>
+<td>省去影像與音訊串流上傳頻寬，但受限於終端裝置 GPU 算力與散熱</td>
+</tr>
+<tr>
+<td>結果導向與混合定價</td>
+<td>本地草稿模型結合雲端 70B 大模型</td>
+<td>基礎改寫與摘要免費於本地執行，複雜推理自動切換雲端模型並觸發計費</td>
+<td>降低免費用戶邊際成本，依成功完成的業務動作計費，提升付費轉換率</td>
+</tr>
+<tr>
+<td>自攜算力授權折扣</td>
+<td>WebGPU 終端推論與授權驗證機制</td>
+<td>同意調用本地 GPU 執行運算的企業或個人用戶，給予軟體授權費減免</td>
+<td>將算力採購成本轉嫁至用戶現有硬體，適合高頻使用的專業生產力軟體</td>
+</tr>
+</tbody>
+</table>
+</div>
 
-                <!-- OPFS -->
-                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex flex-col relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">最佳實踐</div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">3</div>
-                        <h3 class="text-xl font-bold text-slate-800">OPFS</h3>
-                    </div>
-                    <div class="mb-4">
-                        <span class="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-md">適用: 巨量二進制檔</span>
-                    </div>
-                    <p class="text-sm text-slate-700 leading-relaxed flex-1">
-                        Origin Private File System。提供位元組級 (Byte-by-Byte) 存取，支援就地讀寫與零序列化開銷。在 Web Worker 中調用同步方法，I/O 速度可達 IndexedDB 數倍。
-                    </p>
-                </div>
-            </div>
+<h2>適用邊界、安全限制與行動建議</h2>
+<p>端側 Web AI 省下伺服器成本與網路延遲，但技術邊界與安全風險同樣清楚。模型權重與推論邏輯一旦下載到客戶端，雲端防火牆就再也保護不了核心資產。評估要把哪些功能搬進瀏覽器時，團隊得先解決白盒環境的智財保護問題，並正視硬體相容性的現實門檻。</p>
 
-            <!-- Conclusion Bar -->
-            <div class="mt-6 bg-slate-800 text-white p-5 rounded-2xl shadow-float flex items-center gap-4">
-                <div class="bg-tech-500 p-2 rounded-lg">💡</div>
-                <div>
-                    <h4 class="font-bold text-lg mb-1">架構建議：雙層快取架構 (Two-tier Cache)</h4>
-                    <p class="text-sm text-slate-300">強烈建議以 IndexedDB 存儲輕量詮釋資料 (Metadata)、分詞器設定檔，並將龐大的二進制模型權重直接寫入 OPFS。確保極致載入速度與優雅降級機制。</p>
-                </div>
-            </div>
-        </section>
+<h3>白盒環境的逆向工程風險與防禦</h3>
+<p>把模型部署到瀏覽器，等於讓權重檔與推論邏輯直接暴露在白盒環境中。攻擊者能直接從網路請求或記憶體快照抽走模型資產。面對高價值的專有微調模型，團隊需要三層防禦：第一層是白盒密碼學與混淆，把權重編碼進查詢表，避免在記憶體執行明文矩陣乘法，不讓對方直接還原浮點數。</p>
+<p>第二層是 WebAssembly（WASM）指令虛擬化，把關鍵演算法與張量調度邏輯轉成自訂位元組碼，放進微型虛擬機直譯執行。系統同時嵌入防偵錯檢查，偵測到開發者工具（DevTools）中斷點或異常記憶體掃描就立即污染記憶體。第三層則是神經網路白盒浮水印，在微調階段透過輔助損失函數（Auxiliary Loss）植入專屬印記，就算模型遭竊也能提出鑑識證據。</p>
 
-        <!-- 第 3 頁：關鍵技術矩陣 (Grid Layout) -->
-        <section class="a4-page">
-            <header>
-                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Technology Matrix</div>
-                <h2 class="text-3xl font-bold text-slate-800">底層架構：100 項關鍵技術提煉</h2>
-                <div class="gradient-divider"></div>
-            </header>
-
-            <div class="grid grid-cols-2 gap-x-8 gap-y-6 mt-4 flex-1">
-                
-                <!-- Pillar 1 -->
-                <div class="border-t-[4px] border-tech-500 bg-white p-6 rounded-b-2xl shadow-soft">
-                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <span class="text-2xl">⚙️</span> 核心推理引擎
-                    </h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-3">
-                            <span class="text-tech-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">WebGPU C++ Runtime & WGSL</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">引入 C++ 重寫的 v4 執行階段，利用計算著色器將矩陣乘法分發至 GPU 數萬個執行緒並發執行。</span>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-tech-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">MLA 與 MoE 混合專家架構支援</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">支援 DeepSeek-v3 MLA 大幅壓縮 KV Cache，並透過稀疏門控網路降低 VRAM 消耗。</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Pillar 2 -->
-                <div class="border-t-[4px] border-emerald-500 bg-white p-6 rounded-b-2xl shadow-soft">
-                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <span class="text-2xl">💾</span> PWA 離線與存儲
-                    </h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-3">
-                            <span class="text-emerald-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">Background Fetch 巨量下載</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">將數 GB 模型下載任務移交 OS 層，應用關閉也能持續；結合 Persistent Storage 避免被當作暫存清除。</span>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-emerald-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">OPFS 同步存取控制與寫入鎖</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">Web Worker 獨占調用 AccessHandle 實現無阻塞 I/O，搭配 Promise 寫入鎖杜絕檔案損壞風險。</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Pillar 3 -->
-                <div class="border-t-[4px] border-purple-500 bg-white p-6 rounded-b-2xl shadow-soft">
-                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <span class="text-2xl">🔄</span> 資料預處理技術
-                    </h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-3">
-                            <span class="text-purple-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">多模態交錯輸入與 Chat Template</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">前端動態將視覺張量與文字 Token 融合；內建 Jinja 模板將對話陣列精準編譯為模型專屬 Prompt。</span>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-purple-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">WebAudio 與 VAD 端點偵測</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">前端重取樣為 16kHz 並即時計算音量包絡線，切除無聲片段後再送入 Whisper，節省推論算力。</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Pillar 4 -->
-                <div class="border-t-[4px] border-amber-500 bg-white p-6 rounded-b-2xl shadow-soft">
-                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <span class="text-2xl">🚀</span> 效能調優適配
-                    </h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-3">
-                            <span class="text-amber-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">量化策略與記憶體池化</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">應用 q8/q4 量化突破頻寬瓶頸；重複利用 Float32Array 迴避 V8 引擎高頻 GC 造成的主線程停頓。</span>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-amber-500 mt-1">✦</span>
-                            <div>
-                                <strong class="text-slate-800 block text-sm">推測解碼 (Speculative Decoding)</strong>
-                                <span class="text-slate-600 text-xs leading-relaxed">前端並行草稿模型與目標大模型，透過草稿猜測並由大模型批量驗證，成倍提升生成速度。</span>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- 第 4 頁：應用場景 - 生產力與創意 (Card Grid) -->
-        <section class="a4-page">
-            <header>
-                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Chapter 2</div>
-                <h2 class="text-3xl font-bold text-slate-800">應用場景深度發掘</h2>
-                <div class="gradient-divider"></div>
-                <p class="text-slate-600 mb-4">結合 PWA 斷網執行特性，將 100 個潛力應用聚焦於隱私、低延遲與高可用性。</p>
-            </header>
-
-            <div class="flex-1 flex flex-col gap-6">
-                <!-- 生產力模組 -->
-                <div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-3 border-l-4 border-tech-500 pl-3">純離線生產力工具 (Data Privacy First)</h3>
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-tech-600">⚖️</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">合約風險分析器</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">載入 1B 級別量化 LLM，離線抽取違約金條款，商業機密零外洩。</p>
-                        </div>
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-tech-600">📚</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">無伺服器本地 RAG</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">整合 Voyager WASM 與 Embedding 模型，建構個人筆記語義檢索。</p>
-                        </div>
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-tech-600">🩺</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">醫療病歷摘要</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">Whisper 轉錄問診再由 LLM 結構化 SOAP，符合 HIPAA 規範。</p>
-                        </div>
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-tech-600">🎧</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">無痕會議記錄</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">耳機端即時分析情緒輔助話術；或離線轉錄董事會機密。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 創意模組 -->
-                <div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-3 border-l-4 border-emerald-500 pl-3">邊緣運算創意應用 (Zero-Latency Immerse)</h3>
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-emerald-600">🎬</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">即時去背與 VR</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">RMBG-2.0 處理 video 幀，實現瀏覽器高解析度直播背景替換。</p>
-                        </div>
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-emerald-600">🎙️</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">離線 Podcast 生成</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">Kokoro TTS 生成語音融合配樂，批量製作無版權廣播節目。</p>
-                        </div>
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-emerald-600">🕹️</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">姿態體感控制器</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">相機結合 MediaPipe 骨架追蹤，免硬體感測器玩網頁遊戲。</p>
-                        </div>
-                        <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div class="text-2xl mb-2 text-emerald-600">👁️</div>
-                            <h4 class="font-bold text-sm text-slate-800 mb-1">視障環境導航</h4>
-                            <p class="text-xs text-slate-500 leading-relaxed">物件偵測持續將路況轉為語音；或唇語識別吵雜環境語意。</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 第 5 頁：商業變現與防禦策略 (Cards Layout) -->
-        <section class="a4-page bg-slate-50">
-            <header>
-                <div class="text-tech-600 font-black tracking-widest text-sm mb-1 uppercase">Chapter 3</div>
-                <h2 class="text-3xl font-bold text-slate-800">商業變現與資安防禦策略</h2>
-                <div class="gradient-divider"></div>
-                <p class="text-slate-600 mb-6">邊緣推論改變了傳統 AI SaaS 成本結構，並引發針對白盒攻擊的新一代防禦挑戰。</p>
-            </header>
-
-            <div class="flex-1 flex gap-8">
-                
-                <!-- 變現模式 -->
-                <div class="flex-1 flex flex-col">
-                    <div class="bg-white rounded-2xl shadow-soft p-6 border border-gray-100 flex-1">
-                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <span class="bg-tech-100 text-tech-600 p-1.5 rounded-lg">💎</span> 變現模式創新
-                        </h3>
-                        <ul class="space-y-4">
-                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
-                                <strong class="text-sm text-slate-800">結果導向任務計費 (Outcome Pricing)</strong>
-                                <p class="text-xs text-slate-500 mt-1">放棄 Token 計費，依照用戶端「成功完成的業務動作」於背景扣款。</p>
-                            </li>
-                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
-                                <strong class="text-sm text-slate-800">雲端/邊緣混合定價 (Hybrid Tiering)</strong>
-                                <p class="text-xs text-slate-500 mt-1">前端草稿免費，判定複雜任務時無縫切換 70B 雲端模型並觸發計費。</p>
-                            </li>
-                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
-                                <strong class="text-sm text-slate-800">隱私合規保證溢價 (Privacy Premium)</strong>
-                                <p class="text-xs text-slate-500 mt-1">為金融/醫療販售「100% 離線合規認證」，賺取絕對不上雲的溢價。</p>
-                            </li>
-                            <li class="bg-gray-50 rounded-xl p-3 border-l-2 border-tech-500">
-                                <strong class="text-sm text-slate-800">自攜算力折扣 (BYOD Discount)</strong>
-                                <p class="text-xs text-slate-500 mt-1">讓使用者的設備買單，同意調用終端 WebGPU 即給予授權費折扣。</p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- 防禦策略 -->
-                <div class="flex-1 flex flex-col">
-                    <div class="bg-slate-800 rounded-2xl shadow-float p-6 border border-slate-700 text-white flex-1 relative overflow-hidden">
-                        <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl">🛡️</div>
-                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 relative z-10">
-                            <span class="bg-slate-700 p-1.5 rounded-lg">🛡️</span> 白盒逆向工程防禦
-                        </h3>
-                        <p class="text-xs text-slate-300 mb-5 relative z-10">模型存於前端構成白盒攻擊環境，需導入終極防禦：</p>
-                        
-                        <div class="space-y-4 relative z-10">
-                            <div>
-                                <h4 class="text-sm font-bold text-tech-400">01. 白盒密碼學與混淆</h4>
-                                <p class="text-xs text-slate-400 mt-1">將權重編碼至複雜查詢表，不進行明文矩陣乘法，使惡意方無法透過記憶體還原浮點數。</p>
-                            </div>
-                            <hr class="border-slate-700">
-                            <div>
-                                <h4 class="text-sm font-bold text-emerald-400">02. WASM 指令虛擬化</h4>
-                                <p class="text-xs text-slate-400 mt-1">將演算法轉為自訂位元組碼並置於 WASM 內微型 VM 直譯。偵測到 DevTools 斷點立即觸發自毀污染記憶體。</p>
-                            </div>
-                            <hr class="border-slate-700">
-                            <div>
-                                <h4 class="text-sm font-bold text-purple-400">03. 神經網路白盒浮水印</h4>
-                                <p class="text-xs text-slate-400 mt-1">微調階段透過 Auxiliary Loss 植入專屬印記，即使遭實體竊取也能在法庭上提出無法篡改的鑑識鐵證。</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-    </div>
-
-    <!-- 互動邏輯腳本 JS -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const btnEdit = document.getElementById('btn-edit');
-            const btnSave = document.getElementById('btn-save');
-            const btnPrint = document.getElementById('btn-print');
-            const wrapper = document.getElementById('document-wrapper');
-            const editText = document.getElementById('edit-text');
-            
-            let isEditing = false;
-
-            // 功能 1：編輯模式切換
-            btnEdit.addEventListener('click', () => {
-                isEditing = !isEditing;
-                if (isEditing) {
-                    wrapper.setAttribute('contenteditable', 'true');
-                    editText.textContent = '💾 結束編輯';
-                    btnEdit.classList.remove('text-gray-700', 'hover:bg-tech-50');
-                    btnEdit.classList.add('text-tech-600', 'bg-tech-50', 'border', 'border-tech-200');
-                } else {
-                    wrapper.removeAttribute('contenteditable');
-                    editText.textContent = '編輯內容';
-                    btnEdit.classList.add('text-gray-700', 'hover:bg-tech-50');
-                    btnEdit.classList.remove('text-tech-600', 'bg-tech-50', 'border', 'border-tech-200');
-                }
-            });
-
-            // 功能 2：儲存網頁 (匯出 HTML)
-            btnSave.addEventListener('click', () => {
-                // 確保儲存時不在編輯狀態
-                if (isEditing) {
-                    btnEdit.click(); // 自動關閉編輯
-                }
-                
-                const htmlContent = document.documentElement.outerHTML;
-                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                
-                // 取得當前日期 YYYYMMDD
-                const today = new Date();
-                const dateStr = today.getFullYear() + 
-                                String(today.getMonth() + 1).padStart(2, '0') + 
-                                String(today.getDate()).padStart(2, '0');
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Report_${dateStr}.html`;
-                document.body.appendChild(a);
-                a.click();
-                
-                // 清理
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                }, 100);
-            });
-
-            // 功能 3：輸出 PDF (呼叫列印引擎)
-            btnPrint.addEventListener('click', () => {
-                if (isEditing) {
-                    btnEdit.click(); // 列印前強制關閉編輯，避免虛線外框被印出
-                }
-                window.print();
-            });
-        });
-    </script>
+<h3>導入邊界與實務行動建議</h3>
+<p>硬體限制上，瀏覽器推論目前最適合 1B 至 4B 參數的量化模型，以及單一任務導向的語音或視覺模型。這類模型在多數筆電與手機的整合式 GPU 上，都能維持堪用的吞吐量。若產品高度依賴跨文件深度推理、複雜程式碼生成或超長上下文記憶，終端裝置的 VRAM 容量與數 GB 冷啟動下載仍會拖累轉換率，這類場景還是得交給雲端大模型。</p>
+<p>打算導入端側 AI 的團隊，適合走漸進式混合架構。第一階段先建好 IndexedDB 搭配 OPFS 的雙層快取，並加上 WebGPU 降級機制，讓不支援的裝置自動退回 WASM 執行。第二階段再把資料前處理、VAD 語音過濾與本地草稿推論下放到瀏覽器，同時保留雲端 API 處理複雜任務，兼顧算力成本與體驗上限。</p>
+</article>
+<nav aria-label="文章導覽" class="klio-article-nav"><a class="klio-article-nav-card" href="./20260416_designjob.html"><span class="klio-article-nav-label">&lt;- 較新一篇</span><span class="klio-article-nav-title">一人公司變現拆解：Designjoy 設計訂閱制的商業邏輯與天花板</span></a><a class="klio-article-nav-card" href="./20260411_theonecompany.html" style="text-align:right;"><span class="klio-article-nav-label">較舊一篇 -&gt;</span><span class="klio-article-nav-title">AI 輔助微型創業跨國研究報告</span></a></nav>
+</main>
 </body>
 </html>
