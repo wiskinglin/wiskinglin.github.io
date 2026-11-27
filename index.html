@@ -13,8 +13,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/klio-design.css?v=20261125">
-  <script src="./assets/js/klio-shell.js?v=20261125" data-klio-shell data-base="./" data-active="reports"></script>
+  <link rel="stylesheet" href="./assets/css/klio-design.css?v=20261126c">
+  <script src="./assets/js/klio-shell.js?v=20261126c" data-klio-shell data-base="./" data-active="reports"></script>
 </head>
 
 <body>
@@ -26,6 +26,10 @@
       <div class="klio-search-group">
         <label for="klio-search-input" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">搜尋筆記</label>
         <input id="klio-search-input" class="klio-input" type="search" placeholder="搜尋筆記標題、主題或關鍵字...">
+        <label for="klio-series-select" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">專題策展</label>
+        <select id="klio-series-select" class="klio-select" aria-label="專題策展">
+          <option value="all">全部專題</option>
+        </select>
         <label for="klio-sort-select" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">排序方式</label>
         <select id="klio-sort-select" class="klio-select" aria-label="排序方式">
           <option value="newest">最新優先</option>
@@ -37,16 +41,21 @@
     <div id="klio-results-area" aria-live="polite"></div>
   </main>
 
-  <script src="./assets/js/klio-reports-data.js"></script>
+  <script src="./assets/js/klio-reports-data.js?v=20261126c"></script>
   <script>
     (function () {
       var reports = window.KLIO_REPORTS || [];
       var categories = window.KLIO_REPORTS_CATEGORIES || [];
+      var seriesList = window.KLIO_REPORTS_SERIES || [];
+      var seriesMap = {};
+      seriesList.forEach(function (s) { seriesMap[s.id] = s; });
 
       var params = new URLSearchParams(window.location.search);
       var initialCat = params.get('cat');
+      var initialSeries = params.get('series');
       var validCats = categories.map(function (c) { return c.id; });
       var activeCategory = validCats.indexOf(initialCat) !== -1 ? initialCat : 'all';
+      var activeSeries = (initialSeries && seriesMap[initialSeries]) ? initialSeries : 'all';
       var searchQuery = '';
       var sortOrder = 'newest';
 
@@ -54,6 +63,7 @@
       var tabsEl = document.getElementById('klio-category-tabs');
       var resultsEl = document.getElementById('klio-results-area');
       var searchInput = document.getElementById('klio-search-input');
+      var seriesSelect = document.getElementById('klio-series-select');
       var sortSelect = document.getElementById('klio-sort-select');
 
       function escapeHtml(str) {
@@ -69,21 +79,52 @@
         return reports.filter(function (r) { return r.category === catId; }).length;
       }
 
-      function setCategory(catId) {
-        activeCategory = catId;
+      function syncUrl() {
         var url = new URL(window.location.href);
         if (activeCategory === 'all') url.searchParams.delete('cat');
         else url.searchParams.set('cat', activeCategory);
+        if (activeSeries === 'all') url.searchParams.delete('series');
+        else url.searchParams.set('series', activeSeries);
         window.history.replaceState({}, '', url.toString());
+      }
+
+      function setCategory(catId) {
+        activeCategory = catId;
+        if (activeCategory !== 'all' && activeSeries !== 'all') {
+          activeSeries = 'all';
+          seriesSelect.value = 'all';
+        }
+        syncUrl();
         renderTabs();
         renderAll();
+      }
+
+      function setSeries(seriesId) {
+        activeSeries = (seriesId && seriesMap[seriesId]) ? seriesId : 'all';
+        seriesSelect.value = activeSeries;
+        if (activeSeries !== 'all' && activeCategory !== 'all') {
+          activeCategory = 'all';
+          renderTabs();
+        }
+        syncUrl();
+        renderAll();
+      }
+
+      function renderSeriesSelect() {
+        var opts = '<option value="all">全部專題 (' + reports.length + ')</option>';
+        seriesList.forEach(function (s) {
+          var count = reports.filter(function (r) { return r.series === s.id; }).length;
+          opts += '<option value="' + escapeHtml(s.id) + '">' + escapeHtml(s.label) + ' (' + count + ')</option>';
+        });
+        seriesSelect.innerHTML = opts;
+        seriesSelect.value = activeSeries;
       }
 
       var COVER_FILE = '20260817_ai_trend_sovereignty.html';
       var PICK_FILES = ['20260512_zipcar.html', '20260610_cloudflare.html', '20260616_loop_engineering.html'];
 
       function renderFrontHero() {
-        var showHero = activeCategory === 'all' && !searchQuery.trim() && sortOrder === 'newest';
+        var showHero = activeCategory === 'all' && activeSeries === 'all' && !searchQuery.trim() && sortOrder === 'newest';
         if (!showHero) {
           heroEl.innerHTML = '';
           return;
@@ -164,7 +205,7 @@
         renderFrontHero();
 
         var q = searchQuery.trim().toLowerCase();
-        var showHero = activeCategory === 'all' && !q && sortOrder === 'newest';
+        var showHero = activeCategory === 'all' && activeSeries === 'all' && !q && sortOrder === 'newest';
         var heroSet = {};
         if (showHero) {
           heroSet[COVER_FILE] = true;
@@ -174,11 +215,14 @@
         var filtered = reports.filter(function (r) {
           if (heroSet[r.file]) return false;
           if (activeCategory !== 'all' && r.category !== activeCategory) return false;
+          if (activeSeries !== 'all' && r.series !== activeSeries) return false;
           if (!q) return true;
+          var sLabel = (r.series && seriesMap[r.series]) ? seriesMap[r.series].label.toLowerCase() : '';
           return (
             r.title.toLowerCase().indexOf(q) !== -1 ||
             r.summary.toLowerCase().indexOf(q) !== -1 ||
-            r.categoryLabel.toLowerCase().indexOf(q) !== -1
+            r.categoryLabel.toLowerCase().indexOf(q) !== -1 ||
+            sLabel.indexOf(q) !== -1
           );
         });
 
@@ -189,31 +233,58 @@
           return b.date.localeCompare(a.date) || b.file.localeCompare(a.file);
         });
 
+        var seriesBannerHtml = '';
+        if (activeSeries !== 'all' && seriesMap[activeSeries]) {
+          var sm = seriesMap[activeSeries];
+          seriesBannerHtml =
+            '<div class="klio-series-banner">' +
+              '<div>' +
+                '<div class="klio-series-banner-kicker">專題策展 · 共 ' + filtered.length + ' 篇</div>' +
+                '<h2 class="klio-series-banner-title">' + escapeHtml(sm.label) + '</h2>' +
+                '<p class="klio-series-banner-desc">' + escapeHtml(sm.description) + '</p>' +
+              '</div>' +
+              '<button type="button" class="klio-tab-btn" id="klio-clear-series">返回全部專題</button>' +
+            '</div>';
+        }
+
         if (filtered.length === 0) {
           resultsEl.innerHTML =
+            seriesBannerHtml +
             '<div class="klio-empty-state">' +
               '<p style="margin:0 0 12px;font-weight:600;color:var(--klio-text);">找不到符合條件的筆記</p>' +
-              '<p style="margin:0 0 16px;font-size:0.9rem;">試著更換分類或清除搜尋關鍵字。</p>' +
+              '<p style="margin:0 0 16px;font-size:0.9rem;">試著更換分類、專題或清除搜尋關鍵字。</p>' +
               '<button type="button" class="klio-tab-btn is-active" id="klio-reset-filters">顯示全部筆記</button>' +
             '</div>';
+          if (document.getElementById('klio-clear-series')) {
+            document.getElementById('klio-clear-series').addEventListener('click', function () {
+              setSeries('all');
+            });
+          }
           document.getElementById('klio-reset-filters').addEventListener('click', function () {
             searchQuery = '';
             searchInput.value = '';
+            activeSeries = 'all';
+            seriesSelect.value = 'all';
             setCategory('all');
           });
           return;
         }
 
         resultsEl.innerHTML =
+          seriesBannerHtml +
           '<div class="klio-poster-grid">' +
           filtered.map(function (r, idx) {
             var featuredClass = (idx > 0 && idx % 5 === 0) ? ' is-featured' : '';
             var kickerClass = 'klio-poster-kicker klio-poster-kicker--' + r.category;
+            var seriesBadge = (r.series && seriesMap[r.series])
+              ? '<div class="klio-poster-series">專題 · ' + escapeHtml(seriesMap[r.series].label) + '</div>'
+              : '';
             return (
               '<a class="klio-poster-card' + featuredClass + '" href="./reports/' + encodeURIComponent(r.file) + '">' +
                 '<img class="klio-poster-bg" src="' + escapeHtml(r.cover) + '" alt="' + escapeHtml(r.title) + '" loading="' + (idx < 3 ? 'eager' : 'lazy') + '">' +
                 '<div class="klio-poster-scrim"></div>' +
                 '<div class="klio-poster-body">' +
+                  seriesBadge +
                   '<div class="' + kickerClass + '">' +
                     '<span>' + escapeHtml(r.categoryLabel) + '</span>' +
                     '<span style="opacity:0.65;">·</span>' +
@@ -227,6 +298,12 @@
             );
           }).join('') +
           '</div>';
+
+        if (document.getElementById('klio-clear-series')) {
+          document.getElementById('klio-clear-series').addEventListener('click', function () {
+            setSeries('all');
+          });
+        }
       }
 
       searchInput.addEventListener('input', function () {
@@ -234,11 +311,16 @@
         renderAll();
       });
 
+      seriesSelect.addEventListener('change', function () {
+        setSeries(this.value);
+      });
+
       sortSelect.addEventListener('change', function () {
         sortOrder = this.value;
         renderAll();
       });
 
+      renderSeriesSelect();
       renderTabs();
       renderAll();
     })();

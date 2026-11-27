@@ -308,44 +308,209 @@
       updateProgressAndSpy();
     }
 
-    // 4. Load report cover & related articles from klio-reports-data.js
+    // 4. Load report cover, series path & related articles from klio-reports-data.js
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
     function mountCoverAndRelated() {
       var reports = window.KLIO_REPORTS;
       if (!reports || !reports.length) return;
+      var seriesList = window.KLIO_REPORTS_SERIES || [];
       var fname = window.location.pathname.split('/').pop();
       var current = reports.find(function (r) { return r.file === fname; });
       if (!current) return;
 
+      var seriesMeta = current.series
+        ? seriesList.find(function (s) { return s.id === current.series; })
+        : null;
+
+      var seriesPosts = seriesMeta
+        ? reports
+            .filter(function (r) { return r.series === seriesMeta.id; })
+            .slice()
+            .sort(function (a, b) {
+              return a.date.localeCompare(b.date) || a.file.localeCompare(b.file);
+            })
+        : [];
+      var currentSeriesIndex = seriesPosts.findIndex(function (r) { return r.file === current.file; });
+
+      // 4a. Series pill in article header
+      if (seriesMeta && headerMeta && !headerMeta.querySelector('.klio-series-pill')) {
+        var seriesPill = document.createElement('a');
+        seriesPill.className = 'klio-series-pill';
+        seriesPill.href = BASE + 'index.html?series=' + encodeURIComponent(seriesMeta.id);
+        seriesPill.textContent =
+          '專題 · ' + seriesMeta.label +
+          (currentSeriesIndex !== -1 ? ' (' + (currentSeriesIndex + 1) + '/' + seriesPosts.length + ')' : '');
+        headerMeta.appendChild(seriesPill);
+      }
+
+      // 4b. Cover image
       if (current.cover && !mainEl.querySelector('.klio-article-cover')) {
         var cov = document.createElement('div');
         cov.className = 'klio-article-cover';
-        cov.innerHTML = '<img src="' + current.cover.replace('./', BASE) + '" alt="' + current.title.replace(/"/g, '&quot;') + '">';
+        cov.innerHTML = '<img src="' + current.cover.replace('./', BASE) + '" alt="' + escapeHtml(current.title) + '">';
         mainEl.insertBefore(cov, prose);
       }
 
-      var related = reports.filter(function (r) {
-        return r.category === current.category && r.file !== current.file;
-      }).slice(0, 4);
+      // 4c. Prioritize related items: manual relatedFiles -> same series -> same category
+      var seen = {};
+      seen[current.file] = true;
+      var prioritized = [];
+      var hasCuratedMatch = false;
 
-      if (related.length > 0 && !sidebarEl.querySelector('.klio-related-card')) {
+      if (Array.isArray(current.relatedFiles)) {
+        current.relatedFiles.forEach(function (rf) {
+          if (seen[rf]) return;
+          var match = reports.find(function (r) { return r.file === rf; });
+          if (match) {
+            seen[rf] = true;
+            prioritized.push(match);
+            hasCuratedMatch = true;
+          }
+        });
+      }
+
+      if (seriesPosts.length > 1) {
+        // Put next-in-series first, then other series posts
+        var orderedSeries = [];
+        if (currentSeriesIndex !== -1 && currentSeriesIndex + 1 < seriesPosts.length) {
+          orderedSeries.push(seriesPosts[currentSeriesIndex + 1]);
+        }
+        seriesPosts.forEach(function (r) {
+          if (!seen[r.file] && orderedSeries.indexOf(r) === -1) {
+            orderedSeries.push(r);
+          }
+        });
+        orderedSeries.forEach(function (r) {
+          if (!seen[r.file]) {
+            seen[r.file] = true;
+            prioritized.push(r);
+            hasCuratedMatch = true;
+          }
+        });
+      }
+
+      var curatedItems = prioritized.slice();
+
+      reports.forEach(function (r) {
+        if (prioritized.length >= 4) return;
+        if (!seen[r.file] && r.category === current.category) {
+          seen[r.file] = true;
+          prioritized.push(r);
+        }
+      });
+
+      var sidebarRelated = prioritized.slice(0, 4);
+
+      if (sidebarRelated.length > 0 && !sidebarEl.querySelector('.klio-related-card')) {
         var relCard = document.createElement('div');
         relCard.className = 'klio-side-card klio-related-card';
         relCard.innerHTML =
-          '<div class="klio-toc-title">Related / 同領域精選</div>' +
+          '<div class="klio-toc-title">' + (hasCuratedMatch ? '專題延伸閱讀' : '同領域精選') + '</div>' +
           '<div class="klio-related-list">' +
-          related.map(function (r) {
+          sidebarRelated.map(function (r) {
             var thumbSrc = (r.cover || '').replace('./', BASE);
             return (
               '<a class="klio-related-item" href="./' + encodeURIComponent(r.file) + '">' +
               '<div class="klio-related-thumb">' +
               (thumbSrc ? '<img src="' + thumbSrc + '" alt="" loading="lazy">' : '') +
               '</div>' +
-              '<span class="klio-related-title">' + r.title.replace(/</g, '&lt;') + '</span>' +
+              '<span class="klio-related-title">' + escapeHtml(r.title) + '</span>' +
               '</a>'
             );
           }).join('') +
           '</div>';
         sidebarEl.appendChild(relCard);
+      }
+
+      // 4d. End-of-article reading path & related reads (before .klio-article-nav)
+      if (!mainEl.querySelector('.klio-series-endcap')) {
+        var endcap = document.createElement('section');
+        endcap.className = 'klio-series-endcap';
+        endcap.setAttribute('aria-label', '專題脈絡與延伸閱讀');
+
+        var endcapHtml = '';
+        if (seriesMeta && seriesPosts.length > 1) {
+          var stepsHtml = seriesPosts.map(function (r, idx) {
+            var isCur = r.file === current.file;
+            var isNext = currentSeriesIndex !== -1 && idx === currentSeriesIndex + 1;
+            var numLabel = String(idx + 1).padStart(2, '0');
+            var statusText = isCur ? '目前閱讀' : (isNext ? '下一篇 · ' + r.date : r.date);
+            if (isCur) {
+              return (
+                '<li class="klio-series-step is-current">' +
+                  '<span class="klio-series-step-num">' + numLabel + '</span>' +
+                  '<span class="klio-series-step-title">' + escapeHtml(r.title) + '</span>' +
+                  '<span class="klio-series-step-meta">' + escapeHtml(statusText) + '</span>' +
+                '</li>'
+              );
+            }
+            return (
+              '<li>' +
+                '<a class="klio-series-step" href="./' + encodeURIComponent(r.file) + '">' +
+                  '<span class="klio-series-step-num">' + numLabel + '</span>' +
+                  '<span class="klio-series-step-title">' + escapeHtml(r.title) + '</span>' +
+                  '<span class="klio-series-step-meta">' + escapeHtml(statusText) + '</span>' +
+                '</a>' +
+              '</li>'
+            );
+          }).join('');
+
+          endcapHtml +=
+            '<div class="klio-series-endcap-head">' +
+              '<div>' +
+                '<div class="klio-series-endcap-kicker">專題閱讀路徑</div>' +
+                '<h2 class="klio-series-endcap-title">' + escapeHtml(seriesMeta.label) + '</h2>' +
+                '<p class="klio-series-endcap-desc">' + escapeHtml(seriesMeta.description) + '</p>' +
+              '</div>' +
+              '<a class="klio-series-pill" href="' + BASE + 'index.html?series=' + encodeURIComponent(seriesMeta.id) + '">查看全部 ' + seriesPosts.length + ' 篇</a>' +
+            '</div>' +
+            '<ol class="klio-series-path">' + stepsHtml + '</ol>';
+        }
+
+        // Extra curated or category next reads (when no series path, or when manual relatedFiles exist)
+        var extraReads = (seriesMeta && seriesPosts.length > 1)
+          ? curatedItems.filter(function (r) { return r.series !== seriesMeta.id; }).slice(0, 2)
+          : prioritized.slice(0, 2);
+
+        if (extraReads.length > 0) {
+          if (!endcapHtml) {
+            endcapHtml +=
+              '<div class="klio-series-endcap-head">' +
+                '<div>' +
+                  '<div class="klio-series-endcap-kicker">延伸閱讀</div>' +
+                  '<h2 class="klio-series-endcap-title">順著脈絡繼續讀</h2>' +
+                '</div>' +
+              '</div>';
+          }
+          endcapHtml +=
+            '<div class="klio-end-related-grid">' +
+            extraReads.map(function (r) {
+              return (
+                '<a class="klio-end-related-card" href="./' + encodeURIComponent(r.file) + '">' +
+                  '<span class="klio-end-related-meta">' + escapeHtml(r.categoryLabel) + ' · ' + escapeHtml(r.date) + '</span>' +
+                  '<span class="klio-end-related-title">' + escapeHtml(r.title) + '</span>' +
+                '</a>'
+              );
+            }).join('') +
+            '</div>';
+        }
+
+        if (endcapHtml) {
+          endcap.innerHTML = endcapHtml;
+          var navNode = mainEl.querySelector('.klio-article-nav');
+          if (navNode) {
+            mainEl.insertBefore(endcap, navNode);
+          } else {
+            mainEl.appendChild(endcap);
+          }
+        }
       }
     }
 
@@ -353,7 +518,7 @@
       mountCoverAndRelated();
     } else {
       var s = document.createElement('script');
-      s.src = BASE + 'assets/js/klio-reports-data.js';
+      s.src = BASE + 'assets/js/klio-reports-data.js?v=20261126c';
       s.onload = mountCoverAndRelated;
       document.head.appendChild(s);
     }
